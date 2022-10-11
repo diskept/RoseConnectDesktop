@@ -186,11 +186,13 @@ void HomeMain::setInit(){
     connect(linker, SIGNAL(signal_clickedMovePageSearch_share(QString)), this, SLOT(slot_clickedMovePageSearch_share(QString)));//c220818
 
 
-    QJsonObject tmp_json;
-    NetworkHttp *network = new NetworkHttp;
-    connect(network, SIGNAL(response(int,QJsonObject)), SLOT(slot_responseHttp_deviceIOState(int, QJsonObject)));
-    network->request(3333, QString("http://%1:%2/%3").arg(global.device.getDeviceIP()).arg(global.port).arg("in.out.mode.get"), tmp_json, true);
-
+    //c221006_1
+      //  print_debug();
+      //  QJsonObject tmp_json;
+      //  NetworkHttp *network = new NetworkHttp;
+      //  connect(network, SIGNAL(response(int,QJsonObject)), SLOT(slot_responseHttp_deviceIOState(int, QJsonObject)));
+      //  network->request(3333, QString("http://%1:%2/%3").arg(global.device.getDeviceIP()).arg(global.port).arg("in.out.mode.get"), tmp_json, true);
+    //c221006_1
 
 
 
@@ -274,15 +276,15 @@ void HomeMain::slot_showDlgOfDisconnect_hide(){//c221004_2
 }
 
 
-void HomeMain::slot_showDlgOfDisconnect_call(){//c220525
+void HomeMain::slot_showDlgOfDisconnect_call(){//c221006_1
 
     print_debug();
-    if(global.queuelist_mouse_trigger_menu_flag){//c221004_2
+    if(global.queuelist_mouse_trigger_menu_flag){
         print_debug();
-        connectDevice(global.device.getDeviceIP());//c220722
+        connectDevice(global.device.getDeviceIP());
     }
 
-    //QTimer::singleShot(3000, this, SLOT(slot_showDlgOfDisconnect_hide()));//c220722
+    QTimer::singleShot(3000, this, SLOT(slot_showDlgOfDisconnect()));//c221006_1
 }
 
 
@@ -731,7 +733,10 @@ void HomeMain::dialog_comfirmCD(){      //c220711
     dlgConfirmCD->setTitle(tr("CD PLAY Notice!"));
     dlgConfirmCD->setTextHeight(150);
     dlgConfirmCD->setText(tr("Stops the currently playing CDPLAY immediately. \nPlease select(click) a song again."));
-    dlgConfirmCD->setGeometry(this->width()/3,this->height()/5, 350,400);//cheon210831-network
+    //dlgConfirmCD->setGeometry(this->width()/3,this->height()/2, 350,400);//c221007_1
+    int left = global.left_mainwindow+global.width_mainwindow/4;//c221007_1
+    int top = global.top_mainwindow+global.height_mainwindow/4;//c221007_1
+    dlgConfirmCD->setGeometry(left,top, 350,400);//c221007_1
     dlgConfirmCD->setAlertMode();
     dlgConfirmCD->setProperty("flagShown",false);
 
@@ -3081,6 +3086,13 @@ void HomeMain::slot_responseHttp(const int &p_id, const QJsonObject &p_jsonObjec
         }
         else if(p_id==HTTP_DEVICE_USER_INFO){
             print_debug();
+            //c221006_1
+              //  print_debug();
+                QJsonObject tmp_json;
+                NetworkHttp *network = new NetworkHttp;
+                connect(network, SIGNAL(response(int,QJsonObject)), SLOT(slot_responseHttp_deviceIOState(int, QJsonObject)));
+                network->request(3333, QString("http://%1:%2/%3").arg(global.device.getDeviceIP()).arg(global.port).arg("in.out.mode.get"), tmp_json, true);
+            //c221006_1
             setResultOfGetRoseUserInfo(p_jsonObject);
         }
         else if(p_id==HTTP_DEVICE_GET_INFO){
@@ -3138,6 +3150,7 @@ void HomeMain::slot_responseHttp(const int &p_id, const QJsonObject &p_jsonObjec
     }
     else{
         print_debug();
+        //c221006_1
         if(global.abs_ani_dialog_wait == nullptr) return;//c221004_3
         qDebug() << "abs_ani_dialog_wait->isHidden() = " << global.abs_ani_dialog_wait->isHidden();
         if(global.abs_ani_dialog_wait->isHidden() != true){//c220926_1
@@ -3146,7 +3159,8 @@ void HomeMain::slot_responseHttp(const int &p_id, const QJsonObject &p_jsonObjec
             global.abs_ani_dialog_wait->hide(); //cheontidal
         }
         print_debug();
-        QTimer::singleShot(1000, this, SLOT(slot_showDlgOfDisconnect()));//c220722
+
+       // QTimer::singleShot(1000, this, SLOT(slot_showDlgOfDisconnect()));//c221006_1
     }
 
     sender()->deleteLater();

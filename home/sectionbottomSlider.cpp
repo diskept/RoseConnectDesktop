@@ -53,7 +53,8 @@ void sectionbottomSlider::mouseReleaseEvent ( QMouseEvent * e )//c220521
         qDebug() << "sectionbottomSlider::mousePressEvent-- val= " << val;
         //setValue(val);
 
-        emit linker->signal_sliderclick(val);
+        //emit linker->signal_sliderclick(val);//c221007_1
+        emit signal_sliderclick(val);//c221007_1
 
 
 }

@@ -38,7 +38,7 @@
 #include <QThread>
 #include <QTextEdit>
 #include <QSettings>
-//#include <StandardButton>
+#include <QFileDialog>
 
 
 
@@ -307,6 +307,7 @@ void Updater::checkForUpdates()
 
     //qDebug() << " Updater::checkForUpdates--User-Agent: " << userAgentString().toUtf8();
     m_manager->get(request);
+    print_debug();
 }
 
 /**
@@ -528,22 +529,35 @@ void Updater::setUpdateAvailable(const bool available)
     int top = 0;
 
 
+    QPushButton *btn_PlayPosition = new QPushButton(tr("New feature manual folder"));//c220718
+    btn_PlayPosition->setObjectName("btn_PlayPosition");
+    btn_PlayPosition->setCursor(Qt::PointingHandCursor);
+    btn_PlayPosition->setFixedSize(280,30);            //45, 50
+    //btn_PlayPosition->setStyleSheet("#btn_PlayPosition { font-size:16px; color:#ececec;  background-color:transparent;  border:2px solid #CCCCCC;border-radius:13px;  } ");
+    btn_PlayPosition->setStyleSheet("QPushButton {font-size:16px; color:#ececec;  background-color:transparent;  border:2px solid #CCCCCC;border-radius:13px;} QPushButton:hover {background-color: #505050; color: white;} QPushButton:pressed{background-color: #F79862;} QPushButton:checked{background-color: #F79862;border:none;} QToolTip{ color: #404040; }");
+
 
     QMessageBox box;
-    box.setWindowFlags(Qt::FramelessWindowHint |Qt::WindowStaysOnTopHint);
+    //box.setWindowFlags(Qt::FramelessWindowHint |Qt::WindowStaysOnTopHint);
+    box.setWindowFlags(Qt::FramelessWindowHint );
     QPixmap tmp_pixmap(":images/def_mus_60.png");
     //tmp_pixmap = tmp_pixmap.scaled(40,40, Qt::AspectRatio, Qt::SmoothTransformation);
     box.setIconPixmap(tmp_pixmap);
-
+//hl_top->addWidget(btn_PlayPosition);
     //box.setBaseSize(QSize(600, 220));
     //box.setStyleSheet("QPushButton {background-color: #111111;}");
     box.setStyleSheet("color:#111111;font-size:16px;background-color:#dddddd;");
     box.setTextFormat(Qt::RichText);
     //box.setIcon(QMessageBox::Information);
 
+    left = global.left_mainwindow+global.width_mainwindow/4;//c221007_1
+    top = global.top_mainwindow+global.height_mainwindow/4;//c221007_1
+    box.setGeometry(left, top, 0, 0);//c221007_1
+    /*//c221007_1
     left = (latestWidth / 2) - (box.sizeHint().width() / 2);
     top = (latestHeight/ 2) - (box.sizeHint().height() / 2);
     box.setGeometry(200, 200, 0, 0);
+    */
 
 
     qDebug() << "Updater::setUpdateAvailable---m_updateAvailable = " << m_updateAvailable;
@@ -579,6 +593,7 @@ void Updater::setUpdateAvailable(const bool available)
 
         QSpacerItem* horizontalSpacer = new QSpacerItem(550, 0, QSizePolicy::Expanding, QSizePolicy::Expanding);
         QGridLayout* layout = (QGridLayout*)box.layout();
+        layout->addWidget(btn_PlayPosition, 5, 2);
         layout->addItem(horizontalSpacer, layout->rowCount(), 0, 1, layout->columnCount());
 
         foreach (QAbstractButton *button, box.buttons())
@@ -608,11 +623,12 @@ void Updater::setUpdateAvailable(const bool available)
         if(textBoxes.size()){
             textBoxes[0]->setFixedSize(570, 300);
             textBoxes[0]->document()->setDocumentMargin(10);
-            textBoxes[0]->setStyleSheet("color:#333333;;font-size:15px;background-color:#bbbbbb;");
+            textBoxes[0]->setStyleSheet("color:#333333;;font-size:12px;background-color:#bbbbbb;");
 
         }
         //
 
+        connect(btn_PlayPosition, SIGNAL(clicked()), this, SLOT(slot_DescriptionShow()));
         //pushbuuttons[0]->hide();
         if (box.exec() == QMessageBox::Yes)
         {
@@ -681,6 +697,34 @@ void Updater::setUpdateAvailable(const bool available)
 
         }
     }
+
+}
+
+
+void Updater::slot_DescriptionShow(){
+    print_debug();
+    //QString shareFilePath = qApp->applicationDirPath()+"/manual/descriptionShare.mp4";
+    QString shareFilePath = qApp->applicationDirPath()+"/manual";
+    QDesktopServices::openUrl( QUrl::fromLocalFile(shareFilePath) );
+    qDebug() << "shareFilePath=" << shareFilePath;
+    /*
+    QString dir = QFileDialog::getExistingDirectory(nullptr, tr("Open Directory"),
+                                                 shareFilePath,
+                                                  QFileDialog::DontResolveSymlinks);*/
+    /*
+    qDebug() << "shareFilePath=" << shareFilePath;
+    //shareFilePath.replace("/", "\\");
+    qDebug() << "shareFilePath=" << shareFilePath;
+    QMediaPlayer *player = new QMediaPlayer;
+        QVideoWidget *vw = new QVideoWidget;
+        player->setVideoOutput(vw);
+        player->setMedia(QUrl::fromLocalFile("file://"+shareFilePath));
+        player->setVolume(50);
+        vw->show();
+        vw->raise();
+        player->play();
+        qDebug() << "mediaStatus: " << player->mediaStatus() << "error: " << player->error();
+        */
 
 }
 

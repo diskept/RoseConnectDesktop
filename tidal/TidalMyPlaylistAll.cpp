@@ -156,7 +156,9 @@ namespace tidal {
      */
     void TidalMyPlaylistAll::proc_wheelEvent_to_getMoreData(){
 
-        if((this->playlist_total_cnt > this->playlist_draw_cnt) && (this->list_playlist_created->size() > this->playlist_draw_cnt) && (this->flag_playlist_draw == false)
+        qDebug() << this->playlist_total_cnt << this->playlist_draw_cnt << this->list_playlist_created->size() << this->flag_playlist_draw;
+
+        if((this->playlist_total_cnt > this->playlist_draw_cnt) && (this->flag_playlist_draw == false)
                 && (this->scrollArea_main->verticalScrollBar()->value() == this->scrollArea_main->verticalScrollBar()->maximum())){
 
             this->flag_playlist_draw = true;
@@ -277,7 +279,7 @@ namespace tidal {
             // j220913 list count check
 
             // next_offset
-            int next_offset = this->list_playlist_created->size();
+            this->next_offset = this->list_playlist_created->size();
 
             // filtering
             QString selected_sortOpt = this->selected_filterCode.toString();
@@ -291,7 +293,7 @@ namespace tidal {
             // request HTTP API
             ProcCommon *proc = new ProcCommon(this);
             connect(proc, &ProcCommon::completeReq_list_myCreatedPlaylists, this, &TidalMyPlaylistAll::slot_applyResult_myCreatedPlaylists);
-            proc->request_tidal_getList_myCreatedPlaylists(sortOpt, orderDirection, this->playlist_widget_cnt, next_offset);
+            proc->request_tidal_getList_myCreatedPlaylists(sortOpt, orderDirection, this->playlist_widget_cnt, this->next_offset);
         }
     }
 
@@ -368,6 +370,9 @@ namespace tidal {
         // request HTTP API - tidal playlist
         //this->request_more_playlistData_tidal();*/
 
+
+        ContentLoadingwaitingMsgHide();
+
         if(list_data.size() > 0){
             this->flagReqMore_playlist = false;
             this->flag_lastPage_playlist = flag_lastPage;
@@ -399,12 +404,9 @@ namespace tidal {
                 this->flag_playlist_draw = false;
             }
 
-            ContentLoadingwaitingMsgHide();
             this->request_more_playlistData();
         }
         else{
-            ContentLoadingwaitingMsgHide();
-
             if(this->list_playlist_created->size() <= 0){
                 NoData_Widget *noData_widget = new NoData_Widget(NoData_Widget::NoData_Message::Playlist_NoData);
                 noData_widget->setFixedSize(1500, 300);

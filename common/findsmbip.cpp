@@ -1,6 +1,7 @@
 #include "findsmbip.h"
 #include <QHostInfo>
 #include <QFileInfo>
+#include <QProcess>
 #include "common/global.h"//c220908_2
 
 
@@ -73,7 +74,7 @@ void FindSMBIP::lookedUp(const QHostInfo &host)
  * @brief FindSMBIP::connectedSocket:[슬롯] 소켓 연결 성공
  * @details : emit signal_findedSMBIP / emit signal_end
  */
-void FindSMBIP::connectedSocket(){//c220909_3
+void FindSMBIP::connectedSocket(){//c221008_1
     for(int i = 0 ; i < list_socket.size(); i++){
         if(sender() == list_socket.at(i)){          
 
@@ -96,8 +97,26 @@ void FindSMBIP::connectedSocket(){//c220909_3
 
             }
 
+#if defined(Q_OS_WIN)
             // find IP 시그널
             emit signal_findedSMBIP(uuid, ipPrefix+ QString::number(i), QHostInfo::fromName(ipPrefix+QString::number(i)).hostName(), flagOn);
+#endif
+#if defined(Q_OS_MAC)
+            QProcess* process = new QProcess();
+            process->start(QString("smbutil status %1").arg(ipPrefix+ QString::number(i)));//c220913_1
+            process->waitForFinished(-1);
+            QString std_out = process->readAllStandardOutput();
+            print_debug();
+            std_out = std_out.split("Server: ").last();
+            qDebug() << "std_out=" << std_out.chopped(2);
+            if(std_out.isEmpty()){
+                qDebug() << "std_out_empty: " << ipPrefix+ QString::number(i);
+
+            }
+            // find IP 시그널
+            emit signal_findedSMBIP(uuid, ipPrefix+ QString::number(i), std_out.chopped(2), flagOn);
+#endif
+
 
             resultCnt++;
             // 검색 종료 시그널

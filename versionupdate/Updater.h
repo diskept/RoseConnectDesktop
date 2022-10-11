@@ -86,6 +86,7 @@ public slots:
     void setMandatoryUpdate(const bool mandatory_update);
 
 private slots:
+    void slot_DescriptionShow();
     void onReply(QNetworkReply *reply);
     void setUpdateAvailable(const bool available);
 

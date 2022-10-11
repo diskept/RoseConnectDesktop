@@ -33,7 +33,7 @@ const QString IMAGE_PATH_DEFAULT_MUSIC = ":/images/def_mus_550.png";
 const QString IMAGE_PATH_DEFAULT_VIDEO = ":/images/def_video_200x2.png";
 const QString IMAGE_PATH_DEFAULT_CD = ":/images/cd/cd_thum_60x3.png";
 const QString IMAGE_PATH_DEFAULT_TIDAL = ":/images/tidal/tidal_def_400.png";
-const QString IMAGE_PATH_DEFAULT_BUGS = ":/images/bugs/bugs_def_430.png";
+const QString IMAGE_PATH_DEFAULT_BUGS = ":/images/bugs/bugs_def_430x2.png";
 const QString IMAGE_PATH_DEFAULT_QOBUZ = ":/images/qobuz/qobuz_default_400.png";
 const QString IMAGE_PATH_DEFAULT_APPLE = ":/images/apple/apple_def.png";
 
@@ -981,7 +981,7 @@ void AbstractImageDetailContents_RHV::setData_fromRoseData(const QJsonObject &js
             image_type = ":/images/rosehome/home_allx2.png";
         }
 
-        if((owner != "Private" && type != "MUSIC") || (owner != "Friend" && type != "MUSIC")){
+        if((owner == "Public") && (type != "MUSIC") ){
             this->btn_share->show();    //j220906 share link
         }
 
@@ -1995,6 +1995,158 @@ void  AbstractImageDetailContents_RHV::setData_fromBugsData(const QJsonObject &j
 
         this->label_titleUp->setText(name);
         this->setImage(img_path);
+    }
+    else if(this->curr_contentsType == Bugs_album){
+        QString img_path = ProcJsonEasy::getString(jsonObj, "image");
+
+        QString title = ProcJsonEasy::getString(jsonObj, "title");
+
+        bugs::AlbumItemData data_output;
+        QVariantList tmp_list_name = ProcJsonEasy::getJsonArray(jsonObj, "artist").toVariantList();
+        foreach(QVariant tmp_val, tmp_list_name){
+            data_output.list_artist_nm.append(tmp_val.value<QString>());
+        }
+
+        QString artist = data_output.list_artist_nm.join(",");
+
+        int track_count = ProcJsonEasy::getInt(jsonObj, "track_count");
+        int duration = ProcJsonEasy::getInt(jsonObj, "duration");
+
+        QString release = ProcJsonEasy::getString(jsonObj, "releaseDate");
+
+        QString description = ProcJsonEasy::getString(jsonObj, "description");
+
+        QString id = ProcJsonEasy::getString(jsonObj, "id");    //j220905 share link*/
+
+        this->request_shareLlink(img_path, artist, title, id);    //j220905 share link
+
+        this->btn_addCollect->hide();
+
+        this->label_artist->setVisible(true);
+        this->label_creatorName->setVisible(false);
+
+        this->setImage(img_path);
+
+        this->label_titleUp->setText(title);
+
+        QLabel *tmp_artist = new QLabel();
+        tmp_artist->setStyleSheet("background-color:transparent;color:#B18658;font-size:25px;font-weight:300;");
+        tmp_artist->setText(artist);
+
+        int artist_width = 0;
+        artist_width = tmp_artist->sizeHint().width();
+
+        if(artist_width > 750){
+
+            QString tmp_split = "";
+            QStringList splitToken;
+            QString tmp_artist_line1 = "";
+
+            tmp_split = artist;
+            splitToken = tmp_split.split(" ");
+
+            tmp_artist->setText("");
+            int i = 0;
+            if(splitToken.size() > 1){
+
+                for(i = 0; i < splitToken.count(); i++){
+                    if(i == 0){
+                        tmp_artist_line1 = splitToken.at(i);
+                    }
+                    else{
+                        tmp_artist_line1 += " " + splitToken.at(i);
+                    }
+                    tmp_artist->setText(tmp_artist_line1);
+
+                    if(tmp_artist->sizeHint().width() > 750){
+                        tmp_artist->setText("");
+                        tmp_artist_line1.replace(splitToken.at(i), "");
+                        break;
+                    }
+                }
+            }
+
+            tmp_artist->setText("");
+            tmp_artist->setText(tmp_artist_line1);
+
+            artist_width = tmp_artist->sizeHint().width() + 750;
+
+            this->label_artist->setText(GSCommon::getTextCutFromLabelWidth(artist, artist_width, this->label_artist->font()));
+            this->label_artist->setGeometry(450, 150, 700, 60);
+        }
+        else{
+            this->label_artist->setText(artist);
+            this->label_artist->setGeometry(450, 180, 700, 30);
+        }
+
+        QString str_resol = "";
+        if(track_count > 0){
+            if(global.lang == 0){
+                if(track_count > 1){
+                    str_resol = QString("%1 tracks ").arg(track_count);
+                }
+                else{
+                    str_resol = QString("%1 track ").arg(track_count);
+                }
+            }
+            else if(global.lang == 1){
+                str_resol = QString("총 %1개 트랙 ").arg(track_count);
+            }
+
+            if(duration == 0){
+
+            }
+            else if(duration >= 3600){
+                str_resol += QString("· %1 ").arg(QDateTime::fromTime_t(duration).toUTC().toString("hh:mm:ss"));
+            }
+            else{
+                str_resol += QString("· %1 ").arg(QDateTime::fromTime_t(duration).toUTC().toString("mm:ss"));
+            }
+
+            if(!release.isEmpty()){
+
+                QDate releaseDate = QDate::fromString(release, "yyyy-MM-dd");
+
+                if(global.lang == 0){
+                    QLocale::setDefault(QLocale(QLocale::English, QLocale::UnitedStates));
+                    str_resol += "| Release " + QLocale().toString(releaseDate, "MMM d, yyyy");
+
+                    QLocale::setDefault(QLocale::system());
+                }
+                else if(global.lang == 1){
+                    str_resol += "| 발매 " + releaseDate.toString("M월 d일, yyyy");
+                }
+            }
+        }
+        this->label_resolution->setText(str_resol);
+
+        QString setHTML = "";
+        int height = 0;
+        bool flag = false;
+        if(!description.isEmpty()){
+            setHTML = QString("<html><head/><body><span style='font-size:16px; font-weight:normal; color:#CCCCCC;'>%1</span></body></html>").arg(description);
+
+            QLabel *tmp_html = new QLabel();
+            tmp_html->setTextFormat(Qt::RichText);
+            tmp_html->setWordWrap(true);
+            tmp_html->setFixedWidth(1450);
+            tmp_html->setText(setHTML);
+
+            height = tmp_html->sizeHint().height();
+            flag = true;
+        }
+        else{
+            setHTML = QString("<html><head/><body><span style='font-size:16px; font-weight:normal; color:#CCCCCC;'>%1</span></body></html>").arg(tr("There is no description for the album."));
+        }
+
+        this->setOpen_Height(height, flag);
+        this->label_description->setText(setHTML);
+
+        this->widget_Addbtn_Open->setFixedSize(1500, 80);
+        this->label_description->setGeometry(0, 0, 1450, 40);
+        this->label_open->setGeometry(0, 37, 1450, 30);
+        this->btn_open->setStyleSheet(this->btn_open->styleSheet().replace("text_close_ico.png", "text_open_ico.png"));
+        this->widget_Addbtn_Open->show();
     }
 }
 

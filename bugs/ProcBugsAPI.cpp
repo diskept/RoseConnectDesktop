@@ -1526,6 +1526,7 @@ namespace bugs {
 
                 // 정보 담을 struct
                 bugs::TrackItemData tmp_data = ConvertData_forBugs::make_trackData_fromBugsJsonObj(tmp_json);
+                tmp_data.total_count = jsonArr_item.count();
                 list_output.append(tmp_data);
             }
 
@@ -1601,12 +1602,12 @@ namespace bugs {
     }
 
 
-
     /**
      * @brief Album 상세정보 처리반환
      * @param p_jsonObj
      */
     void ProcBugsAPI::setResult_album(const QJsonObject &p_jsonObj){
+
         if(ProcJsonEasy::get_flagOk(p_jsonObj) && ProcJsonEasy::getInt(p_jsonObj, "ret_code", -1)==0){
             QJsonObject jsonObj_item = ProcJsonEasy::getJsonObject(p_jsonObj, "result");
             AlbumItemData data_album = ConvertData_forBugs::make_albumData_fromBugsJsonObj(jsonObj_item);
@@ -1614,11 +1615,13 @@ namespace bugs {
         }
     }
 
+
     /**
      * @brief ProcBugsAPI::setResult_pd_album
      * @param p_jsonObj
      */
     void ProcBugsAPI::setResult_pd_album(const QJsonObject &p_jsonObj){
+
         if(ProcJsonEasy::get_flagOk(p_jsonObj) && ProcJsonEasy::getInt(p_jsonObj, "ret_code", -1)==0){
             QJsonObject jsonObj_item = ProcJsonEasy::getJsonObject(p_jsonObj, "result");
             PD_AlbumItemData data_album = ConvertData_forBugs::make_pd_albumData_fromBugsJsonObj(jsonObj_item);

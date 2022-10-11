@@ -1078,11 +1078,13 @@ namespace tidal {
                     }
                 }
                 else if(clickMode == AlbumTrackDetailInfo_RHV::ClickMode::MoreBtn){
-
-
-
                     // OptMorePopup 띄우기 필요
-                    this->makeObj_optMorePopup(OptMorePopup::Tidal_Track, ConvertData::getConvertOptHeaderData(data_track), index, section);
+                    if(data_track.type == "Music Video"){
+                        this->makeObj_optMorePopup(OptMorePopup::Tidal_Video, ConvertData::getConvertOptHeaderData(data_track), index, section);
+                    }
+                    else{
+                        this->makeObj_optMorePopup(OptMorePopup::Tidal_Track, ConvertData::getConvertOptHeaderData(data_track), index, section);
+                    }
                 }
             }
         }
@@ -1193,9 +1195,13 @@ namespace tidal {
                     }
                 }
                 else if(clickMode == PlaylistTrackDetailInfo_RHV::ClickMode::MoreBtn){
-                    this->makeObj_optMorePopup(OptMorePopup::Tidal_Track, ConvertData::getConvertOptHeaderData(data_track), index, section);
+                    if(data_track.type == "Music Video"){
+                        this->makeObj_optMorePopup(OptMorePopup::Tidal_Video, ConvertData::getConvertOptHeaderData(data_track), index, section);
+                    }
+                    else{
+                        this->makeObj_optMorePopup(OptMorePopup::Tidal_Track, ConvertData::getConvertOptHeaderData(data_track), index, section);
+                    }
                 }
-
             }
         }
     }
@@ -1947,6 +1953,7 @@ namespace tidal {
 
 
     void AbstractTidalSubWidget::proc_clicked_imageDetailInfo_fromPlaylist(tidal::PlaylistItemData& data_playlist, const QJsonArray p_jsonArr_toPlay, const int section, AbstractImageDetailContents_RHV::BtnClickMode btnClickMode){
+
         if(data_playlist.uuid.isEmpty() == false){
             if(btnClickMode == AbstractImageDetailContents_RHV::BtnClickMode::Favorite_toAdd){
                 // 즐겨찾기 추가 - Playlist
@@ -1959,14 +1966,11 @@ namespace tidal {
                 proc->request_tidal_deleteFavorite_playlist(data_playlist.uuid);
             }
             else if(btnClickMode == AbstractImageDetailContents_RHV::BtnClickMode::More){
-                print_debug();
                 if(data_playlist.flagCreatedByUser){
-                    print_debug();
-                        this->makeObj_optMorePopup(OptMorePopup::Tidal_Playlist_Created, ConvertData::getConvertOptHeaderData(data_playlist), 0, section, true);
+                    this->makeObj_optMorePopup(OptMorePopup::Tidal_Playlist_Created, ConvertData::getConvertOptHeaderData(data_playlist), 0, section, true);
                 }
                 else{
-                    print_debug();
-                        this->makeObj_optMorePopup(OptMorePopup::Tidal_Playlist, ConvertData::getConvertOptHeaderData(data_playlist), 0, section, true);
+                    this->makeObj_optMorePopup(OptMorePopup::Tidal_Playlist, ConvertData::getConvertOptHeaderData(data_playlist), 0, section, true);
                 }
             }
             else if(btnClickMode == AbstractImageDetailContents_RHV::BtnClickMode::PlayAll){

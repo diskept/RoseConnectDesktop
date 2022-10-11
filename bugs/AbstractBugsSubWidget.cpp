@@ -11,9 +11,10 @@
 #include "bugs/ProcBugsAPI.h"
 #include "bugs/ProcRoseAPI_withBugs.h"
 
+#include "roseHome/ProcCommon_forRosehome.h"//c220825_1
+
 #include "common/global.h"
 #include "common/gscommon.h"
-#include "common/linker.h"
 #include "common/ProcJsonEasy.h"
 #include "common/rosesettings.h"
 
@@ -21,7 +22,6 @@
 
 #include "widget/toastmsg.h"
 #include "widget/NoData_Widget.h"
-#include "roseHome/ProcCommon_forRosehome.h"//c220825_1
 
 #include <QPixmapCache>
 #include <QSettings>
@@ -117,6 +117,7 @@ namespace bugs {
      * @brief 로그인 되었을 때의화면
      */
     void AbstractBugsSubWidget::setUIControl_logined(){
+
         // 전체 Widget에 넣기
         QWidget *tmp_widget = new QWidget(this);
         tmp_widget->setContentsMargins(0,0,0,0);
@@ -1363,10 +1364,6 @@ namespace bugs {
                     procRosePlay->requestPlayRose_byTracks(jsonArr_toPlayAll, index, playType);
                 }
                 else if(clickMode == PlaylistTrackDetailInfo_RHV::ClickMode::MoreBtn){
-
-
-                    //---------------------------------//c220825_1
-
 
                     // OptMorePopup 띄우기 필요 - (연관 영상 있는지의 여부에 따라 다름)
                     if(data_track.list_mv_id.count() > 0){

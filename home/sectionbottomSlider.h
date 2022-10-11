@@ -34,7 +34,7 @@ protected:
     void mouseReleaseEvent ( QMouseEvent * e ) override;//c220521
 
 signals:
-   // void signal_sliderclick(int);//c220521
+    void signal_sliderclick(int);//c221007_1
 
 private:
     Linker *linker;//c220521

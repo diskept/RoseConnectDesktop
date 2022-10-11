@@ -35,6 +35,7 @@ public:
 
     void setDataTrackInfo_Music(const QJsonObject&);
     void setDataTrackInfo_Tidal(const tidal::TrackItemData&);
+    void setDataTrackInfo_Bugs(const bugs::TrackItemData&);
     void setDataTrackInfo_Qobuz(const qobuz::TrackItemData&);
     void setDataTrackInfo_Apple(const QJsonObject&);
     void setDataTrackInfo_CDplay(const QJsonObject&);//c220724
@@ -73,6 +74,10 @@ private:
     bool myFavoriteIds = false;
     int myStarIds = 0;
 };
+
+
+
+
 
 class AlbumTrackDetailInfoCredit_RHV : public QPushButton
 {

@@ -2413,6 +2413,7 @@ namespace tidal {
                 PlaylistItemData tmp_data = ConvertData::make_playlistData_fromTidalJsonObj(tmp_json);
                 tmp_data.flagCreatedByUser = true;      // 사용자가 만든 playlist
                 tmp_data.creatorName = "ME";            // 사용자가 만든 playlist
+                tmp_data.totalCount = ProcJsonEasy::getInt(p_jsonObj, "totalNumberOfItems");
                 list_output.append(tmp_data);
             }
 
@@ -2556,6 +2557,7 @@ namespace tidal {
 
                 // 정보 담을 struct
                 PlaylistItemData tmp_data = ConvertData::make_playlistData_fromTidalJsonObj(tmp_json);
+                tmp_data.totalCount = ProcJsonEasy::getInt(p_jsonObj, "totalNumberOfItems");
                 list_output.append(tmp_data);
             }
 

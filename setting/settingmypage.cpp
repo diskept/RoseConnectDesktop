@@ -1670,7 +1670,7 @@ void SettingMyPage::slot_saveMyInfo(){
     json_member.insert("email", QString("%1").arg(global.user.getEmail()));//this->data_profileInfo.email );
 
     if(!le_pw->text().isEmpty()){
-        if(le_pw->text().length() < 6)
+        if(le_pw->text().length() < 5)
         {
             flagOK = false;
             ToastMsg::show(this, "", tr("Please set the password to 5 digits or more"));

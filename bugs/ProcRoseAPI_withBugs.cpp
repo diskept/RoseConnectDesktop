@@ -3,6 +3,9 @@
 #include "common/ProcJsonEasy.h"
 #include "bugs/ConvertData_forBugs.h"
 #include "ProcBugsAPI.h"
+#include <QDate>//c221007_2
+#include <QTimer>//c221007_2
+
 #define print_debug() qDebug() << "\n" << "file_name: " << __FILE__ << "function_name: " << __FUNCTION__ << "line: " << __LINE__ << "\n";
 namespace bugs {
 
@@ -417,6 +420,7 @@ namespace bugs {
      * @param p_jsonObj
      */
     void ProcRoseAPI_withBugs::slot_responseHttp(const int& p_id, const QJsonObject& p_jsonObj){
+        print_debug();
         QJsonDocument doc(p_jsonObj);  QString strJson(doc.toJson(QJsonDocument::Compact));  qDebug() << "ProcRoseAPI_withBugs::slot_responseHttp---" << strJson;
 
         switch (p_id) {
@@ -443,7 +447,32 @@ namespace bugs {
 
             }
             QString code = ProcJsonEasy::getString(p_jsonObj, "code");
-            if(code == "G0000"){
+            if(code == "G0000"){//c221007_2
+                if(p_jsonObj.contains("data")){
+                    QString tmp_data = ProcJsonEasy::getString(p_jsonObj, "data", "{}");
+                    QJsonDocument jsocDoc = QJsonDocument::fromJson(tmp_data.toUtf8());
+                    QJsonObject jsonObj_data = jsocDoc.object();
+                    QJsonDocument doc(jsonObj_data);  QString strJson(doc.toJson(QJsonDocument::Compact));  qDebug() << "ProcRoseAPI_withBugs::slot_responseHttp--jsonObj_data-" << strJson;
+
+                    QString BUGS_ProductDisplayEndDt = ProcJsonEasy::getString(jsonObj_data, "BUGS_ProductDisplayEndDt");//c221007_2
+                    BUGS_ProductDisplayEndDt.chop(2);
+                    qDebug() << "global.user_forBugs.getProduct_display_end_dt()=" << global.user_forBugs.getProduct_display_end_dt();
+                    qDebug() << "BUGS_ProductDisplayEndDt=" << BUGS_ProductDisplayEndDt;
+                    QString tt = BUGS_ProductDisplayEndDt;
+                    QDateTime e_date = QDateTime::fromString(tt,"yyyy.MM.dd HH:mm");
+                    qDebug() << "e_date=" << e_date;
+                    QDateTime c_date = QDateTime::currentDateTime();
+                    qDebug() << "c_date=" << c_date;
+                    if(e_date < c_date){
+                        print_debug();
+                        slot_clickBtnLogout();
+                    }else{
+                        print_debug();
+                    }
+
+
+                    global.user_forBugs.setProduct_display_end_dt(BUGS_ProductDisplayEndDt);
+                }
                 if(p_id == Rose_bugsPlay_current_playlist_delete){
                     emit this->completeReq_bugsPlay_current_playlist_delete();
                 }
@@ -466,6 +495,19 @@ namespace bugs {
 
     }
 
+    void ProcRoseAPI_withBugs::slot_clickBtnLogout(){//c221007_2
+        // 로그아웃 처리 (PC 상태)
+        ProcBugsAPI *proc = new ProcBugsAPI();
+        proc->request_logout();
+
+        // Rose 기기에 Bugs 로그아웃 처리
+        ProcRoseAPI_withBugs *procRose = new ProcRoseAPI_withBugs();
+        bugs::RoseSessionInfo_forBugs sessionInfo_init;
+        procRose->request_set_session_info(sessionInfo_init);
+
+        // 상태 변경
+        //applyLoginSuccessState();
+    }
 
     /**
      * @brief ProcRoseAPI_withBugs::checkResult_set_session_info

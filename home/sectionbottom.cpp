@@ -284,8 +284,9 @@ SectionBottom::SectionBottom(QWidget *parent) : QWidget(parent)
 
     //linker = Linker::getInstance();//c1209
     connect(linker, SIGNAL(signal_checkQueue(int,QString)), this, SLOT(slot_checkQueueMsg(int, QString)));//c1209
-    connect(this->slider_playbar, SIGNAL(sliderReleased()) ,this, SLOT(changedSliderBar()));//c220521
-    connect(linker, SIGNAL(signal_sliderclick(int)), this, SLOT(slot_sliderClick(int)));//c220521
+    connect(this->slider_playbar, SIGNAL(sliderReleased()) ,this, SLOT(changedSliderBar()));//c221007_1
+    //connect(linker, SIGNAL(signal_sliderclick(int)), this, SLOT(slot_sliderClick(int)));//c221007_1
+    connect(this->slider_playbar, SIGNAL(signal_sliderclick(int)), this, SLOT(slot_sliderClick(int)));//c221007_1
 
      connect(linker, SIGNAL(signal_window_hide()), this, SLOT(slot_checkWindow_hide()));//c220401
     // default 데이터 세팅
@@ -441,7 +442,7 @@ void SectionBottom::slot_checkWindow_show(){
  */
 void SectionBottom::slot_sliderClick(int p_value){
 
-    Q_UNUSED(p_value);
+    //Q_UNUSED(p_value);
     // nothing
     print_debug();
     this->thumbnail_realHttp = "";//c220727
@@ -468,7 +469,8 @@ print_debug();
     }else{
         print_debug();
         global.window_activate_flag = true;
-        ToastMsg::show(this, "", tr("You cannot move your play position in this playtype."), 2000);//c220903_2
+        ToastMsg::show(this, "", tr("You cannot move your play position in this playtype."), 2000);//
+        qDebug() << "global.desktopPlayerMode=" << global.desktopPlayerMode;
         global.window_activate_flag = false;
         if(global.desktopPlayerMode){
             global.music_player->setPosition(p_value);

@@ -31,6 +31,7 @@ public:
     };
     explicit TopMenuBar(ShowMenuStyle p_showMenuStyle = ShowMenuStyle::TopSubMenuBar, QWidget *parent = nullptr);
     //explicit TopMenuBar(bool p_flagShowMainTitle=true, QWidget *parent = nullptr);
+
     void setDataTopMenuBar(QJsonObject p_jsonObject_main, QJsonArray *p_jsonArray_sub = nullptr );
     void setSelectedSubMenu(QString p_subMenuCode);
     void setSelectedSubMenuNoSignal(QString p_subMenuCode);

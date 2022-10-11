@@ -88,7 +88,7 @@ void MusicFolder_Network::appendHostUI(const QString &p_ip, const QString &p_hos
     lb_img->setStyleSheet("background-color:transparent;");
 
     QLabel *lb_hostName = new QLabel;
-    lb_hostName->setText("hostname: "+p_hostName);//c220908_2
+    lb_hostName->setText(p_hostName);//c221008_1
     lb_hostName->setFixedWidth(300);
     lb_hostName->setStyleSheet("background-color:transparent;font-size:15px;color:#FFFFFF;");
     lb_hostName->setAlignment(Qt::AlignVCenter);

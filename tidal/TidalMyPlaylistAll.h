@@ -116,7 +116,6 @@ namespace tidal {
     protected:
         void proc_wheelEvent_to_getMoreData() override;
 
-
     private slots:
         void slot_filterClicked();
         void slot_chooseFilterOption(QVariant selected_filterCode, QString selected_filterName);

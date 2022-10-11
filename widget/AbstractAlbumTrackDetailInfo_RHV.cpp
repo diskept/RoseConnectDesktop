@@ -21,6 +21,7 @@ const QString ICON_PATH___favorite_on3 = ":/images/rosehome/heart_ico3.png";
  * @param parent
  */
 AlbumTrackDetailInfo_RHV::AlbumTrackDetailInfo_RHV(QWidget *parent) : QPushButton(parent){
+
     this->linker = Linker::getInstance();
 
     this->widget_info_main = new QWidget();
@@ -383,6 +384,79 @@ void AlbumTrackDetailInfo_RHV::setDataTrackInfo_Tidal(const tidal::TrackItemData
 
     if(!data_track.streamReady){//c220617
          this->label_title->setStyleSheet(this->label_title->styleSheet().replace("#FFFFFF", "#707070"));
+    }
+}
+
+
+void AlbumTrackDetailInfo_RHV::setDataTrackInfo_Bugs(const bugs::TrackItemData &data_track){
+
+    QList<bugs::TrackItemData> *list_track = new QList<bugs::TrackItemData>();
+    list_track->append(data_track);
+
+    QString tmp = "";
+    tmp = QString("%1").arg(list_track->at(0).track_no, 2, 10, QLatin1Char('0')).toUpper();
+    this->label_track_number->setText(tmp);
+
+    QString title = list_track->at(0).track_title;
+    this->label_title->setText(GSCommon::getTextCutFromLabelWidth(title, 610, this->label_title->font()));
+
+    QString tmpArtist = list_track->at(0).list_artist_nm.join(",");
+
+    QLabel *tmp_artist = new QLabel();
+    tmp_artist->setStyleSheet("background-color:transparent;color:#FFFFFF;font-size:16px;font-weight:normal;");
+    tmp_artist->setText(tmpArtist);
+
+    int artist_width = 0;
+    artist_width = tmp_artist->sizeHint().width();
+
+    if(artist_width > 220){
+
+        QString tmp_split = "";
+        QStringList splitToken;
+        QString tmp_artist_line1 = "";
+
+        tmp_split = tmpArtist;
+        splitToken = tmp_split.split(" ");
+
+        tmp_artist->setText("");
+        int i = 0;
+        if(splitToken.size() > 1){
+
+            for(i = 0; i < splitToken.count(); i++){
+                if(i == 0){
+                    tmp_artist_line1 = splitToken.at(i);
+                }
+                else{
+                    tmp_artist_line1 += " " + splitToken.at(i);
+                }
+                tmp_artist->setText(tmp_artist_line1);
+
+                if(tmp_artist->sizeHint().width() > 220){
+                    tmp_artist->setText("");
+                    tmp_artist_line1.replace(splitToken.at(i), "");
+                    break;
+                }
+            }
+        }
+
+        tmp_artist->setText("");
+        tmp_artist->setText(tmp_artist_line1);
+
+        artist_width = tmp_artist->sizeHint().width() + 220;
+
+        this->label_artist->setText(GSCommon::getTextCutFromLabelWidth(tmpArtist, artist_width, this->label_artist->font()));
+        this->label_artist->setGeometry(937, 14, 220, 40);
+    }
+    else{
+        this->label_artist->setText(tmpArtist);
+        this->label_artist->setGeometry(937, 24, 220, 20);
+    }
+
+    if(!data_track.len.isEmpty()){
+        this->label_duration->setText(data_track.len);
+    }
+    else{
+        this->label_duration->setText("");
     }
 }
 

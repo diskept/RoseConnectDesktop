@@ -163,6 +163,7 @@ namespace bugs {
      */
     struct TrackItemData {
         int track_id = 0;
+        int track_no = 0;
         QString track_title = "";
         QString len = "";                   ///< duration
         bool likes_yn = false;              ///< 좋아요 여부

@@ -154,6 +154,8 @@ namespace bugs {
      */
     void BugsAlbumListAll_ofArtist::setUIControl_albums(){
 
+        this->label_mainTitle = this->get_addUIControl_mainTitle(" ");
+
         GSCommon::clearLayout(this->box_contents);      // Layout 초기화
         this->box_contents->setAlignment(Qt::AlignTop | Qt::AlignLeft);
         this->scrollArea_main->setVerticalScrollBarPolicy(Qt::ScrollBarAsNeeded);

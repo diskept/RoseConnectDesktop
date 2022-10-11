@@ -806,6 +806,8 @@ namespace bugs {
         // 정보 담을 struct
        bugs::TrackItemData data_output;
        data_output.track_id = ProcJsonEasy::getInt(jsonObj, "track_id");
+       data_output.track_no = ProcJsonEasy::getInt(jsonObj, "track_no");
+
        if(data_output.track_id == 0){
            data_output.track_id = ProcJsonEasy::getString(jsonObj, "track_id").toInt();       // Rose 가 줄때는.. String임..
        }
@@ -816,8 +818,6 @@ namespace bugs {
        data_output.len = tmp_len;
 
        data_output.adult_yn = ProcJsonEasy::getBool(jsonObj, "adult_yn");
-
-
 
        QJsonArray bitrates1 = ProcJsonEasy::getJsonArray(jsonObj, "bitrates");//cheon210605
 

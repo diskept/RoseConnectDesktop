@@ -151,7 +151,7 @@ namespace tidal {
      */
     void TidalMyTidalPlaylistAll::proc_wheelEvent_to_getMoreData(){
 
-        if((this->playlist_total_cnt > this->playlist_draw_cnt) && (this->list_playlist_tidal->size() > this->playlist_draw_cnt) && (this->flag_playlist_draw == false)
+        if((this->playlist_total_cnt > this->playlist_draw_cnt) && (this->flag_playlist_draw == false)
                 && (this->scrollArea_main->verticalScrollBar()->value() == this->scrollArea_main->verticalScrollBar()->maximum())){
 
             this->flag_playlist_draw = true;

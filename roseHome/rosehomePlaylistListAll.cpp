@@ -276,9 +276,8 @@ namespace roseHome {
     void RoseHomePlaylistListAll::slot_applyResult_playlists(const QList<roseHome::PlaylistItemData> &list_data, const QJsonArray &jsonArr_dataToPlay, const bool flag_lastPage){
 
         Q_UNUSED(jsonArr_dataToPlay);
-        ContentLoadingwaitingMsgHide();//c220616
 
-        print_debug();
+        ContentLoadingwaitingMsgHide();//c220616
 
         if(list_data.size() > 0){
             this->flag_lastPage_playlist = flag_lastPage;
@@ -312,15 +311,11 @@ namespace roseHome {
                 this->flag_playlist_draw = false;
             }
 
-            ContentLoadingwaitingMsgHide();
-
             if(flag_lastPage == false){
                 this->request_more_Data();
             }
         }
         else{
-            ContentLoadingwaitingMsgHide();
-
             if(this->list_playlist->size() <= 0){
                 NoData_Widget *noData_widget = new NoData_Widget(NoData_Widget::NoData_Message::Playlist_NoData);
                 noData_widget->setFixedSize(1500, 500);
@@ -342,6 +337,7 @@ namespace roseHome {
      * @param clickMode
      */
     void RoseHomePlaylistListAll::slot_clickedItemPlaylist(const tidal::AbstractItem::ClickMode clickMode){
+
         int index = ((tidal::AbstractItem*)sender())->index();
         int section = ((tidal::AbstractItem*)sender())->section();
 

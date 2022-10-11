@@ -97,6 +97,9 @@ namespace tidal {
                 }
 
                 this->data_playlist = tmp_data_playlist;
+                if(tmp_data_playlist.description.isEmpty()){
+                    this->data_playlist.description = "mixes";
+                }
 
                 this->list_track->clear();
                 this->list_similarPlaylist->clear();

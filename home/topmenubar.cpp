@@ -296,6 +296,7 @@ void TopMenuBar::setDataTopMenuBar(QJsonObject p_jsonObject_main,  QJsonArray *p
     print_debug();
     emit linker->signal_clickListBtn();//c220726
     emit linker->signal_text_clear();//c220726
+
     // 메인메뉴
     if(p_jsonObject_main.isEmpty()==false){
         if(p_jsonObject_main.contains(KEY_MAIN_CODE)){
@@ -307,7 +308,8 @@ void TopMenuBar::setDataTopMenuBar(QJsonObject p_jsonObject_main,  QJsonArray *p
 
             this->lb_mainName->setVisible(true);
         }
-    }else{
+    }
+    else{
         this->lb_mainName->setVisible(false);
     }
 
@@ -334,6 +336,7 @@ void TopMenuBar::setDataTopMenuBar(QJsonObject p_jsonObject_main,  QJsonArray *p
     }else if(this->showMenuStyle==ShowMenuStyle::FriendSubmenubar){//cheon211018
         tmp_uiMode = TopMenuSubItem::UIMode::FriendSubmenubar;
     }
+
     //for(int i=(p_jsonArray_sub.count()-1); i>=0; i--){
     for(int i = 0; i < p_jsonArray_sub->count(); i++){
         QString tmp_code = p_jsonArray_sub->at(i).toObject()["code"].toString();

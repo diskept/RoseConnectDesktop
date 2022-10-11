@@ -152,11 +152,12 @@ void MainWindow::setUIControl(){
         {
             this->homeMain->connectDevice(ip);
         }
+        /*//c221006_1
         QString ip2 = global.device.getDeviceIP();
         if(ip2.size() > 0)
         {
             this->homeMain->connectDevice(ip2);
-        }
+        }*/
     }
 }
 

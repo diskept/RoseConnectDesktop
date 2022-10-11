@@ -72,6 +72,7 @@ namespace bugs {
 
     private slots:
         // Rose에게 Session 요청
+        void slot_clickBtnLogout();//c221007_2
         void checkResult_set_session_info(const QJsonObject& p_jsonObj);
         void checkResult_get_session_info(const QJsonObject& p_jsonObj);
 

@@ -387,10 +387,12 @@ print_debug();
         else{
             ContentLoadingwaitingMsgHide();
 
-            NoData_Widget *noData_widget = new NoData_Widget(NoData_Widget::NoData_Message::Rosetube_NoData);
-            noData_widget->setFixedSize(1500, 500);
+            if(this->playlist_draw_cnt <= 0){
+                NoData_Widget *noData_widget = new NoData_Widget(NoData_Widget::NoData_Message::Rosetube_NoData);
+                noData_widget->setFixedSize(1500, 500);
 
-            this->flowLayout_rosetube->addWidget(noData_widget);
+                this->flowLayout_rosetube->addWidget(noData_widget);
+            }
         }
     }
 

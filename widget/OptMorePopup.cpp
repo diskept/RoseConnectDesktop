@@ -1023,7 +1023,7 @@ void OptMorePopup::createActionMenu(){
         this->add_subAction(ClickMode::SubMenu_QueueAdd_Empty);
         this->add_subAction(ClickMode::SubMenu_QueueAdd_CurrNext);
 
-        if(data_header.isMix == false){
+        if(this->data_header.isMix == false){
             this->add_mainAction(ClickMode::Share); //j220906 share link
         }
 

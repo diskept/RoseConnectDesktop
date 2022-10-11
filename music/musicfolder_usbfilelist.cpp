@@ -525,13 +525,16 @@ void MusicFolder_USBFileList::slot_responseHttp_play(const int &p_id, const QJso
 }
 
 
-void MusicFolder_USBFileList::dialog_comfirmCD_Stop()//c220714
+void MusicFolder_USBFileList::dialog_comfirmCD_Stop()
 {
     DialogConfirm *dlgConfirmCD = new DialogConfirm(this);
     dlgConfirmCD->setTitle(tr("CD PLAY"));
     dlgConfirmCD->setTextHeight(150);
-    dlgConfirmCD->setText(tr("Stop the selected song directly on CD PLAY."));
-    dlgConfirmCD->setGeometry(this->width()/3,this->height()/2, 350,400);
+    dlgConfirmCD->setText(tr("Stop the selected song directly on CD PLAY."));//c221007_1
+    //dlgConfirmCD->setGeometry(this->width()/3,this->height()/2, 350,400);//c221007_1
+    int left = global.left_mainwindow+global.width_mainwindow/4;//c221007_1
+    int top = global.top_mainwindow+global.height_mainwindow/4;//c221007_1
+    dlgConfirmCD->setGeometry(left,top, 350,400);//c221007_1
     dlgConfirmCD->setAlertMode();
     dlgConfirmCD->setProperty("flagShown",false);
     if(dlgConfirmCD->property("flagShown").toBool()==false){

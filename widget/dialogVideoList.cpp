@@ -34,11 +34,15 @@ DialogVideoList::DialogVideoList(QWidget *parent) : QDialog(parent){
     setUIControl();
 }
 
+
 DialogVideoList::~DialogVideoList(){
 
+    this->deleteLater();
 }
 
+
 void DialogVideoList::setInit(){
+
     this->setModal(true);
     this->setWindowFlags(Qt::Dialog | Qt::FramelessWindowHint);
     this->setAttribute(Qt::WA_TranslucentBackground);
@@ -46,6 +50,7 @@ void DialogVideoList::setInit(){
     //this->setFixedHeight(DLG_HIGHT);
     this->setStyleSheet("background-color:transparent;");
 }
+
 
 void DialogVideoList::setUIControl(){
 
@@ -106,6 +111,7 @@ void DialogVideoList::setUIControl(){
     connect(btn_playAll, &QPushButton::clicked, this, &DialogVideoList::slot_btnClicked_playAll);
 }
 
+
 void DialogVideoList::setData(const QJsonObject& jsonObj){
 
     bugs::TrackItemData tmp_data_track = bugs::ConvertData_forBugs::convertData_trackData(jsonObj);
@@ -121,6 +127,7 @@ void DialogVideoList::setData(const QJsonObject& jsonObj){
         proc->request_bugs_get_video(this->data_track.list_mv_id.at(i));
     }
 }
+
 
 void DialogVideoList::slot_applyResult_videoInfo(bugs::VideoItemData data_video, const QJsonObject& jsonObj_dataToPlay){
 
@@ -142,6 +149,7 @@ void DialogVideoList::slot_applyResult_videoInfo(bugs::VideoItemData data_video,
     }
 }
 
+
 void DialogVideoList::slot_clickedItemVideo(const tidal::AbstractItem::ClickMode clickMode){
     int index = ((tidal::AbstractItem*)sender())->index();
     int section = ((tidal::AbstractItem*)sender())->section();
@@ -149,6 +157,7 @@ void DialogVideoList::slot_clickedItemVideo(const tidal::AbstractItem::ClickMode
     // ClickMode 별로 처리
     this->proc_clicked_itemVideo(this->list_video, this->jsonArr_videos_toPlay, clickMode, index, section);
 }
+
 
 void DialogVideoList::proc_clicked_itemVideo(bugs::VideoItemData& data_video, const QJsonArray& jsonArray_toPlayAll, const tidal::AbstractItem::ClickMode clickMode, const int index, const int section){
     if(index >= 0){
@@ -168,12 +177,15 @@ void DialogVideoList::proc_clicked_itemVideo(bugs::VideoItemData& data_video, co
     }
 }
 
+
 void DialogVideoList::slot_applyResult_getShareLink(const QString &link){//c220902_1
 
     this->link_str = link;
 }
 
+
 void DialogVideoList::proc_clicked_itemVideo(QList<bugs::VideoItemData>* list_video, const QJsonArray& jsonArray_toPlayAll, const tidal::AbstractItem::ClickMode clickMode, const int index, const int section){
+
     int real_index = this->checkValid_index(list_video->length(), index);
     if(real_index >= 0){
         bugs::VideoItemData data = list_video->at(real_index);
@@ -183,6 +195,14 @@ void DialogVideoList::proc_clicked_itemVideo(QList<bugs::VideoItemData>* list_vi
 
 
 void DialogVideoList::makeObj_optMorePopup(const OptMorePopup::PopupMenuMode menuMode, const OptMorePopup::HeaderData &data_header, const int index, const int section, const bool flagForceHide_favorite){
+
+    QString param = "BUGS/mv/" + QString("%1").arg(data_header.data_pk);
+
+    //QString param = "ROSE_TOTAL/PLAYLIST/" + QString("%1").arg(data_header.data_pk);
+    roseHome::ProcCommon *proc_link = new roseHome::ProcCommon(this);
+    connect(proc_link, &roseHome::ProcCommon::completeReq_share_link, this, &DialogVideoList::slot_applyResult_getShareLink);
+    proc_link->request_rose_get_shareLink(data_header.imageUrl  , data_header.sub_title , data_header.main_title, param);
+
     // OptMorePopup 을 띄운다.
     OptMorePopup *optPopup = new OptMorePopup(this);
     connect(optPopup, &OptMorePopup::signal_menuClicked, this, &DialogVideoList::slot_optMorePopup_menuClicked);
@@ -191,6 +211,7 @@ void DialogVideoList::makeObj_optMorePopup(const OptMorePopup::PopupMenuMode men
 }
 
 int DialogVideoList::checkValid_index(int length_ofData, int index){
+
     if(index<0 || index>=length_ofData){
         index = -1;
     }
@@ -199,6 +220,7 @@ int DialogVideoList::checkValid_index(int length_ofData, int index){
 }
 
 void DialogVideoList::slot_optMorePopup_menuClicked(const OptMorePopup::ClickMode clickMode, const int index, const int section){
+
     if(section == SECTION_FOR_MORE_POPUP___video){
         this->proc_clicked_optMorePopup_fromVideo(this->list_video, this->jsonArr_videos_toPlay, index, clickMode);
     }
@@ -206,9 +228,7 @@ void DialogVideoList::slot_optMorePopup_menuClicked(const OptMorePopup::ClickMod
 
 void DialogVideoList::proc_clicked_optMorePopup_fromVideo(bugs::VideoItemData& data_video, const QJsonArray& jsonArr_toPlayAll, const int index, const OptMorePopup::ClickMode clickMode){
 
-
-
-            if(clickMode == OptMorePopup::ClickMode::Play_RightNow
+    if(clickMode == OptMorePopup::ClickMode::Play_RightNow
             || clickMode == OptMorePopup::ClickMode::SubMenu_QueueAdd_Last_OnlyOne
             || clickMode == OptMorePopup::ClickMode::SubMenu_QueueAdd_Empty_OnlyOne
             || clickMode == OptMorePopup::ClickMode::SubMenu_Play_RightNow_OnlyOne
@@ -216,33 +236,33 @@ void DialogVideoList::proc_clicked_optMorePopup_fromVideo(bugs::VideoItemData& d
             || clickMode == OptMorePopup::ClickMode::SubMenu_Play_FromHere
             || clickMode == OptMorePopup::ClickMode::SubMenu_Play_FromHere_procEmpty
             || clickMode == OptMorePopup::ClickMode::SubMenu_QueueAdd_FromHere_Last
-
-    )
-    {
+    ){
         // Rose Play 요청
-                bugs::ProcRoseAPI_withBugs *procRosePlay = new bugs::ProcRoseAPI_withBugs(this);
-                procRosePlay->requestPlayRose_byVideos(jsonArr_toPlayAll, index, clickMode);
-            }
-            else if(clickMode == OptMorePopup::ClickMode::Go_Artist){
-                //qDebug() << data_video.list_artist_id << data_video.list_artist_id.count();
+        bugs::ProcRoseAPI_withBugs *procRosePlay = new bugs::ProcRoseAPI_withBugs(this);
+        procRosePlay->requestPlayRose_byVideos(jsonArr_toPlayAll, index, clickMode);
+    }
+    else if(clickMode == OptMorePopup::ClickMode::Go_Artist){
+        //qDebug() << data_video.list_artist_id << data_video.list_artist_id.count();
 
-                this->hide();
+        this->hide();
 
-                QJsonObject tmp_Obj = bugs::ConvertData_forBugs::getObjectJson_videoData(data_video);
+        QJsonObject tmp_Obj = bugs::ConvertData_forBugs::getObjectJson_videoData(data_video);
 
-                global.user_forBugs.dlg_set_signal(false);
-                emit linker->signal_Video_movePage(tmp_Obj);
-            }else  if(clickMode == OptMorePopup::ClickMode::Share){//c220823
-                print_debug();
-                emit linker->signal_dialog_share_link(link_str);
-                //setUIShare();
-                //qDebug() << "this->shareLink="<<this->shareLink;
+        global.user_forBugs.dlg_set_signal(false);
+        emit linker->signal_Video_movePage(tmp_Obj);
+    }
+    else  if(clickMode == OptMorePopup::ClickMode::Share){//c220823
+        print_debug();
+        emit linker->signal_dialog_share_link(link_str);
+        //setUIShare();
+        //qDebug() << "this->shareLink="<<this->shareLink;
 
-            }
-
+    }
 }
 
+
 void DialogVideoList::proc_clicked_optMorePopup_fromVideo(QList<bugs::VideoItemData>* list_track, const QJsonArray& jsonArr_toPlayAll, const int index, const OptMorePopup::ClickMode clickMode){
+
     int real_index = this->checkValid_index(list_track->length(), index);
     if(real_index >= 0){
         bugs::VideoItemData data = list_track->at(real_index);
@@ -250,10 +270,10 @@ void DialogVideoList::proc_clicked_optMorePopup_fromVideo(QList<bugs::VideoItemD
     }
 }
 
+
 void DialogVideoList::slot_btnClicked_playAll(){
+
     // Rose Play 요청 - Bugs Video (전체재생 / 셔플재생)
     bugs::ProcRoseAPI_withBugs *procRosePlay = new bugs::ProcRoseAPI_withBugs(this);
     procRosePlay->requestPlayRose_byVideos(this->jsonArr_videos_toPlay, 0, OptMorePopup::ClickMode::Play_RightNow, bugs::ProcRoseAPI_withBugs::PlayShuffleMode::JustPlay);
 }
-
-

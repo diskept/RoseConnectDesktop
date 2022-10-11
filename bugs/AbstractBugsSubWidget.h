@@ -2,6 +2,7 @@
 #define ABSTRACTBUGSSUBWIDGET_H
 
 #include "common/AbstractCommonSubWidget.h"
+
 #include "delegate/AbstractTidalTrackDelegate.h"
 
 #include "login/dialog_playlist_onRose.h"
@@ -13,6 +14,7 @@
 #include "tidal/AbstractItem.h"
 
 #include "widget/AbstractImageDetailInfo.h"
+#include "widget/AbstractImageDetailInfo_RHV.h"
 #include "widget/AbstractImageDetailContents_RHV.h"
 #include "widget/AbstractAlbumTrackDetailInfo_RHV.h"
 #include "widget/AbstractPlaylistTrackDetailInfo_RHV.h"
@@ -76,6 +78,7 @@ namespace bugs {
 
         // ListWidget 관련 - Bugs 전용
         virtual void slot_clickedItemTrack_inList(const int, const tidal::AbstractTidalTrackDelegate::ClickMode){ }
+        virtual void slot_clickedItemTrack_inList(const int, const AlbumTrackDetailInfo_RHV::ClickMode){ }
         virtual void slot_clickedItemTrack_inList(const int, const PlaylistTrackDetailInfo_RHV::ClickMode){ }
 
         virtual void slot_thumbnailDownloaded_fotListWidget_delegate(){ }
