@@ -1,5 +1,6 @@
 #include "onoffwidget.h"
 #include <QPainter>
+#include <QThread>
 
 const QString COLOR_BG_ON = "#B18658";
 const QString COLOR_BG_OFF = "#787878";
@@ -127,6 +128,7 @@ void OnOffWidget::mousePressEvent(QMouseEvent*)
     anim_bg->start();
 
     flagOn = !flagOn;
+    QThread::msleep(500);
     emit signal_changed(flagOn);
 }
 

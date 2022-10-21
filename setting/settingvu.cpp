@@ -407,10 +407,12 @@ void SettingVU::slot_modeOnOff(bool flagOn){
                 this->curr_vu_sytle = 0;
 
             }else{
+
                 if(this->curr_vu_sytle <= 0){
                     this->curr_vu_sytle = 1;
                 }
                 print_debug();
+                //this->setVUMode(this->curr_vu_sytle);
                 //this->curr_vu_on_off = 1;
 
             }
@@ -424,7 +426,8 @@ void SettingVU::slot_modeOnOff(bool flagOn){
             network->request(HTTP_VLC_SET, QString("http://%1:%2/%3").arg(global.device.getDeviceIP()).arg(global.port).arg("vu.mode.type.set"), tmp_json, true);
         }else{
             print_debug();
-            this->onOff->setValue(curr_onOff);
+            this->delay_flag = false;
+            //this->onOff->setValue(curr_onOff);
             qDebug() << "slow click......";
         }
     }
@@ -439,16 +442,17 @@ void SettingVU::slot_responseHttp(const int &p_id, const QJsonObject &p_jsonObje
     print_debug();
     QJsonDocument doc(p_jsonObject);    QString strJson(doc.toJson(QJsonDocument::Compact));    qDebug() << strJson;
 
-    this->delay_flag = true;
-
     switch(p_id){
     case HTTP_VLC_SET :
         if(p_jsonObject.contains("flagOk")&& p_jsonObject["flagOk"].toBool()){
+
+            this->delay_flag = false;
 
             print_debug();
             requestVUData();
 
         }else{
+            this->delay_flag = false;
             //this->onOff->setValue(!this->onOff->getCurrentValue());
         }
 
@@ -456,6 +460,8 @@ void SettingVU::slot_responseHttp(const int &p_id, const QJsonObject &p_jsonObje
     case HTTP_VLC_GET :
 
         if(p_jsonObject.contains("vu_mode")){
+
+            this->delay_flag = true;
 
             this->curr_vu_sytle = p_jsonObject["vu_mode"].toInt();
             this->curr_vu_on_off = p_jsonObject["vu_on_off"].toInt();
@@ -468,10 +474,11 @@ void SettingVU::slot_responseHttp(const int &p_id, const QJsonObject &p_jsonObje
                 this->onOff->setValue(false);
             }
         }else{
+            this->delay_flag = false;
              this->onOff->setValue(false);
              ToastMsg::show(this, "", tr("Not supported in current mode."));
         }
-        //this->delay_flag = true;
+
     }
 
     sender()->deleteLater();

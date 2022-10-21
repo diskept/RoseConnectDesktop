@@ -2,6 +2,7 @@
 #include "common/gscommon.h"
 #include "common/global.h"//c220913_1
 #include <QScrollBar>//c220913_2
+#include "widget/toastmsg.h"
 
 const int DLG_WIDTH = 600;
 
@@ -245,6 +246,19 @@ void DialogConfirm_MacShare::slot_delegateClicked(const int &p_index, const int 
         QListWidgetItem *item1 = listWidget->item(p_index);
         QMap<QString,QVariant> map = item1->data(Qt::UserRole).toMap();
 
+#if defined(Q_OS_WIN)
+
+#elif defined(Q_OS_MAC)//c220913_1
+    print_debug();
+    bool tmp_suggestion_old_path_flag = map["old_flag"].toBool();
+    if(tmp_suggestion_old_path_flag){
+        ToastMsg::show(this,"", tr("It already exists as a shared folder."), 2000, 0);
+        qDebug() << "It already exists as a shared folder.";
+        return;
+    }else{
+
+    }
+#endif
         QString tmp_ip = map["ip"].toString();//c220913_1
         QString tmp_id = map["id"].toString();//c220913_1
         QString tmp_pw = map["pw"].toString();//c220913_1
