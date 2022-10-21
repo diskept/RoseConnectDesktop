@@ -3,6 +3,7 @@
 
 #include <QPushButton>
 #include <QWidget>
+#include "common/linker.h"//c221013_1
 
 /**
  * @brief 설정의 왼쪽 서브메뉴 @n
@@ -20,8 +21,10 @@ signals:
 
 private slots:
     void slot_clickedMenu();
+    void slot_clickedMenu(QString menu);
 
 private:
+    Linker *linker;//c221013_1
     /** * @brief curr_subMenuCode 현재 선택된 서브메뉴의 code */
     QString curr_subMenuCode;
 

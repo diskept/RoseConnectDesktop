@@ -396,6 +396,7 @@ void AbstractImageDetailContents_RHV::setUIControl_basic(){
     this->info_hbox->addSpacing(70);
 
     this->widget_Addbtn_Open = new QWidget();
+    this->widget_Addbtn_Open->setStyleSheet("background-color:transparent; border:1px;");
     this->widget_Addbtn_Open->setFixedSize(1500, 80);
     this->widget_Addbtn_Open->hide();
 
@@ -417,9 +418,10 @@ void AbstractImageDetailContents_RHV::setUIControl_basic(){
             this->curr_contentsType != Qobuz_artist && this->curr_contentsType != Apple_artist){
 
         this->label_description = new QLabel(this->widget_Addbtn_Open);
-        this->label_description->setTextFormat(Qt::RichText);
+        //this->label_description->setTextFormat(Qt::RichText);
         this->label_description->setWordWrap(true);
         this->label_description->setGeometry(0, 0, 1450, 40);
+        this->label_description->setStyleSheet("background-color:transparent; border:1px;");
 
         this->label_open = new QLabel(this->widget_Addbtn_Open);
         this->label_open->setStyleSheet("background-color:transparent; border:0px;");
@@ -576,20 +578,29 @@ void AbstractImageDetailContents_RHV::setUIControl_btnPlays(){
     btn_shuffle->setProperty("mode", BtnClickMode::PlayShuffle);
     connect(btn_shuffle, &QPushButton::clicked, this, &AbstractImageDetailContents_RHV::slot_btnClicked_mode);
 
-    QLabel *label_shuffle_img = GSCommon::getUILabelImg(ICON_PATH___playShuffle, btn_shuffle);
-    label_shuffle_img->setFixedSize(30, 30);
-    label_shuffle_img->setGeometry(23, 10, 0, 0);
-    label_shuffle_img->setStyleSheet("background-color:transparent;");
-
-    QLabel *label_shuffle = new QLabel(btn_shuffle);
-    label_shuffle->setFixedSize(68, 29);
-    label_shuffle->setGeometry(58, 11, 0, 0);
-    label_shuffle->setStyleSheet("background-color:transparent;font-size:20px;font-weight:500;color:#FFFFFF;");
-
     if(this->curr_contentsType == CDPlay_album){
-        label_shuffle->setText("Stop");
+        QLabel *label_stop_img = new QLabel(btn_shuffle);
+        label_stop_img->setFixedSize(12, 12);
+        label_stop_img->setGeometry(36, 19, 0, 0);
+        label_stop_img->setScaledContents(true);
+        label_stop_img->setStyleSheet("background-color:#FFFFFF;");
+
+        QLabel *label_stop = new QLabel(btn_shuffle);
+        label_stop->setFixedSize(68, 29);
+        label_stop->setGeometry(58, 11, 0, 0);
+        label_stop->setStyleSheet("background-color:transparent;font-size:20px;font-weight:500;color:#FFFFFF;");
+        label_stop->setText("Stop");
     }
     else{
+        QLabel *label_shuffle_img = GSCommon::getUILabelImg(ICON_PATH___playShuffle, btn_shuffle);
+        label_shuffle_img->setFixedSize(30, 30);
+        label_shuffle_img->setGeometry(23, 10, 0, 0);
+        label_shuffle_img->setStyleSheet("background-color:transparent;");
+
+        QLabel *label_shuffle = new QLabel(btn_shuffle);
+        label_shuffle->setFixedSize(68, 29);
+        label_shuffle->setGeometry(58, 11, 0, 0);
+        label_shuffle->setStyleSheet("background-color:transparent;font-size:20px;font-weight:500;color:#FFFFFF;");
         label_shuffle->setText("Shuffle");
     }
 }
@@ -913,26 +924,27 @@ void AbstractImageDetailContents_RHV::setData_fromRoseData(const QJsonObject &js
         int height = 0;
         bool flag = false;
         if(!comment.isEmpty()){
-            setHTML = QString("<html><head/><body><span style='font-size:16px; font-weight:normal; color:#CCCCCC;'>%1</span></body></html>").arg(comment);
+            setHTML = comment;
 
             QLabel *tmp_html = new QLabel();
-            tmp_html->setTextFormat(Qt::RichText);
             tmp_html->setWordWrap(true);
             tmp_html->setFixedWidth(1450);
+            tmp_html->setStyleSheet("background-color:transparent;color:#CCCCCC;font-size:16px;");
             tmp_html->setText(setHTML);
 
             height = tmp_html->sizeHint().height();
             flag = true;
         }
         else{
-            setHTML = QString("<html><head/><body><span style='font-size:16px; font-weight:normal; color:#CCCCCC;'>%1</span></body></html>").arg(tr("There is no description for the playlist."));
+            setHTML = tr("There is no description for the playlist.");
         }
 
         this->setOpen_Height(height, flag);
+        this->label_description->setStyleSheet("background-color:transparent;color:#CCCCCC;font-size:16px;");
         this->label_description->setText(setHTML);
 
         this->widget_Addbtn_Open->setFixedSize(1500, 80);
-        this->label_description->setGeometry(0, 0, 1450, 40);
+        this->label_description->setGeometry(0, 0, 1450, 34);
         this->label_open->setGeometry(0, 37, 1450, 30);
         this->btn_open->setStyleSheet(this->btn_open->styleSheet().replace("text_close_ico.png", "text_open_ico.png"));
         this->widget_Addbtn_Open->show();
@@ -1085,26 +1097,27 @@ void AbstractImageDetailContents_RHV::setData_fromRoseData(const QJsonObject &js
         int height = 0;
         bool flag = false;
         if(!comment.isEmpty()){
-            setHTML = QString("<html><head/><body><span style='font-size:16px; font-weight:normal; color:#CCCCCC;'>%1</span></body></html>").arg(comment);
+            setHTML = comment;
 
             QLabel *tmp_html = new QLabel();
-            tmp_html->setTextFormat(Qt::RichText);
             tmp_html->setWordWrap(true);
             tmp_html->setFixedWidth(1450);
+            tmp_html->setStyleSheet("background-color:transparent;color:#CCCCCC;font-size:16px;");
             tmp_html->setText(setHTML);
 
             height = tmp_html->sizeHint().height();
             flag = true;
         }
         else{
-            setHTML = QString("<html><head/><body><span style='font-size:16px; font-weight:normal; color:#CCCCCC;'>%1</span></body></html>").arg(tr("There is no description for the playlist."));
+            setHTML = tr("There is no description for the playlist.");
         }
 
         this->setOpen_Height(height, flag);
+        this->label_description->setStyleSheet("background-color:transparent;color:#CCCCCC;font-size:16px;");
         this->label_description->setText(setHTML);
 
         this->widget_Addbtn_Open->setFixedSize(1500, 80);
-        this->label_description->setGeometry(0, 0, 1450, 40);
+        this->label_description->setGeometry(0, 0, 1450, 34);
         this->label_open->setGeometry(0, 37, 1450, 30);
         this->btn_open->setStyleSheet(this->btn_open->styleSheet().replace("text_close_ico.png", "text_open_ico.png"));
         this->widget_Addbtn_Open->show();
@@ -1253,26 +1266,27 @@ void AbstractImageDetailContents_RHV::setData_fromRoseData(const QJsonObject &js
         int height = 0;
         bool flag = false;
         if(!comment.isEmpty()){
-            setHTML = QString("<html><head/><body><span style='font-size:16px; font-weight:normal; color:#CCCCCC;'>%1</span></body></html>").arg(comment);
+            setHTML = comment;
 
             QLabel *tmp_html = new QLabel();
-            tmp_html->setTextFormat(Qt::RichText);
             tmp_html->setWordWrap(true);
             tmp_html->setFixedWidth(1450);
+            tmp_html->setStyleSheet("background-color:transparent;color:#CCCCCC;font-size:16px;");
             tmp_html->setText(setHTML);
 
             height = tmp_html->sizeHint().height();
             flag = true;
         }
         else{
-            setHTML = QString("<html><head/><body><span style='font-size:16px; font-weight:normal; color:#CCCCCC;'>%1</span></body></html>").arg(tr("There is no description for the playlist."));
+            setHTML = tr("There is no description for the playlist.");
         }
 
         this->setOpen_Height(height, flag);
+        this->label_description->setStyleSheet("background-color:transparent;color:#CCCCCC;font-size:16px;");
         this->label_description->setText(setHTML);
 
         this->widget_Addbtn_Open->setFixedSize(1500, 80);
-        this->label_description->setGeometry(0, 0, 1450, 40);
+        this->label_description->setGeometry(0, 0, 1450, 34);
         this->label_open->setGeometry(0, 37, 1450, 30);
         this->btn_open->setStyleSheet(this->btn_open->styleSheet().replace("text_close_ico.png", "text_open_ico.png"));
         this->widget_Addbtn_Open->show();
@@ -1521,26 +1535,27 @@ void AbstractImageDetailContents_RHV::setData_fromRosetubeData(const QJsonObject
             int height = 0;
             bool flag = false;
             if(!comment.isEmpty()){
-                setHTML = QString("<html><head/><body><span style='font-size:16px; font-weight:normal; color:#CCCCCC;'>%1</span></body></html>").arg(comment);
+                setHTML = comment;
 
                 QLabel *tmp_html = new QLabel();
-                tmp_html->setTextFormat(Qt::RichText);
                 tmp_html->setWordWrap(true);
                 tmp_html->setFixedWidth(1450);
+                tmp_html->setStyleSheet("background-color:transparent;color:#CCCCCC;font-size:16px;");
                 tmp_html->setText(setHTML);
 
                 height = tmp_html->sizeHint().height();
                 flag = true;
             }
             else{
-                setHTML = QString("<html><head/><body><span style='font-size:16px; font-weight:normal; color:#CCCCCC;'>%1</span></body></html>").arg(tr("There is no description for the playlist."));
+                setHTML = tr("There is no description for the playlist.");
             }
 
             this->setOpen_Height(height, flag);
+            this->label_description->setStyleSheet("background-color:transparent;color:#CCCCCC;font-size:16px;");
             this->label_description->setText(setHTML);
 
             this->widget_Addbtn_Open->setFixedSize(1500, 80);
-            this->label_description->setGeometry(0, 0, 1450, 40);
+            this->label_description->setGeometry(0, 0, 1450, 34);
             this->label_open->setGeometry(0, 37, 1450, 30);
             this->btn_open->setStyleSheet(this->btn_open->styleSheet().replace("text_close_ico.png", "text_open_ico.png"));
             this->widget_Addbtn_Open->show();
@@ -1902,6 +1917,7 @@ void AbstractImageDetailContents_RHV::setData_fromTidalData(const QJsonObject &j
         }
 
         this->setOpen_Height(height, flag);
+        this->label_description->setTextFormat(Qt::RichText);
         this->label_description->setText(setHTML);
 
         this->widget_Addbtn_Open->setFixedSize(1500, 80);
@@ -2124,26 +2140,27 @@ void  AbstractImageDetailContents_RHV::setData_fromBugsData(const QJsonObject &j
         int height = 0;
         bool flag = false;
         if(!description.isEmpty()){
-            setHTML = QString("<html><head/><body><span style='font-size:16px; font-weight:normal; color:#CCCCCC;'>%1</span></body></html>").arg(description);
+            setHTML = description;
 
             QLabel *tmp_html = new QLabel();
-            tmp_html->setTextFormat(Qt::RichText);
             tmp_html->setWordWrap(true);
             tmp_html->setFixedWidth(1450);
+            tmp_html->setStyleSheet("background-color:transparent;color:#CCCCCC;font-size:16px;");
             tmp_html->setText(setHTML);
 
             height = tmp_html->sizeHint().height();
             flag = true;
         }
         else{
-            setHTML = QString("<html><head/><body><span style='font-size:16px; font-weight:normal; color:#CCCCCC;'>%1</span></body></html>").arg(tr("There is no description for the album."));
+            setHTML = tr("There is no description for the album.");
         }
 
         this->setOpen_Height(height, flag);
+        this->label_description->setStyleSheet("background-color:transparent;color:#CCCCCC;font-size:16px;");
         this->label_description->setText(setHTML);
 
         this->widget_Addbtn_Open->setFixedSize(1500, 80);
-        this->label_description->setGeometry(0, 0, 1450, 40);
+        this->label_description->setGeometry(0, 0, 1450, 34);
         this->label_open->setGeometry(0, 37, 1450, 30);
         this->btn_open->setStyleSheet(this->btn_open->styleSheet().replace("text_close_ico.png", "text_open_ico.png"));
         this->widget_Addbtn_Open->show();
@@ -2386,6 +2403,7 @@ void AbstractImageDetailContents_RHV::setData_fromQobuzData(const QJsonObject &j
         }
 
         this->setOpen_Height(height, flag);
+        this->label_description->setTextFormat(Qt::RichText);
         this->label_description->setText(setHTML);
 
         this->widget_Addbtn_Open->setFixedSize(1500, 80);
@@ -2538,6 +2556,7 @@ void AbstractImageDetailContents_RHV::setData_fromQobuzData(const QJsonObject &j
         }
 
         this->setOpen_Height(height, flag);
+        this->label_description->setTextFormat(Qt::RichText);
         this->label_description->setText(setHTML);
 
         this->widget_Addbtn_Open->setFixedSize(1500, 80);
@@ -2707,6 +2726,7 @@ void AbstractImageDetailContents_RHV::setData_fromAppleData(const QJsonObject &j
         }
 
         this->setOpen_Height(height, flag);
+        this->label_description->setTextFormat(Qt::RichText);
         this->label_description->setText(setHTML);
 
         this->widget_Addbtn_Open->setFixedSize(1500, 80);
@@ -2860,6 +2880,7 @@ void AbstractImageDetailContents_RHV::setData_fromAppleData(const QJsonObject &j
         }
 
         this->setOpen_Height(height, flag);
+        this->label_description->setTextFormat(Qt::RichText);
         this->label_description->setText(setHTML);
 
         this->widget_Addbtn_Open->setFixedSize(1500, 80);
@@ -3052,6 +3073,7 @@ void AbstractImageDetailContents_RHV::setData_fromCDplayData(const QJsonObject &
         }
 
         this->setOpen_Height(height, flag);
+        this->label_description->setTextFormat(Qt::RichText);
         this->label_description->setText(setHTML);
 
         this->widget_Addbtn_Open->setFixedSize(1500, 80);
@@ -3544,7 +3566,12 @@ void AbstractImageDetailContents_RHV::slot_btnClicked_open(){
     else if(this->flagBtnOpen == true){
         this->widget_Addbtn_Open->hide();
         this->widget_Addbtn_Open->setFixedSize(1500, 80);
-        this->label_description->setGeometry(0, 0, 1450, 40);
+        if(this->curr_contentsType == Bugs_album){
+            this->label_description->setGeometry(0, 0, 1450, 34);
+        }
+        else{
+            this->label_description->setGeometry(0, 0, 1450, 40);
+        }
         this->label_open->setGeometry(0, 37, 1450, 30);
         this->btn_open->setStyleSheet(this->btn_open->styleSheet().replace("text_close_ico.png", "text_open_ico.png"));
         this->widget_Addbtn_Open->show();

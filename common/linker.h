@@ -25,6 +25,7 @@ public:
     }
 
 signals:
+    void signal_reload_setting_clicked(QString );//c221013_1
     void signal_setMountShareFolder(QString, QString, QString, QString);//c220913_1
     void signal_goFolder(QString);//c220909_1
     void signal_searchFolder_clicked();//c220906_1

@@ -26,8 +26,16 @@ private slots:
     void slot_modeOnOff(bool flagOn);
 
 private:
+    void setUIControl();
+    void clearUnSelectMode();
+    void setVUMode(int p_vu_mode);
 
+    QPushButton* getUIControlButton(QString text, int vu_mode, QLabel* p_lb);
+    QWidget *getUIControlOption(QString p_title);
+
+private:
     bool delay_flag = false;//c220902_1
+
     int curr_vu_sytle = 0;
     int curr_vu_on_off = 0;
 
@@ -63,17 +71,8 @@ private:
     QLabel *btn_14_lb;
     QLabel *btn_15_lb;
 
-
     FlowLayout *fl_vu;
     OnOffWidget *onOff;
-
-
-    void setUIControl();
-    void clearUnSelectMode();
-    void setVUMode(int p_vu_mode);
-    QPushButton* getUIControlButton(QString text, int vu_mode, QLabel* p_lb);
-    QWidget *getUIControlOption(QString p_title);
-
 };
 
 #endif // SETTINGVU_H

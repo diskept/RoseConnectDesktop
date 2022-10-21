@@ -321,8 +321,6 @@ namespace qobuz {
         data_output.album_version = ProcJsonEasy::getString(jsonPar_album, "version");
         data_output.album_tracks_count = ProcJsonEasy::getInt(jsonPar_album, "tracks_count");
 
-
-
         QJsonObject jsonPar_comporser = ProcJsonEasy::getJsonObject(jsonObj, "composer");
         data_output.composer_id = ProcJsonEasy::getInt(jsonPar_comporser, "id");
         data_output.composer_name = ProcJsonEasy::getString(jsonPar_comporser, "name");

@@ -224,7 +224,7 @@ private:
     Updater *m_updater_tmp;
     SettingTrackOption *settingTrackOption;
     MusicSearch *musicSearch=nullptr;           ///< 음악 > 검색//cheon211108
-    DialogConfirm *dlgConfirmCD;//cheon210817-iso
+    //DialogConfirm *dlgConfirmCD;//cheon210817-iso
     Linker *linker;
     FindIP *findIp;
     SectionLeft *sectionLeft;

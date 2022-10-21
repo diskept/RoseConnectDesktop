@@ -1608,9 +1608,9 @@ namespace music {
         QSqlError err = sqlite->addConnectionRose();
         if(err.type() == QSqlError::NoError){
             QString strQuery = "";
-            strQuery += " SELECT A.album, A.album_key, A.artist_key, A.artist_id, A.album_id, A._id AS id, A._data AS data, A.title, A.artist, A.duration, A.mime_type, A.samplerate, A.bitdepth, ART._data AS album_art ";
+            strQuery += " SELECT A.album, A.album_key, A.artist_key, A.artist_id, A.album_id, A._id AS id, A._data AS data, A.title, A.artist, A.duration, A.track, A.mime_type, A.samplerate, A.bitdepth, ART._data AS album_art ";
             strQuery += " FROM audio AS A LEFT JOIN album_art AS ART ON A.album_id=ART.album_id ";
-            strQuery += " WHERE A.album_id=%1 ORDER BY A.track ";
+            strQuery += " WHERE A.album_id=%1 ORDER BY id ";
 
             QVariantList dataDB;
             sqlite->exec(strQuery.arg(album_id), dataDB);

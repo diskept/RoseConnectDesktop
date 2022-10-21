@@ -1100,5 +1100,13 @@
         <file>images/setting/inout_unbalanced_gold.png</file>
         <file>images/setting/inout_unbalanced_gold_selected.png</file>
         <file>images/setting/inout_unbalanced_gray.png</file>
+        <file>images/setting/520/inout_coax_520.png</file>
+        <file>images/setting/520/inout_coax_520_gold.png</file>
+        <file>images/setting/520/inout_coax_520_gray.png</file>
+        <file>images/setting/520/inout_coax_gold_520_selected.png</file>
+        <file>images/setting/520/inout_520_in1.png</file>
+        <file>images/setting/520/inout_520_in2.png</file>
+        <file>images/setting/520/inout_520_in3.png</file>
+        <file>images/setting/520/inout_520_in_selected.png</file>
     </qresource>
 </RCC>

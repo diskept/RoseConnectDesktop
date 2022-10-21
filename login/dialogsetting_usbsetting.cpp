@@ -106,7 +106,7 @@ void dialogsetting_usbsetting::setUIControl(){
 
     QLabel *lb_MQA = new QLabel(tr("MQA type"));
     lb_MQA->setStyleSheet("color:#E5E5E4");
-    lb_MQA->setFixedSize(630,70);
+    lb_MQA->setFixedSize(200,70);
     lb_MQA->setText(tr("MQA type"));
     lb_MQA->setStyleSheet("Text-align:left; font-size:18px;color:#E5E5E4; ");
 
@@ -124,16 +124,6 @@ void dialogsetting_usbsetting::setUIControl(){
                                 "QComboBox QAbstractItemView { selection-color:#FFFFFF; selection-background-color:#B18658; border: 1px solid #B18658;   } "
                                 );
 
-    QHBoxLayout *hl_lb_MQA = new QHBoxLayout();
-    hl_lb_MQA->setContentsMargins(33,0,30,0);
-    hl_lb_MQA->setSpacing(0);
-    hl_lb_MQA->addWidget(lb_MQA);
-    hl_lb_MQA->addWidget(comboBoxHdmiMQA);
-
-    QWidget *widget_total_MQA = new QWidget();
-    widget_total_MQA->setObjectName("widget_total");
-    widget_total_MQA->setStyleSheet("#widget_total { border-bottom:1px solid #303030;border-left:1px solid #303030; } ");
-    widget_total_MQA->setLayout(hl_lb_MQA);
 
 
 
@@ -195,6 +185,11 @@ void dialogsetting_usbsetting::setUIControl(){
                                 );
 
 
+    QPushButton *btn_questionMQA;
+    btn_questionMQA =  GSCommon::getUIBtnImg("question", ":images/setting/201/tip_icon.png");
+    btn_questionMQA->setCursor(Qt::PointingHandCursor);
+    btn_questionMQA->setFixedSize(QSize(30,30));
+
     QPushButton *btn_questionPCM;
     btn_questionPCM =  GSCommon::getUIBtnImg("question", ":images/setting/201/tip_icon.png");
     btn_questionPCM->setCursor(Qt::PointingHandCursor);
@@ -250,11 +245,32 @@ void dialogsetting_usbsetting::setUIControl(){
     widget_total_PCM->setLayout(hl_lb_PCM);
 
 
+    QHBoxLayout *hl_lb_MQA = new QHBoxLayout();
+    hl_lb_MQA->setContentsMargins(33,0,30,0);
+    hl_lb_MQA->setSpacing(0);
+    hl_lb_MQA->addWidget(lb_MQA);
+    hl_lb_MQA->addWidget(btn_questionMQA);//c220511
+    hl_lb_MQA->addSpacing(10);
+    hl_lb_MQA->addWidget(comboBoxHdmiMQA, 0, Qt::AlignRight);
+
+    QWidget *widget_total_MQA = new QWidget();
+    widget_total_MQA->setObjectName("widget_total");
+    widget_total_MQA->setStyleSheet("#widget_total { border-bottom:1px solid #303030;border-left:1px solid #303030; } ");
+    widget_total_MQA->setLayout(hl_lb_MQA);
+
    // vl_total1->addWidget(this->getUIControlOption(tr("PCM Resampling Frequency"), comboBoxHdmiPCM));//cheon01
 
-    comboBoxHdmiDSD->addItem(tr("Native DSD(Not suported)"), 0);//c220511
-    comboBoxHdmiDSD->addItem(tr("DSD over PCM(Not suported)"), 1);//c220511
-    comboBoxHdmiDSD->addItem(tr("DSD to PCM(upto DSD128)"), 2);//c220511
+    if(global.device.getDeviceType()== "RS520"){
+        comboBoxHdmiDSD->addItem(tr("Native DSD"), 0);//c220511
+        comboBoxHdmiDSD->addItem(tr("DSD over PCM"), 1);//c220511
+        comboBoxHdmiDSD->addItem(tr("DSD to PCM(upto DSD128)"), 2);//c220511
+
+    }else{
+        comboBoxHdmiDSD->addItem(tr("Native DSD(Not suported)"), 0);//c220511
+        comboBoxHdmiDSD->addItem(tr("DSD over PCM(Not suported)"), 1);//c220511
+        comboBoxHdmiDSD->addItem(tr("DSD to PCM(upto DSD128)"), 2);//c220511
+
+    }
 
     QPushButton *btn_questionDSD;
     btn_questionDSD =  GSCommon::getUIBtnImg("question", ":images/setting/201/tip_icon.png");
@@ -436,7 +452,7 @@ void dialogsetting_usbsetting::setUIControl(){
     vl_total2->addLayout(vl_total1);
     //vl_total2->addLayout(vl_total_Pass);//print_debug();
     vl_total2->addLayout(vl_total_32);
-    vl_total2->addLayout(vl_total_outputgain);
+    //vl_total2->addLayout(vl_total_outputgain);
   //  vl_total2->addWidget(widget_box_notice);//print_debug();
     vl_total2->addSpacing(30);//200
 
@@ -459,6 +475,7 @@ print_debug();
 
     // 커넥션
 
+    connect(btn_questionMQA, SIGNAL(clicked()), this, SLOT(slot_clickedMQAquestion()));//c220511
     connect(btn_questionDSD, SIGNAL(clicked()), this, SLOT(slot_clickedDSDquestion()));//c220511
     connect(btn_questionPCM, SIGNAL(clicked()), this, SLOT(slot_clickedPCMquestion()));//c220511
     connect(btn_questionRoon, SIGNAL(clicked()), this, SLOT(slot_clickedRoonquestion()));//c220511
@@ -485,12 +502,37 @@ print_debug();
 
 }
 
+void dialogsetting_usbsetting::slot_clickedMQAquestion(){//c220511
+    print_debug();
+    dlgConfirmHdmi->setTitle(tr("MQA Type"));
+    dlgConfirmHdmi->setText(tr("Set the MQA playback mode.\nYou can select either Authenticator or Decoder mode.\nOnly the original sound or decoded audio data can be exported as digital output, not fully decoded audio data."));
+
+    dlgConfirmHdmi->setGeometry((DLG_WIDTH + 80), (150 + 100), 350, 500);
+    dlgConfirmHdmi->setAlertMode();
+    dlgConfirmHdmi->setProperty("flagShown",false);
+
+    if(dlgConfirmHdmi->property("flagShown").toBool()==false){
+        dlgConfirmHdmi->setProperty("flagShown",true);
+
+        int result = dlgConfirmHdmi->exec();
+
+        if(result == QDialog::Accepted){
+            print_debug();
+        }
+    }
+}
 void dialogsetting_usbsetting::slot_clickedDSDquestion(){//c220511
     print_debug();
     dlgConfirmHdmi->setTitle(tr("DSD Mode"));
-    dlgConfirmHdmi->setText(tr("Determines the transmission format (Native, DOP, PCM) of audio samples to be transmitted to the DAC when playing DSD sound sources. \n For HDMI output, only DSD to PCM is available."));
+    if(global.device.getDeviceType()== "RS520"){
+        dlgConfirmHdmi->setText(tr("Determines the transmission format (Native, DOP, PCM) of audio samples to be delivered to the DAC when playing DSD sound sources. \n In the case of USB DAC, ypu can play DSD sound source only after selecting Navie, DSD, DSD to PCM depending on whether the connected DAC is supported."));
 
-    dlgConfirmHdmi->setGeometry((DLG_WIDTH + 80), (350 + 100), 350, 500);
+    }else{
+        dlgConfirmHdmi->setText(tr("Determines the transmission format (Native, DOP, PCM) of audio samples to be transmitted to the DAC when playing DSD sound sources. \n For HDMI output, only DSD to PCM is available."));
+
+    }
+dlgConfirmHdmi->setTextHeight(220);
+    dlgConfirmHdmi->setGeometry((DLG_WIDTH + 80), (150 + 100), 350, 500);
     dlgConfirmHdmi->setAlertMode();
     dlgConfirmHdmi->setProperty("flagShown",false);
 
@@ -507,9 +549,9 @@ void dialogsetting_usbsetting::slot_clickedDSDquestion(){//c220511
 void dialogsetting_usbsetting::slot_clickedPCMquestion(){//c220511
     print_debug();
     dlgConfirmHdmi->setTitle(tr("PCM Resampling Frequency"));
-    dlgConfirmHdmi->setText(tr("This is The menu to set sampling frequecy. if you want to output the original sound as it is, select the Original Sampling Rate, and if want to use the resampling function, select the desired sampling rate (48kHz, 96Khz, 192Khz, etc), MQA, Native DSD, DOP, Video, Bluetooth and Airplay are not supported."));
+    dlgConfirmHdmi->setText(tr("This is the menu to set sampling frequecy. if you want to output the original sound as it is, select the Original Sampling Rate, and if want to use the resampling function, select the desired sampling rate (48kHz, 96Khz, 192Khz, etc), MQA, Native DSD, DOP, Video, Bluetooth and Airplay, Roon Ready are not supported."));
 
-    dlgConfirmHdmi->setGeometry((DLG_WIDTH + 80), (350 + 100), 350, 500);
+    dlgConfirmHdmi->setGeometry((DLG_WIDTH + 80), (150 + 100), 350, 500);
     dlgConfirmHdmi->setAlertMode();
     dlgConfirmHdmi->setProperty("flagShown",false);
 
@@ -528,7 +570,7 @@ void dialogsetting_usbsetting::slot_clickedPassquestion(){//c220511
     dlgConfirmHdmi->setTitle(tr("HDMI Passthough"));
     dlgConfirmHdmi->setText(tr("it bypasses HD audio formats such as surround sound sources to the audio reciever though HDMI without decording."));
 
-    dlgConfirmHdmi->setGeometry((DLG_WIDTH + 80), (350 + 100), 350, 500);
+    dlgConfirmHdmi->setGeometry((DLG_WIDTH + 80), (150 + 100), 350, 500);
     dlgConfirmHdmi->setAlertMode();
     dlgConfirmHdmi->setProperty("flagShown",false);
 
@@ -552,7 +594,7 @@ void dialogsetting_usbsetting::slot_clickedbit32question(){//c220511
     dlgConfirmHdmi->setTitle(tr("The low 8bits of a 32 bit sound sources\n will have correct"));
     dlgConfirmHdmi->setText(tr("Some DACs may generate noise when playing a 32-bit sound source with a high sampling rate.\nIn this case, it is used to reduce noise by correcting the lower 8 bits."));
 
-    dlgConfirmHdmi->setGeometry((DLG_WIDTH + 80), (350 + 100), 350, 500);
+    dlgConfirmHdmi->setGeometry((DLG_WIDTH + 80), (150 + 100), 350, 500);
     dlgConfirmHdmi->setAlertMode();
     dlgConfirmHdmi->setProperty("flagShown",false);
 
@@ -1344,7 +1386,7 @@ void dialogsetting_usbsetting::slot_responseHttp(const int &p_id, const QJsonObj
 
             }
 
-        }else if( deviceType == "RS201" || deviceType == "RS250" || deviceType == "RS250A"){
+        }else if( deviceType == "RS520" ||deviceType == "RS201" || deviceType == "RS250" || deviceType == "RS250A"){
             const QString jsonKey_flagOk = "flagOk";
             if(p_jsonObject.contains(jsonKey_flagOk) && p_jsonObject[jsonKey_flagOk].toBool()){
                 setDialogHdmi_save(p_jsonObject);
@@ -1361,7 +1403,7 @@ void dialogsetting_usbsetting::slot_responseHttp(const int &p_id, const QJsonObj
         break;
     case HTTP_USB_SET_MODE :
 
-        if( deviceType == "RS201"||deviceType == "RS150"||deviceType == "RS150B"||deviceType == "RS250"|| deviceType == "RS250A"){
+        if( deviceType == "RS520" ||deviceType == "RS201"||deviceType == "RS150"||deviceType == "RS150B"||deviceType == "RS250"|| deviceType == "RS250A"){
             const QString jsonKey_flagOk = "flagOk";
             if(p_jsonObject.contains(jsonKey_flagOk) && p_jsonObject[jsonKey_flagOk].toBool()){
                  getHdmiInOutSettingOfsetting();

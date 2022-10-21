@@ -2471,7 +2471,7 @@ namespace qobuz {
             {
                 // Rose Play 요청
                 qobuz::ProcRosePlay_withQobuz *procRosePlay = new qobuz::ProcRosePlay_withQobuz(this);
-                procRosePlay->requestPlayRose_byAlbumID(this->list_recentlyAlbum->at(index).clientKey, OptMorePopup::ClickMode::Play_RightNow);
+                procRosePlay->requestPlayRose_byAlbumID(this->list_recentlyAlbum->at(index).clientKey, clickMode);
             }
         }
         else if(section == SECTION_FOR_MORE_POPUP___recentlyPlaylist){
@@ -2492,7 +2492,7 @@ namespace qobuz {
                     tmpPlaylist.id = this->list_recentlyPlaylist->at(index).clientKey;
                     tmpPlaylist.tracks_count = 100;
                     qobuz::ProcRosePlay_withQobuz *procRosePlay = new qobuz::ProcRosePlay_withQobuz(this);
-                    procRosePlay->requestPlayRose_byPlaylistID(tmpPlaylist, OptMorePopup::ClickMode::Play_RightNow);
+                    procRosePlay->requestPlayRose_byPlaylistID(tmpPlaylist, clickMode);
                 }
                 else{
                     roseHome::ProcRosePlay_withRosehome *procRosePlay = new roseHome::ProcRosePlay_withRosehome(this);

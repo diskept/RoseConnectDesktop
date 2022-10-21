@@ -256,7 +256,6 @@ void DialogVideoList::proc_clicked_optMorePopup_fromVideo(bugs::VideoItemData& d
         emit linker->signal_dialog_share_link(link_str);
         //setUIShare();
         //qDebug() << "this->shareLink="<<this->shareLink;
-
     }
 }
 

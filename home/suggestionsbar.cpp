@@ -60,7 +60,9 @@ void SuggestionsBar::setUIControl(){
     listWidget->setItemDelegate(delegate);
     listWidget->setContentsMargins(0,0,0,0);
     listWidget->setFixedWidth(500);
-    listWidget->setStyleSheet("QListWidget::item:hover {background-color:#111111;}; background-color:#333333;border:none;border-radius:20px; " );
+
+    //listWidget->setStyleSheet("QListWidget::item:hover {background-color:#111111;}; " );//c221020_1
+    listWidget->setStyleSheet("QListWidget{background-color:#333333;border:none;border-radius:20px;} QListWidget::item:hover {background-color:#ffffff;};" );//c221020_1
     listWidget->setCursor(Qt::PointingHandCursor);
     listWidget->setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
     listWidget->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);

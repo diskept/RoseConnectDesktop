@@ -507,7 +507,7 @@ void dialogsetting_hdmi::slot_clickedDSDquestion(){//c220511
 void dialogsetting_hdmi::slot_clickedPCMquestion(){//c220511
     print_debug();
     dlgConfirmHdmi->setTitle(tr("PCM Resampling Frequency"));
-    dlgConfirmHdmi->setText(tr("This is The menu to set sampling frequecy. if you want to output the original sound as it is, select the Original Sampling Rate, and if want to use the resampling function, select the desired sampling rate (48kHz, 96Khz, 192Khz, etc), MQA, Native DSD, DOP, Video, Bluetooth and Airplay are not supported."));
+    dlgConfirmHdmi->setText(tr("This is The menu to set sampling frequecy. if you want to output the original sound as it is, select the Original Sampling Rate, and if want to use the resampling function, select the desired sampling rate (48kHz, 96Khz, 192Khz, etc), MQA, Native DSD, DOP, Video, Bluetooth and Airplay, Roon Ready are not supported."));
 
     dlgConfirmHdmi->setGeometry((DLG_WIDTH + 80), (350 + 100), 350, 500);
     dlgConfirmHdmi->setAlertMode();

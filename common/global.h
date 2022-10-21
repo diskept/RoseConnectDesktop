@@ -56,6 +56,7 @@ public :
     bool searchMenuFlag = false;//cheon211008-search
     QString dragDrop_pathStr;//c220726
     QString smbParamPath_cmd;//c220907_1
+    QString pretoastmsg = "";//c221021_1
 
     /// 기본 포트 : 9283
     QString port = "9283";

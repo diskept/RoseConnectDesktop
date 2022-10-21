@@ -684,10 +684,64 @@ namespace music {
             }
             this->track_drawCount = max_cnt;
 
+            this->cd_ico_cnt = 0;
+            int track_start_num = 0;
+            int album_start_id = 0;
+            for(int i = 0; i < this->jsonArr_tracks_toPlay.size(); i++){
+                QJsonObject tmpObj = this->jsonArr_tracks_toPlay.at(i).toObject();
+                int track_num = ProcJsonEasy::getInt(tmpObj, "track");
+                int album_id = ProcJsonEasy::getInt(tmpObj, "album_id");
+
+                if(i == 0){
+                    track_start_num = track_num;
+                    album_start_id = album_id;
+                    this->cd_ico_cnt++;
+                }
+                else{
+                    if((album_start_id == album_id) && (track_start_num == track_num)){
+                        this->cd_ico_cnt++;
+                    }
+                }
+            }
+
+            if(this->cd_ico_cnt >= this->jsonArr_tracks_toPlay.size()){
+                this->cd_ico_cnt = 1;
+            }
+
+            int track_idx = 1;
+            this->cd_num = 1;
             for(int i = 0; i < max_cnt; i++){
                 this->album_track_info[i] = new AlbumTrackDetailInfo_RHV;
                 connect(this->album_track_info[i], &AlbumTrackDetailInfo_RHV::clicked, this, &AlbumDetail::slot_clickedItemTrack_inList);
                 this->album_track_info[i]->setProperty("index", i);
+
+                QJsonObject tmpObj = this->jsonArr_tracks_toPlay.at(i).toObject();
+                int track_num = ProcJsonEasy::getInt(tmpObj, "track");
+
+                if((this->cd_ico_cnt > 1) && (track_start_num == track_num)){
+                    QWidget *tracks_header = new QWidget();
+                    tracks_header->setFixedSize(1500, 52);
+                    tracks_header->setContentsMargins(0, 0, 0, 0);
+
+                    QLabel *label_cd_ico = GSCommon::getUILabelImg(":/images/qobuz/album_cd_ico.png", tracks_header);
+                    label_cd_ico->setGeometry(0, 19, 30, 30);
+
+                    QLabel *label_cd_Name = new QLabel(tracks_header);
+                    label_cd_Name->setStyleSheet("color:#FFFFFF;font-size:24px;font-weight:bold;");
+                    label_cd_Name->setGeometry(40, 16, 47, 36);
+                    label_cd_Name->setText("CD" + QString("%1").number(this->cd_num++));
+
+                    if(i > 0){
+                        this->vl_tracks->addSpacing(30);
+                    }
+                    this->vl_tracks->addWidget(tracks_header);
+
+                    track_idx = 1;
+                    this->album_track_info[i]->setProperty("track_idx", track_idx++);
+                }
+                else{
+                    this->album_track_info[i]->setProperty("track_idx", track_idx++);
+                }
 
                 this->vl_tracks->addWidget(this->album_track_info[i]);
             }
@@ -709,10 +763,12 @@ namespace music {
             this->flag_track_ok = true;
             ContentLoadingwaitingMsgHide();
 
-            NoData_Widget *noData_widget = new NoData_Widget(NoData_Widget::NoData_Message::Track_NoData);
-            noData_widget->setFixedSize(1500, 300);
+            if(this->track_drawCount <= 0){
+                NoData_Widget *noData_widget = new NoData_Widget(NoData_Widget::NoData_Message::Track_NoData);
+                noData_widget->setFixedSize(1500, 300);
 
-            this->vl_tracks->addWidget(noData_widget);
+                this->vl_tracks->addWidget(noData_widget);
+            }
         }
 
         this->menubar->setSelectedSubMenuNoSignal(this->contentStep);

@@ -1,13 +1,18 @@
 #ifndef SETTINGLIB_H
 #define SETTINGLIB_H
 
-#include <QWidget>
+#include "common/linker.h"
+
+#include "data/data_media_library.h"
+
+#include <QList>
 #include <QLabel>
+#include <QWidget>
+
 #include <QVBoxLayout>
 #include <QPushButton>
-#include "data/data_media_library.h"
-#include <QList>
-#include "common/linker.h"
+#include <QResizeEvent>
+
 
 /**
  * @brief The SettingAppMenu class 설정 > 미디어 라이브러리 @n
@@ -19,7 +24,9 @@ class SettingLib : public QWidget
 public:
     explicit SettingLib(QWidget *parent = nullptr);
     ~SettingLib();
+
     void requestMediaLibrary();
+    void resizeEvent(QResizeEvent *event) override;                         // filter Box 사이즈 조절을 위해
 
 signals:
     void changedSubMenu(QJsonObject);
@@ -30,12 +37,6 @@ private slots:
     void slot_clickedMediaLibraryMore();
 
 private:
-
-    Linker *linker;
-
-    QList<Data_Media_Library*> *listMedia;
-    QVBoxLayout *box_mediaLibrary;
-
     void setInit();
     void setUIControl();
     void clearMediaList();
@@ -50,7 +51,13 @@ private:
     void requestMediaAdd_Del(const int &p_index, bool flagDel=true);
     void setResultOfMediaLibrary(const QJsonObject &p_jsonObject);
 
+private:
+    Linker *linker;
+    QLabel *lb_path_tmp[9999];
+    QList<Data_Media_Library*> *listMedia;
+    QVBoxLayout *box_mediaLibrary;
 
+    QLabel *lb_path[9999];
 };
 
 #endif // SETTINGLIB_H

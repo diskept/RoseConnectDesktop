@@ -184,7 +184,6 @@ void SearchRemoteBar::slot_redirectUrl(const QString url){  //j220903 twitter
 }
 
 
-
 void SearchRemoteBar::slot_get_dragDropText(){//c220930
     print_debug();
 
@@ -194,7 +193,30 @@ void SearchRemoteBar::slot_get_dragDropText(){//c220930
     if(this->le_search->text().size()<2){
         return;
     }
-    QString tmp_str = this->le_search->text();
+
+    // Drag and Drop Error fixed 10/17/2022 by diskept
+    QString strInput = this->le_search->text();
+    QString strRelplace = "";
+    QString tmp_str = "";
+
+    if(strInput.contains("\n")){
+        QStringList removeNewline = strInput.split("\n");
+        strRelplace = removeNewline.at(0);
+    }
+    else{
+        strRelplace = strInput;
+    }
+
+    if(strRelplace.contains("\t")){
+        QStringList removeTab = strRelplace.split("\t");
+        tmp_str = removeTab.at(0);
+    }
+    else{
+         tmp_str = strRelplace;
+    }
+
+    tmp_str.replace(" ", "");
+
     global.dragDrop_pathStr = tmp_str;
     QString tmp_Path4 = tmp_str.split("&").at(0);
     qDebug() << "tmp_Path4=" << tmp_Path4;
@@ -240,6 +262,16 @@ void SearchRemoteBar::slot_get_dragDropText(){//c220930
                                  , json
                                  , false
                                  , true);
+            }else if(tmp_str.contains("?v=")&& tmp_str.split("?v=").last().size()>0){
+                global.search_text = tmp_str.split("?v=").last();
+                qDebug() << "global.search_text" << global.search_text;
+                //this->slot_returnPressed(tmp_Path3);
+                print_debug();
+                //emit linker->signal_checkQueue(11, "");
+                //slot_overrideSigalSearch(true);
+                //emit linker->signal_clickedMovePageRoseTubeSearchCall();
+                print_debug();
+                //this->le_search_back->clear();
             }else{
                 qDebug() << "network->request=" << QString("https://api.roseaudio.kr/newpipe/v1/get?playurl=%1").arg(tmp_str);
                 network->request(5678

@@ -568,7 +568,7 @@ void dialogsetting_output_250::slot_clickedPCMquestion(){//c220511
     print_debug();
     dlgConfirmOutput->setAlignment(Qt::AlignLeft);
     dlgConfirmOutput->setTitle(tr("PCM Resampling Frequency"));
-    dlgConfirmOutput->setText(tr("This is The menu to set sampling frequecy. if you want to output the original sound as it is, select the Original Sampling Rate, and if want to use the resampling function, select the desired sampling rate (48kHz, 96Khz, 192Khz, etc), MQA, Native DSD, DOP, Video, Bluetooth and Airplay are not supported."));
+    dlgConfirmOutput->setText(tr("This is the menu to set sampling frequecy. if you want to output the original sound as it is, select the Original Sampling Rate, and if want to use the resampling function, select the desired sampling rate (48kHz, 96Khz, 192Khz, etc), MQA, Native DSD, DOP, Video, Bluetooth and Airplay, Roon Ready are not supported."));
 
     dlgConfirmOutput->setGeometry((DLG_WIDTH + 80), (350 + 100), 350, 500);
     dlgConfirmOutput->setAlertMode();
@@ -589,7 +589,7 @@ void dialogsetting_output_250::slot_clickedPreLevelquestion(){//c220511
     print_debug();
     dlgConfirmOutput->setAlignment(Qt::AlignLeft);
     dlgConfirmOutput->setTitle(tr("PCM Resampling Frequency"));
-    dlgConfirmOutput->setText(tr("This is The menu to set sampling frequecy. if you want to output the original sound as it is, select the Original Sampling Rate, and if want to use the resampling function, select the desired sampling rate (48kHz, 96Khz, 192Khz, etc), MQA, Native DSD, DOP, Video, Bluetooth and Airplay are not supported."));
+    dlgConfirmOutput->setText(tr("Fixes the pre-out output level. You can use the output level of the ROSE by holding the output level of the ROSE as an input within the acceptable range of the AMP, you connected without using the volume control of the ROSE."));
 
     dlgConfirmOutput->setGeometry((DLG_WIDTH + 80), (350 + 100), 350, 500);
     dlgConfirmOutput->setAlertMode();
@@ -1265,13 +1265,24 @@ void dialogsetting_output_250::slot_changedIndexOutput(int index){
     //qDebug() << "----------------isOutputPassThrough :" <<  OutputDetailData["isOutputPassThrough"].toBool();
  //   QJsonObject Output_json = get_settingOfOutputDetail();
     QJsonDocument doc0(OutputDetailData);  QString strJson0(doc0.toJson(QJsonDocument::Compact));  qDebug() << "slot_changedIndexOutput()pre-Output_json =: " << strJson0;
-
+    int digitalVolume = OutputDetailData["digitalVolume"].toInt();
+    int preoutLevelInfo = OutputDetailData["preoutLevelInfo"].toInt()+1;
     switch(btnSenderNo){
     case  0 :
-        selectedOutput_str = comboBoxOutputPreoutLevel->itemText(index);
-        qDebug() << " selectedOutput_str: " << selectedOutput_str;
-        OutputDetailData.insert( "preoutLevelInfo", index-1);
-    //    set_settingOfOutputDetail(OutputDetailData);
+
+        if(digitalVolume != 0 && index != 0){
+            print_debug();
+            ToastMsg::show(this,"", "Turn off the setting value of the software volume control and set the corresponding value.", 2000, 0, -1);
+            //comboBoxSoftwareVolume->setCurrentIndex( OutputDetailData["digitalVolume"].toInt() );
+            comboBoxOutputPreoutLevel->setCurrentIndex( OutputDetailData["preoutLevelInfo"].toInt()+1 );
+        }else{
+            print_debug();
+            selectedOutput_str = comboBoxOutputPreoutLevel->itemText(index);
+            qDebug() << " selectedOutput_str: " << selectedOutput_str;
+            OutputDetailData.insert( "preoutLevelInfo", index-1);
+        }
+
+
 
         break;
     case  1 :
@@ -1324,10 +1335,18 @@ void dialogsetting_output_250::slot_changedIndexOutput(int index){
 
         break;
     case  5 :
-        selectedOutput_str = comboBoxSofwareVol->itemText(index);
-        qDebug() << " selectedOutput_str: " << selectedOutput_str;
-        OutputDetailData.insert( "digitalVolume", index);
-     //   set_settingOfOutputDetail(OutputDetailData);
+
+        if(preoutLevelInfo != 0  && index != 0){
+            print_debug();
+            ToastMsg::show(this,"", "Turn off the Preout-Level setting value and set the corresponding value.", 2000, 0, -1);
+            comboBoxSofwareVol->setCurrentIndex( OutputDetailData["digitalVolume"].toInt() );
+            //comboBoxOutputPreoutLevel->setCurrentIndex( OutputDetailData["preoutLevelInfo"].toInt()+1 );
+        }else{
+            print_debug();
+            selectedOutput_str = comboBoxSofwareVol->itemText(index);
+            qDebug() << " selectedOutput_str: " << selectedOutput_str;
+            OutputDetailData.insert( "digitalVolume", index);
+        }
 
 
         break;

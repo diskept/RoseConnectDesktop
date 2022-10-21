@@ -2410,7 +2410,7 @@ namespace qobuz {
 
         if(ProcJsonEasy::get_flagOk(p_jsonObj)){
             // Added Jeon 30/12/2020 jsonArr_item 재구성
-            for(int i=0 ; i<jsonArr_item.count() ; i++){
+            for(int i = 0; i < jsonArr_item.count(); i++){
                 QJsonObject tmp_json = jsonArr_item.at(i).toObject();
 
                 // 정보 담을 struct
@@ -2448,16 +2448,16 @@ namespace qobuz {
 
                 list_output.append(tmp_data);
 
-                QJsonObject track;
+                QJsonObject image;
+                image.insert("large", tmp_data.album_image_large);
+                image.insert("small", tmp_data.album_image_small);
+                image.insert("thumbnail", tmp_data.album_image_thumbnail);
+
                 QJsonObject album;
                 album.insert("duration", tmp_data.album_duration);
                 album.insert("hires", tmp_data.album_hires);
                 album.insert("hires_streamable", tmp_data.album_hires_streamable);
                 album.insert("id", tmp_data.album_id);
-                QJsonObject image;
-                image.insert("large", tmp_data.album_image_large);
-                image.insert("small", tmp_data.album_image_small);
-                image.insert("thumbnail", tmp_data.album_image_thumbnail);
                 album.insert("image", image);
                 album.insert("streamable", tmp_data.album_streamable);
                 album.insert("title", tmp_data.album_title);
@@ -2490,6 +2490,7 @@ namespace qobuz {
                 performer.insert("id", tmp_data.performer_id);
                 performer.insert("name", tmp_data.performer_name);
 
+                QJsonObject track;
                 track.insert("album", album);
                 track.insert("artist", artist);
                 track.insert("composer", composer);
@@ -2511,6 +2512,9 @@ namespace qobuz {
                 track.insert("title", list_output.at(i).title);
                 if(!list_output.at(i).work.isEmpty()){
                     track.insert("work", list_output.at(i).work);//cheon210812-work
+                }
+                if(!list_output.at(i).version.isEmpty()){
+                    track.insert("version", list_output.at(i).version);//cheon210812-work
                 }
                 track.insert("track_number", list_output.at(i).track_number);
 

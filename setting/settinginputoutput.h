@@ -9,6 +9,7 @@
 #include <widget/flowlayout.h>
 #include <widget/dialogconfirm.h>
 //#include "settinginoutsubsetting.h"
+#include "common/linker.h"//c221013_1
 
 /**
  * @brief 버튼 형식의 라벨
@@ -107,6 +108,7 @@ private:
     void setUIControl250(QString deviceType);
     QWidget* getUIControlTitle(QString p_title);
 
+    int get_curr_input_mode(QString deviceType);
     int get_InputMode201();
     int get_InputMode150();
     int get_InputMode250();
@@ -116,9 +118,13 @@ private:
 
   //  settingInoutSubsetting *SettingInoutSubsetting=nullptr;
 
+    Linker *linker;//c221013_1
     int itm3[3];// 201, cheon13_io
     int itm8[8];// 150, cheon13_io
 
+    bool input_mode_flag = false;
+    bool output_mode_flag = false;
+    int pre_input_mode = -1;
     int inputvalue201;
     int inputvalue150;
     int inputvalue520;

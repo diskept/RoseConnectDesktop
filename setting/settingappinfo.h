@@ -18,18 +18,26 @@ public:
 signals:
 private slots:
     void slot_showHideLicese();
+    void slot_showHideReadme();
+    void slot_showHideUpdatelist();
+    void slot_showHideNewfeatureMoive();
 
 private:
-    QPushButton *btn_license;
+    QPushButton *btn_license, *btn_readme, *btn_updatelist, *btn_newfeature;
     QLabel *lb_licese;
+    QLabel *lb_readme;
+    QLabel *lb_updatelist;
+    QLabel *lb_newfeature;
     QPixmap *pixmap_icon_show;
     QPixmap *pixmap_icon_hide;
     QLabel *lb_icon_arrow;
 
     void setUIControl();
     void readFileLicense();
+    void readFileReadme();
+    void readFileUpdatelist();
     QWidget* getUIControlTitleSub(QString p_title, QString p_version);
-    QWidget* getUIControlTitleSubClick(QString p_title);
+    QPushButton* getUIControlTitleSubClick(QString p_title);
 };
 
 #endif // SETTINGAPPINFO_H

@@ -48,6 +48,7 @@ private slots:
     void slot_clickedPassquestion();//c220511
     void slot_clickedRoonquestion();//c220511
     void slot_clickedbit32question();//c220511
+    void slot_clickedMQAquestion();
 
 private:
 

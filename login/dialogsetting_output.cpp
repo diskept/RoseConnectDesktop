@@ -667,7 +667,7 @@ void dialogsetting_output::slot_clickedPCMquestion(){//c220511
     print_debug();
     dlgConfirmOutput->setAlignment(Qt::AlignLeft);
     dlgConfirmOutput->setTitle(tr("PCM Resampling Frequency"));
-    dlgConfirmOutput->setText(tr("This is The menu to set sampling frequecy. if you want to output the original sound as it is, select the Original Sampling Rate, and if want to use the resampling function, select the desired sampling rate (48kHz, 96Khz, 192Khz, etc), MQA, Native DSD, DOP, Video, Bluetooth and Airplay are not supported."));
+    dlgConfirmOutput->setText(tr("This is The menu to set sampling frequecy. if you want to output the original sound as it is, select the Original Sampling Rate, and if want to use the resampling function, select the desired sampling rate (48kHz, 96Khz, 192Khz, etc), MQA, Native DSD, DOP, Video, Bluetooth and Airplay, Roon Ready are not supported."));
 
     dlgConfirmOutput->setGeometry((DLG_WIDTH + 80), (350 + 100), 350, 500);
     dlgConfirmOutput->setAlertMode();
@@ -688,7 +688,7 @@ void dialogsetting_output::slot_clickedPreLevelquestion(){//c220511
     print_debug();
     dlgConfirmOutput->setAlignment(Qt::AlignLeft);
     dlgConfirmOutput->setTitle(tr("PCM Resampling Frequency"));
-    dlgConfirmOutput->setText(tr("This is The menu to set sampling frequecy. if you want to output the original sound as it is, select the Original Sampling Rate, and if want to use the resampling function, select the desired sampling rate (48kHz, 96Khz, 192Khz, etc), MQA, Native DSD, DOP, Video, Bluetooth and Airplay are not supported."));
+    dlgConfirmOutput->setText(tr("Fixes the pre-out output level. You can use the output level of the ROSE by holding the output level of the ROSE as an input within the acceptable range of the AMP, you connected without using the volume control of the ROSE."));
 
     dlgConfirmOutput->setGeometry((DLG_WIDTH + 80), (350 + 100), 350, 500);
     dlgConfirmOutput->setAlertMode();

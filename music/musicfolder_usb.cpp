@@ -138,8 +138,8 @@ void MusicFolder_USB::setUIControl(){
     this->vl_list->setAlignment(Qt::AlignTop);
 
 #if defined(Q_OS_WIN)//cheon210831-network
-    this->vl_list->addWidget(clickableRow_local);//c220609
-    this->vl_list->addLayout(vl_localnetworkList);
+    //this->vl_list->addWidget(clickableRow_local);//c220609
+    //this->vl_list->addLayout(vl_localnetworkList);
     //this->vl_list->addWidget(clickableRow_folder_bic);//c220505
     this->vl_list->addLayout(vl_usb);
     this->vl_list->addWidget(clickableRow_network);
@@ -147,8 +147,8 @@ void MusicFolder_USB::setUIControl(){
     this->vl_list->addWidget(clickableRow_net_add_fol);
     this->vl_list->addLayout(vl_networkList);
 #elif defined(Q_OS_MAC)//cheon210831-network
-    this->vl_list->addWidget(clickableRow_local);//c220609
-    this->vl_list->addLayout(vl_localnetworkList);
+    //this->vl_list->addWidget(clickableRow_local);//c220609
+    //this->vl_list->addLayout(vl_localnetworkList);
     //this->vl_list->addWidget(clickableRow_folder_bic);
     this->vl_list->addLayout(vl_usb);
     this->vl_list->addWidget(clickableRow_network);//c220908_2
@@ -200,13 +200,13 @@ void MusicFolder_USB::setUIControl(){
     connect(linker, SIGNAL(signal_searchFolder_clicked()), this, SLOT(slot_searchNetworkFolder()));//c220906_1
     connect(page_fileTree, SIGNAL(signal_clickedDirName(QString, QString)), this, SLOT(slot_changeTopDirName(QString, QString)));
 #if defined(Q_OS_WIN)//cheon210831-network
-    connect(clickableRow_local, SIGNAL(signal_clicked()), this, SLOT(slot_clickedRow()));//c220609
+    //connect(clickableRow_local, SIGNAL(signal_clicked()), this, SLOT(slot_clickedRow()));//c220609
     //connect(clickableRow_folder_bic, SIGNAL(signal_clicked()), this, SLOT(slot_clickedRow()));
     connect(clickableRow_network, SIGNAL(signal_clicked()), this, SLOT(slot_clickedRow()));
     connect(clickableRow_net_cloud, SIGNAL(signal_clicked()), this, SLOT(slot_clickedRow()));
     connect(clickableRow_net_add_fol, SIGNAL(signal_clicked()), this, SLOT(slot_clickedRow()));
 #elif defined(Q_OS_MAC)//cheon210831-network
-    connect(clickableRow_local, SIGNAL(signal_clicked()), this, SLOT(slot_clickedRow()));//c220609
+    //connect(clickableRow_local, SIGNAL(signal_clicked()), this, SLOT(slot_clickedRow()));//c220609
     //connect(clickableRow_folder_bic, SIGNAL(signal_clicked()), this, SLOT(slot_clickedRow()));
     connect(clickableRow_network, SIGNAL(signal_clicked()), this, SLOT(slot_clickedRow()));//c220908_2
     //connect(clickableRow_net_cloud, SIGNAL(signal_clicked()), this, SLOT(slot_clickedRow()));//c220908_2

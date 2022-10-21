@@ -821,27 +821,17 @@ namespace bugs {
 
        QJsonArray bitrates1 = ProcJsonEasy::getJsonArray(jsonObj, "bitrates");//cheon210605
 
-       /*if(bitrates1.contains("flac") == true){
-           data_output.bitrates = "FLAC";
-       }
-       else if(bitrates1.contains("flac") == false && bitrates1.contains("320k") == true){
-           data_output.bitrates = "MP3";
-       }*/
-
        if(bitrates1.contains("flac") == true){
            data_output.bitrates = "FLAC";
        }
        else if(bitrates1.contains("aac320") == true){
            data_output.bitrates = "AAC320";
        }
-       else if(bitrates1.contains("320k") == true){
-           data_output.bitrates = "320K";
+       else if(bitrates1.contains("320k") == true || bitrates1.contains("mp3") == true){
+           data_output.bitrates = "MP3";
        }
        else if(bitrates1.contains("aac") == true){
            data_output.bitrates = "AAC";
-       }
-       else if(bitrates1.contains("mp3") == true){
-           data_output.bitrates = "MP3";
        }
        else if(bitrates1.contains("fullhd") == true){
            data_output.bitrates = "FULL HD";
@@ -957,27 +947,17 @@ namespace bugs {
 
        QJsonArray bitrates1 = ProcJsonEasy::getJsonArray(jsonObj, "bitrates");//cheon210605
 
-       /*if(bitrates1.contains("flac") == true){
-           data_output.bitrates = "FLAC";
-       }
-       else if(bitrates1.contains("flac") == false && bitrates1.contains("320k") == true){
-           data_output.bitrates = "MP3";
-       }*/
-
        if(bitrates1.contains("flac") == true){
            data_output.bitrates = "FLAC";
        }
        else if(bitrates1.contains("aac320") == true){
            data_output.bitrates = "AAC320";
        }
-       else if(bitrates1.contains("320k") == true){
-           data_output.bitrates = "320K";
+       else if(bitrates1.contains("320k") == true || bitrates1.contains("mp3") == true){
+           data_output.bitrates = "MP3";
        }
        else if(bitrates1.contains("aac") == true){
            data_output.bitrates = "AAC";
-       }
-       else if(bitrates1.contains("mp3") == true){
-           data_output.bitrates = "MP3";
        }
        else if(bitrates1.contains("fullhd") == true){
            data_output.bitrates = "FULL HD";

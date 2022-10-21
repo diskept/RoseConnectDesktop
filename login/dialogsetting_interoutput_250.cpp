@@ -660,7 +660,7 @@ void dialogsetting_interoutput_250::slot_clickedDSDquestion(){//c220511
 void dialogsetting_interoutput_250::slot_clickedPCMquestion(){//c220511
     print_debug();
     dlgConfirmOpt_coax->setTitle(tr("PCM Resampling Frequency"));
-    dlgConfirmOpt_coax->setText(tr("This is The menu to set sampling frequecy. if you want to output the original sound as it is, select the Original Sampling Rate, and if want to use the resampling function, select the desired sampling rate (48kHz, 96Khz, 192Khz, etc), MQA, Native DSD, DOP, Video, Bluetooth and Airplay are not supported."));
+    dlgConfirmOpt_coax->setText(tr("This is The menu to set sampling frequecy. if you want to output the original sound as it is, select the Original Sampling Rate, and if want to use the resampling function, select the desired sampling rate (48kHz, 96Khz, 192Khz, etc), MQA, Native DSD, DOP, Video, Bluetooth and Airplay, Roon Ready are not supported."));
 
     dlgConfirmOpt_coax->setGeometry((DLG_WIDTH + 80), (350 + 100), 350, 500);
     dlgConfirmOpt_coax->setAlertMode();
@@ -680,7 +680,7 @@ void dialogsetting_interoutput_250::slot_clickedPCMquestion(){//c220511
 void dialogsetting_interoutput_250::slot_clickedPreLevelquestion(){//c220511
     print_debug();
     dlgConfirmOpt_coax->setTitle(tr("PCM Resampling Frequency"));
-    dlgConfirmOpt_coax->setText(tr("This is The menu to set sampling frequecy. if you want to output the original sound as it is, select the Original Sampling Rate, and if want to use the resampling function, select the desired sampling rate (48kHz, 96Khz, 192Khz, etc), MQA, Native DSD, DOP, Video, Bluetooth and Airplay are not supported."));
+    dlgConfirmOpt_coax->setText(tr("Fixes the pre-out output level. You can use the output level of the ROSE by holding the output level of the ROSE as an input within the acceptable range of the AMP, you connected without using the volume control of the ROSE."));
 
     dlgConfirmOpt_coax->setGeometry((DLG_WIDTH + 80), (350 + 100), 350, 500);
     dlgConfirmOpt_coax->setAlertMode();
@@ -721,7 +721,7 @@ void dialogsetting_interoutput_250::slot_clickedHOIquestion(){//c220511
 void dialogsetting_interoutput_250::slot_clickedMQAquestion(){//c220511
     print_debug();
     dlgConfirmOpt_coax->setTitle(tr("MQA Type"));
-    dlgConfirmOpt_coax->setText(tr("Set the MQA playback mode.\nYou can select Authenticator or Decoder mode.\nOnly the original sound or decoded audio data can be exported as digital output, not fully decoded audio data."));
+    dlgConfirmOpt_coax->setText(tr("Set the MQA playback mode.\nYou can select either Authenticator or Decoder mode.\nOnly the original sound or decoded audio data can be exported as digital output, not fully decoded audio data."));
 
     dlgConfirmOpt_coax->setGeometry((DLG_WIDTH + 80), (350 + 100), 350, 500);
     dlgConfirmOpt_coax->setAlertMode();

@@ -418,14 +418,11 @@ namespace roseHome {
                 else if(bitrates.contains("aac320") == true){
                     data_output.bitrates = "AAC320";
                 }
-                else if(bitrates.contains("320k") == true){
-                    data_output.bitrates = "320K";
+                else if(bitrates.contains("320k") == true || bitrates.contains("mp3") == true){
+                    data_output.bitrates = "MP3";
                 }
                 else if(bitrates.contains("aac") == true){
                     data_output.bitrates = "AAC";
-                }
-                else if(bitrates.contains("mp3") == true){
-                    data_output.bitrates = "MP3";
                 }
                 else if(bitrates.contains("fullhd") == true){
                     data_output.bitrates = "FULL HD";
@@ -450,6 +447,10 @@ namespace roseHome {
 
                 if(data_output.album_title.isEmpty()){
                     data_output.album_title = ProcJsonEasy::getString(data_obj, "title");
+                }
+
+                if(data_output.work.isEmpty()){
+                    data_output.work = ProcJsonEasy::getString(data_obj, "work");
                 }
 
                 if(data_output.version.isEmpty()){
@@ -551,7 +552,11 @@ namespace roseHome {
         data_header.type = data.type;      //j220906 share link
         data_header.flagProcStar = false;
         data_header.isRose = data.isRose;
-        if(data.share == "Private"){      //j220906 share link
+
+        if(data.share == "Private" || data.share == "Friend"){      //j220906 share link
+            data_header.isShare = false;
+        }
+        else if(data.type == "TIDAL" && data.title.contains("Mix")){
             data_header.isShare = false;
         }
         else{

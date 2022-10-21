@@ -536,8 +536,8 @@ void MusicFolder_USBFileList::dialog_comfirmCD_Stop()
     int top = global.top_mainwindow+global.height_mainwindow/4;//c221007_1
     dlgConfirmCD->setGeometry(left,top, 350,400);//c221007_1
     dlgConfirmCD->setAlertMode();
-    dlgConfirmCD->setProperty("flagShown",false);
-    if(dlgConfirmCD->property("flagShown").toBool()==false){
+
+    //if(dlgConfirmCD->property("flagShown").toBool()==false){
         dlgConfirmCD->setProperty("flagShown",true);
 
         int result = dlgConfirmCD->exec();
@@ -551,7 +551,8 @@ void MusicFolder_USBFileList::dialog_comfirmCD_Stop()
 
 
         }
-    }
+        dlgConfirmCD->setProperty("flagShown",false);
+    //}
     delete dlgConfirmCD;
 }
 

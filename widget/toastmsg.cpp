@@ -30,14 +30,15 @@ void ToastMsg::show(QWidget *parent, const QString &p_title, const QString &p_ms
 
     Q_UNUSED(p_title);
     //print_debug();
+    qDebug() << "-----------------------------------------------------------------------------------------------------" << p_msgText;
     //QString ddd = parent;
     if(global.window_activate_flag) {//c221001_1
-        //print_debug()
+        print_debug()
     }else {
         if(parent->isModal() == true || parent->isWindowType()==true){
-            //print_debug();
+            print_debug();
         }else{
-            //print_debug();
+            print_debug();
             return;
         }
         //return;
@@ -86,7 +87,8 @@ void ToastMsg::show(QWidget *parent, const QString &p_title, const QString &p_ms
     //dialog->activateWindow();
     //dialog->move(dialog->pos().x(), (global.height_mainwindow - dialog->height() - 100));//c220804
     int left = global.left_mainwindow+global.width_mainwindow/2- (dialog->sizeHint().width() / 2);//c220804
-    int top = global.top_mainwindow+global.height_mainwindow/2- (dialog->sizeHint().height() / 2);//c220804
+    int top = global.top_mainwindow+global.height_mainwindow - 50 ;//- (dialog->sizeHint().height() / 2);//c220804
+    //int top = global.sectionBottomBottom - 100 ;//- (dialog->sizeHint().height() / 2);//c22080
     dialog->move(left, top);//c220804
 
     QTimer::singleShot(duration, dialog, SLOT(hide()));
@@ -102,16 +104,16 @@ void ToastMsg::show(QWidget *parent, const QString &p_title, const QString &p_ms
 void ToastMsg::show(QWidget *parent, const QString &p_title, const QString &p_msgText, int duration){
 
     Q_UNUSED(p_title);
-
+qDebug() << "-----------------------------------------------------------------------------------------------------" << p_msgText;
     //print_debug()
 
     if(global.window_activate_flag) {//c221001_1
-        //print_debug()
+        print_debug()
     }else {
         if(parent->isModal()==true || parent->isWindowType()==true){
-            //print_debug();
+            print_debug();
         }else{
-            //print_debug();
+            print_debug();
             return;
         }
         //return;
@@ -160,7 +162,8 @@ void ToastMsg::show(QWidget *parent, const QString &p_title, const QString &p_ms
     dialog->show();
     dialog->raise();
     int left = global.left_mainwindow+global.width_mainwindow/2- (dialog->sizeHint().width() / 2);//c220818
-    int top = global.top_mainwindow+global.height_mainwindow/2- (dialog->sizeHint().height() / 2);//c220818
+    int top = global.top_mainwindow+global.height_mainwindow - 50 ;//- (dialog->sizeHint().height() / 2);//c220804
+    //int top = global.sectionBottomBottom - 100 ;
     //qDebug() << left << ", " << top;
 
     dialog->move(left, top);//c220818
@@ -178,15 +181,17 @@ void ToastMsg::show(QWidget *parent, const QString &p_title, const QString &p_ms
 
     Q_UNUSED(p_title);
 
-
+qDebug() << "-----------------------------------------------------------------------------------------------------" << p_msgText;
+    if(global.pretoastmsg == p_msgText) return;
+    global.pretoastmsg = p_msgText;
     //print_debug();
     if(global.window_activate_flag) {//c221001_1
-        //print_debug();
+        print_debug();
     }else {
         if(parent->isModal()==true || parent->isWindowType()==true){
-            //print_debug();
+            print_debug();
         }else{
-            //print_debug();
+            print_debug();
             return;
         }
         //return;
@@ -232,9 +237,15 @@ void ToastMsg::show(QWidget *parent, const QString &p_title, const QString &p_ms
 
     dialog->show();
     dialog->raise();
-    int left = global.left_mainwindow+global.width_mainwindow/2- (dialog->sizeHint().width() / 2);//c220818
-    int top = global.top_mainwindow+global.height_mainwindow/2- (dialog->sizeHint().height() / 2);//c220818
-    dialog->move(left, top+line2);//c220908_2
+    int left = global.left_mainwindow+global.width_mainwindow*0.3;//c220818
+    int left2 = global.left_mainwindow+global.width_mainwindow*0.6-50;//c220818
+    int top = global.top_mainwindow+global.height_mainwindow - 50 ;//- (dialog->sizeHint().height() / 2);//c220804
+    //int top = global.sectionBottomBottom - 100 ;
+    if(line2 != 0){
+        dialog->move(left2, top);//c220908_2
+    }else{
+        dialog->move(left, top);//c220908_2
+    }
 
     QTimer::singleShot(duration, dialog, SLOT(hide()));
 }
@@ -242,17 +253,19 @@ void ToastMsg::show(QWidget *parent, const QString &p_title, const QString &p_ms
 void ToastMsg::show(QWidget *parent, const QString &p_title, const QString &p_msgText, int duration, int line2, int forceflag){//c220930_2
 
     Q_UNUSED(p_title);
-
+qDebug() << "-----------------------------------------------------------------------------------------------------" << p_msgText;
+    if(global.pretoastmsg == p_msgText) return;
+    global.pretoastmsg = p_msgText;
     if(forceflag < 0){
 
     }else{
         if(global.window_activate_flag) {//c221001_1
-            //print_debug();
+            print_debug();
         }else {
             if(parent->isModal()==true || parent->isWindowType()==true){
-                //print_debug();
+                print_debug();
             }else{
-                //print_debug();
+                print_debug();
                 return;
             }
             //return;
@@ -300,9 +313,16 @@ void ToastMsg::show(QWidget *parent, const QString &p_title, const QString &p_ms
 
     dialog->show();
     dialog->raise();
-    int left = global.left_mainwindow+global.width_mainwindow/2- (dialog->sizeHint().width() / 2);//c220818
-    int top = global.top_mainwindow+global.height_mainwindow/2- (dialog->sizeHint().height() / 2);//c220818
-    dialog->move(left, top+line2);//c220908_2
+    int left = global.left_mainwindow+global.width_mainwindow*0.3;//c220818
+    int left2 = global.left_mainwindow+global.width_mainwindow*0.6-50;//c220818
+    int top = global.top_mainwindow+global.height_mainwindow - 50 ;//- (dialog->sizeHint().height() / 2);//c220804
+    //int top = global.sectionBottomBottom - 100 ;
+    if(line2 != 0){
+        dialog->move(left2, top);//c220908_2
+    }else{
+        dialog->move(left, top);//c220908_2
+    }
+
 
     QTimer::singleShot(duration, dialog, SLOT(hide()));
 }

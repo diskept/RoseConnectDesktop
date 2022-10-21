@@ -699,13 +699,27 @@ void dialogsetting_output_150::slot_changedIndexOutput(int index){
     QString selectedOutput_str;
     //qDebug() << "----------------isOutputPassThrough :" <<  OutputDetailData["isOutputPassThrough"].toBool();
  //   QJsonObject Output_json = get_settingOfOutputDetail();
+    print_debug();
+    qDebug() << "index=" << index;
     QJsonDocument doc0(OutputDetailData);  QString strJson0(doc0.toJson(QJsonDocument::Compact));  qDebug() << "slot_changedIndexOutput()pre-Output_json =: " << strJson0;
 
+    int digitalVolume = OutputDetailData["digitalVolume"].toInt();
+    int preoutLevelInfo = OutputDetailData["preoutLevelInfo"].toInt()+1;
     switch(btnSenderNo){
     case  0 :
-        selectedOutput_str = comboBoxOutputPreoutLevel->itemText(index);
-        qDebug() << " selectedOutput_str: " << selectedOutput_str;
-        OutputDetailData.insert( "preoutLevelInfo", index-1);
+
+        if(digitalVolume != 0 && index != 0){
+            print_debug();
+            ToastMsg::show(this,"", "Turn off the setting value of the software volume control and set the corresponding value.", 2000, 0, -1);
+            //comboBoxSoftwareVolume->setCurrentIndex( OutputDetailData["digitalVolume"].toInt() );
+            comboBoxOutputPreoutLevel->setCurrentIndex( OutputDetailData["preoutLevelInfo"].toInt()+1 );
+        }else{
+            print_debug();
+            selectedOutput_str = comboBoxOutputPreoutLevel->itemText(index);
+            qDebug() << " selectedOutput_str: " << selectedOutput_str;
+            OutputDetailData.insert( "preoutLevelInfo", index-1);
+        }
+
     //    set_settingOfOutputDetail(OutputDetailData);
 
         break;
@@ -727,9 +741,19 @@ void dialogsetting_output_150::slot_changedIndexOutput(int index){
         break;
         //comboBoxSoftwareVolume
     case  4 :
-        selectedOutput_str = comboBoxSoftwareVolume->itemText(index);
-        qDebug() << " selectedOutput_str: " << selectedOutput_str;
-        OutputDetailData.insert( "digitalVolume", index);
+
+        if(preoutLevelInfo != 0  && index != 0){
+            print_debug();
+            ToastMsg::show(this,"", "Turn off the Preout-Level setting value and set the corresponding value.", 2000, 0, -1);
+            comboBoxSoftwareVolume->setCurrentIndex( OutputDetailData["digitalVolume"].toInt() );
+            //comboBoxOutputPreoutLevel->setCurrentIndex( OutputDetailData["preoutLevelInfo"].toInt()+1 );
+        }else{
+            print_debug();
+            selectedOutput_str = comboBoxSoftwareVolume->itemText(index);
+            qDebug() << " selectedOutput_str: " << selectedOutput_str;
+            OutputDetailData.insert( "digitalVolume", index);
+        }
+
      //   set_settingOfOutputDetail(OutputDetailData);
 
 
@@ -841,9 +865,9 @@ void dialogsetting_output_150::slot_modeOnOff_32(){
 
        }
 
-       QTimer::singleShot(500, this, SLOT(slot_clickedbit32question()));
+       //QTimer::singleShot(500, this, SLOT(slot_clickedbit32question()));
 
-       QJsonDocument doc(OutputDetailData);  QString strJson(doc.toJson(QJsonDocument::Compact));  qDebug() << "slot_modeOnOff()-slot_modeOnOff_32 =: " << strJson;
+       //QJsonDocument doc(OutputDetailData);  QString strJson(doc.toJson(QJsonDocument::Compact));  qDebug() << "slot_modeOnOff()-slot_modeOnOff_32 =: " << strJson;
 
 
 
@@ -898,7 +922,7 @@ void dialogsetting_output_150::slot_clickedPCMquestion(){//c220511
     DialogConfirm *dlgConfirmOutput = new DialogConfirm(this);
     dlgConfirmOutput->setAlignment(Qt::AlignLeft);
     dlgConfirmOutput->setTitle(tr("PCM Resampling Frequency"));
-    dlgConfirmOutput->setText(tr("This is The menu to set sampling frequecy. if you want to output the original sound as it is, select the Original Sampling Rate, and if want to use the resampling function, select the desired sampling rate (48kHz, 96Khz, 192Khz, etc), MQA, Native DSD, DOP, Video, Bluetooth and Airplay are not supported."));
+    dlgConfirmOutput->setText(tr("This is the menu to set sampling frequecy. if you want to output the original sound as it is, select the Original Sampling Rate, and if want to use the resampling function, select the desired sampling rate (48kHz, 96Khz, 192Khz, etc), MQA, Native DSD, DOP, Video, Bluetooth and Airplay, Roon Ready are not supported."));
 
     dlgConfirmOutput->setGeometry((DLG_WIDTH + 80), (350 + 100), 350, 500);
     dlgConfirmOutput->setAlertMode();
@@ -920,7 +944,7 @@ void dialogsetting_output_150::slot_clickedPreLevelquestion(){//c220511
     DialogConfirm *dlgConfirmOutput = new DialogConfirm(this);
     dlgConfirmOutput->setAlignment(Qt::AlignLeft);
     dlgConfirmOutput->setTitle(tr("PCM Resampling Frequency"));
-    dlgConfirmOutput->setText(tr("This is The menu to set sampling frequecy. if you want to output the original sound as it is, select the Original Sampling Rate, and if want to use the resampling function, select the desired sampling rate (48kHz, 96Khz, 192Khz, etc), MQA, Native DSD, DOP, Video, Bluetooth and Airplay are not supported."));
+    dlgConfirmOutput->setText(tr("This is the menu to set sampling frequecy. if you want to output the original sound as it is, select the Original Sampling Rate, and if want to use the resampling function, select the desired sampling rate (48kHz, 96Khz, 192Khz, etc), MQA, Native DSD, DOP, Video, Bluetooth and Airplay, Roon Ready are not supported."));
 
     dlgConfirmOutput->setGeometry((DLG_WIDTH + 80), (350 + 100), 350, 500);
     dlgConfirmOutput->setAlertMode();
@@ -1572,6 +1596,7 @@ void dialogsetting_output_150::setDialogOutput_show(){
     ToastMsg::show(this, "", tr("The current OUTPUT setting information is displayed on the screen."));
 
 }
+
 
 
 void dialogsetting_output_150::setDialogOutput_save(QJsonObject p_jsonObject){

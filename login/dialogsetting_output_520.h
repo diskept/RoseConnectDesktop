@@ -61,6 +61,7 @@ private slots:
 
 private:
 
+    QWidget *widget_total_Speaker;
     QComboBox *comboBoxOutputDSD;
     QComboBox *comboBoxOutputSPEAKER;
     QComboBox *comboBoxOutputPreoutLevel;

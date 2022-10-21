@@ -48,7 +48,7 @@ namespace roseRadio {
         this->label_background = new QLabel();
         this->label_background->setFixedSize(284, 284);
         this->label_background->setScaledContents(true);
-        this->label_background->setStyleSheet("background-color: tranparent");
+        this->label_background->setStyleSheet("background-color:tranparent");
         this->label_background->setAlignment(Qt::AlignCenter);
 
         this->label_icon = new QLabel(this->label_background);
@@ -58,7 +58,7 @@ namespace roseRadio {
 
         this->label_name = new QLabel(this->label_background);
         this->label_name->setFixedSize(234, 28);
-        this->label_name->setStyleSheet("background-color: transparent; color:#FFFFFF; font-size:24px; font-weight:bold; line-height: 0.71;");
+        this->label_name->setStyleSheet("background-color:transparent; color:#FFFFFF; font-size:24px; font-weight:bold; line-height: 0.71;");
         this->label_name->setGeometry(25, 237, 0, 0);
 
         this->btn_allBox = new QPushButton(this->label_background);

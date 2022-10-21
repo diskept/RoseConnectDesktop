@@ -400,6 +400,7 @@ void httpServerConnection::setRequestBody(QJsonObject p_jsonObject){//c211213l
                     global.show_flag =  false;
                     ToastMsg::show(this,"", tr("Play state changed."), 2000, 0);//c220930_2
                 }
+                linker->signal_reload_setting_clicked("inputOutput");//c221020_1
                 //emit linker->signal_device_connect_check_error();
                 //emit linker->signal_queuelist_reload();//cheon211206
                 //global.queue_position_startFlag = true;

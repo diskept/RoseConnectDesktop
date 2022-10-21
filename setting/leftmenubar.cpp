@@ -92,8 +92,10 @@ void LeftMenuBar::setUIControl(){
 
     this->setLayout(vl_total);
 
+    linker = Linker::getInstance();//c221013_1
     // 디폴트 : 첫번째 메뉴
     this->setSelectedSubMenu(PAGECODE_S_MYPAGE);
+    connect(linker, SIGNAL(signal_reload_setting_clicked(QString)), this, SLOT(slot_clickedMenu(QString)));//c221013_1
 }
 
 QPushButton* LeftMenuBar::createMenuBtn(const QString &text, const QString &code){
@@ -134,6 +136,8 @@ void LeftMenuBar::setSelectedSubMenu(QString p_subMenuCode){
 void LeftMenuBar::slot_clickedMenu(){
 
     QString tmp_subMenuCode = sender()->property(KEY_PAGE_CODE.toStdString().c_str()).toString();
+    print_debug();
+    qDebug() << "tmp_subMenuCode=" << tmp_subMenuCode;
     if(this->curr_subMenuCode != tmp_subMenuCode){
 
         this->setSelectedSubMenu(tmp_subMenuCode);
@@ -143,4 +147,18 @@ void LeftMenuBar::slot_clickedMenu(){
         tmp_data[KEY_PAGE_CODE] = this->curr_subMenuCode;
         emit changedSubMenu(tmp_data);
     }
+}
+
+void LeftMenuBar::slot_clickedMenu(QString menu){//c221020_1
+print_debug();
+    //QString tmp_subMenuCode = sender()->property(KEY_PAGE_CODE.toStdString().c_str()).toString();
+    //if(this->curr_subMenuCode != menu){
+
+        this->setSelectedSubMenu(menu);
+
+        // 현재 선택된 메뉴가 다른 경우에만 메뉴 변경되었다고 시그널 알림
+        QJsonObject tmp_data;
+        tmp_data[KEY_PAGE_CODE] = this->curr_subMenuCode;
+        emit changedSubMenu(tmp_data);
+    //}
 }

@@ -324,10 +324,7 @@ namespace roseHome {
             this->flagReqMore_track = false;
 
             if(list_data.size() == 0){
-                //if(abs_ani_dialog_wait->isHidden() != true){
-                    ContentLoadingwaitingMsgHide();
-                //}
-
+                ContentLoadingwaitingMsgHide();
                 return;
             }
 
@@ -377,14 +374,14 @@ namespace roseHome {
             }
         }
         else{
-            //if(abs_ani_dialog_wait->isHidden() != true){
-                ContentLoadingwaitingMsgHide();
-            //}
+            ContentLoadingwaitingMsgHide();
 
-            NoData_Widget *noData_widget = new NoData_Widget(NoData_Widget::NoData_Message::Playlist_NoData);
-            noData_widget->setFixedSize(1500, 300);
+            if(this->list_track->size() <= 0){
+                NoData_Widget *noData_widget = new NoData_Widget(NoData_Widget::NoData_Message::Track_NoData);
+                noData_widget->setFixedSize(1500, 300);
 
-            this->box_main_contents->addWidget(noData_widget);
+                this->box_main_contents->addWidget(noData_widget);
+            }
         }
     }
 

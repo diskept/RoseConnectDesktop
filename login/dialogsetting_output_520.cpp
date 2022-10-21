@@ -210,7 +210,7 @@ void dialogsetting_output_520::setUIControl(){
                                 );
 
     QHBoxLayout *hl_lb_PreLevel = new QHBoxLayout();
-    hl_lb_PreLevel->setContentsMargins(30,0,20,0);
+    hl_lb_PreLevel->setContentsMargins(30,0,30,0);
     hl_lb_PreLevel->setSpacing(20);
     hl_lb_PreLevel->addWidget(lb_PreLevel);
     hl_lb_PreLevel->addWidget(btn_questionPreLevel, 0, Qt::AlignLeft);//c220511
@@ -219,7 +219,7 @@ void dialogsetting_output_520::setUIControl(){
 
     QWidget *widget_total_PreLevel = new QWidget();
     widget_total_PreLevel->setObjectName("widget_total_PreLevel");
-    widget_total_PreLevel->setStyleSheet("#widget_total_PreLevel { border-top:1px solid #707070;border-bottom:1px solid #707070; } ");
+    widget_total_PreLevel->setStyleSheet("#widget_total_PreLevel { border-bottom:1px solid #505050;border-left:1px solid #303030; } ");
     widget_total_PreLevel->setLayout(hl_lb_PreLevel);
 
 
@@ -312,7 +312,7 @@ void dialogsetting_output_520::setUIControl(){
 
     QWidget *widget_PCM_and_Max = new QWidget();
     widget_PCM_and_Max->setObjectName("widget_PCM_and_Max");
-    widget_PCM_and_Max->setStyleSheet("#widget_PCM_and_Max { border-bottom:1px solid #303030;border-left:1px solid #303030; } ");
+    widget_PCM_and_Max->setStyleSheet("#widget_PCM_and_Max {border-bottom:1px solid #505050;border-left:1px solid #303030; } ");
     widget_PCM_and_Max->setLayout(vl_lb_PCM);
 
     QHBoxLayout *hl_lb_PCM = new QHBoxLayout();
@@ -325,7 +325,7 @@ void dialogsetting_output_520::setUIControl(){
 
     QWidget *widget_total_PCM = new QWidget();
     widget_total_PCM->setObjectName("widget_total");
-    widget_total_PCM->setStyleSheet("#widget_total { border-bottom:1px solid #303030;border-left:1px solid #303030; } ");
+    widget_total_PCM->setStyleSheet("#widget_total { border-bottom:1px solid #505050;border-left:1px solid #303030; } ");
     widget_total_PCM->setLayout(hl_lb_PCM);
     //--------------------------------------------------------------------------------------------------------
         comboBoxOutputDSD = new QComboBox();
@@ -368,7 +368,7 @@ void dialogsetting_output_520::setUIControl(){
 
         QWidget *widget_total_DSD = new QWidget();
         widget_total_DSD->setObjectName("widget_total_DSD");
-        widget_total_DSD->setStyleSheet("#widget_total_DSD { border-bottom:1px solid #303030;border-left:1px solid #303030; } ");
+        widget_total_DSD->setStyleSheet("#widget_total_DSD { border-bottom:1px solid #505050;border-left:1px solid #303030; } ");
         widget_total_DSD->setLayout(hl_lb_DSD);
 //------------------------------------------------
         comboBoxOutputSPEAKER = new QComboBox();
@@ -402,15 +402,15 @@ void dialogsetting_output_520::setUIControl(){
 
         QHBoxLayout *hl_lb_SPEAKER = new QHBoxLayout();
         hl_lb_SPEAKER->setContentsMargins(33,0,30,0);
-        hl_lb_SPEAKER->setSpacing(0);
+        hl_lb_SPEAKER->setSpacing(20);
         hl_lb_SPEAKER->addWidget(lb_SPEAKER);
         hl_lb_SPEAKER->addWidget(btn_questionSPEAKER, 0, Qt::AlignLeft);//c220511
-        hl_lb_SPEAKER->addSpacing(10);
-        hl_lb_SPEAKER->addWidget(comboBoxOutputSPEAKER);
+        //hl_lb_SPEAKER->addSpacing(10);
+        hl_lb_SPEAKER->addWidget(comboBoxOutputSPEAKER, 0, Qt::AlignRight);
 
-        QWidget *widget_total_Speaker = new QWidget();
+        widget_total_Speaker = new QWidget();
         widget_total_Speaker->setObjectName("widget_total_Speaker");
-        widget_total_Speaker->setStyleSheet("#widget_total_Speaker { border-bottom:1px solid #303030;border-left:1px solid #303030; } ");
+        widget_total_Speaker->setStyleSheet("#widget_total_Speaker { border-bottom:1px solid #505050;border-left:1px solid #303030; } ");
         widget_total_Speaker->setLayout(hl_lb_SPEAKER);
 //------------------------------------------------
 
@@ -455,7 +455,7 @@ void dialogsetting_output_520::setUIControl(){
 
     QWidget *widget_total_Roon = new QWidget();
     widget_total_Roon->setObjectName("widget_total_Roon");
-    widget_total_Roon->setStyleSheet("#widget_total_Roon { border-bottom:1px solid #303030;border-left:1px solid #303030; } ");
+    widget_total_Roon->setStyleSheet("#widget_total_Roon { border-bottom:1px solid #505050;border-left:1px solid #303030; } ");
     widget_total_Roon->setLayout(hl_lb_Roon);
     //-------------------------------------------
     comboBoxHOI = new QComboBox();//c220708
@@ -495,19 +495,18 @@ void dialogsetting_output_520::setUIControl(){
     QWidget *widget_total_HOI = new QWidget();
     //widget_total_HOI->setFixedHeight(70);
     widget_total_HOI->setObjectName("widget_total_HOI");
-    widget_total_HOI->setStyleSheet("#widget_total_HOI { border-bottom:1px solid #303030;border-left:1px solid #303030; } ");
+    widget_total_HOI->setStyleSheet("#widget_total_HOI { border-bottom:1px solid #505050;border-left:1px solid #303030; } ");
     widget_total_HOI->setLayout(hl_lb_HOI);
     //----------------------------------------------------------------------------
 
     comboBoxFIR = new QComboBox();
     comboBoxFIR->setProperty("btnNo", 6);
 
-    comboBoxFIR->addItem(tr("Sharp Roll-off filter"), 0);
-    comboBoxFIR->addItem(tr("Slow Roll-off filter"), 1);
-    comboBoxFIR->addItem(tr("Short Delay Sharp Roll-off filter"), 2);
-    comboBoxFIR->addItem(tr("Short Delay Slow Roll-off filter"), 3);
-    comboBoxFIR->addItem(tr("Super Slow Roll-off filter"), 4);
-    comboBoxFIR->addItem(tr("Low Dispersion Short Delay filter"), 5);
+    comboBoxFIR->addItem(tr("Brick Wall filter"), 0);
+    comboBoxFIR->addItem(tr("Corrected minimum phase Fast Roll-off filter"), 1);
+    comboBoxFIR->addItem(tr("Apodizing Fast Roll-off filter"), 2);
+    comboBoxFIR->addItem(tr("Minimum phase Slow Roll-off filter"), 3);
+    comboBoxFIR->addItem(tr("Minimum phase Fast Roll-off filter"), 4);
 
 
     QLabel *lb_FIR = new QLabel(tr("FIR Interpolation Filter"));
@@ -545,7 +544,7 @@ void dialogsetting_output_520::setUIControl(){
     QWidget *widget_total_FIR = new QWidget();
     // widget_total_FIR->setFixedHeight(70);
     widget_total_FIR->setObjectName("widget_total_FIR");
-    widget_total_FIR->setStyleSheet("#widget_total_FIR { border-bottom:1px solid #303030;border-left:1px solid #303030; } ");
+    widget_total_FIR->setStyleSheet("#widget_total_FIR { border-bottom:1px solid #505050;border-left:1px solid #303030; } ");
     widget_total_FIR->setLayout(hl_lb_FIR);
 
     comboBoxPhaseInvert = new QComboBox();
@@ -588,7 +587,7 @@ void dialogsetting_output_520::setUIControl(){
 
     QWidget *widget_total_PI = new QWidget();
     widget_total_PI->setObjectName("widget_total_PI");
-    widget_total_PI->setStyleSheet("#widget_total_PI { border-bottom:1px solid #303030;border-left:1px solid #303030; } ");
+    widget_total_PI->setStyleSheet("#widget_total_PI { border-bottom:1px solid #505050;border-left:1px solid #303030; } ");
     widget_total_PI->setLayout(hl_lb_PI);
 //------------------------------------------------------------
 
@@ -642,7 +641,7 @@ void dialogsetting_output_520::setUIControl(){
 
     vl_total1->addWidget(widget_total_DSD);
     vl_total1->addWidget(widget_total_FIR);//, 0, Qt::AlignVCenter);
-    vl_total1->addWidget(widget_total_PI);//, 0, Qt::AlignVCenter);
+    //vl_total1->addWidget(widget_total_PI);//, 0, Qt::AlignVCenter);
     vl_total1->addLayout(vl_total_32);
    // vl_total1->addLayout(vl_total_mqagain);
 
@@ -682,7 +681,7 @@ void dialogsetting_output_520::setUIControl(){
     widget_box_notice = new QWidget();
     widget_box_notice->setObjectName("widget_box_notice");
     widget_box_notice->setStyleSheet("#widget_box_notice {background-color:transparent;border:1px solid #404040;} ");
-   // widget_box_notice->setStyleSheet("#widget_total { border-bottom:1px solid #303030;border-left:1px solid #303030; } ");
+    widget_box_notice->setStyleSheet("#widget_total { border-bottom:1px solid #505050;border-left:1px solid #303030; } ");
     widget_box_notice->setLayout(box_notice);
 
 
@@ -750,12 +749,22 @@ void dialogsetting_output_520::slot_changedIndexOutput(int index){
  //   QJsonObject Output_json = get_settingOfOutputDetail();
     QJsonDocument doc0(OutputDetailData);  QString strJson0(doc0.toJson(QJsonDocument::Compact));  qDebug() << "slot_changedIndexOutput()pre-Output_json =: " << strJson0;
 
+    int digitalVolume = OutputDetailData["digitalVolume"].toInt();
+    int preoutLevelInfo = OutputDetailData["preoutLevelInfo"].toInt()+1;
     switch(btnSenderNo){
     case  0 :
-        selectedOutput_str = comboBoxOutputPreoutLevel->itemText(index);
-        qDebug() << " selectedOutput_str: " << selectedOutput_str;
-        OutputDetailData.insert( "preoutLevelInfo", index-1);
-    //    set_settingOfOutputDetail(OutputDetailData);
+        if(digitalVolume != 0 && index != 0){
+            print_debug();
+            ToastMsg::show(this,"", "Turn off the setting value of the software volume control and set the corresponding value.", 2000, 0, -1);
+            //comboBoxSoftwareVolume->setCurrentIndex( OutputDetailData["digitalVolume"].toInt() );
+            comboBoxOutputPreoutLevel->setCurrentIndex( OutputDetailData["preoutLevelInfo"].toInt()+1 );
+        }else{
+            print_debug();
+            selectedOutput_str = comboBoxOutputPreoutLevel->itemText(index);
+            qDebug() << " selectedOutput_str: " << selectedOutput_str;
+            OutputDetailData.insert( "preoutLevelInfo", index-1);
+        }
+
         break;
     case  1 :
         selectedOutput_str = comboBoxOutputPCMResampling->itemText(index);
@@ -776,10 +785,19 @@ void dialogsetting_output_520::slot_changedIndexOutput(int index){
         OutputDetailData.insert( "volumeTable", index);
         break;
     case  4 :
-        selectedOutput_str = comboBoxSoftwareVolume->itemText(index);
-        qDebug() << " selectedOutput_str: " << selectedOutput_str;
-        OutputDetailData.insert( "digitalVolume", index);
-     //   set_settingOfOutputDetail(OutputDetailData);
+
+        if(preoutLevelInfo != 0  && index != 0){
+            print_debug();
+            ToastMsg::show(this,"", "Turn off the Preout-Level setting value and set the corresponding value.", 2000, 0, -1);
+            comboBoxSoftwareVolume->setCurrentIndex( OutputDetailData["digitalVolume"].toInt() );
+            //comboBoxOutputPreoutLevel->setCurrentIndex( OutputDetailData["preoutLevelInfo"].toInt()+1 );
+        }else{
+            print_debug();
+            selectedOutput_str = comboBoxSoftwareVolume->itemText(index);
+            qDebug() << " selectedOutput_str: " << selectedOutput_str;
+            OutputDetailData.insert( "digitalVolume", index);
+        }
+
         break;
     case  11 :
         selectedOutput_str = comboBoxOutputPCMMaxSampling->itemText(index);
@@ -862,7 +880,7 @@ QWidget* dialogsetting_output_520::getUIControlOption_bit32(QString p_title){
 
     QWidget *widget_total = new QWidget();
     widget_total->setObjectName("widget_total");//print_debug();
-    widget_total->setStyleSheet("#widget_total { border-bottom:1px solid #303030;border-left:1px solid #303030; } ");
+    widget_total->setStyleSheet("#widget_total { border-bottom:1px solid #505050;border-left:1px solid #303030; } ");
     widget_total->setLayout(hl_lb);
     print_debug();
 
@@ -888,9 +906,9 @@ void dialogsetting_output_520::slot_modeOnOff_32(){
 
        }
 
-       QTimer::singleShot(500, this, SLOT(slot_clickedbit32question()));
+       //QTimer::singleShot(500, this, SLOT(slot_clickedbit32question()));
 
-       QJsonDocument doc(OutputDetailData);  QString strJson(doc.toJson(QJsonDocument::Compact));  qDebug() << "slot_modeOnOff()-slot_modeOnOff_32 =: " << strJson;
+       //QJsonDocument doc(OutputDetailData);  QString strJson(doc.toJson(QJsonDocument::Compact));  qDebug() << "slot_modeOnOff()-slot_modeOnOff_32 =: " << strJson;
 
 
 
@@ -903,7 +921,7 @@ void dialogsetting_output_520::slot_clickedbit32question(){//c220511
     dlgConfirmOutput->setTitle(tr("The low 8bits of a 32 bit sound sources\n will have correct"));
     dlgConfirmOutput->setText(tr("Some DACs may generate noise when playing a 32 bit sound source with a high sampling rate.\nIn this case, \nit is used to reduce noise by correcting the lower 8 bits."));
 
-    dlgConfirmOutput->setGeometry((DLG_WIDTH + 80), (350 + 100), 350, 500);
+    dlgConfirmOutput->setGeometry((DLG_WIDTH + 80), (150 + 100), 350, 500);
     dlgConfirmOutput->setAlertMode();
     dlgConfirmOutput->setProperty("flagShown",false);
 
@@ -923,9 +941,9 @@ void dialogsetting_output_520::slot_clickedDSDquestion(){//c220511
     DialogConfirm *dlgConfirmOutput = new DialogConfirm(this);
     dlgConfirmOutput->setAlignment(Qt::AlignLeft);
     dlgConfirmOutput->setTitle(tr("DSD Mode"));
-    dlgConfirmOutput->setText(tr("Determines the transmission format (Native, DOP, PCM) of audio samples to be transmitted to the DAC when playing DSD sound sources. \n For HDMI output, only DSD to PCM is available."));
-
-    dlgConfirmOutput->setGeometry((DLG_WIDTH + 80), (350 + 100), 350, 500);
+    dlgConfirmOutput->setText(tr("Determines the transmission format (Native, DOP, PCM) of audio samples to be delivered to the DAC when playing DSD music. \n When in Native mode, analog output supports up to DSD512 when playing DSD, but digital output does not produce sound. When in DOP mode, analog output does not produce sound and digital output transmits audio data uo to DSD256. For optical, and COAX, it supports only uo to DSD64. In case of DSD to PCM mode, it supprts up to DSD128 and supprts both digital and analog output."));
+dlgConfirmOutput->setTextHeight(330);
+    dlgConfirmOutput->setGeometry((DLG_WIDTH + 80), (150 + 100), 350, 500);
     dlgConfirmOutput->setAlertMode();
     dlgConfirmOutput->setProperty("flagShown",false);
 
@@ -946,7 +964,7 @@ void dialogsetting_output_520::slot_clickedSPEAKERquestion(){//c220511
     dlgConfirmOutput->setTitle(tr("Volume Table Setting"));
     dlgConfirmOutput->setText(tr("Set volume table according to output. For speaker output, volume table between -73.5 dB to 0dB is used. For pre-output, volume table between -92.5dB to -dB is used."));
 
-    dlgConfirmOutput->setGeometry((DLG_WIDTH + 80), (350 + 100), 350, 500);
+    dlgConfirmOutput->setGeometry((DLG_WIDTH + 80), (150 + 100), 350, 500);
     dlgConfirmOutput->setAlertMode();
     dlgConfirmOutput->setProperty("flagShown",false);
 
@@ -965,10 +983,11 @@ void dialogsetting_output_520::slot_clickedPCMquestion(){//c220511
     print_debug();
     DialogConfirm *dlgConfirmOutput = new DialogConfirm(this);
     dlgConfirmOutput->setAlignment(Qt::AlignLeft);
+    dlgConfirmOutput->setTextHeight(250);
     dlgConfirmOutput->setTitle(tr("PCM Resampling Frequency"));
-    dlgConfirmOutput->setText(tr("This is The menu to set sampling frequecy. if you want to output the original sound as it is, select the Original Sampling Rate, and if want to use the resampling function, select the desired sampling rate (48kHz, 96Khz, 192Khz, etc), MQA, Native DSD, DOP, Video, Bluetooth and Airplay are not supported."));
+    dlgConfirmOutput->setText(tr("This is the menu to set the sampling frequecy. if you want to output the original sound as it is, select the Original Sampling Rate, and if want to use the resampling function, select the desired sampling rate (48kHz, 96Khz, 192Khz, etc), MQA, Native DSD, DOP, Video, Bluetooth and Airplay Roon Ready are not supported."));
 
-    dlgConfirmOutput->setGeometry((DLG_WIDTH + 80), (350 + 100), 350, 500);
+    dlgConfirmOutput->setGeometry((DLG_WIDTH + 80), (150 + 100), 350, 600);
     dlgConfirmOutput->setAlertMode();
     dlgConfirmOutput->setProperty("flagShown",false);
 
@@ -987,10 +1006,10 @@ void dialogsetting_output_520::slot_clickedPreLevelquestion(){//c220511
     print_debug();
     DialogConfirm *dlgConfirmOutput = new DialogConfirm(this);
     dlgConfirmOutput->setAlignment(Qt::AlignLeft);
-    dlgConfirmOutput->setTitle(tr("PCM Resampling Frequency"));
-    dlgConfirmOutput->setText(tr("This is The menu to set sampling frequecy. if you want to output the original sound as it is, select the Original Sampling Rate, and if want to use the resampling function, select the desired sampling rate (48kHz, 96Khz, 192Khz, etc), MQA, Native DSD, DOP, Video, Bluetooth and Airplay are not supported."));
+    dlgConfirmOutput->setTitle(tr("Pre-out level setting"));
+    dlgConfirmOutput->setText(tr("Fixes the pre-out output level. You can use the output level of the ROSE by holding the output level of the ROSE as an input within the acceptable range of the AMP, you connected without using the volume control of the ROSE."));
 
-    dlgConfirmOutput->setGeometry((DLG_WIDTH + 80), (350 + 100), 350, 500);
+    dlgConfirmOutput->setGeometry((DLG_WIDTH + 80), (150 + 100), 350, 500);
     dlgConfirmOutput->setAlertMode();
     dlgConfirmOutput->setProperty("flagShown",false);
 
@@ -1014,7 +1033,7 @@ void dialogsetting_output_520::slot_clickedHOIquestion(){//c220708
     dlgConfirmOutput->setText(tr("This is a menu to set the Headphone Output Impedace.\nIf you select the output (16 Ohm, 32 Ohm, 50 Ohm, 100 Ohm) that matches your headphone specifications, you can enjoy better sound."));
     dlgConfirmOutput->setAlignment(Qt::AlignLeft);
 
-    dlgConfirmOutput->setGeometry((DLG_WIDTH + 80), (350 + 100), 350, 500);
+    dlgConfirmOutput->setGeometry((DLG_WIDTH + 80), (150 + 100), 350, 500);
     dlgConfirmOutput->setAlertMode();
     dlgConfirmOutput->setProperty("flagShown",false);
 
@@ -1038,7 +1057,7 @@ void dialogsetting_output_520::slot_clickedSoftwareVolquestion(){//c220511
     dlgConfirmOutput->setText(tr("Adjust the playback volume of digital audio data using the Rose volume control software.\nCaution 1. It cannot be used in Native DSD or DSD over PCM mode. It is applied after changing to DSD to PCM(upto DSD128) mode.\nCaution 2. For digital output. MQA Stream is supported only when the volume is MAX. If it is less than MAX. MQA Stream is not supported."));
     dlgConfirmOutput->setTextHeight(250);
     dlgConfirmOutput->setAlignment(Qt::AlignLeft);
-    dlgConfirmOutput->setGeometry((DLG_WIDTH + 80), (350 + 100), 350, 500);
+    dlgConfirmOutput->setGeometry((DLG_WIDTH + 80), (150 + 100), 350, 500);
 
     dlgConfirmOutput->setAlertMode();
     dlgConfirmOutput->setProperty("flagShown",false);
@@ -1088,7 +1107,7 @@ void dialogsetting_output_520::slot_clickedPhaseInvertquestion(){//c220709
    // dlgConfirmOutput->setLayoutMy(lh_PI_Info);
 
 
-    dlgConfirmOutput->setGeometry((DLG_WIDTH + 80), (350), 350, 500);
+    dlgConfirmOutput->setGeometry((DLG_WIDTH + 80), (150), 350, 500);
     dlgConfirmOutput->setAlertMode();
     dlgConfirmOutput->setProperty("flagShown",false);
 
@@ -1108,9 +1127,9 @@ void dialogsetting_output_520::slot_clickedFIRquestion(){//c220708
     DialogConfirm *dlgConfirmOutput = new DialogConfirm(this);
     dlgConfirmOutput->setAlignment(Qt::AlignLeft);
     dlgConfirmOutput->setTitle(tr("FIR Interpolation phase Filter"));
-    dlgConfirmOutput->setText(tr("If you use MQA stream, it is recommended to use 'Minimum phase Fast Roll-off filter'.\nFIR filter is applied only to PCM data, not to DSD."));
+    dlgConfirmOutput->setText(tr("Even if a specific filter is selected by the user, the 'Minimum Phase Slow Roll Off filter' is automatically selected to provide the best audio quality during MQA playback.\nFIR filters only apply to PCM data, no to DSD."));
 
-    dlgConfirmOutput->setGeometry((DLG_WIDTH + 80), (350 + 100), 350, 500);
+    dlgConfirmOutput->setGeometry((DLG_WIDTH + 80), (150 + 100), 350, 500);
     dlgConfirmOutput->setAlertMode();
     dlgConfirmOutput->setProperty("flagShown",false);
 
@@ -1632,8 +1651,15 @@ void dialogsetting_output_520::setDialogOutput_show(){
     comboBoxOutputPCMMaxSampling->setCurrentIndex( OutputDetailData["maxSamplingRate"].toInt() );
     comboBoxFIR->setCurrentIndex( OutputDetailData["dacFilterType"].toInt() );
 
+    onOff_32->setValue( OutputDetailData["isClearLowerBit"].toBool() );
     comboBoxPhaseInvert->setCurrentIndex( OutputDetailData["phaseInvert"].toInt() );
 
+    if(OutputDetailData["preoutLevelInfo"].toInt()+1 != 0){
+
+        widget_total_Speaker->hide();
+    }else{
+        widget_total_Speaker->show();
+    }
 
     qDebug() << "DLG_WIDTH :" <<  DLG_WIDTH;
     qDebug() << "DLG_HEIGHT :" <<  DLG_HEIGHT;

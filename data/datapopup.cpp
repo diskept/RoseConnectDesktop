@@ -10,66 +10,80 @@ DataPopup::DataPopup(QObject *parent) : QObject(parent)
 
 }
 
+
 QString DataPopup::getAlbum() const
 {
     return album;
 }
+
 
 void DataPopup::setAlbum(const QString &value)
 {
     album = value;
 }
 
+
 QString DataPopup::getId() const
 {
     return id;
 }
+
 
 void DataPopup::setId(const QString &value)
 {
     id = value;
 }
 
+
 int DataPopup::getAlbum_id() const
 {
     return album_id;
 }
+
 
 void DataPopup::setAlbum_id(int value)
 {
     album_id = value;
 }
 
+
 QString DataPopup::getArtist() const
 {
     return artist;
 }
+
 
 void DataPopup::setArtist(const QString &value)
 {
     artist = value;
 }
 
+
 QString DataPopup::getTitle() const
 {
     return title;
 }
+
 
 void DataPopup::setTitle(const QString &value)
 {
     title = value;
 }
 
+
 QString DataPopup::getData() const
 {
     return data;
 }
 
+
 void DataPopup::setData(const QString &value){
     data = value;
 }
 
+
 void DataPopup::setJsonData(const QJsonObject &p_data){
+
     if(p_data.contains("album")){
         this->album = p_data["album"].toString();
     }
@@ -114,6 +128,9 @@ void DataPopup::setJsonData(const QJsonObject &p_data){
     }
     if(p_data.contains("bitdepth")){
         this->bitdepth = p_data["bitdepth"].toInt();
+    }
+    if(p_data.contains("track")){
+        this->track = p_data["track"].toInt();
     }
 
     // 비디오 전용
@@ -215,6 +232,7 @@ QJsonObject DataPopup::getJsonData() const
     tmp_json.insert("album_mime", album_mime);
     tmp_json.insert("samplerate", samplerate);
     tmp_json.insert("bitdepth", bitdepth);
+    tmp_json.insert("track", track);
 
     // 비디오 전용
     tmp_json.insert("duration", duration);

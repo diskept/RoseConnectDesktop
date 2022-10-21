@@ -185,44 +185,47 @@ void DialogJoin::slot_duplicateNickName(){
  */
 void DialogJoin::slot_clickedJoin(){
 
-    if(this->le_email->text()==""){
-        ToastMsg::show(this, "", tr("Please check your email."));
-        //ToastMsg::show(this, "", "이메일을 입력해주세요.");
-    }else if(this->le_nickName->text()==""){
-        ToastMsg::show(this, "", tr("Please check your nickname."));
-        // ToastMsg::show(this, "", "닉네임을 입력해주세요.");
-    }else if(this->flagDuplicateNickName == false){
-        ToastMsg::show(this, "", tr("Please check your nickname Duplication."));
-        // ToastMsg::show(this, "", "닉네임 중복체크 해주세요.");
-    }else if(this->le_pw->text().length() < 5){
-        ToastMsg::show(this, "", tr("Please enter your password at least 5 digits."));
-        //ToastMsg::show(this, "", "비밀번호를 5자리 이상 입력해주세요.");
-    }else{
-        NetworkHttp *network = new NetworkHttp(this);
-        connect(network, SIGNAL(response(int,QJsonObject)), SLOT(slot_responseHttp(int,QJsonObject)));
+    if(this->le_email->text()=="" ){
+            ToastMsg::show(this, "", tr("Please check your email."));
+            //ToastMsg::show(this, "", "이메일을 입력해주세요.");
+        }else if(!this->le_email->text().contains("@")){
+            ToastMsg::show(this, "", tr("It is not an email type."));
+            //ToastMsg::show(this, "", "이메일을 입력해주세요.");
+        }else if(this->le_nickName->text()==""){
+            ToastMsg::show(this, "", tr("Please check your nickname."));
+            // ToastMsg::show(this, "", "닉네임을 입력해주세요.");
+        }else if(this->flagDuplicateNickName == false){
+            ToastMsg::show(this, "", tr("Please check your nickname Duplication."));
+            // ToastMsg::show(this, "", "닉네임 중복체크 해주세요.");
+        }else if(this->le_pw->text().length() < 5){
+            ToastMsg::show(this, "", tr("Please enter your password at least 5 digits."));
+            //ToastMsg::show(this, "", "비밀번호를 5자리 이상 입력해주세요.");
+        }else{
+            NetworkHttp *network = new NetworkHttp(this);
+            connect(network, SIGNAL(response(int,QJsonObject)), SLOT(slot_responseHttp(int,QJsonObject)));
 
-        QString tmp_pw = QString("%1").arg(QString(QCryptographicHash::hash(le_pw->text().trimmed().toUtf8(),QCryptographicHash::Sha1).toHex()));
-        QJsonObject json_member;
-        json_member.insert("email", this->le_email->text());
-        json_member.insert("name", this->le_nickName->text());
-        json_member.insert("password", tmp_pw);
-        json_member.insert("shareType", "ALL");
+            QString tmp_pw = QString("%1").arg(QString(QCryptographicHash::hash(le_pw->text().trimmed().toUtf8(),QCryptographicHash::Sha1).toHex()));
+            QJsonObject json_member;
+            json_member.insert("email", this->le_email->text());
+            json_member.insert("name", this->le_nickName->text());
+            json_member.insert("password", tmp_pw);
+            json_member.insert("shareType", "ALL");
 
-        QJsonObject json;
-        json.insert("member", json_member);
-        json.insert("roseId", global.device.getDeviceID());
-        json.insert("result", false);
+            QJsonObject json;
+            json.insert("member", json_member);
+            json.insert("roseId", global.device.getDeviceID());
+            json.insert("result", false);
 
-        QString url = global.legacy_v1 + "/member/member";
+            QString url = global.legacy_v1 + "/member/member";
 
-        network->request(HTTP_JOIN_MEMBER
-                         , url
-                         , json
-                         , true
-                         , true);
-    }
+            network->request(HTTP_JOIN_MEMBER
+                             , url
+                             , json
+                             , true
+                             , true);
+        }
 
-    /*QString tmp_pw = QString("%1").arg(QString(QCryptographicHash::hash(le_pw->text().trimmed().toUtf8(),QCryptographicHash::Sha1).toHex()));
+        /*QString tmp_pw = QString("%1").arg(QString(QCryptographicHash::hash(le_pw->text().trimmed().toUtf8(),QCryptographicHash::Sha1).toHex()));
     QJsonObject tmp_json_member;
     tmp_json_member.insert("username", this->le_nickName->text());
     tmp_json_member.insert("email", this->le_email->text());
@@ -231,7 +234,7 @@ void DialogJoin::slot_clickedJoin(){
     json.insert("member", tmp_json_member);
     network->request(HTTP_JOIN_MEMBER, QString("http://beta.api.roseaudio.kr/v1/member")
                      , json, true);*/
-}
+    }
 
 /**
  * @brief DialogJoin::setResponseNickNameCheck 해당 json으로 nickName 중복체크 체크

@@ -227,8 +227,8 @@ void MusicFolder_Network::dialog_comfirmNetworkfolder_forFinder_add(QStringList 
     int top = global.top_mainwindow+global.height_mainwindow/2- (dlgConfirmFinder->sizeHint().height() / 2);//c220804
     dlgConfirmFinder->move(left, top);//c220804
     //dlgConfirmFinder->setAlertMode();//c220907_1
-    dlgConfirmFinder->setProperty("flagShown",false);
-    if(dlgConfirmFinder->property("flagShown").toBool()==false){
+
+    //if(dlgConfirmFinder->property("flagShown").toBool()==false){
         dlgConfirmFinder->setProperty("flagShown",true);
 
         int result = dlgConfirmFinder->exec();
@@ -238,7 +238,8 @@ void MusicFolder_Network::dialog_comfirmNetworkfolder_forFinder_add(QStringList 
             print_debug();
             //emit linker->signal_goFolder("folder");//c220913_1
         }
-    }
+        dlgConfirmFinder->setProperty("flagShown",false);
+    //}
     delete dlgConfirmFinder;
 }
 

@@ -1275,8 +1275,8 @@ void MediaFileTree::dialog_comfirmCD()//cheon210812-iso
     dlgConfirmCD->setText(tr("Plays the selected song directly on CD PLAY."));
     dlgConfirmCD->setGeometry(this->width()/3,this->height()/2, 350,400);
     dlgConfirmCD->setAlertMode();
-    dlgConfirmCD->setProperty("flagShown",false);
-    if(dlgConfirmCD->property("flagShown").toBool()==false){
+
+    //if(dlgConfirmCD->property("flagShown").toBool()==false){
         dlgConfirmCD->setProperty("flagShown",true);
 
         int result = dlgConfirmCD->exec();
@@ -1285,7 +1285,9 @@ void MediaFileTree::dialog_comfirmCD()//cheon210812-iso
             PlayAllafterStopCheck(true);
 
         }
-    }
+        dlgConfirmCD->setProperty("flagShown",false);
+
+    //}
     delete dlgConfirmCD;
 }
 void MediaFileTree::dialog_comfirmCD_Stop()//cheon210812-iso
@@ -1299,8 +1301,8 @@ void MediaFileTree::dialog_comfirmCD_Stop()//cheon210812-iso
     int top = global.top_mainwindow+global.height_mainwindow/4;//c221007_1
     dlgConfirmCD->setGeometry(left,top, 350,400);//c221007_1
     dlgConfirmCD->setAlertMode();
-    dlgConfirmCD->setProperty("flagShown",false);
-    if(dlgConfirmCD->property("flagShown").toBool()==false){
+
+    //if(dlgConfirmCD->property("flagShown").toBool()==false){
         dlgConfirmCD->setProperty("flagShown",true);
 
         int result = dlgConfirmCD->exec();
@@ -1314,7 +1316,9 @@ void MediaFileTree::dialog_comfirmCD_Stop()//cheon210812-iso
 
 
         }
-    }
+        dlgConfirmCD->setProperty("flagShown",false);
+
+    //}
     delete dlgConfirmCD;
 }
 

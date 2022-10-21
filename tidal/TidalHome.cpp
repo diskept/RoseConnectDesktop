@@ -2042,7 +2042,7 @@ namespace tidal {
             {
                 // Rose Play 요청
                 tidal::ProcRosePlay_withTidal *procRosePlay = new tidal::ProcRosePlay_withTidal(this);
-                procRosePlay->requestPlayRose_byAlbumID(this->list_recentlyAlbum->at(index).clientKey.toInt(), OptMorePopup::ClickMode::Play_RightNow);
+                procRosePlay->requestPlayRose_byAlbumID(this->list_recentlyAlbum->at(index).clientKey.toInt(), clickMode);
             }
         }
         else if(section == SECTION_FOR_MORE_POPUP___recentlyPlaylist){
@@ -2067,7 +2067,7 @@ namespace tidal {
                     }
 
                     tidal::ProcRosePlay_withTidal *procRosePlay = new tidal::ProcRosePlay_withTidal(this);
-                    procRosePlay->requestPlayRose_byPlaylistUUID(tmpPlaylist, OptMorePopup::ClickMode::Play_RightNow);
+                    procRosePlay->requestPlayRose_byPlaylistUUID(tmpPlaylist, clickMode);
                 }
                 else{
                     roseHome::ProcRosePlay_withRosehome *procRosePlay = new roseHome::ProcRosePlay_withRosehome(this);

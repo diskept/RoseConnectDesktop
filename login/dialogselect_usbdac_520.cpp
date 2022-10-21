@@ -129,13 +129,59 @@ void DialogSelect_Usbdac_520::setUIControl(){
 
     this->setLayout(vboxlayout);
 
+    //connect(btn_questionDSD, SIGNAL(clicked()), this, SLOT(slot_clickedDSDquestion()));//
+    //connect(btn_questionMQA, SIGNAL(clicked()), this, SLOT(slot_clickedPCMquestion()));//
+
     // 커넥션
     connect(btn_close, SIGNAL(clicked()), this, SLOT(close()));
     connect(btn_cancel, SIGNAL(clicked()), this, SLOT(close()));
     connect(btn_ok, SIGNAL(clicked()), this, SLOT(slot_clickedAdd()));
 
 }
+/*
+void DialogSelect_Usbdac_520::slot_clickedDSDquestion(){//c220511
+    print_debug();
+    DialogConfirm *dlgConfirmOutput = new DialogConfirm(this);
+    dlgConfirmOutput->setAlignment(Qt::AlignLeft);
+    dlgConfirmOutput->setTitle(tr("DSD Mode"));
+    dlgConfirmOutput->setText(tr("Determines the transmission format (Native, DOP, PCM) of audio samples to be delivered to the DAC when playing DSD music. \n When in Native mode, analog output supports up to DSD512 when playing DSD, but digital output does not produce sound. When in DOP mode, analog output does not produce sound and digital output transmits audio data uo to DSD256. For optical, and COAX, it supports only uo to DSD64. In case of DSD to PCM mode, it supprts up to DSD128 and supprts both digital and analog output."));
 
+    dlgConfirmOutput->setGeometry((DLG_WIDTH + 80), (350 + 100), 350, 500);
+    dlgConfirmOutput->setAlertMode();
+    dlgConfirmOutput->setProperty("flagShown",false);
+
+    if(dlgConfirmOutput->property("flagShown").toBool()==false){
+        dlgConfirmOutput->setProperty("flagShown",true);
+
+        int result = dlgConfirmOutput->exec();
+
+        if(result == QDialog::Accepted){
+            print_debug();
+        }
+    }
+}
+
+void DialogSelect_Usbdac_520::slot_clickedMQAquestion(){//c220511
+    print_debug();
+    DialogConfirm *dlgConfirmOpt_coax = new DialogConfirm(this);
+    dlgConfirmOpt_coax->setTitle(tr("MQA Type"));
+    dlgConfirmOpt_coax->setText(tr("Set the MQA playback mode.\nYou can select either Authenticator or Decoder mode.\nOnly the original sound or decoded audio data can be exported as digital output, not fully decoded audio data."));
+
+    dlgConfirmOpt_coax->setGeometry((DLG_WIDTH + 80), (350 + 100), 350, 500);
+    dlgConfirmOpt_coax->setAlertMode();
+    dlgConfirmOpt_coax->setProperty("flagShown",false);
+
+    if(dlgConfirmOpt_coax->property("flagShown").toBool()==false){
+        dlgConfirmOpt_coax->setProperty("flagShown",true);
+
+        int result = dlgConfirmOpt_coax->exec();
+
+        if(result == QDialog::Accepted){
+            print_debug();
+        }
+    }
+}
+*/
 /**
  * @brief DialogSelect_Cloud::slot_clickedAdd : [슬롯] 추가 버튼 클릭
  */

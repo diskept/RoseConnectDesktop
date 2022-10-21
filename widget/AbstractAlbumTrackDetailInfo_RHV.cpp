@@ -95,7 +95,7 @@ AlbumTrackDetailInfo_RHV::~AlbumTrackDetailInfo_RHV(){
 void AlbumTrackDetailInfo_RHV::setDataTrackInfo_Music(const QJsonObject &jsonObj){
 
     QString tmp = "";
-    int idx = this->property("index").toInt() + 1;
+    int idx = this->property("track_idx").toInt();
     if(idx < 100){
         tmp = QString("%1").arg(idx, 2, 10, QLatin1Char('0')).toUpper();
     }
@@ -392,6 +392,8 @@ void AlbumTrackDetailInfo_RHV::setDataTrackInfo_Bugs(const bugs::TrackItemData &
 
     QList<bugs::TrackItemData> *list_track = new QList<bugs::TrackItemData>();
     list_track->append(data_track);
+
+    this->btn_play_list_add->hide();
 
     QString tmp = "";
     tmp = QString("%1").arg(list_track->at(0).track_no, 2, 10, QLatin1Char('0')).toUpper();

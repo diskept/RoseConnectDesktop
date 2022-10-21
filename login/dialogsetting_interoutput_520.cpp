@@ -148,8 +148,8 @@ void dialogsetting_interoutput_520::setUIControl(){
     hl_lb_MQA->addWidget(comboBoxOpt_coaxMQA, 0, Qt::AlignRight);//c220511
 
     QWidget *widget_total_MQA = new QWidget();
-    widget_total_MQA->setObjectName("widget_total");
-    widget_total_MQA->setStyleSheet("#widget_total { border-bottom:1px solid #303030;border-left:1px solid #303030; } ");
+    widget_total_MQA->setObjectName("widget_total_MQA");
+    widget_total_MQA->setStyleSheet("#widget_total_MQA { border-bottom:1px solid #505050;border-left:1px solid #303030; } ");
     widget_total_MQA->setLayout(hl_lb_MQA);
 
 
@@ -236,8 +236,8 @@ void dialogsetting_interoutput_520::setUIControl(){
     vl_lb_PCM->addLayout(hl_lb_PCM_subRe);
 
     QWidget *widget_PCM_and_Max = new QWidget();
-    widget_PCM_and_Max->setObjectName("widget_total");
-    widget_PCM_and_Max->setStyleSheet("#widget_total { border-bottom:1px solid #303030;border-left:1px solid #303030; } ");
+    widget_PCM_and_Max->setObjectName("widget_PCM_and_Max");
+    widget_PCM_and_Max->setStyleSheet("#widget_PCM_and_Max { border-bottom:1px solid #505050;border-left:1px solid #303030; } ");
     widget_PCM_and_Max->setLayout(vl_lb_PCM);
 
     QHBoxLayout *hl_lb_PCM = new QHBoxLayout();
@@ -249,8 +249,8 @@ void dialogsetting_interoutput_520::setUIControl(){
     //hl_lb_PCM->addWidget(comboBoxHdmiPCM);
 
     QWidget *widget_total_PCM = new QWidget();
-    widget_total_PCM->setObjectName("widget_total");
-    widget_total_PCM->setStyleSheet("#widget_total { border-bottom:1px solid #303030;border-left:1px solid #303030; } ");
+    widget_total_PCM->setObjectName("widget_total_PCM");
+    widget_total_PCM->setStyleSheet("#widget_total_PCM { border-bottom:1px solid #505050;border-left:1px solid #303030; } ");
     widget_total_PCM->setLayout(hl_lb_PCM);
 
    // vl_total1->addWidget(this->getUIControlOption(tr("PCM Resampling Frequency"), comboBoxOpt_coaxPCM));//cheon01
@@ -289,8 +289,8 @@ void dialogsetting_interoutput_520::setUIControl(){
     hl_lb_DSD->addWidget(comboBoxOpt_coaxDSD, 0, Qt::AlignRight);//c220511
 
     QWidget *widget_total_DSD = new QWidget();
-    widget_total_DSD->setObjectName("widget_total");
-    widget_total_DSD->setStyleSheet("#widget_total { border-bottom:1px solid #303030;border-left:1px solid #303030; } ");
+    widget_total_DSD->setObjectName("widget_total_DSD");
+    widget_total_DSD->setStyleSheet("#widget_total_DSD { border-bottom:1px solid #505050;border-left:1px solid #303030; } ");
     widget_total_DSD->setLayout(hl_lb_DSD);
 
 
@@ -329,8 +329,8 @@ void dialogsetting_interoutput_520::setUIControl(){
     hl_lb_Roon->addWidget(comboBoxOpt_coaxRoon, 0, Qt::AlignRight);//c220511
 
     QWidget *widget_total_Roon = new QWidget();
-    widget_total_Roon->setObjectName("widget_total");
-    widget_total_Roon->setStyleSheet("#widget_total { border-bottom:1px solid #303030;border-left:1px solid #303030; } ");
+    widget_total_Roon->setObjectName("widget_total_Roon");
+    widget_total_Roon->setStyleSheet("#widget_total_Roon { border-bottom:1px solid #505050;border-left:1px solid #303030; } ");
     widget_total_Roon->setLayout(hl_lb_Roon);
 
     ////vl_total1->addWidget(widget_total_Roon);//cheon01
@@ -480,7 +480,7 @@ void dialogsetting_interoutput_520::setUIControl(){
     widget_box_notice = new QWidget();
     widget_box_notice->setObjectName("widget_box_notice");
     widget_box_notice->setStyleSheet("#widget_box_notice {background-color:transparent;border:1px solid #404040;} ");
-   // widget_box_notice->setStyleSheet("#widget_total { border-bottom:1px solid #303030;border-left:1px solid #303030; } ");
+   // widget_box_notice->setStyleSheet("#widget_total { border-bottom:1px solid #505050;border-left:1px solid #303030; } ");
     widget_box_notice->setLayout(box_notice);
 
     QVBoxLayout *vl_total1 = new QVBoxLayout();
@@ -490,8 +490,8 @@ void dialogsetting_interoutput_520::setUIControl(){
     vl_total1->setAlignment(Qt::AlignTop);
 
     //cheon01
-    widget_total_PCM->setStyleSheet(" border-top:1px solid #404040;border-bottom:1px solid #404040; ");
-    widget_total_DSD->setStyleSheet(" border-top:1px solid #404040;border-bottom:1px solid #404040;");
+   // widget_total_PCM->setStyleSheet(" border-top:1px solid #404040;border-bottom:1px solid #404040; ");
+    //widget_total_DSD->setStyleSheet(" border-top:1px solid #404040;border-bottom:1px solid #404040;");
     vl_total1->addWidget(widget_total_PCM);//cheon01
     vl_total1->addWidget(widget_total_DSD);//cheon01
 
@@ -599,7 +599,7 @@ QWidget* dialogsetting_interoutput_520::getUIControlOption_32(QString p_title){
 
     QWidget *widget_total = new QWidget();
     widget_total->setObjectName("widget_total");//print_debug();
-    widget_total->setStyleSheet("#widget_total { border-bottom:1px solid #303030;border-left:1px solid #303030; } ");
+    widget_total->setStyleSheet("#widget_total { border-bottom:1px solid #505050;border-left:1px solid #303030; } ");
     widget_total->setLayout(hl_lb);
     print_debug();
 
@@ -638,7 +638,7 @@ void dialogsetting_interoutput_520::slot_clickedBit32question(){//c220511
 void dialogsetting_interoutput_520::slot_clickedMQAquestion(){//c220511
     print_debug();
     dlgConfirmOpt_coax->setTitle(tr("MQA Type"));
-    dlgConfirmOpt_coax->setText(tr("Set the MQA playback mode.\nYou can select Authenticator or Decoder mode.\nOnly the original sound or decoded audio data can be exported as digital output, not fully decoded audio data."));
+    dlgConfirmOpt_coax->setText(tr("Set the MQA playback mode.\nYou can select either Authenticator or Decoder mode.\nOnly the original sound or decoded audio data can be exported as digital output, not fully decoded audio data."));
 
     dlgConfirmOpt_coax->setGeometry((DLG_WIDTH + 80), (350 + 100), 350, 500);
     dlgConfirmOpt_coax->setAlertMode();
@@ -659,9 +659,9 @@ void dialogsetting_interoutput_520::slot_clickedDSDquestion(){//c220511
     print_debug();
     dlgConfirmOpt_coax->setAlignment(Qt::AlignLeft);
     dlgConfirmOpt_coax->setTitle(tr("DSD Mode"));
-    dlgConfirmOpt_coax->setText(tr("Determines the transmission format (Native, DOP, PCM) of audio samples to be transmitted to the DAC when playing DSD sound sources. \n For HDMI output, only DSD to PCM is available."));
-
-    dlgConfirmOpt_coax->setGeometry((DLG_WIDTH + 80), (350 + 100), 350, 500);
+    dlgConfirmOpt_coax->setText(tr("Determines the transmission format (Native, DOP, PCM) of audio samples to be delivered to the DAC when playing DSD music. \n When in Native mode, analog output supports up to DSD512 when playing DSD, but digital output does not produce sound. When in DOP mode, analog output does not produce sound and digital output transmits audio data uo to DSD256. For optical, and COAX, it supports only uo to DSD64. In case of DSD to PCM mode, it supprts up to DSD128 and supprts both digital and analog output."));
+    dlgConfirmOpt_coax->setTextHeight(330);
+    dlgConfirmOpt_coax->setGeometry((DLG_WIDTH + 80), (150 + 100), 350, 500);
     dlgConfirmOpt_coax->setAlertMode();
     dlgConfirmOpt_coax->setProperty("flagShown",false);
 
@@ -681,7 +681,7 @@ void dialogsetting_interoutput_520::slot_clickedI2Squestion(){//c220511
     dlgConfirmOpt_coax->setTitle(tr("I2S OUT(DVI)"));
     dlgConfirmOpt_coax->setText(tr("Set I2S output.\n There are two types, A type and B type."));
 
-    dlgConfirmOpt_coax->setGeometry((DLG_WIDTH + 80), (350 + 100), 350, 500);
+    dlgConfirmOpt_coax->setGeometry((DLG_WIDTH + 80), (150 + 100), 350, 500);
     dlgConfirmOpt_coax->setAlertMode();
     dlgConfirmOpt_coax->setProperty("flagShown",false);
 
@@ -700,9 +700,9 @@ void dialogsetting_interoutput_520::slot_clickedPCMquestion(){//c220511
     print_debug();
     dlgConfirmOpt_coax->setAlignment(Qt::AlignLeft);
     dlgConfirmOpt_coax->setTitle(tr("PCM Resampling Frequency"));
-    dlgConfirmOpt_coax->setText(tr("This is The menu to set sampling frequecy. if you want to output the original sound as it is, select the Original Sampling Rate, and if want to use the resampling function, select the desired sampling rate (48kHz, 96Khz, 192Khz, etc), MQA, Native DSD, DOP, Video, Bluetooth and Airplay are not supported."));
+    dlgConfirmOpt_coax->setText(tr("This is The menu to set sampling frequecy. if you want to output the original sound as it is, select the Original Sampling Rate, and if want to use the resampling function, select the desired sampling rate (48kHz, 96Khz, 192Khz, etc), MQA, Native DSD, DOP, Video, Bluetooth and Airplay, Roon Ready are not supported."));
 
-    dlgConfirmOpt_coax->setGeometry((DLG_WIDTH + 80), (350 + 100), 350, 500);
+    dlgConfirmOpt_coax->setGeometry((DLG_WIDTH + 80), (150 + 100), 350, 500);
     dlgConfirmOpt_coax->setAlertMode();
     dlgConfirmOpt_coax->setProperty("flagShown",false);
 
@@ -724,7 +724,7 @@ void dialogsetting_interoutput_520::slot_clickedSoftwareVolquestion(){//c220511
     dlgConfirmOpt_coax->setText(tr("Adjust the playback volume of digital audio data using the Rose volume control software.\nCaution 1. It cannot be used in Native DSD or DSD over PCM mode. It is applied after changing to DSD to PCM(upto DSD128) mode.\nCaution 2. For digital output. MQA Stream is supported only when the volume is MAX. If it is less than MAX. MQA Stream is not supported."));
     dlgConfirmOpt_coax->setTextHeight(250);
     dlgConfirmOpt_coax->setAlignment(Qt::AlignLeft);
-    dlgConfirmOpt_coax->setGeometry((DLG_WIDTH + 80), (350 + 100), 350, 500);
+    dlgConfirmOpt_coax->setGeometry((DLG_WIDTH + 80), (150 + 100), 350, 500);
 
     dlgConfirmOpt_coax->setAlertMode();
     dlgConfirmOpt_coax->setProperty("flagShown",false);

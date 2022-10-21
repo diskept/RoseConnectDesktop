@@ -124,7 +124,6 @@ protected:
     QLabel *label_imageHiRes;
     QLabel *label_creatorName;
     QLabel *label_artist;
-    //QLabel *label_mInfo;//c220724
     QLabel *label_resolution;
     QLabel *label_description;
     QLabel *label_biography;

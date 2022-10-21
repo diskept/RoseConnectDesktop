@@ -98,7 +98,7 @@ void SettingVU::setUIControl(){
         btn_9 = this->getUIControlButton(tr("C Style")  , 9, this->btn_9_lb);
         btn_10 = this->getUIControlButton(tr("D Style")  , 10, this->btn_10_lb);
         btn_11 = this->getUIControlButton(tr("RA180 Style")    , 11, this->btn_11_lb);
-        btn_12 = this->getUIControlButton(tr("Level Meter Style")  , 12, this->btn_12_lb);
+       // btn_12 = this->getUIControlButton(tr("Level Meter Style")  , 12, this->btn_12_lb);
  //print_debug();
         //btn_13 = this->getUIControlButton(tr("Level Meter Style2")  , 13, this->btn_13_lb);
         //btn_14 = this->getUIControlButton(tr("Level Meter Style3")  , 14, this->btn_14_lb);
@@ -191,7 +191,7 @@ qDebug() << "-SettingVU::setUIControl()-126";
         fl_vu->addWidget(btn_9);
         fl_vu->addWidget(btn_10);
         fl_vu->addWidget(btn_11);
-        fl_vu->addWidget(btn_12);
+        //fl_vu->addWidget(btn_12);
 
     }else if(global.device.getDeviceType()=="RS150"){
         fl_vu->addWidget(btn_1);
@@ -554,7 +554,7 @@ qDebug() << "-SettingVU::clearUnSelectMode()";// << p_vu_mode;
         this->btn_10->setStyleSheet(this->btn_10->styleSheet().replace("border:3px solid #B18658;", "border:1px solid #707070;"));
 
         this->btn_11->setStyleSheet(this->btn_11->styleSheet().replace("border:3px solid #B18658;", "border:1px solid #707070;"));
-        this->btn_12->setStyleSheet(this->btn_12->styleSheet().replace("border:3px solid #B18658;", "border:1px solid #707070;"));
+        //this->btn_12->setStyleSheet(this->btn_12->styleSheet().replace("border:3px solid #B18658;", "border:1px solid #707070;"));
 
 
     }else if(global.device.getDeviceType()=="RS150" ){
@@ -723,8 +723,8 @@ void SettingVU::setVUMode(int p_vu_mode){//c220713
             this->btn_11_lb->setPixmap(*GSCommon::getUIPixmapImg(":/images/setting/vu_7.png"));
             this->btn_11->setStyleSheet(this->btn_11->styleSheet().replace("border:1px solid #707070;", "border:3px solid #B18658;"));
         }else if(p_vu_mode==12){
-            this->btn_12_lb->setPixmap(*GSCommon::getUIPixmapImg(":/images/setting/vu_8.png"));
-            this->btn_12->setStyleSheet(this->btn_12->styleSheet().replace("border:1px solid #707070;", "border:3px solid #B18658;"));
+           // this->btn_12_lb->setPixmap(*GSCommon::getUIPixmapImg(":/images/setting/vu_8.png"));
+           // this->btn_12->setStyleSheet(this->btn_12->styleSheet().replace("border:1px solid #707070;", "border:3px solid #B18658;"));
         }
 
     }else if(global.device.getDeviceType()=="RS150" ){

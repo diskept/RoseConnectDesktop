@@ -280,7 +280,7 @@ QueuePlayList::QueuePlayList(QWidget *parent) : QWidget(parent)
     btn_moveok->setCursor(Qt::PointingHandCursor);
     btn_moveok->setFixedSize(80,26);            //45, 50
     //btn_moveok->setStyleSheet("color:#CCCCCC;font-size:16px;font:bold;background-color:transparent;");
-   // btn_moveok->setStyleSheet("#btn_moveok { font-weight:200;font-size:14px; color:#B18658; background-color:transparent;border:1px solid #B18658; border-radius:13px;  } ");
+    // btn_moveok->setStyleSheet("#btn_moveok { font-weight:200;font-size:14px; color:#B18658; background-color:transparent;border:1px solid #B18658; border-radius:13px;  } ");
     btn_moveok->setStyleSheet("QPushButton {font-size:14px; color:#ececec;  background-color:transparent;  border:2px solid #CCCCCC;border-radius:13px;} QPushButton:hover {background-color: #505050; color: white;} QPushButton:pressed{background-color: #F79862;} QPushButton:checked{background-color: #F79862;border:none;} QToolTip{ color: #404040; }");
 
 
@@ -309,7 +309,7 @@ QueuePlayList::QueuePlayList(QWidget *parent) : QWidget(parent)
 
     lb_title_cnt->setFixedHeight(20);
     lb_title_cnt->setStyleSheet("font-weight:200;font-size:18px;color:#bbbbbb;");
-//---------------
+    //---------------
     lb_position_label = new QLabel();
     lb_position_label->setText(tr("Currently Playing : "));
     lb_position_label->setFixedSize(135,20);
@@ -329,7 +329,7 @@ QueuePlayList::QueuePlayList(QWidget *parent) : QWidget(parent)
     lb_position_title->setText(tr("song"));
     lb_position_title->setFixedHeight(20);
     lb_position_title->setStyleSheet("font-weight:200;font-size:16px;color:#B18658; ");
-//--------------
+    //--------------
     QHBoxLayout *vl_lb_position_msg = new QHBoxLayout();
     vl_lb_position_msg->setContentsMargins(0,0,0,0);
     vl_lb_position_msg->setSpacing(0);
@@ -343,7 +343,7 @@ QueuePlayList::QueuePlayList(QWidget *parent) : QWidget(parent)
     widget_position_msg = new QWidget();
     widget_position_msg->setStyleSheet("background-color:#555555; ");
     widget_position_msg->setLayout(vl_lb_position_msg);
-//------------------
+    //------------------
 
     QVBoxLayout *vl_lb_title = new QVBoxLayout();
     vl_lb_title->setContentsMargins(0,10,0,10);
@@ -438,7 +438,7 @@ QueuePlayList::QueuePlayList(QWidget *parent) : QWidget(parent)
     vl_topAndTracks->addWidget(widget_editMode);
     vl_topAndTracks->addWidget(temp_menuWidget);//c220625
 
-//-------------------------------------------------------------------------
+    //-------------------------------------------------------------------------
     QVBoxLayout *vl_menuIcon = new QVBoxLayout();
     vl_menuIcon->setContentsMargins(0,30,0,0);
     vl_menuIcon->setSpacing(10);
@@ -549,13 +549,13 @@ QueuePlayList::QueuePlayList(QWidget *parent) : QWidget(parent)
         //connect(listWidget_total[i]->verticalScrollBar(), SIGNAL(rangeChanged(int, int)), this, SLOT(slot_listwidgetcurrentRowChanged(int, int)));//c221004_1
         connect(listWidget_total[i], SIGNAL(itemPressed(QListWidgetItem *)), this, SLOT(slot_listwidgetItemPressed(QListWidgetItem *)));
     }
-//------------------------------------------------------------------------------------------
+    //------------------------------------------------------------------------------------------
     //connect(listWidget_total, SIGNAL(itemEntered(QListWidgetItem *)), this, SLOT(slot_listwidgetItemEntered(QListWidgetItem *)));
-   // connect(listWidget_total, SIGNAL(currentItemChanged(QListWidgetItem *, QListWidgetItem *)), this, SLOT(slot_listwidgetcurrentItemChanged(QListWidgetItem *, QListWidgetItem *)));
-   // connect(listWidget_total, SIGNAL(itemActivated(QListWidgetItem *)), this, SLOT(slot_listwidgetItemActivated(QListWidgetItem *)));
+    // connect(listWidget_total, SIGNAL(currentItemChanged(QListWidgetItem *, QListWidgetItem *)), this, SLOT(slot_listwidgetcurrentItemChanged(QListWidgetItem *, QListWidgetItem *)));
+    // connect(listWidget_total, SIGNAL(itemActivated(QListWidgetItem *)), this, SLOT(slot_listwidgetItemActivated(QListWidgetItem *)));
     //connect(listWidget_total, SIGNAL(currentRowChanged(int)), this, SLOT(slot_listwidgetcurrentRowChanged(int)));
- //   connect(listWidget_total[global.now_Section]->model(), SIGNAL(rowsMoved(QModelIndex,int,int,QModelIndex,int)), this, SLOT(myFunction(QModelIndex,int,int,QModelIndex,int)));
-//onScrollBarValueChanged
+    //   connect(listWidget_total[global.now_Section]->model(), SIGNAL(rowsMoved(QModelIndex,int,int,QModelIndex,int)), this, SLOT(myFunction(QModelIndex,int,int,QModelIndex,int)));
+    //onScrollBarValueChanged
     //connect(linker, SIGNAL(signal_dragEnter()), this, SLOT(slot_dragAndDropEdit()));
 
     //signal_queuelist_reload
@@ -574,7 +574,7 @@ QueuePlayList::QueuePlayList(QWidget *parent) : QWidget(parent)
     //linker = Linker::getInstance();
 
     //slot_modeOnOff(true);
-//------------------------------------------------
+    //------------------------------------------------
     connect(linker, SIGNAL(signal_dragDrop()), this, SLOT(slot_dragAndDropLoop()));
 
     print_debug();
@@ -762,9 +762,9 @@ void QueuePlayList::listWidget_total_setShow(const int &no){
     print_debug();
     for(int i = 0;i < 10;i++){
         if(i == no){
-             listWidget_total[i]->show();
+            listWidget_total[i]->show();
         }else{
-             listWidget_total[i]->hide();
+            listWidget_total[i]->hide();
         }
     }
 }
@@ -883,114 +883,114 @@ void QueuePlayList::slot_listwidgetcurrentRowChanged(int row){  //c220620
     int rrow = row;//c220624
 #if defined(Q_OS_WINDOWS)
 
-   #endif
-   #if defined(Q_OS_MAC)
-           rrow = rrow/70;//c220624
-   #endif
-   if(rrow<0||rrow>=current_queue_cnt) rrow = 0;//c220627
+#endif
+#if defined(Q_OS_MAC)
+    rrow = rrow/70;//c220624
+#endif
+    if(rrow<0||rrow>=current_queue_cnt) rrow = 0;//c220627
 
-   this->CurrViewRow = rrow;
-   //int compare = this->CurrViewRow - this->PreViewRow;
-   int compare = curr_sliderPosition - pre_sliderPosition;
-   qDebug() << "#################################-curr_sliderPosition= " << curr_sliderPosition;
-   qDebug() << "#################################-pre_sliderPosition= " << pre_sliderPosition;
-   qDebug() << "#################################-compare= " << compare;
+    this->CurrViewRow = rrow;
+    //int compare = this->CurrViewRow - this->PreViewRow;
+    int compare = curr_sliderPosition - pre_sliderPosition;
+    qDebug() << "#################################-curr_sliderPosition= " << curr_sliderPosition;
+    qDebug() << "#################################-pre_sliderPosition= " << pre_sliderPosition;
+    qDebug() << "#################################-compare= " << compare;
 
-   if(listWidget_total[global.now_Section]->count() > 0 && widget[global.now_Section].count() > 0){
+    if(listWidget_total[global.now_Section]->count() > 0 && widget[global.now_Section].count() > 0){
 
-       if(compare >=0 ){
-           if(compare > global.LmtCnt_H/70*4+3) {
-               //this->PreViewRow = rrow;
-               print_debug();
-               mouse_all_clear();
-               pre_sliderPosition = sliderPosition;
-               return;
-           }
-           print_debug();
-           if(listWidget_total[global.now_Section]->count()> global.LmtCnt_H/70*2){
-               for(int i = 0; i < global.LmtCnt_H/70*4+3; i++){
-                   if(widget[global.now_Section].count() > this->CurrViewRow+i && 0 <= this->CurrViewRow+i){
-                       //listwidgetcurrentRow_append(this->CurrViewRow+i);
-                       if(this->CurrViewRow+i >= 0 && this->CurrViewRow+i < current_queue_cnt){
-                           //qDebug() << "i=" << i;
-                           //qDebug() << "this->CurrViewRow+i=" << this->CurrViewRow+i;
-                           QLayout* layout = widget[global.now_Section].at(this->CurrViewRow+i)->layout();
-                           //print_debug();
-                           if (layout == 0){
-                               //listwidgetcurrentRow_append(i);
-                               downloadThumbImageMore_playbarChanged(this->CurrViewRow+i);
-                               this->std_listWidget_one_lineItemUI(this->CurrViewRow+i);
-                           }else{
-                              // print_debug();
-                           }
-                       }
-                   }
-               }
-           }else{
-               for(int i = 0; i < global.LmtCnt_H/70*2+3; i++){
-                   if(widget[global.now_Section].count() > this->CurrViewRow+i && 0 <= this->CurrViewRow+i){
-                       //listwidgetcurrentRow_append(this->CurrViewRow+i);
-                       if(this->CurrViewRow+i >= 0 && this->CurrViewRow+i < current_queue_cnt){
-                           //qDebug() << "this->CurrViewRow+i=" << this->CurrViewRow+i;
-                           QLayout* layout = widget[global.now_Section].at(this->CurrViewRow+i)->layout();
-                           if (layout == 0){
-                               //listwidgetcurrentRow_append(i);
-                               downloadThumbImageMore_playbarChanged(this->CurrViewRow+i);
-                               this->std_listWidget_one_lineItemUI(this->CurrViewRow+i);
-                           }else{
-                              // print_debug();
-                           }
-                       }
-                   }
-               }
-           }
-       }else{
-           //c1111//widget[global.now_Section].count() > this->PreViewRow-i &&
-           print_debug();
-           if(listWidget_total[global.now_Section]->count()> global.LmtCnt_H/70*2){
-               for(int i = 0; i < global.LmtCnt_H/70*4+3; i++){
-                   if(widget[global.now_Section].count() > this->PreViewRow-i &&0 <= this->PreViewRow-i){
-                       if(this->PreViewRow-i >= 0 && this->PreViewRow-i < current_queue_cnt){
-                           //listwidgetcurrentRow_append(this->PreViewRow-i);
-                           QLayout* layout = widget[global.now_Section].at(this->PreViewRow-i)->layout();
-                           if (layout == 0){
+        if(compare >=0 ){
+            if(compare > global.LmtCnt_H/70*4+3) {
+                //this->PreViewRow = rrow;
+                print_debug();
+                mouse_all_clear();
+                pre_sliderPosition = sliderPosition;
+                return;
+            }
+            print_debug();
+            if(listWidget_total[global.now_Section]->count()> global.LmtCnt_H/70*2){
+                for(int i = 0; i < global.LmtCnt_H/70*4+3; i++){
+                    if(widget[global.now_Section].count() > this->CurrViewRow+i && 0 <= this->CurrViewRow+i){
+                        //listwidgetcurrentRow_append(this->CurrViewRow+i);
+                        if(this->CurrViewRow+i >= 0 && this->CurrViewRow+i < current_queue_cnt){
+                            //qDebug() << "i=" << i;
+                            //qDebug() << "this->CurrViewRow+i=" << this->CurrViewRow+i;
+                            QLayout* layout = widget[global.now_Section].at(this->CurrViewRow+i)->layout();
+                            //print_debug();
+                            if (layout == 0){
+                                //listwidgetcurrentRow_append(i);
+                                downloadThumbImageMore_playbarChanged(this->CurrViewRow+i);
+                                this->std_listWidget_one_lineItemUI(this->CurrViewRow+i);
+                            }else{
+                                // print_debug();
+                            }
+                        }
+                    }
+                }
+            }else{
+                for(int i = 0; i < global.LmtCnt_H/70*2+3; i++){
+                    if(widget[global.now_Section].count() > this->CurrViewRow+i && 0 <= this->CurrViewRow+i){
+                        //listwidgetcurrentRow_append(this->CurrViewRow+i);
+                        if(this->CurrViewRow+i >= 0 && this->CurrViewRow+i < current_queue_cnt){
+                            //qDebug() << "this->CurrViewRow+i=" << this->CurrViewRow+i;
+                            QLayout* layout = widget[global.now_Section].at(this->CurrViewRow+i)->layout();
+                            if (layout == 0){
+                                //listwidgetcurrentRow_append(i);
+                                downloadThumbImageMore_playbarChanged(this->CurrViewRow+i);
+                                this->std_listWidget_one_lineItemUI(this->CurrViewRow+i);
+                            }else{
+                                // print_debug();
+                            }
+                        }
+                    }
+                }
+            }
+        }else{
+            //c1111//widget[global.now_Section].count() > this->PreViewRow-i &&
+            print_debug();
+            if(listWidget_total[global.now_Section]->count()> global.LmtCnt_H/70*2){
+                for(int i = 0; i < global.LmtCnt_H/70*4+3; i++){
+                    if(widget[global.now_Section].count() > this->PreViewRow-i &&0 <= this->PreViewRow-i){
+                        if(this->PreViewRow-i >= 0 && this->PreViewRow-i < current_queue_cnt){
+                            //listwidgetcurrentRow_append(this->PreViewRow-i);
+                            QLayout* layout = widget[global.now_Section].at(this->PreViewRow-i)->layout();
+                            if (layout == 0){
 
-                               downloadThumbImageMore_playbarChanged(this->PreViewRow-i);
-                               this->std_listWidget_one_lineItemUI(this->PreViewRow-i);
-                           }else{
-                              // print_debug();
-                           }
-                       }
-                   }
-               }
-           }else{
-               for(int i = 0; i < global.LmtCnt_H/70*2+3; i++){
-                   if(widget[global.now_Section].count() > this->PreViewRow-i &&0 <= this->PreViewRow-i){
-                       if(this->PreViewRow-i >= 0 && this->PreViewRow-i < current_queue_cnt){
-                           //listwidgetcurrentRow_append(this->PreViewRow-i);
-                           QLayout* layout = widget[global.now_Section].at(this->PreViewRow-i)->layout();
-                           if (layout == 0){
+                                downloadThumbImageMore_playbarChanged(this->PreViewRow-i);
+                                this->std_listWidget_one_lineItemUI(this->PreViewRow-i);
+                            }else{
+                                // print_debug();
+                            }
+                        }
+                    }
+                }
+            }else{
+                for(int i = 0; i < global.LmtCnt_H/70*2+3; i++){
+                    if(widget[global.now_Section].count() > this->PreViewRow-i &&0 <= this->PreViewRow-i){
+                        if(this->PreViewRow-i >= 0 && this->PreViewRow-i < current_queue_cnt){
+                            //listwidgetcurrentRow_append(this->PreViewRow-i);
+                            QLayout* layout = widget[global.now_Section].at(this->PreViewRow-i)->layout();
+                            if (layout == 0){
 
-                               downloadThumbImageMore_playbarChanged(this->PreViewRow-i);
-                               this->std_listWidget_one_lineItemUI(this->PreViewRow-i);
-                           }else{
-                              // print_debug();
-                           }
-                       }
-                   }
-               }
-           }
+                                downloadThumbImageMore_playbarChanged(this->PreViewRow-i);
+                                this->std_listWidget_one_lineItemUI(this->PreViewRow-i);
+                            }else{
+                                // print_debug();
+                            }
+                        }
+                    }
+                }
+            }
 
 
-       }
-       this->PreViewRow = rrow;
-       print_debug();
-       mouse_all_clear();
-       //mouse_clickable_state_print();
+        }
+        this->PreViewRow = rrow;
+        print_debug();
+        mouse_all_clear();
+        //mouse_clickable_state_print();
 
     }
 
-   pre_sliderPosition = sliderPosition;
+    pre_sliderPosition = sliderPosition;
 
 }
 
@@ -1030,7 +1030,7 @@ void QueuePlayList::slot_listwidgetcurrentRowChanged_start(int row){  //c220620
                     downloadThumbImageMore_playbarChanged(i);
                     this->std_listWidget_one_lineItemUI(i);
                 }else{
-                   // print_debug();
+                    // print_debug();
                 }
             }
         }
@@ -1047,7 +1047,7 @@ void QueuePlayList::slot_listwidgetcurrentRowChanged_start(int row){  //c220620
 }
 
 void QueuePlayList::slot_queuelistCurrPlayIndexGet_singleshot(){//c220603
-   // QTimer::singleShot(3000, this, SLOT(slot_queuelistCurrPlayIndexGet()));
+    // QTimer::singleShot(3000, this, SLOT(slot_queuelistCurrPlayIndexGet()));
 }
 
 void QueuePlayList::slot_reGet_checkSum(){
@@ -1144,28 +1144,28 @@ void QueuePlayList::slot_editModeClicked(QListWidgetItem *item){  //1126
 
 void QueuePlayList::slot_setWidgetColor(int i){
     print_debug();
-      widget[global.now_Section].at(i)->setStyleSheet(widget[global.now_Section].at(i)->styleSheet().replace("#111111", "#222222"));
-      print_debug();
+    widget[global.now_Section].at(i)->setStyleSheet(widget[global.now_Section].at(i)->styleSheet().replace("#111111", "#222222"));
+    print_debug();
 }
 void QueuePlayList::slot_setWidgetColor_recomm(int i){
     print_debug();
-      widget_recomm[global.now_Section].at(i)->setStyleSheet(widget_recomm[global.now_Section].at(i)->styleSheet().replace("#111111", "#222222"));
-      print_debug();
+    widget_recomm[global.now_Section].at(i)->setStyleSheet(widget_recomm[global.now_Section].at(i)->styleSheet().replace("#111111", "#222222"));
+    print_debug();
 }
 
 void QueuePlayList::itemPressesBackground(int i){
     print_debug();
     qDebug() << "i=" << i;
     qDebug() << " widget[global.now_Section].count()=" <<  widget[global.now_Section].count();
-     widget[global.now_Section].at(i)->setStyleSheet(widget[global.now_Section].at(i)->styleSheet().replace("#222222", "#111111"));
-     print_debug();
+    widget[global.now_Section].at(i)->setStyleSheet(widget[global.now_Section].at(i)->styleSheet().replace("#222222", "#111111"));
+    print_debug();
     QTimer::singleShot(100, this, SLOT(slot_setWidgetColor(i)));
 }
 
 void QueuePlayList::itemPressesBackground_recomm(int i){
     print_debug();
-     widget_recomm[global.now_Section].at(i)->setStyleSheet(widget_recomm[global.now_Section].at(i)->styleSheet().replace("#222222", "#111111"));
-     print_debug();
+    widget_recomm[global.now_Section].at(i)->setStyleSheet(widget_recomm[global.now_Section].at(i)->styleSheet().replace("#222222", "#111111"));
+    print_debug();
     QTimer::singleShot(100, this, SLOT(slot_setWidgetColor_recomm(i)));
 }
 
@@ -1332,8 +1332,8 @@ void QueuePlayList::slot_clickedSelected(int ss){//1126
 
     }
     mouse_all_clear();
-        //slot_clickedDelete();
-/*
+    //slot_clickedDelete();
+    /*
     this->isAllSelected = !this->isAllSelected;
     jsonArr_deletePositon = QJsonArray();
     if(this->isAllSelected==true){
@@ -1369,7 +1369,7 @@ void QueuePlayList::slot_clickedAllSelected(){//1126
     if(this->isAllSelected==true){
 
         jsonArr_deletePositon = QJsonArray();
-         print_debug();
+        print_debug();
         for(int i=0; i<this->list_dataTrackForDelegate[global.now_Section].count(); i++){
             //qDebug() << i;
             checkbox_Selected[global.now_Section].at(i)->setChecked(true);
@@ -1387,7 +1387,7 @@ void QueuePlayList::slot_clickedAllSelected(){//1126
         }
     }else{
         jsonArr_deletePositon = QJsonArray();
-         print_debug();
+        print_debug();
         for(int i=0; i<this->list_dataTrackForDelegate[global.now_Section].count(); i++){
             //qDebug() << i;
             QLayout* layout = widget[global.now_Section].at(i)->layout();
@@ -1547,7 +1547,7 @@ void QueuePlayList::slot_listwidgetcurrentRowChanged(){  //cheon210916-total
     print_debug();
     qDebug() << "slot_listwidgetcurrentRowChanged ";
     //int tmp_index = listWidget_total[global.now_Section]->row(item);
-   // qDebug() << "row=" << row;
+    // qDebug() << "row=" << row;
 
 
 }
@@ -1593,9 +1593,9 @@ void QueuePlayList::slot_httpservermsg(const QJsonObject &p_jsonObject){//c21121
     print_debug();
     QJsonDocument doc(p_jsonObject);  QString strJson(doc.toJson(QJsonDocument::Compact));  qDebug() <<"QueuePlayList::slot_httpservermsg---" << strJson;
     //QJsonObject tmp_json;
-qDebug() << this->islistOpen;
-qDebug() << "global.queueTimerFlag = " << global.queueTimerFlag;
-/*
+    qDebug() << this->islistOpen;
+    qDebug() << "global.queueTimerFlag = " << global.queueTimerFlag;
+    /*
     if(global.queueTimerFlag){
     //if(this->islistOpen == true){//c0114
         if(p_jsonObject.contains("dataObj")){//c211213
@@ -1804,10 +1804,10 @@ void QueuePlayList::slot_valueChanged_notifySliderMove(int index){//1126
     local_index = index;
     local_max = vb1->maximum();
     //if(this->currMenu == CURRMENU_TOTAL){//cheon211122-02
-     //   if(index >= vb1->maximum()){
-     //       print_debug();
-     //   }else{
-     //   }
+    //   if(index >= vb1->maximum()){
+    //       print_debug();
+    //   }else{
+    //   }
     //}else{
 
     //}
@@ -1828,7 +1828,7 @@ void QueuePlayList::saveJson(QJsonDocument document, QString fileName) {
 
 void QueuePlayList::setTotalQueueList(int p_id, const QJsonObject &p_jsonObject){  //c220609
     print_debug();
-//mtx.lock();
+    //mtx.lock();
 
     QJsonDocument doc(p_jsonObject); QString strJson(doc.toJson(QJsonDocument::Compact));
     //qDebug() << "QueuePlayList::setTotalQueueList---- " << strJson << "\n";
@@ -1886,11 +1886,11 @@ void QueuePlayList::setTotalQueueList(int p_id, const QJsonObject &p_jsonObject)
             //GSCommon::clearLayout(this->box_contents);
 
             for(int i =0 ; i < 7; i++){
-              //  this->list_dataTrackForDelegate[tabSectionlist[i]].clear();
-              //  this->list_thumbPath[tabSectionlist[i]].clear();
+                //  this->list_dataTrackForDelegate[tabSectionlist[i]].clear();
+                //  this->list_thumbPath[tabSectionlist[i]].clear();
             }
-              this->list_dataTrackForDelegate[global.now_Section].clear();
-              this->list_thumbPath[global.now_Section].clear();
+            this->list_dataTrackForDelegate[global.now_Section].clear();
+            this->list_thumbPath[global.now_Section].clear();
             this->list_dataTrackForDelegate[0].clear();
             this->list_thumbPath[0].clear();
 
@@ -2397,7 +2397,16 @@ void QueuePlayList::setTotalQueueList(int p_id, const QJsonObject &p_jsonObject)
                             tmp_dataTrack.addtimeResult = addtimeResult;
                             tmp_dataTrack.title = data_video.mv_title;
                             tmp_dataTrack.artist = data_video.list_artist_nm.join(",");
-                            tmp_dataTrack.audioQuality = data_video.bitrates.join(",");
+                            if(data_video.bitrates.contains("fullhd") == true){
+                                tmp_dataTrack.audioQuality = "FULL HD";
+                            }
+                            else if(data_video.bitrates.contains("hd") == true){
+                                tmp_dataTrack.audioQuality = "HD";
+                            }
+                            else if(data_video.bitrates.contains("sd") == true){
+                                tmp_dataTrack.audioQuality = "SD";
+                            }
+                            //tmp_dataTrack.audioQuality = data_video.bitrates.join(",");
                             //qDebug() << "audioQuality=" << tmp_dataTrack.audioQuality;
                             tmp_dataTrack.len = data_video.len;
                             //qDebug() << "data_video.len=" << data_video.len;
@@ -2469,6 +2478,15 @@ void QueuePlayList::setTotalQueueList(int p_id, const QJsonObject &p_jsonObject)
                         tmp_dataTrack.title = data_video.mv_title;
                         tmp_dataTrack.len = data_video.len;
                         tmp_dataTrack.artist = data_video.list_artist_nm.join(",");
+                        if(data_video.bitrates.contains("fullhd") == true){
+                            tmp_dataTrack.audioQuality = "FULL HD";
+                        }
+                        else if(data_video.bitrates.contains("hd") == true){
+                            tmp_dataTrack.audioQuality = "HD";
+                        }
+                        else if(data_video.bitrates.contains("sd") == true){
+                            tmp_dataTrack.audioQuality = "SD";
+                        }
 
                         tmp_dataTrack.thumbnail = data_video.image; //data_track.album_image;
                         tmp_dataTrack.no = i;//cheon211107-01
@@ -2532,6 +2550,15 @@ void QueuePlayList::setTotalQueueList(int p_id, const QJsonObject &p_jsonObject)
                             tmp_dataTrack.title = data_video.mv_title;
                             tmp_dataTrack.len = data_video.len;//c220713
                             tmp_dataTrack.artist = data_video.list_artist_nm.join(",");
+                            if(data_video.bitrates.contains("fullhd") == true){
+                                tmp_dataTrack.audioQuality = "FULL HD";
+                            }
+                            else if(data_video.bitrates.contains("hd") == true){
+                                tmp_dataTrack.audioQuality = "HD";
+                            }
+                            else if(data_video.bitrates.contains("sd") == true){
+                                tmp_dataTrack.audioQuality = "SD";
+                            }
 
                             tmp_dataTrack.thumbnail = data_video.image; //data_track.album_image;
                         }else{
@@ -2596,6 +2623,15 @@ void QueuePlayList::setTotalQueueList(int p_id, const QJsonObject &p_jsonObject)
                         tmp_dataTrack.title = data_video.mv_title;
                         tmp_dataTrack.len = data_video.len;
                         tmp_dataTrack.artist = data_video.list_artist_nm.join(",");
+                        if(data_video.bitrates.contains("fullhd") == true){
+                            tmp_dataTrack.audioQuality = "FULL HD";
+                        }
+                        else if(data_video.bitrates.contains("hd") == true){
+                            tmp_dataTrack.audioQuality = "HD";
+                        }
+                        else if(data_video.bitrates.contains("sd") == true){
+                            tmp_dataTrack.audioQuality = "SD";
+                        }
 
                         tmp_dataTrack.thumbnail = data_video.image; //data_track.album_image;
                         tmp_dataTrack.no = i;//cheon211107-01
@@ -2773,91 +2809,84 @@ void QueuePlayList::setTotalQueueList(int p_id, const QJsonObject &p_jsonObject)
                     //QJsonDocument doc(tmp_json1);  QString strJson1(doc.toJson(QJsonDocument::Compact));  qDebug() << "tmp_json1---" << strJson1;
 
 
-                        if(tmp_json1.contains("track")){
-                            if(jsonprintFlag_MU == true){
-                                //QJsonObject tmp_json = mediaState_jsonObject["track"].toObject();
-                               // QJsonDocument doc(tmp_json); QString strJson(doc.toJson(QJsonDocument::Compact));
-                               // qDebug() << "QueuePlayList::setQobuzQueueList--MUSIC-tmp_json : " << strJson << "\n";
-                               // jsonprintFlag_MU = true;
-
-                            }
-                            //if(tmp_arr.count() > 0){//cheon211104-01
-                            //    this->indexCurrPlay[global.now_Section] = this->jsonArray_backup_music.count();//cheon210916-total
-                            //}
-                            //QJsonArray tmp_arr1 = p_jsonObject["track"].toArray();//cheon210916-total
-
-
-                            //print_debug();
+                    if(tmp_json1.contains("track")){
+                        if(jsonprintFlag_MU == true){
                             //QJsonObject tmp_json = mediaState_jsonObject["track"].toObject();
-                            //QJsonDocument doc(tmp_json); QString strJson(doc.toJson(QJsonDocument::Compact));
-                            //QJsonDocument json = QJsonDocument::fromJson(strJson.toUtf8());
-                            //QJsonObject tmp_jsonObject = json.object();
-                            QString tmp_string = tmp_json1["track"].toString();
-                            //qDebug() << "QueuePlayList::setMusicQueueList---tmp_string : " << tmp_string << "\n";
-                            //QString s(R"({"name":"Adam","body":"is fat","Eyes":"blue"})"); // raw string
-                            QJsonDocument json = QJsonDocument::fromJson(tmp_string.toUtf8());
-                            QJsonObject tmp_jsonObject = json.object(); // since your string is an JSON object
-                            //QJsonDocument doc1(tmp_jsonObject); QString strJson1(doc1.toJson(QJsonDocument::Compact));//cheon211114-01
-                            //print_debug();
-                            //qDebug() << "QueuePlayList::setMusicQueueList---tmp_jsonObject : " << strJson1 << "\n";
+                            // QJsonDocument doc(tmp_json); QString strJson(doc.toJson(QJsonDocument::Compact));
+                            // qDebug() << "QueuePlayList::setQobuzQueueList--MUSIC-tmp_json : " << strJson << "\n";
+                            // jsonprintFlag_MU = true;
 
-                            this->jsonArray_backup_music.append(tmp_jsonObject);//cheon210916-total
-                            this->jsonArray_backup_total[global.now_Section].append(tmp_jsonObject);//cheon210916-total
+                        }
+                        //if(tmp_arr.count() > 0){//cheon211104-01
+                        //    this->indexCurrPlay[global.now_Section] = this->jsonArray_backup_music.count();//cheon210916-total
+                        //}
+                        //QJsonArray tmp_arr1 = p_jsonObject["track"].toArray();//cheon210916-total
 
-                            //tidal::TrackItemData data_track = tidal::ConvertData::make_trackData_fromTidalJsonObj(tmp_track);
-                            //QJsonObject tmp_jsonObject = tmp_arr[i].toObject();
-                            // 1> 데이터 담기
-                            DataTrackforDelegate tmp_dataTrack;
-                            //QJsonObject tmp_jsonObject = tmp_arr[i].toObject();
-                            bool isDirect = false;                  // 음악 폴더에서 재생한건지 여부
-                            if(tmp_jsonObject.contains("isDirect")){
-                                isDirect = tmp_jsonObject["isDirect"].toBool();
-                            }
-                            if(isDirect==true){
-                                if(tmp_jsonObject.contains("mDirectFileInfo")){
+
+                        //print_debug();
+                        //QJsonObject tmp_json = mediaState_jsonObject["track"].toObject();
+                        //QJsonDocument doc(tmp_json); QString strJson(doc.toJson(QJsonDocument::Compact));
+                        //QJsonDocument json = QJsonDocument::fromJson(strJson.toUtf8());
+                        //QJsonObject tmp_jsonObject = json.object();
+                        QString tmp_string = tmp_json1["track"].toString();
+                        //qDebug() << "QueuePlayList::setMusicQueueList---tmp_string : " << tmp_string << "\n";
+                        //QString s(R"({"name":"Adam","body":"is fat","Eyes":"blue"})"); // raw string
+                        QJsonDocument json = QJsonDocument::fromJson(tmp_string.toUtf8());
+                        QJsonObject tmp_jsonObject = json.object(); // since your string is an JSON object
+                        //QJsonDocument doc1(tmp_jsonObject); QString strJson1(doc1.toJson(QJsonDocument::Compact));//cheon211114-01
+                        //print_debug();
+                        //qDebug() << "QueuePlayList::setMusicQueueList---tmp_jsonObject : " << strJson1 << "\n";
+
+                        this->jsonArray_backup_music.append(tmp_jsonObject);//cheon210916-total
+                        this->jsonArray_backup_total[global.now_Section].append(tmp_jsonObject);//cheon210916-total
+
+                        //tidal::TrackItemData data_track = tidal::ConvertData::make_trackData_fromTidalJsonObj(tmp_track);
+                        //QJsonObject tmp_jsonObject = tmp_arr[i].toObject();
+                        // 1> 데이터 담기
+                        DataTrackforDelegate tmp_dataTrack;
+                        //QJsonObject tmp_jsonObject = tmp_arr[i].toObject();
+                        bool isDirect = false;                  // 음악 폴더에서 재생한건지 여부
+                        if(tmp_jsonObject.contains("isDirect")){
+                            isDirect = tmp_jsonObject["isDirect"].toBool();
+                        }
+                        if(isDirect==true){
+                            if(tmp_jsonObject.contains("mDirectFileInfo")){
+                                //print_debug();
+                                QJsonObject tmp_data = tmp_jsonObject["mDirectFileInfo"].toObject();
+                                QString tmp_ip = "";
+
+                                // 1> 데이터 담기
+                                tmp_dataTrack.addtimeResult = addtimeResult;
+                                tmp_dataTrack.type = DataTrackforDelegate::Types_Data::Music;
+                                tmp_dataTrack.isDirect = true;
+                                if(tmp_data.contains("ip")){
+                                    tmp_ip = tmp_data["ip"].toString().replace("?", "");
+                                }
+                                if(tmp_data.contains("smbParamPath")){
+                                    if(tmp_data["smbParamPath"].toString()!=""){
+                                        // 네트워크 노래
+                                    }else{
+                                        // 친구 음원 (공유음원) - 나의 맥주소와 다른경우
+                                        if(tmp_ip!="" && (tmp_ip!=global.device.getDeviceID())){
+                                            tmp_dataTrack.isShare = true;
+                                        }
+                                    }
+                                }
+                                if(tmp_data.contains("name")){
+                                    tmp_dataTrack.title = tmp_data["name"].toString();
+                                }
+                                if(tmp_json1.contains("mediaState")){
+                                    QJsonObject mediaState_jsonObject = tmp_json1["mediaState"].toObject();
+                                    //QJsonDocument doc1(mediaState_jsonObject); QString strJson1(doc1.toJson(QJsonDocument::Compact));//cheon211114-01
                                     //print_debug();
-                                    QJsonObject tmp_data = tmp_jsonObject["mDirectFileInfo"].toObject();
-                                    QString tmp_ip = "";
+                                    //qDebug() << "QueuePlayList::setMusicQueueList---mediaState_jsonObject : " << strJson1 << "\n";
 
-                                    // 1> 데이터 담기
-                                    tmp_dataTrack.addtimeResult = addtimeResult;
-                                    tmp_dataTrack.type = DataTrackforDelegate::Types_Data::Music;
-                                    tmp_dataTrack.isDirect = true;
-                                    if(tmp_data.contains("ip")){
-                                        tmp_ip = tmp_data["ip"].toString().replace("?", "");
-                                    }
-                                    if(tmp_data.contains("smbParamPath")){
-                                        if(tmp_data["smbParamPath"].toString()!=""){
-                                            // 네트워크 노래
-                                        }else{
-                                            // 친구 음원 (공유음원) - 나의 맥주소와 다른경우
-                                            if(tmp_ip!="" && (tmp_ip!=global.device.getDeviceID())){
-                                                tmp_dataTrack.isShare = true;
-                                            }
-                                        }
-                                    }
-                                    if(tmp_data.contains("name")){
-                                        tmp_dataTrack.title = tmp_data["name"].toString();
-                                    }
-                                    if(tmp_json1.contains("mediaState")){
-                                        QJsonObject mediaState_jsonObject = tmp_json1["mediaState"].toObject();
-                                        //QJsonDocument doc1(mediaState_jsonObject); QString strJson1(doc1.toJson(QJsonDocument::Compact));//cheon211114-01
+
+                                    if(mediaState_jsonObject.contains("duration")){
                                         //print_debug();
-                                        //qDebug() << "QueuePlayList::setMusicQueueList---mediaState_jsonObject : " << strJson1 << "\n";
+                                        //qDebug() << "mediaState_jsonObject-duration = " << tmp_data["duration"].toString().toInt();
+                                        tmp_dataTrack.duration = mediaState_jsonObject["duration"].toString().toInt();
 
-
-                                        if(mediaState_jsonObject.contains("duration")){
-                                            //print_debug();
-                                            //qDebug() << "mediaState_jsonObject-duration = " << tmp_data["duration"].toString().toInt();
-                                            tmp_dataTrack.duration = mediaState_jsonObject["duration"].toString().toInt();
-
-                                        }else{
-                                            //print_debug();
-                                            if(tmp_data.contains("duration")){
-                                                //qDebug() << "tmp_data-duration = " << tmp_data["duration"].toString().toInt();
-                                                tmp_dataTrack.duration = tmp_data["duration"].toString().toInt();
-                                            }
-                                        }
                                     }else{
                                         //print_debug();
                                         if(tmp_data.contains("duration")){
@@ -2865,104 +2894,111 @@ void QueuePlayList::setTotalQueueList(int p_id, const QJsonObject &p_jsonObject)
                                             tmp_dataTrack.duration = tmp_data["duration"].toString().toInt();
                                         }
                                     }
-
-                                    tmp_dataTrack.artist = "";
-                                    if(tmp_data.contains("artist")){
-                                        tmp_dataTrack.artist = tmp_data["artist"].toString();
-                                    }
-                                    if(tmp_data.contains("thumbnail")){
-                                        tmp_dataTrack.thumbnail = tmp_data["thumbnail"].toString();
-
-                                    }
-
-                                    if(i==this->indexCurrPlay[tabSectionlist[1]]){//cheon211104-01
-                                        print_debug();
-                                        tmp_dataTrack.isPlay = true;
-                                        //this->currMenu = "clb_music";
-                                        this->bar_pos = k;
-                                        this->noTotal_currntPlay = k;
-
-
+                                }else{
+                                    //print_debug();
+                                    if(tmp_data.contains("duration")){
+                                        //qDebug() << "tmp_data-duration = " << tmp_data["duration"].toString().toInt();
+                                        tmp_dataTrack.duration = tmp_data["duration"].toString().toInt();
                                     }
                                 }
-                            }else{
-                                if(tmp_jsonObject.contains("mMusicSongInfo")){
-                                    //print_debug();
-                                    //qDebug() << "i=" <<i << ", this->indexCurrPlay[global.now_Section]=" << this->indexCurrPlay[global.now_Section];
-                                    QJsonObject tmp_data = tmp_jsonObject["mMusicSongInfo"].toObject();
 
-                                    // 1> 데이터 담기
-                                    tmp_dataTrack.addtimeResult = addtimeResult;
-                                    tmp_dataTrack.type = DataTrackforDelegate::Types_Data::Music;
-                                    tmp_dataTrack.isDirect = false;
-                                    if(tmp_data.contains("title")){
-                                        tmp_dataTrack.title = tmp_data["title"].toString();
-                                    }
-                                    if(tmp_data.contains("artist")){
-                                        tmp_dataTrack.artist = tmp_data["artist"].toString();
-                                    }
-                                    if(tmp_jsonObject.contains("mediaState")){
-                                        QJsonObject mediaState_jsonObject = tmp_json1["mediaState"].toObject();
-                                        if(mediaState_jsonObject.contains("duration")){
-                                            //qDebug() << "else-duration = " << tmp_data["duration"].toString().toInt();
-                                            tmp_dataTrack.duration = mediaState_jsonObject["duration"].toString().toInt();
-                                        }
-                                    }else{
-                                        if(tmp_data.contains("duration")){
-                                            //qDebug() << "else-duration = " << tmp_data["duration"].toString().toInt();
-                                            tmp_dataTrack.duration = tmp_data["duration"].toString().toInt();
-                                        }
-                                    }
-                                    int tmp_albumId = 0;
-                                    if(tmp_data.contains("album_id")){
-                                        tmp_albumId = tmp_data["album_id"].toInt();
-                                    }
+                                tmp_dataTrack.artist = "";
+                                if(tmp_data.contains("artist")){
+                                    tmp_dataTrack.artist = tmp_data["artist"].toString();
+                                }
+                                if(tmp_data.contains("thumbnail")){
+                                    tmp_dataTrack.thumbnail = tmp_data["thumbnail"].toString();
 
-                                    if(i==this->indexCurrPlay[tabSectionlist[1]]){//cheon211104-01
-                                        print_debug();
-                                        //this->currMenu = "clb_music";
-                                        tmp_dataTrack.isPlay = true;
-                                        this->bar_pos = k;
-                                        this->noTotal_currntPlay = k;
+                                }
+
+                                if(i==this->indexCurrPlay[tabSectionlist[1]]){//cheon211104-01
+                                    print_debug();
+                                    tmp_dataTrack.isPlay = true;
+                                    //this->currMenu = "clb_music";
+                                    this->bar_pos = k;
+                                    this->noTotal_currntPlay = k;
 
 
+                                }
+                            }
+                        }else{
+                            if(tmp_jsonObject.contains("mMusicSongInfo")){
+                                //print_debug();
+                                //qDebug() << "i=" <<i << ", this->indexCurrPlay[global.now_Section]=" << this->indexCurrPlay[global.now_Section];
+                                QJsonObject tmp_data = tmp_jsonObject["mMusicSongInfo"].toObject();
+
+                                // 1> 데이터 담기
+                                tmp_dataTrack.addtimeResult = addtimeResult;
+                                tmp_dataTrack.type = DataTrackforDelegate::Types_Data::Music;
+                                tmp_dataTrack.isDirect = false;
+                                if(tmp_data.contains("title")){
+                                    tmp_dataTrack.title = tmp_data["title"].toString();
+                                }
+                                if(tmp_data.contains("artist")){
+                                    tmp_dataTrack.artist = tmp_data["artist"].toString();
+                                }
+                                if(tmp_jsonObject.contains("mediaState")){
+                                    QJsonObject mediaState_jsonObject = tmp_json1["mediaState"].toObject();
+                                    if(mediaState_jsonObject.contains("duration")){
+                                        //qDebug() << "else-duration = " << tmp_data["duration"].toString().toInt();
+                                        tmp_dataTrack.duration = mediaState_jsonObject["duration"].toString().toInt();
                                     }
-                                    QString album_art = "";
-                                    if(tmp_data.contains("album_art")){
-                                        album_art = tmp_data["album_art"].toString();
+                                }else{
+                                    if(tmp_data.contains("duration")){
+                                        //qDebug() << "else-duration = " << tmp_data["duration"].toString().toInt();
+                                        tmp_dataTrack.duration = tmp_data["duration"].toString().toInt();
                                     }
-                                    if(album_art!=""){
-                                        SqliteHelper *sqlite = new SqliteHelper(this);
-                                        QSqlError err = sqlite->addConnectionRose();
-                                        if(err.type() == QSqlError::NoError){
-                                            QString strQuery = "SELECT album_art FROM album_art WHERE album_id=%1 ";
-                                            strQuery = strQuery.arg(tmp_albumId);
-                                            QVariantList data;
-                                            sqlite->exec(strQuery, data);
-                                            if(data.size() > 0){
-                                                QJsonObject tmp_data = data.first().toJsonObject();
-                                                if(tmp_data.contains("album_art")){
-                                                    album_art = tmp_data["album_art"].toString();
-                                                }
+                                }
+                                int tmp_albumId = 0;
+                                if(tmp_data.contains("album_id")){
+                                    tmp_albumId = tmp_data["album_id"].toInt();
+                                }
+
+                                if(i==this->indexCurrPlay[tabSectionlist[1]]){//cheon211104-01
+                                    print_debug();
+                                    //this->currMenu = "clb_music";
+                                    tmp_dataTrack.isPlay = true;
+                                    this->bar_pos = k;
+                                    this->noTotal_currntPlay = k;
+
+
+                                }
+                                QString album_art = "";
+                                if(tmp_data.contains("album_art")){
+                                    album_art = tmp_data["album_art"].toString();
+                                }
+                                if(album_art!=""){
+                                    SqliteHelper *sqlite = new SqliteHelper(this);
+                                    QSqlError err = sqlite->addConnectionRose();
+                                    if(err.type() == QSqlError::NoError){
+                                        QString strQuery = "SELECT album_art FROM album_art WHERE album_id=%1 ";
+                                        strQuery = strQuery.arg(tmp_albumId);
+                                        QVariantList data;
+                                        sqlite->exec(strQuery, data);
+                                        if(data.size() > 0){
+                                            QJsonObject tmp_data = data.first().toJsonObject();
+                                            if(tmp_data.contains("album_art")){
+                                                album_art = tmp_data["album_art"].toString();
                                             }
                                         }
-                                        sqlite->close();
-                                        delete sqlite;
                                     }
-                                    tmp_dataTrack.thumbnail = album_art;
+                                    sqlite->close();
+                                    delete sqlite;
                                 }
+                                tmp_dataTrack.thumbnail = album_art;
                             }
-                            tmp_dataTrack.no = i;//cheon210916-total
-                            QString tmp_imgPath = tmp_dataTrack.thumbnail;
-                            if(tmp_imgPath.startsWith("http")==false){
-                                tmp_imgPath = QString("http://%1:%2%3").arg(global.device.getDeviceIP()).arg(global.port_img).arg(tmp_imgPath);
-                            }
+                        }
+                        tmp_dataTrack.no = i;//cheon210916-total
+                        QString tmp_imgPath = tmp_dataTrack.thumbnail;
+                        if(tmp_imgPath.startsWith("http")==false){
+                            tmp_imgPath = QString("http://%1:%2%3").arg(global.device.getDeviceIP()).arg(global.port_img).arg(tmp_imgPath);
+                        }
 
-                            this->list_thumbPath[tabSectionlist[1]].append(tmp_imgPath);
-                            this->list_dataTrackForDelegate[tabSectionlist[1]].append(tmp_dataTrack);
-                            // 2> UI에 데이터 세팅
-                            this->appendTrackUI(k++);//cheon210916-total
-                        }//if(tmp_json1.contains("track"))
+                        this->list_thumbPath[tabSectionlist[1]].append(tmp_imgPath);
+                        this->list_dataTrackForDelegate[tabSectionlist[1]].append(tmp_dataTrack);
+                        // 2> UI에 데이터 세팅
+                        this->appendTrackUI(k++);//cheon210916-total
+                    }//if(tmp_json1.contains("track"))
 
                 }//if(tmpStr1 ==  "MUSIC")
                 if(tmpStr1 ==  "MUSIC"){
@@ -3034,12 +3070,12 @@ void QueuePlayList::setTotalQueueList(int p_id, const QJsonObject &p_jsonObject)
                                 if(tmp_jsonObject.contains("mediaState")){
                                     QJsonObject mediaState_jsonObject = tmp_json1["mediaState"].toObject();
                                     if(mediaState_jsonObject.contains("duration")){
-                                       // qDebug() << "duration = " << tmp_data["duration"].toString().toInt();
+                                        // qDebug() << "duration = " << tmp_data["duration"].toString().toInt();
                                         tmp_dataTrack.duration = mediaState_jsonObject["duration"].toString().toInt();
                                     }
                                 }else{
                                     if(tmp_data.contains("duration")){
-                                       // qDebug() << "duration = " << tmp_data["duration"].toString().toInt();
+                                        // qDebug() << "duration = " << tmp_data["duration"].toString().toInt();
                                         tmp_dataTrack.duration = tmp_data["duration"].toString().toInt();
                                     }
                                 }
@@ -3142,7 +3178,7 @@ void QueuePlayList::setTotalQueueList(int p_id, const QJsonObject &p_jsonObject)
 
                 }
 #if defined(Q_OS_WINDOWS)
-                   // QCoreApplication::processEvents();
+                // QCoreApplication::processEvents();
 #endif
 #if defined(Q_OS_MAC)
 #endif
@@ -3153,7 +3189,7 @@ void QueuePlayList::setTotalQueueList(int p_id, const QJsonObject &p_jsonObject)
             print_debug();
         }//else  //cheon211102
     }
-   // mtx.unlock();
+    // mtx.unlock();
 
 }
 
@@ -3206,7 +3242,7 @@ void QueuePlayList::slot_thumbnailDownloaded(){//1126
             if(lb_queueListImg[global.now_Section].count() > 0 ){
 
                 if(this->currMenu == CURRMENU_TOTAL){
-                   // backupPixmapArrayTotal.replace(tmp_index, tmp_pixmap);
+                    // backupPixmapArrayTotal.replace(tmp_index, tmp_pixmap);
                     //backupPixmapArrayTotal.append(tmp_pixmap);
                 }
 
@@ -3243,7 +3279,7 @@ void QueuePlayList::slot_thumbnailDownloaded(){//1126
 void QueuePlayList::slot_thumbnailDownloaded_playbarChanged(){
     FileDownloader *fileDownloader = qobject_cast<FileDownloader*>(sender());
     int tmp_index = fileDownloader->property("filedown_index").toInt();
-//print_debug();
+    //print_debug();
     if(tmp_index>=0 && tmp_index < list_thumbPath[global.now_Section].count()){
 
         QImage image;
@@ -3326,7 +3362,7 @@ void QueuePlayList::downloadThumbImageMore_playbarChanged(int i){
 
     //QCoreApplication::processEvents();//c221004_1
 
-//c1111
+    //c1111
 
 
 }
@@ -3345,7 +3381,7 @@ void QueuePlayList::downloadThumbImageMore_playbarChanged(int section, int i){
 
     //QCoreApplication::processEvents();//c221004_1
 
-//c1111
+    //c1111
 
 
 }
@@ -3363,7 +3399,7 @@ void QueuePlayList::slot_assignImg0(){
 
 void QueuePlayList::slot_downloadThumbImage(){
 
-   // downloadThumbImageMore_new();
+    // downloadThumbImageMore_new();
 }
 
 void QueuePlayList::downloadThumbImageMore(){//1126
@@ -3389,13 +3425,13 @@ void QueuePlayList::downloadThumbImageMore(){//1126
 
     print_debug();
     if(this->currMenu==CURRMENU_TOTAL){
-            print_debug();
-           // backupPixmapArrayTotal.clear();
-            //if(backupPixmapArrayTotal.count() > 0){
-             //   for(int i = 0; i < this->list_thumbPath[global.now_Section].count(); i++){
-              //      QObject::disconnect(disConId[i]);
-              //  }
-            //}
+        print_debug();
+        // backupPixmapArrayTotal.clear();
+        //if(backupPixmapArrayTotal.count() > 0){
+        //   for(int i = 0; i < this->list_thumbPath[global.now_Section].count(); i++){
+        //      QObject::disconnect(disConId[i]);
+        //  }
+        //}
     }
 
     //}
@@ -3542,9 +3578,9 @@ void QueuePlayList::slot_thumbnailDownloaded_recomm(){
                 lb_queueListImg_recomm[global.now_Section].at(tmp_index)->setPixmap(tmp_pixmap);
                 //print_debug();
             }else{
-                 //print_debug();
+                //print_debug();
                 //  if(!lb_queueListImg_recomm[global.now_Section].isEmpty())
-                 lb_queueListImg_recomm[global.now_Section].at(tmp_index)->setPixmap(pixmapDefault);
+                lb_queueListImg_recomm[global.now_Section].at(tmp_index)->setPixmap(pixmapDefault);
             }
 
         }
@@ -3987,19 +4023,19 @@ void QueuePlayList::slot_queuelistScrollbarMotify_menuChange(const int &p_id){//
         //    this->lb_position_site->setText(QString("%1: %2(%3)").arg(type).arg("All").arg(this->nextPlayNo));
         //    this->lb_position_title->setText(this->list_dataTrackForDelegate_Total.at(this->nextPlayNo).title);
 
-            //this->widget_position_msg->show();
-            //QTimer::singleShot(2000, this->widget_position_msg, SLOT(hide()));
+        //this->widget_position_msg->show();
+        //QTimer::singleShot(2000, this->widget_position_msg, SLOT(hide()));
         //    global.now_Section = 0;
         //    setChangMenuStyling(type);
-         //   print_debug();
-            //reloadList();
+        //   print_debug();
+        //reloadList();
 
-       // }else{
-            this->lb_position_site->setText(QString("%1(%2)").arg(type).arg(currIndex));
-            this->lb_position_title->setText(this->list_dataTrackForDelegate_Total.at(this->nextPlayNo).title);
+        // }else{
+        this->lb_position_site->setText(QString("%1(%2)").arg(type).arg(currIndex));
+        this->lb_position_title->setText(this->list_dataTrackForDelegate_Total.at(this->nextPlayNo).title);
 
-            //this->widget_position_msg->show();
-            //QTimer::singleShot(2000, this->widget_position_msg, SLOT(hide()));
+        //this->widget_position_msg->show();
+        //QTimer::singleShot(2000, this->widget_position_msg, SLOT(hide()));
         //}
 
 
@@ -4276,9 +4312,9 @@ void QueuePlayList::setTotalQueueList_recomm(int p_id, const QJsonObject &p_json
                     //if(jsonprintFlag_Ap==true){
                     //    QString tmp_string11 = tmp_json1["track"].toString();
                     //    qDebug() << "QueuePlayList::setQobuzQueueList---tmp_string : " << tmp_string11 << "\n";
-                        //QJsonObject tmp_json = tmp_json1["track"].toObject();
-                        //QJsonDocument doc(tmp_json); QString strJson(doc.toJson(QJsonDocument::Compact));
-                        //qDebug() << "QueuePlayList::setQobuzQueueList--APPLE-tmp_json : " << strJson << "\n";
+                    //QJsonObject tmp_json = tmp_json1["track"].toObject();
+                    //QJsonDocument doc(tmp_json); QString strJson(doc.toJson(QJsonDocument::Compact));
+                    //qDebug() << "QueuePlayList::setQobuzQueueList--APPLE-tmp_json : " << strJson << "\n";
                     //    jsonprintFlag_Ap = false;
 
                     //}
@@ -4481,6 +4517,16 @@ void QueuePlayList::setTotalQueueList_recomm(int p_id, const QJsonObject &p_json
                         tmp_dataTrack.title = data_video.mv_title;
                         tmp_dataTrack.artist = data_video.list_artist_nm.join(",");
                         tmp_dataTrack.len = data_video.len;
+                        if(data_video.bitrates.contains("fullhd") == true){
+                            tmp_dataTrack.audioQuality = "FULL HD";
+                        }
+                        else if(data_video.bitrates.contains("hd") == true){
+                            tmp_dataTrack.audioQuality = "HD";
+                        }
+                        else if(data_video.bitrates.contains("sd") == true){
+                            tmp_dataTrack.audioQuality = "SD";
+                        }
+
                         tmp_dataTrack.thumbnail = data_video.image; //data_track.album_image;
                     }else{
                         //print_debug();
@@ -4539,6 +4585,16 @@ void QueuePlayList::setTotalQueueList_recomm(int p_id, const QJsonObject &p_json
                     tmp_dataTrack.title = data_video.mv_title;
                     tmp_dataTrack.artist = data_video.list_artist_nm.join(",");
                     tmp_dataTrack.len = data_video.len;
+                    if(data_video.bitrates.contains("fullhd") == true){
+                        tmp_dataTrack.audioQuality = "FULL HD";
+                    }
+                    else if(data_video.bitrates.contains("hd") == true){
+                        tmp_dataTrack.audioQuality = "HD";
+                    }
+                    else if(data_video.bitrates.contains("sd") == true){
+                        tmp_dataTrack.audioQuality = "SD";
+                    }
+
                     tmp_dataTrack.thumbnail = data_video.image; //data_track.album_image;
                     tmp_dataTrack.no = i;//cheon211107-01
 
@@ -4882,10 +4938,10 @@ void QueuePlayList::listWidget_recommTitledrawingUI()//1126
     //listWidget_total[global.now_Section]->setStyleSheet("QListWidget::item {background-color:#707070; }");//transperant
     print_debug();
 #if defined(Q_OS_WINDOWS)
-            item->setSizeHint(QSize(90, 70));
+    item->setSizeHint(QSize(90, 70));
 #endif
 #if defined(Q_OS_MAC)
-            item->setSizeHint(QSize(90, 70));
+    item->setSizeHint(QSize(90, 70));
 #endif
     //print_debug();
     listWidget_total[global.now_Section]->addItem(item);
@@ -4939,7 +4995,7 @@ void QueuePlayList::view_listWidget_setItemWidget_recomm(const int &p_id){//c220
         //queProgressBar->setValue(total_queue_list_count);
         print_debug();
         for(int i = 0 ;  i < this->list_dataTrackForDelegate_recomm[global.now_Section].count() ; i++){
-           // print_debug();
+            // print_debug();
             //qDebug() << i;
             QListWidgetItem *item = new QListWidgetItem();
             if(i == this->list_dataTrackForDelegate_recomm[global.now_Section].count()-1){
@@ -4953,7 +5009,7 @@ void QueuePlayList::view_listWidget_setItemWidget_recomm(const int &p_id){//c220
             lb_queueListImg_recomm[global.now_Section].append(new QLabel());
             lb_queueListImg_recomm[global.now_Section].at(i)->setFixedSize(50,50);
             widget_recomm[global.now_Section].append( new QWidget());
-           // QListWidgetItem *item = listWidget_total[global.now_Section]->item(i);
+            // QListWidgetItem *item = listWidget_total[global.now_Section]->item(i);
             listWidget_total[global.now_Section]->setItemWidget(item,widget_recomm[global.now_Section].at(i));
         }
         qDebug() << "end-listWidget_total[global.now_Section]->count() = " << listWidget_total[global.now_Section]->count();
@@ -5490,35 +5546,35 @@ void QueuePlayList::view_listWidget_setItemWidget_forMenu(int queue_list_cnt){//
         }
     }
 
-        for(int i = 0 ;  i < queue_list_cnt ; i++){
+    for(int i = 0 ;  i < queue_list_cnt ; i++){
 
 
-            QObject::disconnect(disConSelectId[i]);
+        QObject::disconnect(disConSelectId[i]);
 
-            //widget[global.now_Section].append(new QWidget());
-            widget[global.now_Section].insert(i, new QWidget());
+        //widget[global.now_Section].append(new QWidget());
+        widget[global.now_Section].insert(i, new QWidget());
 
-            //lb_queueListImg[global.now_Section].append(new QLabel());
-            lb_queueListImg[global.now_Section].insert(i, new QLabel());
+        //lb_queueListImg[global.now_Section].append(new QLabel());
+        lb_queueListImg[global.now_Section].insert(i, new QLabel());
 
-            queue_setListWidget(i);
+        queue_setListWidget(i);
 
-            //checkbox_Selected[global.now_Section].append(new QCheckBox());
-            checkbox_Selected[global.now_Section].insert(i, new QCheckBox());
-            checkbox_Selected[global.now_Section].at(i)->setProperty("check_index", i);
-            checkbox_Selected[global.now_Section].at(i)->setStyleSheet(
-                        "#checkbox_Selected { background-color:transparent;spacing:0px;}"
-                        "QCheckBox::indicator:unchecked { image: url(:images/playlist/list_check_off.png);}"
-                        "QCheckBox::indicator:checked { image: url(:images/playlist/list_check_on.png);}"
-                        );
-            //checkbox_Selected->setCursor(Qt::PointingHandCursor);
-            checkbox_Selected[global.now_Section].at(i)->setFixedSize(40,33);
-            disConSelectId[i] = connect(checkbox_Selected[global.now_Section].at(i), SIGNAL(stateChanged(int)), this, SLOT(slot_clickedSelected(int)));
+        //checkbox_Selected[global.now_Section].append(new QCheckBox());
+        checkbox_Selected[global.now_Section].insert(i, new QCheckBox());
+        checkbox_Selected[global.now_Section].at(i)->setProperty("check_index", i);
+        checkbox_Selected[global.now_Section].at(i)->setStyleSheet(
+                    "#checkbox_Selected { background-color:transparent;spacing:0px;}"
+                    "QCheckBox::indicator:unchecked { image: url(:images/playlist/list_check_off.png);}"
+                    "QCheckBox::indicator:checked { image: url(:images/playlist/list_check_on.png);}"
+                    );
+        //checkbox_Selected->setCursor(Qt::PointingHandCursor);
+        checkbox_Selected[global.now_Section].at(i)->setFixedSize(40,33);
+        disConSelectId[i] = connect(checkbox_Selected[global.now_Section].at(i), SIGNAL(stateChanged(int)), this, SLOT(slot_clickedSelected(int)));
 
 
-        }
-        print_debug();
-        qDebug() << "end-----########################################################################################################################################################################";
+    }
+    print_debug();
+    qDebug() << "end-----########################################################################################################################################################################";
 
 
 
@@ -5548,7 +5604,7 @@ void QueuePlayList::view_listWidget_setItemWidget(const int &p_id){//c220826_2
     mouse_trigger_menu_flag = false;
 
     if(p_id == HTTP_CURR_QUEUE_GET_TOTAL ){
-       view_listWidget_setItemWidget_forMenu(this->list_dataTrackForDelegate[tabSectionlist[0]].count());
+        view_listWidget_setItemWidget_forMenu(this->list_dataTrackForDelegate[tabSectionlist[0]].count());
     }else if(p_id == HTTP_CURR_QUEUE_GET_APPLEMUSIC ){
         view_listWidget_setItemWidget_forMenu(this->list_dataTrackForDelegate[tabSectionlist[6]].count());
 
@@ -5586,31 +5642,31 @@ void QueuePlayList::view_listWidget_setItemWidget(const int &p_id){//c220826_2
 
 void QueuePlayList::slot_for_view_std_listWidget_one_lineItemUI(){
     //qDebug() << "QueuePlayList::view_listWidget_setItemWidget========================" << this->list_dataTrackForDelegate[global.now_Section].count();
-print_debug();
+    print_debug();
 
 
     for(int i = this->indexStartSetThumb; i < this->list_thumbPath[global.now_Section].count(); i++){
 
         this->std_listWidget_one_lineItemUI(i);
         queProgressBar->setValue(ProgressCont+i);
-        #if defined(Q_OS_WINDOWS)
+#if defined(Q_OS_WINDOWS)
         QCoreApplication::processEvents();
-        #endif
-        #if defined(Q_OS_MAC)
+#endif
+#if defined(Q_OS_MAC)
 
-        #endif
+#endif
 
     }
 
     for(int i = this->indexStartSetThumb2; i < this->indexCurrPlay[global.now_Section]; i++){
         this->std_listWidget_one_lineItemUI(i);
         queProgressBar->setValue(ProgressCont+i);
-        #if defined(Q_OS_WINDOWS)
+#if defined(Q_OS_WINDOWS)
         QCoreApplication::processEvents();
-        #endif
-        #if defined(Q_OS_MAC)
+#endif
+#if defined(Q_OS_MAC)
 
-        #endif
+#endif
 
     }
 
@@ -5627,10 +5683,10 @@ print_debug();
     //emit linker->signal_checkQueue(6, "");//c220502
 }
 void QueuePlayList::for_view_std_listWidget_one_lineItemUI(const int &p_id){//c220620
-print_debug();
-qDebug() <<  "this->CurrViewRow=" <<  this->CurrViewRow;
+    print_debug();
+    qDebug() <<  "this->CurrViewRow=" <<  this->CurrViewRow;
     for(int i = this->CurrViewRow; i < 10; i++){
-      //  this->std_listWidget_one_lineItemUI(i);
+        //  this->std_listWidget_one_lineItemUI(i);
     }
 
     /*
@@ -5650,7 +5706,7 @@ qDebug() <<  "this->CurrViewRow=" <<  this->CurrViewRow;
 }
 
 inline void QueuePlayList::std_listWidget_one_lineItemUI(const int &p_index){
-//print_debug();
+    //print_debug();
 
     lb_queueListImg[global.now_Section].at(p_index)->setFixedSize(50,50);
 
@@ -5676,9 +5732,9 @@ inline void QueuePlayList::std_listWidget_one_lineItemUI(const int &p_index){
     QLayout* layout = widget[global.now_Section].at(p_index)->layout();
 
     if (layout == 0){
-       // print_debug();
-       this->widget[global.now_Section].at(p_index)->setLayout(vl_list_titlelayout2_lineItem);
-   }
+        // print_debug();
+        this->widget[global.now_Section].at(p_index)->setLayout(vl_list_titlelayout2_lineItem);
+    }
 
     QLabel *lb_Change_list = new QLabel();
     lb_Change_list->setPixmap(QPixmap(pixmapChange_list));
@@ -5716,10 +5772,6 @@ inline void QueuePlayList::std_listWidget_one_lineItemUI(const int &p_index){
     lb_queueListImgDefault->setFixedSize(40,40);
     lb_queueListImgDefault->setStyleSheet("background-color:#070707;");
 
-    QLabel *lb_list_audioQuality = new QLabel();
-    //lb_list_audioQuality->setFixedSize(70,40);
-    lb_list_audioQuality->setStyleSheet("color:#777777;font-size:16px;");
-
     //hl_listl3layout_lineItem = new QHBoxLayout();
     hl_listl3layout_lineItem->setContentsMargins(0,0,0,0);
     hl_listl3layout_lineItem->setSpacing(10);
@@ -5733,11 +5785,11 @@ inline void QueuePlayList::std_listWidget_one_lineItemUI(const int &p_index){
     vl_list_titlelayout_lineItem->addWidget(lb_listBox_title);
     vl_list_titlelayout_lineItem->addWidget(lb_listBox_artist);
     //if(this->isPlayMode == true){
-        vl_list_titlelayout_lineItem->addWidget(widget_listl3layout_lineItem);
+    vl_list_titlelayout_lineItem->addWidget(widget_listl3layout_lineItem);
     //}
-//print_debug();
+    //print_debug();
     DataTrackforDelegate tmp_dataTrack = this->list_dataTrackForDelegate[global.now_Section].at(p_index);
-//print_debug();
+    //print_debug();
     //listWidget_total[global.now_Section]->item(p_index)->setText("   "+ QString::number(p_index)+ " " + this->list_dataTrackForDelegate[global.now_Section].at(p_index).title);
 
     lb_listBox_title->setText(this->list_dataTrackForDelegate[global.now_Section].at(p_index).title);
@@ -5869,7 +5921,30 @@ inline void QueuePlayList::std_listWidget_one_lineItemUI(const int &p_index){
 
     lb_list_addtimeResult->setText(QString("%1").arg(addtimeResult));
 
-    if(list_dataTrackForDelegate[global.now_Section].at(p_index).audioQuality == "FLAC" ){
+    QLabel *lb_list_audioQuality = new QLabel();
+    //lb_list_audioQuality->setFixedSize(70,40);
+    lb_list_audioQuality->setStyleSheet("color:#777777;font-size:16px;");
+
+    if(list_dataTrackForDelegate[global.now_Section].at(p_index).audioQuality == "HI_RES" ){
+        lb_list_audioQuality->setPixmap(*pixmap_type_audioQuality);
+    }
+    else if(list_dataTrackForDelegate[global.now_Section].at(p_index).audioQuality == "MQA" ){
+        lb_list_audioQuality->setPixmap(*pixmap_type_mqa);
+    }
+    else if(!list_dataTrackForDelegate[global.now_Section].at(p_index).audioQuality.isEmpty() ){
+        QString resolution = list_dataTrackForDelegate[global.now_Section].at(p_index).audioQuality;
+        QLabel *tmplabel = new QLabel();
+        tmplabel->setStyleSheet("background-color:transparent;color:#888888;font-size:16px;font-weight:normal;");
+        tmplabel->setText(resolution);
+
+        int width = tmplabel->sizeHint().width() + 20;
+
+        lb_list_audioQuality->setFixedSize(width, 30);
+        lb_list_audioQuality->setStyleSheet("background-color:transparent; color:#888888; font-size:14px; font-weight:normal; border:1px solid #888888; border-radius:15px;");
+        lb_list_audioQuality->setAlignment(Qt::AlignCenter);
+        lb_list_audioQuality->setText(resolution);
+    }
+    /*else if(list_dataTrackForDelegate[global.now_Section].at(p_index).audioQuality == "FLAC" ){
         lb_list_audioQuality->setFixedSize(55,30);
         lb_list_audioQuality->setText("FLAC");
         lb_list_audioQuality->setStyleSheet("font-size:16px; color:#888888;  background-color:transparent;  border:1px solid #888888;border-radius:16px; ");
@@ -5878,23 +5953,19 @@ inline void QueuePlayList::std_listWidget_one_lineItemUI(const int &p_index){
         //lb_list_audioQuality->setStyleSheet("background-color:#FFFFFF;color:white;font-size:13px;border-color:#FFFFFF;border-width: 1px, border-style: solid;");
 
         //lb_list_audioQuality->setPixmap(*pixmap_type_flac);
-    }else if(list_dataTrackForDelegate[global.now_Section].at(p_index).audioQuality == "HI_RES" ){
-        lb_list_audioQuality->setPixmap(*pixmap_type_audioQuality);
-    }else if(list_dataTrackForDelegate[global.now_Section].at(p_index).audioQuality == "MQA" ){
-        lb_list_audioQuality->setPixmap(*pixmap_type_mqa);
     }else if(list_dataTrackForDelegate[global.now_Section].at(p_index).audioQuality == "sd,hd,fullhd" ){
         lb_list_audioQuality->setFixedSize(55,30);
         lb_list_audioQuality->setText("fullhd");
         lb_list_audioQuality->setStyleSheet("font-size:16px; color:#888888;  background-color:transparent;  border:1px solid #888888;border-radius:16px; ");
-    }//sd,hd,fullhd
+    }//sd,hd,fullhd*/
 
 
     hl_listBoxlayout_lineItem = new QHBoxLayout();
     hl_listBoxlayout_lineItem->setContentsMargins(0,0,10,0);
- //print_debug()
-   // this->lb_queueListImg[global.now_Section].at(p_index)->setPixmap(QPixmap(pixmapDefault));
+    //print_debug()
+    // this->lb_queueListImg[global.now_Section].at(p_index)->setPixmap(QPixmap(pixmapDefault));
 
- //print_debug();
+    //print_debug();
 
     if(this->isEditMode == true){
         hl_listBoxlayout_lineItem->addWidget(checkbox_Selected[global.now_Section].at(p_index));//c0114
@@ -5946,7 +6017,7 @@ inline void QueuePlayList::std_listWidget_one_lineItemUI(const int &p_index){
 
     }
 
-//print_debug();
+    //print_debug();
 }
 
 
@@ -6128,24 +6199,33 @@ void QueuePlayList::std_listWidget_one_line_replace_only(const int &p_index){
         //lb_list_audioQuality->setFixedSize(70,40);
         lb_list_audioQuality->setStyleSheet("color:#777777;font-size:16px;");
 
-        if(list_dataTrackForDelegate[global.now_Section].at(p_index).audioQuality == "FLAC" ){
-            lb_list_audioQuality->setFixedSize(55,30);
-            lb_list_audioQuality->setText("FLAC");
-            lb_list_audioQuality->setStyleSheet("font-size:16px; color:#888888;  background-color:transparent;  border:1px solid #888888;border-radius:16px; ");
-            //lb_list_audioQuality->setText("FLAC");
-            //lb_list_audioQuality->setPixmap(QPixmap(pixmapFlac));
-            //lb_list_audioQuality->setStyleSheet("background-color:#FFFFFF;color:white;font-size:13px;border-color:#FFFFFF;border-width: 1px, border-style: solid;");
-
-            //lb_list_audioQuality->setPixmap(*pixmap_type_flac);
-        }else if(list_dataTrackForDelegate[global.now_Section].at(p_index).audioQuality == "HI_RES" ){
+        if(list_dataTrackForDelegate[global.now_Section].at(p_index).audioQuality == "HI_RES" ){
             lb_list_audioQuality->setPixmap(*pixmap_type_audioQuality);
-        }else if(list_dataTrackForDelegate[global.now_Section].at(p_index).audioQuality == "MQA" ){
+        }
+        else if(list_dataTrackForDelegate[global.now_Section].at(p_index).audioQuality == "MQA" ){
             lb_list_audioQuality->setPixmap(*pixmap_type_mqa);
-        }else if(list_dataTrackForDelegate[global.now_Section].at(p_index).audioQuality == "sd,hd,fullhd" ){
+        }
+        else if(!list_dataTrackForDelegate[global.now_Section].at(p_index).audioQuality.isEmpty() ){
+            QString resolution = list_dataTrackForDelegate[global.now_Section].at(p_index).audioQuality;
+            QLabel *tmplabel = new QLabel();
+            tmplabel->setStyleSheet("background-color:transparent;color:#888888;font-size:16px;font-weight:normal;");
+            tmplabel->setText(resolution);
+
+            int width = tmplabel->sizeHint().width() + 20;
+
+            lb_list_audioQuality->setFixedSize(width, 30);
+            lb_list_audioQuality->setStyleSheet("background-color:transparent; color:#888888; font-size:14px; font-weight:normal; border:1px solid #888888; border-radius:15px;");
+            lb_list_audioQuality->setAlignment(Qt::AlignCenter);
+            lb_list_audioQuality->setText(resolution);
+        }
+        /*else if(list_dataTrackForDelegate[global.now_Section].at(p_index).audioQuality == "MQA" ){
+            lb_list_audioQuality->setPixmap(*pixmap_type_mqa);
+        }
+        else if(list_dataTrackForDelegate[global.now_Section].at(p_index).audioQuality == "sd,hd,fullhd" ){
             lb_list_audioQuality->setFixedSize(55,30);
             lb_list_audioQuality->setText("fullhd");
             lb_list_audioQuality->setStyleSheet("font-size:16px; color:#888888;  background-color:transparent;  border:1px solid #888888;border-radius:16px; ");
-        }//sd,hd,fullhd
+        }//sd,hd,fullhd*/
 
         //lb_list_audioQuality->setStyleSheet("color:#777777;font-size:16px;");
         QHBoxLayout *hl_listl3layout = new QHBoxLayout();
@@ -6506,26 +6586,34 @@ void QueuePlayList::std_listWidget_one_line_replace_only(const int &section, con
         //lb_list_audioQuality->setFixedSize(70,40);
         lb_list_audioQuality->setStyleSheet("color:#777777;font-size:16px;");
 
-        if(list_dataTrackForDelegate[section].at(p_index).audioQuality == "FLAC" ){
-            lb_list_audioQuality->setFixedSize(55,30);
-            lb_list_audioQuality->setText("FLAC");
-            lb_list_audioQuality->setStyleSheet("font-size:16px; color:#888888;  background-color:transparent;  border:1px solid #888888;border-radius:16px; ");
-            //lb_list_audioQuality->setText("FLAC");
-            //lb_list_audioQuality->setPixmap(QPixmap(pixmapFlac));
-            //lb_list_audioQuality->setStyleSheet("background-color:#FFFFFF;color:white;font-size:13px;border-color:#FFFFFF;border-width: 1px, border-style: solid;");
-
-            //lb_list_audioQuality->setPixmap(*pixmap_type_flac);
-        }else if(list_dataTrackForDelegate[section].at(p_index).audioQuality == "HI_RES" ){
+        if(list_dataTrackForDelegate[section].at(p_index).audioQuality == "HI_RES" ){
             lb_list_audioQuality->setPixmap(*pixmap_type_audioQuality);
-        }else if(list_dataTrackForDelegate[section].at(p_index).audioQuality == "MQA" ){
+        }
+        else if(list_dataTrackForDelegate[section].at(p_index).audioQuality == "MQA" ){
             lb_list_audioQuality->setPixmap(*pixmap_type_mqa);
-        }else if(list_dataTrackForDelegate[section].at(p_index).audioQuality == "sd,hd,fullhd" ){
+        }
+        else if(!list_dataTrackForDelegate[section].at(p_index).audioQuality.isEmpty() ){
+            QString resolution = list_dataTrackForDelegate[section].at(p_index).audioQuality;
+            QLabel *tmplabel = new QLabel();
+            tmplabel->setStyleSheet("background-color:transparent;color:#888888;font-size:16px;font-weight:normal;");
+            tmplabel->setText(resolution);
+
+            int width = tmplabel->sizeHint().width() + 20;
+
+            lb_list_audioQuality->setFixedSize(width, 30);
+            lb_list_audioQuality->setStyleSheet("background-color:transparent; color:#888888; font-size:14px; font-weight:normal; border:1px solid #888888; border-radius:15px;");
+            lb_list_audioQuality->setAlignment(Qt::AlignCenter);
+            lb_list_audioQuality->setText(resolution);
+        }
+        /*else if(list_dataTrackForDelegate[section].at(p_index).audioQuality == "MQA" ){
+            lb_list_audioQuality->setPixmap(*pixmap_type_mqa);
+        }
+        else if(list_dataTrackForDelegate[section].at(p_index).audioQuality == "sd,hd,fullhd" ){
             lb_list_audioQuality->setFixedSize(55,30);
             lb_list_audioQuality->setText("fullhd");
             lb_list_audioQuality->setStyleSheet("font-size:16px; color:#888888;  background-color:transparent;  border:1px solid #888888;border-radius:16px; ");
-        }//sd,hd,fullhd
+        }//sd,hd,fullhd*/
 
-        //lb_list_audioQuality->setStyleSheet("color:#777777;font-size:16px;");
         QHBoxLayout *hl_listl3layout = new QHBoxLayout();
         hl_listl3layout->setContentsMargins(0,0,0,0);
         hl_listl3layout->setSpacing(10);
@@ -6715,7 +6803,7 @@ void QueuePlayList::std_listWidget_one_line_replace_only(const int &section, con
 
 void QueuePlayList::std_listWidget_one_line_recomm(const int &p_index){
     //print_debug();qDebug() << p_index;
-   // GSCommon::clearLayout(widget_recomm[global.now_Section].at(p_index)->layout());
+    // GSCommon::clearLayout(widget_recomm[global.now_Section].at(p_index)->layout());
     //print_debug();
 
 
@@ -6824,7 +6912,7 @@ void QueuePlayList::std_listWidget_one_line_recomm(const int &p_index){
 
     else{
 
-       // print_debug();//c220716
+        // print_debug();//c220716
         //qDebug() << "list_dataTrackForDelegate[global.now_Section].at(p_index).duration = "<< list_dataTrackForDelegate[global.now_Section].at(p_index).duration;
         //qDebug() << "list_dataTrackForDelegate[global.now_Section].at(p_index).title = "<< list_dataTrackForDelegate[global.now_Section].at(p_index).title;
 
@@ -6844,26 +6932,35 @@ void QueuePlayList::std_listWidget_one_line_recomm(const int &p_index){
 
 
     QLabel *lb_list_audioQuality = new QLabel();
+    lb_list_audioQuality->setStyleSheet("color:#777777;font-size:16px;");
 
-    if(list_dataTrackForDelegate_recomm[global.now_Section].at(p_index).audioQuality == "FLAC" ){
-        lb_list_audioQuality->setFixedSize(55,30);
-        lb_list_audioQuality->setText("FLAC");
-        lb_list_audioQuality->setStyleSheet("font-size:16px; color:#888888;  background-color:transparent;  border:1px solid #888888;border-radius:16px; ");
-        //lb_list_audioQuality->setText("FLAC");
-        //lb_list_audioQuality->setPixmap(QPixmap(pixmapFlac));
-        //lb_list_audioQuality->setStyleSheet("background-color:#FFFFFF;color:white;font-size:13px;border-color:#FFFFFF;border-width: 1px, border-style: solid;");
-
-        //lb_list_audioQuality->setPixmap(*pixmap_type_flac);
-    }else if(list_dataTrackForDelegate_recomm[global.now_Section].at(p_index).audioQuality == "HI_RES" ){
+    if(list_dataTrackForDelegate_recomm[global.now_Section].at(p_index).audioQuality == "HI_RES" ){
         lb_list_audioQuality->setPixmap(*pixmap_type_audioQuality);
-    }else if(list_dataTrackForDelegate_recomm[global.now_Section].at(p_index).audioQuality == "MQA" ){
+    }
+    else if(list_dataTrackForDelegate_recomm[global.now_Section].at(p_index).audioQuality == "MQA" ){
         lb_list_audioQuality->setPixmap(*pixmap_type_mqa);
-    }else if(list_dataTrackForDelegate_recomm[global.now_Section].at(p_index).audioQuality == "sd,hd,fullhd" ){
+    }
+    else if(!list_dataTrackForDelegate_recomm[global.now_Section].at(p_index).audioQuality.isEmpty() ){
+        QString resolution = list_dataTrackForDelegate_recomm[global.now_Section].at(p_index).audioQuality;
+        QLabel *tmplabel = new QLabel();
+        tmplabel->setStyleSheet("background-color:transparent;color:#888888;font-size:16px;font-weight:normal;");
+        tmplabel->setText(resolution);
+
+        int width = tmplabel->sizeHint().width() + 20;
+
+        lb_list_audioQuality->setFixedSize(width, 30);
+        lb_list_audioQuality->setStyleSheet("background-color:transparent; color:#888888; font-size:14px; font-weight:normal; border:1px solid #888888; border-radius:15px;");
+        lb_list_audioQuality->setAlignment(Qt::AlignCenter);
+        lb_list_audioQuality->setText(resolution);
+    }
+    /*else if(list_dataTrackForDelegate_recomm[global.now_Section].at(p_index).audioQuality == "MQA" ){
+        lb_list_audioQuality->setPixmap(*pixmap_type_mqa);
+    }
+    else if(list_dataTrackForDelegate_recomm[global.now_Section].at(p_index).audioQuality == "sd,hd,fullhd" ){
         lb_list_audioQuality->setFixedSize(55,30);
         lb_list_audioQuality->setText("fullhd");
         lb_list_audioQuality->setStyleSheet("font-size:16px; color:#888888;  background-color:transparent;  border:1px solid #888888;border-radius:16px; ");
-    }//sd,hd,fullhd
-    lb_list_audioQuality->setStyleSheet("color:#777777;font-size:16px;");
+    }//sd,hd,fullhd*/
 
     QHBoxLayout *hl_listl3layout = new QHBoxLayout();
     hl_listl3layout->setContentsMargins(0,0,0,0);
@@ -6931,7 +7028,7 @@ void QueuePlayList::std_listWidget_one_line_recomm(const int &p_index){
     //widget_recomm[global.now_Section].removeAt(p_index);
     //widget_recomm[global.now_Section].insert(p_index, new QWidget());
 
-   // widget_recomm[global.now_Section].at(p_index)->setStyleSheet("background-color:#333333;");//rgb(227,184,138)rgb(177,134,88)
+    // widget_recomm[global.now_Section].at(p_index)->setStyleSheet("background-color:#333333;");//rgb(227,184,138)rgb(177,134,88)
 
     hl_listBoxlayout->addWidget(widget_title, 0, Qt::AlignVCenter|Qt::AlignLeft);
     hl_listBoxlayout->addWidget(lb_list_audioQuality, 0, Qt::AlignVCenter|Qt::AlignRight);
@@ -6963,11 +7060,11 @@ void QueuePlayList::std_listWidget_one_line_recomm(const int &p_index){
 
     if (layout == 0){
 
-       this->widget_recomm[global.now_Section].at(p_index)->setLayout(vl_list_titlelayout2);
-   }
-   // widget_recomm[global.now_Section].at(p_index)->setLayout(vl_list_titlelayout2);
+        this->widget_recomm[global.now_Section].at(p_index)->setLayout(vl_list_titlelayout2);
+    }
+    // widget_recomm[global.now_Section].at(p_index)->setLayout(vl_list_titlelayout2);
     widget_recomm[global.now_Section].at(p_index)->setStyleSheet("background-color:#222222;");
-   // print_debug();
+    // print_debug();
 
 }
 
@@ -7029,7 +7126,7 @@ void QueuePlayList::playCurr_recomm(int p_index){//1126
         if(global.device.getDeviceIP()!=""){
             this->recomCurr_selIndex = p_index;
             global.queue_recommPlayFlag = true;
-           // widget_recomm[global.now_Section].at(p_index)->setStyleSheet("background-color:#9c9c9c;");
+            // widget_recomm[global.now_Section].at(p_index)->setStyleSheet("background-color:#9c9c9c;");
 
 
             DataTrackforDelegate tmp_dataTrack = this->list_dataTrackForDelegate_recomm[global.now_Section].at(p_index);
@@ -7582,9 +7679,9 @@ void QueuePlayList::playCurr(int p_index){//1126
                 qDebug() << "tmp_dataTrack.no= " << tmp_dataTrack.no << "\n";
 
                 //if(global.user_forBugs.isLogined()){//c220705
-                    procRose->request_setQueue_single(tmp_dataTrack.no, tmp_track);//cheon210916-index
+                procRose->request_setQueue_single(tmp_dataTrack.no, tmp_track);//cheon210916-index
                 //}else{
-                 //   ToastMsg::show(this,"", tr("The subscription has expired. Please log in again."), 3000, 0);
+                //   ToastMsg::show(this,"", tr("The subscription has expired. Please log in again."), 3000, 0);
 
                 //}
 
@@ -7625,7 +7722,7 @@ void QueuePlayList::playCurr(int p_index){//1126
                     print_debug();
                     widget[global.now_Section].at(p_index)->setStyleSheet(widget[global.now_Section].at(p_index)->styleSheet().replace("#111111", "#333333"));
                     //emit linker->signal_checkQueue(6, "");
-                //    emit linker->signal_checkQueue(16, "");
+                    //    emit linker->signal_checkQueue(16, "");
                     ToastMsg::show(this,"", tr("The subscription has expired. Please log in again."), 3000, 0);
                     return;
                 }
@@ -7648,7 +7745,7 @@ void QueuePlayList::playCurr(int p_index){//1126
                 //qDebug() << "QueuePlayList::playCurr--p_index+ music_queue_list_count+tidal_queue_list_count: " << p_index+ music_queue_list_count+tidal_queue_list_count;
                 procRose->request_applePlay_current_playlist(tmp_dataTrack.no, tmp_track);//cheon210916-index
 
-/*
+                /*
                 QString file = QFileDialog::getOpenFileName(this, "file select", "D:\\", "Files(*.mp3)");//cheon210617-file
                 qDebug() << "file----- : " << file;
                 QMediaPlayer *player = new QMediaPlayer;
@@ -7684,10 +7781,10 @@ void QueuePlayList::slot_responseHttp_music(const int& p_id, const QJsonObject& 
             //emit linker->signal_checkQueue(6, "");//c220411
 
             if(global.queuelist_mouse_trigger_flag){//c220503
-                 print_debug();
+                print_debug();
 
-                 //queuelist_change_replace(false, current_queue_cnt);
-                 //slot_queuelistScrollbarMotify(0);
+                //queuelist_change_replace(false, current_queue_cnt);
+                //slot_queuelistScrollbarMotify(0);
                 //emit signal_music_start();//c220411
             }
 
@@ -7913,7 +8010,7 @@ void QueuePlayList::slot_clickedPlay(){
         this->changeEditMode(true, false, false);
         listWidget_total[global.now_Section]->clear();
         if(jsonArr_deletePositon.count() == 0 || drop_cnt_flag == 0){
-           // delete_PixmapArray_flag = true;
+            // delete_PixmapArray_flag = true;
             print_debug();
             slot_queuelistMotify();
             //reloadList();
@@ -8121,7 +8218,7 @@ void QueuePlayList::slot_clickedDelete(){//1126
 
 
         }else{
-           // this->changeEditMode(false, false, true);
+            // this->changeEditMode(false, false, true);
             emit linker->signal_checkQueue(15, "");
         }
         lb_title_del->setText(QString(tr("%1 songs selected")).arg(jsonArr_deletePositon.count()));
@@ -8448,14 +8545,14 @@ void QueuePlayList::loadingGif(){
     print_debug();
     qDebug()<<"###########################################################################################";
     //QLabel *Movie = new QLabel(this);
-     //pixmapCheckOff.load(":images/playlist/list_check_off.png");
-   // QFile f("C:/Users/doulz/Rose_Connect-21-12-21-20/images/Spinner-1s-200px.gif");
-   // QByteArray *b = new QByteArray;
-   // if (f.open(QFile::ReadOnly)) {
-   //     b = new QByteArray(f.readAll());
+    //pixmapCheckOff.load(":images/playlist/list_check_off.png");
+    // QFile f("C:/Users/doulz/Rose_Connect-21-12-21-20/images/Spinner-1s-200px.gif");
+    // QByteArray *b = new QByteArray;
+    // if (f.open(QFile::ReadOnly)) {
+    //     b = new QByteArray(f.readAll());
     //    f.close();
-   // }
-   // QBuffer *buffer = new QBuffer(b);
+    // }
+    // QBuffer *buffer = new QBuffer(b);
     QLabel *Movie = new QLabel(this);
     QMovie *mov = new QMovie("C:/Users/doulz/Rose_Connect-21-12-21-20/images/Spinner-1s-200px.gif");
     Movie->setMovie(mov);
@@ -8470,7 +8567,7 @@ void QueuePlayList::RemoveLayout(QWidget* widget)
     //print_debug();
     QLayout* layout = widget->layout();
 
-   // GSCommon::clearLayout_new(layout);
+    // GSCommon::clearLayout_new(layout);
 
     if (layout != 0)
     {
@@ -8509,13 +8606,13 @@ void QueuePlayList::queuelist_change_replace_recovery(int section){
                 QLayout* layout = widget[section].at(i)->layout();
 
                 if (layout != 0){
-                   // print_debug();
+                    // print_debug();
                     QString temp = widget[section].at(i)->styleSheet();
-                   // qDebug() << "styleSheet-temp=" << temp;
+                    // qDebug() << "styleSheet-temp=" << temp;
                     bool ret = temp.contains("background-color:#735639", Qt::CaseInsensitive); // 대소문자 구분 없이
                     if( ret){
                         tmp_dataTrack = this->list_dataTrackForDelegate[section].at(i);
-                      //  qDebug() << "pre_menu - tmp_dataTrack.title = " << tmp_dataTrack.title;
+                        //  qDebug() << "pre_menu - tmp_dataTrack.title = " << tmp_dataTrack.title;
                         tmp_dataTrack.isPlay = false;
                         this->list_dataTrackForDelegate[section].replace(i, tmp_dataTrack);
 
@@ -8542,22 +8639,22 @@ void QueuePlayList::queuelist_change_replace(bool flag, int menu_count){
     int preIndex = -1 ;//c1217
     print_debug();
     //
-     if(!this->isPlayMode) return;//c220530
+    if(!this->isPlayMode) return;//c220530
 
-     //queuelist_change_replace_recovery(pre_now_Section);
-     qDebug() << "current_queue_cnt =" << current_queue_cnt;
-     qDebug() << "this->list_dataTrackForDelegate[global.now_Section].count() =" << this->list_dataTrackForDelegate[global.now_Section].count();
-     qDebug() << "this->indexPrePlay[global.now_Section] =" << this->indexPrePlay[global.now_Section];
-     qDebug() << "this->indexCurrPlay[global.now_Section] =" << this->indexCurrPlay[global.now_Section];
-     qDebug() << "menu_count =" << menu_count;
-     qDebug() << "global.now_Section =" << global.now_Section;
-     qDebug() << "currMenutoPid() =" << currMenutoPid();
-     if(menu_count == 0){
-         this->indexCurrPlay[global.now_Section] = -1;
-         this->indexPrePlay[global.now_Section] = -1;
-         return;
-     }
-/*
+    //queuelist_change_replace_recovery(pre_now_Section);
+    qDebug() << "current_queue_cnt =" << current_queue_cnt;
+    qDebug() << "this->list_dataTrackForDelegate[global.now_Section].count() =" << this->list_dataTrackForDelegate[global.now_Section].count();
+    qDebug() << "this->indexPrePlay[global.now_Section] =" << this->indexPrePlay[global.now_Section];
+    qDebug() << "this->indexCurrPlay[global.now_Section] =" << this->indexCurrPlay[global.now_Section];
+    qDebug() << "menu_count =" << menu_count;
+    qDebug() << "global.now_Section =" << global.now_Section;
+    qDebug() << "currMenutoPid() =" << currMenutoPid();
+    if(menu_count == 0){
+        this->indexCurrPlay[global.now_Section] = -1;
+        this->indexPrePlay[global.now_Section] = -1;
+        return;
+    }
+    /*
      //for(int i = 0 ; i < 7; i++){
          if(tabSectionlist[i] != 0){
             this->indexCurrPlay[tabSectionlist[i]] = get_IndexCurrPlayfromNextIndexNo(tabSectionlist[i]);
@@ -8566,110 +8663,110 @@ void QueuePlayList::queuelist_change_replace(bool flag, int menu_count){
      //}
      */
 
-     this->indexCurrPlay[global.now_Section] = get_IndexCurrPlayfromNextIndexNo(global.now_Section);
+    this->indexCurrPlay[global.now_Section] = get_IndexCurrPlayfromNextIndexNo(global.now_Section);
 
 
 
-     print_debug();
-     qDebug() << "this->indexPrePlay[global.now_Section] =" << this->indexPrePlay[global.now_Section];
-     qDebug() << "this->indexCurrPlay[global.now_Section] =" << this->indexCurrPlay[global.now_Section];
+    print_debug();
+    qDebug() << "this->indexPrePlay[global.now_Section] =" << this->indexPrePlay[global.now_Section];
+    qDebug() << "this->indexCurrPlay[global.now_Section] =" << this->indexCurrPlay[global.now_Section];
 
-     for(int i = 0; i < menu_count; i++){
-         if(menu_count == this->list_dataTrackForDelegate[global.now_Section].count()){
-             DataTrackforDelegate tmp_dataTrack = this->list_dataTrackForDelegate[global.now_Section].at(i);
+    for(int i = 0; i < menu_count; i++){
+        if(menu_count == this->list_dataTrackForDelegate[global.now_Section].count()){
+            DataTrackforDelegate tmp_dataTrack = this->list_dataTrackForDelegate[global.now_Section].at(i);
 
-             if(tmp_dataTrack.no == this->indexPrePlay[global.now_Section]){
-                 print_debug();
-                 qDebug() << "pre-tmp_dataTrack.no=" << tmp_dataTrack.no;
-                 qDebug() << "pre-tmp_dataTrack.title=" << tmp_dataTrack.title;
-                 qDebug() << "i=" << i;
-                 preIndex = i;
-                 break;
-             }
-
-         }
-
-     }
-
-     print_debug();
-     qDebug() << "this->indexCurrPlay[global.now_Section]=" << this->indexCurrPlay[global.now_Section];
-
-     qDebug() << "preIndex=" << preIndex;
-
-        if(this->indexPrePlay[global.now_Section] != this->indexCurrPlay[global.now_Section]){
-            DataTrackforDelegate tmp_dataTrack;
-            if(this->indexPrePlay[global.now_Section] >= 0 && this->indexPrePlay[global.now_Section] < this->list_dataTrackForDelegate[global.now_Section].count() ){
+            if(tmp_dataTrack.no == this->indexPrePlay[global.now_Section]){
                 print_debug();
-                /*
+                qDebug() << "pre-tmp_dataTrack.no=" << tmp_dataTrack.no;
+                qDebug() << "pre-tmp_dataTrack.title=" << tmp_dataTrack.title;
+                qDebug() << "i=" << i;
+                preIndex = i;
+                break;
+            }
+
+        }
+
+    }
+
+    print_debug();
+    qDebug() << "this->indexCurrPlay[global.now_Section]=" << this->indexCurrPlay[global.now_Section];
+
+    qDebug() << "preIndex=" << preIndex;
+
+    if(this->indexPrePlay[global.now_Section] != this->indexCurrPlay[global.now_Section]){
+        DataTrackforDelegate tmp_dataTrack;
+        if(this->indexPrePlay[global.now_Section] >= 0 && this->indexPrePlay[global.now_Section] < this->list_dataTrackForDelegate[global.now_Section].count() ){
+            print_debug();
+            /*
                 tmp_dataTrack = this->list_dataTrackForDelegate[tabSectionlist[0]].at(this->indexPrePlay[global.now_Section]);
                 qDebug() << "indexCurrPlay[global.now_Section] - tmp_dataTrack.title = " << tmp_dataTrack.title;
                 tmp_dataTrack.isPlay = false;
                 this->list_dataTrackForDelegate[tabSectionlist[0]].replace(this->indexPrePlay[global.now_Section], tmp_dataTrack);
 
 */
-                tmp_dataTrack = this->list_dataTrackForDelegate[global.now_Section].at(this->indexPrePlay[global.now_Section]);
-                qDebug() << "indexCurrPlay[global.now_Section] - tmp_dataTrack.title = " << tmp_dataTrack.title;
-                tmp_dataTrack.isPlay = false;
-                this->list_dataTrackForDelegate[global.now_Section].replace(this->indexPrePlay[global.now_Section], tmp_dataTrack);
+            tmp_dataTrack = this->list_dataTrackForDelegate[global.now_Section].at(this->indexPrePlay[global.now_Section]);
+            qDebug() << "indexCurrPlay[global.now_Section] - tmp_dataTrack.title = " << tmp_dataTrack.title;
+            tmp_dataTrack.isPlay = false;
+            this->list_dataTrackForDelegate[global.now_Section].replace(this->indexPrePlay[global.now_Section], tmp_dataTrack);
 
 
-            }
-            if(this->indexCurrPlay[global.now_Section] >= 0 && this->indexCurrPlay[global.now_Section] < this->list_dataTrackForDelegate[global.now_Section].count()){
-                DataTrackforDelegate tmp_dataTrack;
-                /*
+        }
+        if(this->indexCurrPlay[global.now_Section] >= 0 && this->indexCurrPlay[global.now_Section] < this->list_dataTrackForDelegate[global.now_Section].count()){
+            DataTrackforDelegate tmp_dataTrack;
+            /*
                 tmp_dataTrack = this->list_dataTrackForDelegate[tabSectionlist[0]].at(this->indexCurrPlay[global.now_Section]);
                 qDebug() << "indexCurrPlay[global.now_Section] - tmp_dataTrack.title = " << tmp_dataTrack.title;
                 tmp_dataTrack.isPlay = true;
                 this->list_dataTrackForDelegate[tabSectionlist[0]].replace(this->indexCurrPlay[global.now_Section], tmp_dataTrack);
 
 */
-                tmp_dataTrack = this->list_dataTrackForDelegate[global.now_Section].at(this->indexCurrPlay[global.now_Section]);
-                qDebug() << "indexCurrPlay[global.now_Section] - tmp_dataTrack.title = " << tmp_dataTrack.title;
-                tmp_dataTrack.isPlay = true;
-                this->list_dataTrackForDelegate[global.now_Section].replace(this->indexCurrPlay[global.now_Section], tmp_dataTrack);
-
-            }
-        }
-        //
-        if(preIndex >=0 && this->indexCurrPlay[global.now_Section] >=0 && this->indexCurrPlay[global.now_Section] != preIndex){
-            print_debug();
-            //view_listWidget_setItemWidget_replace(this->indexCurrPlay[global.now_Section],preIndex);
-
-            view_listWidget_setItemWidget_replace_only(this->indexCurrPlay[global.now_Section],preIndex);
-
-
-
-        }else if(this->indexCurrPlay[global.now_Section] >=0 && preIndex < 0){
-
-            print_debug();
-
-            DataTrackforDelegate tmp_dataTrack;
             tmp_dataTrack = this->list_dataTrackForDelegate[global.now_Section].at(this->indexCurrPlay[global.now_Section]);
-            qDebug() << "index_old - tmp_dataTrack.title = " << tmp_dataTrack.title;
+            qDebug() << "indexCurrPlay[global.now_Section] - tmp_dataTrack.title = " << tmp_dataTrack.title;
             tmp_dataTrack.isPlay = true;
             this->list_dataTrackForDelegate[global.now_Section].replace(this->indexCurrPlay[global.now_Section], tmp_dataTrack);
-            std_listWidget_one_line_replace_only(this->indexCurrPlay[global.now_Section]);
-
-        }else if(preIndex >=0 && this->indexCurrPlay[global.now_Section] < 0){
-            DataTrackforDelegate tmp_dataTrack;
-            tmp_dataTrack = this->list_dataTrackForDelegate[global.now_Section].at(preIndex);
-            qDebug() << "index_old - tmp_dataTrack.title = " << tmp_dataTrack.title;
-            tmp_dataTrack.isPlay = false;
-            this->list_dataTrackForDelegate[global.now_Section].replace(preIndex, tmp_dataTrack);
-            std_listWidget_one_line_replace_only(preIndex);
 
         }
+    }
+    //
+    if(preIndex >=0 && this->indexCurrPlay[global.now_Section] >=0 && this->indexCurrPlay[global.now_Section] != preIndex){
         print_debug();
-        this->indexPrePlay[global.now_Section] = this->indexCurrPlay[global.now_Section];
+        //view_listWidget_setItemWidget_replace(this->indexCurrPlay[global.now_Section],preIndex);
 
-        qDebug() << "this->indexCurrPlay[global.now_Section] =" << this->indexCurrPlay[global.now_Section];
-        qDebug() << "this->indexPrePlay[global.now_Section] =" << this->indexPrePlay[global.now_Section];
-
-
-        mouse_all_clear();
+        view_listWidget_setItemWidget_replace_only(this->indexCurrPlay[global.now_Section],preIndex);
 
 
-        slot_queuelistScrollbarMotify(0);
+
+    }else if(this->indexCurrPlay[global.now_Section] >=0 && preIndex < 0){
+
+        print_debug();
+
+        DataTrackforDelegate tmp_dataTrack;
+        tmp_dataTrack = this->list_dataTrackForDelegate[global.now_Section].at(this->indexCurrPlay[global.now_Section]);
+        qDebug() << "index_old - tmp_dataTrack.title = " << tmp_dataTrack.title;
+        tmp_dataTrack.isPlay = true;
+        this->list_dataTrackForDelegate[global.now_Section].replace(this->indexCurrPlay[global.now_Section], tmp_dataTrack);
+        std_listWidget_one_line_replace_only(this->indexCurrPlay[global.now_Section]);
+
+    }else if(preIndex >=0 && this->indexCurrPlay[global.now_Section] < 0){
+        DataTrackforDelegate tmp_dataTrack;
+        tmp_dataTrack = this->list_dataTrackForDelegate[global.now_Section].at(preIndex);
+        qDebug() << "index_old - tmp_dataTrack.title = " << tmp_dataTrack.title;
+        tmp_dataTrack.isPlay = false;
+        this->list_dataTrackForDelegate[global.now_Section].replace(preIndex, tmp_dataTrack);
+        std_listWidget_one_line_replace_only(preIndex);
+
+    }
+    print_debug();
+    this->indexPrePlay[global.now_Section] = this->indexCurrPlay[global.now_Section];
+
+    qDebug() << "this->indexCurrPlay[global.now_Section] =" << this->indexCurrPlay[global.now_Section];
+    qDebug() << "this->indexPrePlay[global.now_Section] =" << this->indexPrePlay[global.now_Section];
+
+
+    mouse_all_clear();
+
+
+    slot_queuelistScrollbarMotify(0);
 
 
 }
@@ -8843,7 +8940,7 @@ void QueuePlayList::append_widget(){
 
 bool QueuePlayList::queueReflash_checking(int p_id){//1126
     print_debug();
-/*
+    /*
     if(force_newLoad_flag == true){
         force_newLoad_flag = false;
         print_debug();
@@ -8890,7 +8987,7 @@ bool QueuePlayList::queueReflash_checking(int p_id){//1126
     QLocale aEnglish;
     lb_title_cnt->setText(tr("%1 / 3,000").arg(aEnglish.toString(this->current_queue_cnt)));
     qDebug() << "this->current_queue_cnt=" << this->current_queue_cnt;
-/*
+    /*
     if(this->pre_checkSum != global.checkSum){
        print_debug();
        equelRecieveJsonFlag[global.now_Section] = false;
@@ -8990,7 +9087,7 @@ void QueuePlayList::slot_responseHttp(const int &p_id, const QJsonObject &p_json
 
     qDebug() << "this->list_thumbPath[global.now_Section].count() = " << this->list_thumbPath[global.now_Section].count();
     QJsonDocument doc(p_jsonObject); QString strJson(doc.toJson(QJsonDocument::Compact));
-        //qDebug() << "QueuePlayList::setTotalQueueList---- " << strJson << "\n";
+    //qDebug() << "QueuePlayList::setTotalQueueList---- " << strJson << "\n";
 
     //-------------------------------------------------------------------------------------------
     emit linker->signal_clickListBtn();
@@ -9006,7 +9103,7 @@ void QueuePlayList::slot_responseHttp(const int &p_id, const QJsonObject &p_json
         //emit signal_valueChanged(0);
     }else{
         slot_listwidgetcurrentRowChanged_start(this->indexCurrPlay[global.now_Section]);
-       // emit signal_valueChanged(this->indexCurrPlay[global.now_Section]);
+        // emit signal_valueChanged(this->indexCurrPlay[global.now_Section]);
     }
     //print_debug();
     if(this->isPlayMode){
@@ -9225,7 +9322,7 @@ void QueuePlayList::slot_responseHttp_get(const int &p_id, const QJsonObject &p_
                     //mouse_all_clear();
 
                     if(this->indexCurrPlay[global.now_Section] >= 0 ){
-                      //  queuelist_change_replace(true, current_queue_cnt);//c220625
+                        //  queuelist_change_replace(true, current_queue_cnt);//c220625
                     }
 
                     //slot_queuelistScrollbarMotify(0);
@@ -9629,7 +9726,7 @@ void QueuePlayList::wheelEvent(QWheelEvent *event){//c221004_1
 
 #if defined(Q_OS_WINDOWS)
 
-        //slot_listwidgetcurrentRowChanged(this->listWidget_total[global.now_Section]->verticalScrollBar()->sliderPosition());  //c221004_1
+    //slot_listwidgetcurrentRowChanged(this->listWidget_total[global.now_Section]->verticalScrollBar()->sliderPosition());  //c221004_1
 
 #endif
 #if defined(Q_OS_MAC)
@@ -9658,7 +9755,7 @@ void QueuePlayList::slot_queuelistPositionGet_http_signal_singhot(){
             //emit linker->signal_checkQueue(8, "");
             //this->currMenu = selected_menuSave;
 
-           // this->showEvent(nullptr);
+            // this->showEvent(nullptr);
 
             QJsonObject tmp_json;
             NetworkHttp *network_get = new NetworkHttp;
@@ -9750,7 +9847,7 @@ void QueuePlayList::slot_queuelistMotify(){//1126
     }
 }
 
-    /**
+/**
  * @brief QueuePlayList::reloadList 재생목록 리로드
  */
 void QueuePlayList::reloadList(){//cheon211114-01

@@ -103,6 +103,7 @@ private:
     QString album_mime = "";
     int samplerate = 0;
     int bitdepth = 0;
+    int track = 0;
 
 
     // VIDEO 전용

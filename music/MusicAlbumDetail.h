@@ -100,6 +100,9 @@ namespace music {
 
         bool flag_draw = false;
 
+        int cd_ico_cnt = 0;
+        int cd_num = 0;
+
         int album_id_roseSVR = 0;
         int track_page = 0;
 

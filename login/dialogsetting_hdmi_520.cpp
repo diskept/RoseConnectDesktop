@@ -436,7 +436,7 @@ void dialogsetting_hdmi_520::setUIControl(){
     vl_total2->addLayout(vl_total1);
     vl_total2->addLayout(vl_total_Pass);//print_debug();
     vl_total2->addLayout(vl_total_32);
-    vl_total2->addLayout(vl_total_outputgain);
+    //vl_total2->addLayout(vl_total_outputgain);
   //  vl_total2->addWidget(widget_box_notice);//print_debug();
     vl_total2->addSpacing(30);//200
 
@@ -491,7 +491,7 @@ void dialogsetting_hdmi_520::slot_clickedDSDquestion(){//c220511
     dlgConfirmHdmi->setTitle(tr("DSD Mode"));
     dlgConfirmHdmi->setText(tr("Determines the transmission format (Native, DOP, PCM) of audio samples to be transmitted to the DAC when playing DSD sound sources. \n For HDMI output, only DSD to PCM is available."));
 
-    dlgConfirmHdmi->setGeometry((DLG_WIDTH + 80), (350 + 100), 350, 500);
+    dlgConfirmHdmi->setGeometry((DLG_WIDTH + 80), (150 + 100), 350, 500);
     dlgConfirmHdmi->setAlertMode();
     dlgConfirmHdmi->setProperty("flagShown",false);
 
@@ -508,9 +508,10 @@ void dialogsetting_hdmi_520::slot_clickedDSDquestion(){//c220511
 void dialogsetting_hdmi_520::slot_clickedPCMquestion(){//c220511
     print_debug();
     dlgConfirmHdmi->setTitle(tr("PCM Resampling Frequency"));
-    dlgConfirmHdmi->setText(tr("This is The menu to set sampling frequecy. if you want to output the original sound as it is, select the Original Sampling Rate, and if want to use the resampling function, select the desired sampling rate (48kHz, 96Khz, 192Khz, etc), MQA, Native DSD, DOP, Video, Bluetooth and Airplay are not supported."));
+    dlgConfirmHdmi->setText(tr("This is The menu to set sampling frequecy. if you want to output the original sound as it is, select the Original Sampling Rate, and if want to use the resampling function, select the desired sampling rate (48kHz, 96Khz, 192Khz, etc), MQA, Native DSD, DOP, Video, Bluetooth and Airplay, Roon Ready are not supported."));
 
-    dlgConfirmHdmi->setGeometry((DLG_WIDTH + 80), (350 + 100), 350, 500);
+    dlgConfirmHdmi->setTextHeight(250);
+    dlgConfirmHdmi->setGeometry((DLG_WIDTH + 80), (150 + 100), 350, 500);
     dlgConfirmHdmi->setAlertMode();
     dlgConfirmHdmi->setProperty("flagShown",false);
 
@@ -529,7 +530,7 @@ void dialogsetting_hdmi_520::slot_clickedPassquestion(){//c220511
     dlgConfirmHdmi->setTitle(tr("HDMI Passthough"));
     dlgConfirmHdmi->setText(tr("it bypasses HD audio formats such as surround sound sources to the audio reciever though HDMI without decording."));
 
-    dlgConfirmHdmi->setGeometry((DLG_WIDTH + 80), (350 + 100), 350, 500);
+    dlgConfirmHdmi->setGeometry((DLG_WIDTH + 80), (150 + 100), 350, 500);
     dlgConfirmHdmi->setAlertMode();
     dlgConfirmHdmi->setProperty("flagShown",false);
 
@@ -553,7 +554,7 @@ void dialogsetting_hdmi_520::slot_clickedbit32question(){//c220511
     dlgConfirmHdmi->setTitle(tr("The low 8bits of a 32 bit sound sources\n will have correct"));
     dlgConfirmHdmi->setText(tr("Some DACs may generate noise when playing a 32-bit sound source with a high sampling rate.\nIn this case, it is used to reduce noise by correcting the lower 8 bits."));
 
-    dlgConfirmHdmi->setGeometry((DLG_WIDTH + 80), (350 + 100), 350, 500);
+    dlgConfirmHdmi->setGeometry((DLG_WIDTH + 80), (150 + 100), 350, 500);
     dlgConfirmHdmi->setAlertMode();
     dlgConfirmHdmi->setProperty("flagShown",false);
 
@@ -573,7 +574,7 @@ void dialogsetting_hdmi_520::slot_clickedRoonquestion(){//c220511
     dlgConfirmHdmi->setText(tr("Adjust the playback volume of digital audio data using the Rose volume control software.\nCaution 1. It cannot be used in Native DSD or DSD over PCM mode. It is applied after changing to DSD to PCM(upto DSD128) mode.\nCaution 2. For digital output. MQA Stream is supported only when the volume is MAX. If it is less than MAX. MQA Stream is not supported."));
     dlgConfirmHdmi->setTextHeight(250);
     dlgConfirmHdmi->setAlignment(Qt::AlignLeft);
-    dlgConfirmHdmi->setGeometry((DLG_WIDTH + 80), (350 + 100), 350, 500);
+    dlgConfirmHdmi->setGeometry((DLG_WIDTH + 80), (150 + 100), 350, 500);
     dlgConfirmHdmi->setAlertMode();
     dlgConfirmHdmi->setProperty("flagShown",false);
 

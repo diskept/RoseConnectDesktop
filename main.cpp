@@ -69,7 +69,7 @@ void LogToFile(QtMsgType type, const QMessageLogContext &context, const QString 
         break;
     case QtFatalMsg:
         out << "[Fatal]" << curtime << msg << "\n";
-        abort();
+        break;
     }
     file.close();
 }
@@ -79,13 +79,13 @@ int main(int argc, char *argv[])
     global.currentExitCode = 0;//cheon210812-iso
 
 
-    QString ver = "4.2.25";//c220831_2  이하 6 line
-    if(ver.split(".").last().size()>9){
+    QString ver = "4.2.293";//c220831_2  이하 6 line
+    if(ver.split(".").last().toInt() > 9){
         //qInstallMessageHandler(LogToFile);
     }
     setQSettings();
     rosesettings.RoseSettings_setVersion(ver);//c220718
-    rosesettings.RoseSettings_setBuildDate("22/08/31");//c220718
+    rosesettings.RoseSettings_setBuildDate("22/10/14");//c220718
 
     /*QNetworkConfigurationManager manager;
 

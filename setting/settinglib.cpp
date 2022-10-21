@@ -188,10 +188,17 @@ QWidget* SettingLib::getUIControlMediaLibrary(const int &p_index){
 
         // name, path
         QString tmp_path = getMedaiNamePath(listMedia->at(p_index)->getIsServer(), listMedia->at(p_index)->getName(), listMedia->at(p_index)->getPath());
+print_debug();
+qDebug() << "global.LmtCnt-260=" << global.LmtCnt-260;
+        lb_path_tmp[p_index] = new QLabel();
+        lb_path_tmp[p_index] ->resize(global.LmtCnt-260, 70);
+        if(global.LmtCnt-260 >990){
+            lb_path_tmp[p_index] ->setText(GSCommon::getTextCutFromLabelWidth(tmp_path, 990-255, lb_path_tmp[p_index] ->font()));
+        }else{
+            lb_path_tmp[p_index] ->setText(GSCommon::getTextCutFromLabelWidth(tmp_path, global.LmtCnt-260-255, lb_path_tmp[p_index] ->font()));
+        }
 
-        QLabel *lb_path = new QLabel();
-        lb_path->setText(GSCommon::getTextCutFromLabelWidth(tmp_path, this->width()-155, lb_path->font()));
-        lb_path->setStyleSheet(tmp_titleStyle);
+        lb_path_tmp[p_index] ->setStyleSheet(tmp_titleStyle);
 
         QLabel *lb_dbStatus = new QLabel(listMedia->at(p_index)->getStrDbStatus());
         lb_dbStatus->setStyleSheet("color:#666666;font-size:17px;");
@@ -200,7 +207,7 @@ QWidget* SettingLib::getUIControlMediaLibrary(const int &p_index){
         box_info->setContentsMargins(0,0,0,0);
         box_info->setAlignment(Qt::AlignVCenter);
         box_info->setSpacing(0);
-        box_info->addWidget(lb_path);
+        box_info->addWidget(lb_path_tmp[p_index] );
         box_info->addSpacing(7);
         box_info->addWidget(lb_dbStatus);
 
@@ -228,6 +235,20 @@ QWidget* SettingLib::getUIControlMediaLibrary(const int &p_index){
     return widget_total;
 }
 
+void SettingLib::resizeEvent(QResizeEvent *event){
+
+    //SettingLib::resizeEvent(event);
+
+
+    for(int i = 0; i < listMedia->count();i++){
+        if(this->lb_path_tmp[i]  != nullptr){
+            this->lb_path_tmp[i] ->setFixedWidth(global.LmtCnt-260-155);
+            QString tmp_path = getMedaiNamePath(listMedia->at(i)->getIsServer(), listMedia->at(i)->getName(), listMedia->at(i)->getPath());
+            lb_path_tmp[i] ->setText(GSCommon::getTextCutFromLabelWidth(tmp_path, global.LmtCnt-260-255, lb_path_tmp[i] ->font()));
+        }
+    }
+
+}
 /**
  * @brief SettingLib::showDlgOfDBInit : DB 초기화 Dialog Show
  */

@@ -62,7 +62,11 @@ BtnLabel::BtnLabel(QString p_text, QString p_objName, QString p_imgPath_selected
 
     Q_UNUSED(p_objName);
 
-    pixmap_selected = GSCommon::getUIPixmapImg(p_imgPath_selected);
+    if(p_objName == "btn520_input_Model"){
+        pixmap_selected = GSCommon::getUIPixmapImg_WH(p_imgPath_selected, 330, 190);
+    }else{
+        pixmap_selected = GSCommon::getUIPixmapImg(p_imgPath_selected);
+    }
     pixmap_unSelected = GSCommon::getUIPixmapImg(p_imgPath_unSelected);
 
     lb_image = new QLabel();
@@ -120,6 +124,7 @@ void BtnLabel::setStyleText(QString a){
 SettingInputOutput::SettingInputOutput(QWidget *parent) : QWidget(parent)
 {
 
+    linker = Linker::getInstance();//c221013_1
     this->setUIControl();
 
 }
@@ -242,8 +247,9 @@ const int BTN_SPEAKER520  = 45;
 
 void SettingInputOutput::setUIControl520(QString deviceType){//c220922_1
 print_debug();
-    QString deviceTypeImgSelected = ":/images/setting/inout_201_in2_gold_selected.png";
-    QString deviceTypeImgUnSelected = ":/images/setting/inout_201_in2.png";
+    //QString deviceTypeImgSelected = ":/images/setting/520/inout_520_in2_gold_selected.png";
+    QString deviceTypeImgSelected = ":/images/setting/520/inout_520_in_selected.png";
+    QString deviceTypeImgUnSelected = ":/images/setting/520/inout_520_in2.png";
     qDebug() << "setUIControl201-device_type : " << deviceType;
     // INPUT Body
     btn520_input_Model = new BtnLabel(deviceType, "btn520_input_Model", deviceTypeImgSelected, deviceTypeImgUnSelected);
@@ -295,7 +301,7 @@ print_debug();
     hl_btns_inputLine1->addLayout(vl_btn520_line_in_l);
     hl_btns_inputLine1->addLayout(vl_btn520_line_in_r);
 
-    btn520_HDMI_ARC_in = new BtnLabel(tr("ARC IN"), "btn520_HDMI_ARC_in", ":/images/setting/520/inout_HDMI_ARC_IN_gold_selected.png", ":/images/setting/520/inout_HDMI_ARC_IN.png");
+    btn520_HDMI_ARC_in = new BtnLabel(tr("eARC IN"), "btn520_HDMI_ARC_in", ":/images/setting/520/inout_HDMI_ARC_IN_gold_selected.png", ":/images/setting/520/inout_HDMI_ARC_IN.png");
     btn520_HDMI_ARC_in->setFixedSize(134,98);
     btn520_HDMI_ARC_in->setProperty("btnNo", 5);
     QVBoxLayout *vl_btn520_HDMI_ARC_in = new QVBoxLayout();
@@ -311,7 +317,7 @@ print_debug();
     vl_btn520_opt_in->setSpacing(0);
     vl_btn520_opt_in->addWidget(btn520_opt_in);
 
-    btn520_coax_in = new BtnLabel(tr("COAX IN"), "btn520_coax_in", ":/images/setting/520/inout_coax_gold_selected.png", ":/images/setting/520/inout_coax.png");
+    btn520_coax_in = new BtnLabel(tr("COAX IN"), "btn520_coax_in", ":/images/setting/520/inout_coax_gold_520_selected.png", ":/images/setting/520/inout_coax_520.png");
     btn520_coax_in->setFixedSize(109,109);
     btn520_coax_in->setProperty("btnNo", 6);
     QVBoxLayout *vl_btn520_coax_in = new QVBoxLayout();
@@ -361,8 +367,8 @@ print_debug();
     btn520_setting_usb_2010 = GSCommon::getUIBtnImg("btn520_setting_usb_2010", ":/images/fol_edit_ico1_2.png");
     // btn_icon->setStyleSheet("#" + p_objName + " { background-color:rgba(0,0,0,0); background-image: url('" + p_url + "'); background-repeat:no-repeat; background-position:center center; } ");
     QString tobj = "btn520_setting_usb_2010";
-    if(get_InputMode520()==4)
-        btn520_setting_usb_2010->setStyleSheet("#" + tobj + " { background-color:rgba(0,0,0,0); background-image: url('" + ":/images/fol_edit_ico1.png" + "'); background-repeat:no-repeat; background-position:center center; } ");
+    //if(get_InputMode520()==4)
+    //    btn520_setting_usb_2010->setStyleSheet("#" + tobj + " { background-color:rgba(0,0,0,0); background-image: url('" + ":/images/fol_edit_ico1.png" + "'); background-repeat:no-repeat; background-position:center center; } ");
     btn520_setting_usb_2010->setFixedSize(ICON_SETTING_WIDTH,ICON_SETTING_WIDTH);
     btn520_setting_usb_2010->setProperty("btnNo", BTN_USB520);
     btn520_setting_usb_2010->setCursor(Qt::PointingHandCursor);
@@ -385,7 +391,7 @@ print_debug();
     btn520_HDMI_out->setProperty("btnNo", 52);
     btn520_setting_hdmi = GSCommon::getUIBtnImg("btn520_setting_hdmi", ":/images/fol_edit_ico1_2.png");
     tobj = "btn520_setting_hdmi";
-    if(get_InputMode520()==4)
+    if(get_InputMode520()==4 && outputvalue != 3)
         btn520_setting_hdmi->setStyleSheet("#" + tobj + " { background-color:rgba(0,0,0,0); background-image: url('" + ":/images/fol_edit_ico1.png" + "'); background-repeat:no-repeat; background-position:center center; } ");
 
     btn520_setting_hdmi->setFixedSize(ICON_SETTING_WIDTH,ICON_SETTING_WIDTH);
@@ -406,7 +412,7 @@ print_debug();
     widget_box_hdmi_out->setLayout(hl_btn520_hdmi_out);
     //---------------------------------------------------------------------------------------------------------------------------
 
-    btn520_coax_out = new BtnLabel(tr("COAX OUT"), "btn520_coax_out", ":/images/setting/520/inout_coax_gold_selected.png", ":/images/setting/520/inout_coax.png");
+    btn520_coax_out = new BtnLabel(tr("COAX OUT"), "btn520_coax_out", ":/images/setting/520/inout_coax_gold_520_selected.png", ":/images/setting/520/inout_coax_520.png");
     btn520_coax_out->setFixedSize(110,110);
     // btn520_coax_out->setProperty("internalMode", 64);
     btn520_coax_out->setProperty("btnNo", 11);
@@ -456,7 +462,7 @@ print_debug();
 
     btn520_setting_internal = GSCommon::getUIBtnImg("btn520_setting_internal", ":/images/fol_edit_ico1_2.png");
     tobj = "btn520_setting_internal";
-    if(get_InputMode520()==4)
+    if(get_InputMode520()==4 && outputvalue != 3)
         btn520_setting_internal->setStyleSheet("#" +tobj + " { background-color:rgba(0,0,0,0); background-image: url('" + ":/images/fol_edit_ico1.png" + "'); background-repeat:no-repeat; background-position:center center; } ");
 
     btn520_setting_internal->setFixedSize(ICON_SETTING_WIDTH,ICON_SETTING_WIDTH);
@@ -514,8 +520,8 @@ print_debug();
     vl_btn520_balanced_out_l->addWidget(btn520_speaker_out);
 
     btn520_setting_unbal = GSCommon::getUIBtnImg("btn520_setting_unbal", ":/images/fol_edit_ico1_2.png");
-    tobj = "btn520_setting_bal";
-    if(get_InputMode520()==4)
+    tobj = "btn520_setting_unbal";
+    if(get_InputMode520()==4 && outputvalue != 3)
         btn520_setting_unbal->setStyleSheet("#" + tobj + " { background-color:rgba(0,0,0,0); background-image: url('" + ":/images/fol_edit_ico1.png" + "'); background-repeat:no-repeat; background-position:center center; } ");
 
     btn520_setting_unbal->setFixedSize(ICON_SETTING_WIDTH,ICON_SETTING_WIDTH);
@@ -530,14 +536,14 @@ print_debug();
     //---------------------------------------------------------------------------------
 
 
-    btn520_unbalance_out_l = new BtnLabel(tr("UNBALANCED L"), "btn520_unbal2_out_l", ":/images/setting/inout_unbalanced_gold_selected.png",  ":/images/setting/inout_unbalanced.png");
+    btn520_unbalance_out_l = new BtnLabel(tr("PREAMP L"), "btn520_unbal2_out_l", ":/images/setting/inout_unbalanced_gold_selected.png",  ":/images/setting/inout_unbalanced.png");
     btn520_unbalance_out_l->setFixedSize(179,150);
     //  btn520_unbalance_out_l->setProperty("internalMode", 0);
     btn520_unbalance_out_l->setProperty("btnNo", UNBALANCED_OUT_L);
 
 
 
-    btn520_unbalance_out_r = new BtnLabel(tr("UNBALANCED R"), "btn520_unbal2_out_r", ":/images/setting/inout_unbalanced_gold_selected.png", ":/images/setting/inout_unbalanced.png");
+    btn520_unbalance_out_r = new BtnLabel(tr("PREAMP R"), "btn520_unbal2_out_r", ":/images/setting/inout_unbalanced_gold_selected.png", ":/images/setting/inout_unbalanced.png");
     btn520_unbalance_out_r->setFixedSize(179,150);
     btn520_unbalance_out_r->setProperty("btnNo", UNBALANCED_OUT_R);
 
@@ -545,7 +551,7 @@ print_debug();
     //-------------------------------------------------------------------------------------------------
     btn520_setting_speaker = GSCommon::getUIBtnImg("btn520_setting_bal", ":/images/fol_edit_ico1_2.png");
     tobj = "btn520_setting_bal";
-    if(get_InputMode520()==4)
+    if(get_InputMode520()==4 && outputvalue != 3)
         btn520_setting_speaker->setStyleSheet("#" + tobj + " { background-color:rgba(0,0,0,0); background-image: url('" + ":/images/fol_edit_ico1.png" + "'); background-repeat:no-repeat; background-position:center center; } ");
 
     btn520_setting_speaker->setFixedSize(ICON_SETTING_WIDTH,ICON_SETTING_WIDTH);
@@ -740,7 +746,7 @@ print_debug();
     //}
 
 
-    if(get_InputMode520()!=4){
+    //if(get_InputMode520()!=4){
 
         //outputMode
         connect(btn520_HDMI_out, SIGNAL(clicked()), this, SLOT(slot_setOutput520()));
@@ -764,7 +770,7 @@ print_debug();
         connect(btn520_setting_unbal, SIGNAL(clicked()), this, SLOT(slot_setOutputSetting520()));
 
 
-    }
+    //}
 }
 void SettingInputOutput::setUIControl150(QString deviceType){
     QString deviceTypeImgSelected = ":/images/setting/150/inout_150_in2_gold.png";
@@ -1865,10 +1871,13 @@ void SettingInputOutput::slot_setOutputSetting520()
     QString deviceType = global.device.getDeviceType();
 
     print_debug();
+    qDebug() << "inputvalue520=" << inputvalue520;
     qDebug() << "Internal: sender()->property(btnNo).toInt()  = " << sender()->property("btnNo").toInt();
     int btnSenderNo = sender()->property("btnNo").toInt();
 
     if(inputvalue520 == 4) {
+        print_debug();
+        qDebug() << "inputvalue520=" << inputvalue520;
         ToastMsg::show(this, "", tr("Please change the usb input mode and try again"));
 
         return;
@@ -1877,6 +1886,8 @@ void SettingInputOutput::slot_setOutputSetting520()
     switch(btnSenderNo){
     case BTN_HDMI520  ://
         if(inputvalue520 == 4) {
+            print_debug();
+            qDebug() << "inputvalue520=" << inputvalue520;
             ToastMsg::show(this, "", tr("Please change the usb input mode and try again"));
 
             return;
@@ -1887,6 +1898,8 @@ void SettingInputOutput::slot_setOutputSetting520()
         break;
     case BTN_USB520://
         if(inputvalue520 == 4) {
+            print_debug();
+            qDebug() << "inputvalue520=" << inputvalue520;
             ToastMsg::show(this, "", tr("Please change the usb input mode and try again"));
 
             return;
@@ -1935,6 +1948,7 @@ void SettingInputOutput::slot_setOutputSetting250()
     int btnSenderNo = sender()->property("btnNo").toInt();
 
     if(inputvalue250 == 4) {
+
         ToastMsg::show(this, "", tr("Please change the usb input mode and try again"));
         return;
     }
@@ -2131,6 +2145,12 @@ void SettingInputOutput::select_setUsbOutput150(){
 
 void SettingInputOutput::showDlgOfUSB_setting150(){
 
+    if(outputvalue != 3) {
+        print_debug();
+        qDebug() << "outputvalue=" << outputvalue;
+        ToastMsg::show(this, "", tr("Please select a usb DAC"));
+        return;
+    }
     Dialog::dialogsetting_usbsetting *dlg_hdmi_setting_150 = new Dialog::dialogsetting_usbsetting(this);
 
 
@@ -2145,6 +2165,12 @@ void SettingInputOutput::showDlgOfUSB_setting150(){
 }
 void SettingInputOutput::showDlgOfUSB_setting520(){
 
+    if(outputvalue != 3) {
+        print_debug();
+        qDebug() << "outputvalue=" << outputvalue;
+        ToastMsg::show(this, "", tr("Please select a usb DAC"));
+        return;
+    }
     Dialog::dialogsetting_usbsetting *dlg_hdmi_setting_520 = new Dialog::dialogsetting_usbsetting(this);
 
 
@@ -2906,7 +2932,7 @@ print_debug(); //cheon10-io
     }
 }
 
-void SettingInputOutput::setInternalOutput_520(QString req_internalData,  QString expire_internalData){
+void SettingInputOutput::setInternalOutput_520(QString req_internalData,  QString expire_internalData){//c221013_1
  //   ToastMsg::show(this, "", tr("Service is being prepared."));
 print_debug(); //cheon10-io
     QJsonObject tmp_json;
@@ -2918,16 +2944,13 @@ print_debug(); //cheon10-io
 
     qDebug() << "origin_req_internalData : " << req_internalData;
 
-    if(output_data == 2 || output_data == 3){
-        bool flag = showDlgOfDACMsg(tr("Internal Mode"), tr("Would you like to set it to COAX_OUT mode?"));
+    /*
+        bool flag = showDlgOfDACMsg(tr("Notice"), tr("Are you sure you want to change the output settings?"));
         if(flag ) {
+        }
+*/
 
-            NetworkHttp *network = new NetworkHttp;
-            tmp_json.insert("outputMode", "1");
-            connect(network, SIGNAL(response(int,QJsonObject)), SLOT(slot_responseHttp(int,QJsonObject)));
-            network->request(HTTP_SET_MODE, QString("http://%1:%2/%3").arg(global.device.getDeviceIP()).arg(global.port).arg("output.mode.set"), tmp_json, true);
-         }
-    }else{
+        print_debug();
         unsigned char req = bit2str_Convert(req_internalData);
         unsigned char cur = bit2str_Convert(cur_internalData);
         qDebug() << "before_req = " << req;
@@ -2961,7 +2984,7 @@ print_debug(); //cheon10-io
 
         }
 
-    }
+
 }
 
 void SettingInputOutput::slot_setInternal150(){
@@ -3036,194 +3059,368 @@ void SettingInputOutput::slot_setInternal150(){
 
 }
 
-void SettingInputOutput::slot_setInternal520(){
+void SettingInputOutput::slot_setInternal520(){//c221013_1
   //  ToastMsg::show(this, "", tr("2-setInternal520."));
 
+    QJsonObject tmp_json;
     //qDebug() << "Internal: sender()->property(btnNo).toInt()  = " << sender()->property("btnNo").toInt();
     int btnSenderNo = sender()->property("btnNo").toInt();
     print_debug();
     qDebug() <<"btnSenderNo="<<btnSenderNo;
     QString cur_internalData  = get_data();
     if(inputvalue520 == 4) {
-        ToastMsg::show(this, "", tr("Please change the usb input mode and try again"));
-        return;
+        print_debug();
+        qDebug() << "inputvalue520=" << inputvalue520;
+        //ToastMsg::show(this, "", tr("Please change the usb input mode and try again"));
+        //return;
     }
-    switch(btnSenderNo){
-    case COAX_OUT://      = 11;//   - btn520_coax_out
+    if(4 != get_outputMode()){
+        dlgConfirm520 = new DialogConfirm(this, DialogConfirm::DlgConfirmType::OKCancel);
+        this->dlgConfirm520->setTitle(tr("Notice"));
+        this->dlgConfirm520->setText(tr("Are you sure you want to change the output settings?"));
+
+        int result = this->dlgConfirm520->exec();
+//1000
+        if(result == QDialog::Accepted){
+            setOutput520(4);
+            return;
+        }else{
+            return;
+        }
+
+    }
+
+    switch(btnSenderNo){//0246
+    case COAX_OUT:// 1,0,0,0     = 11;//   - btn520_coax_out
         //ToastMsg::show(this, "", tr("click %1-setInternalOutput520.").arg(COAX_OUT));
         //qDebug() << tr("click %1-setInternalOutput520.").arg(COAX_OUT);
+print_debug();
+qDebug() << "cur_internalData=" << cur_internalData;
+qDebug() << "outputvalue=" << get_outputMode();
 
 
-        if(cur_internalData.at(4) == "1" || cur_internalData.at(6) == "1"){
-            dlgConfirm520 = new DialogConfirm(this, DialogConfirm::DlgConfirmType::OKCancel);
-            this->dlgConfirm520->setTitle(tr("Notice"));
-            this->dlgConfirm520->setText(tr("Are you sure you want to change the output settings coax?"));
+            if(cur_internalData.at(4) == "1" || cur_internalData.at(6) == "1"){
+                if(inputvalue520 != 4) {
+                    dlgConfirm520 = new DialogConfirm(this, DialogConfirm::DlgConfirmType::OKCancel);
+                    this->dlgConfirm520->setTitle(tr("Notice"));
+                    this->dlgConfirm520->setText(tr("Are you sure you want to change the output settings?"));
 
-            int result = this->dlgConfirm520->exec();
-//1000
-            if(result == QDialog::Accepted){
-                if(cur_internalData.at(4) == "1" && cur_internalData.at(6) != "1"){
-                    setInternalOutput_520("1,0,1,0,0,0,0,0", "1,1,1,1,0,0,0,0");
-                }else if(cur_internalData.at(4) != "1" && cur_internalData.at(6) == "1"){
-                    setInternalOutput_520("1,0,0,1,0,0,0,0", "1,1,1,1,0,0,0,0");
-                }else if(cur_internalData.at(4) == "1" && cur_internalData.at(6) == "1"){
-                    setInternalOutput_520("1,0,1,1,0,0,0,0", "1,1,1,1,0,0,0,0");
+                    int result = this->dlgConfirm520->exec();
+        //1000
+                    if(result == QDialog::Accepted){
+
+                        if(cur_internalData.at(4) == "1" && cur_internalData.at(6) != "1"){
+                            print_debug();
+                            setInternalOutput_520("1,0,1,0,0,0,0,0", "1,1,1,1,0,0,0,0");
+                        }else if(cur_internalData.at(4) != "1" && cur_internalData.at(6) == "1"){
+                            print_debug();
+                            setInternalOutput_520("1,0,0,1,0,0,0,0", "1,1,1,1,0,0,0,0");
+                        }else if(cur_internalData.at(4) == "1" && cur_internalData.at(6) == "1"){
+                            print_debug();
+                            setInternalOutput_520("1,0,1,1,0,0,0,0", "1,1,1,1,0,0,0,0");
+                        }
+                        //    setInternalOutput_520("1,0,0,0,0,0,0,0", "1,1,1,1,0,0,0,0");
+
+
+                    }
+                }else{
+                    if(cur_internalData.at(4) == "1" && cur_internalData.at(6) != "1"){
+                        print_debug();
+                        setInternalOutput_520("1,0,1,0,0,0,0,0", "1,1,1,1,0,0,0,0");
+                    }else if(cur_internalData.at(4) != "1" && cur_internalData.at(6) == "1"){
+                        print_debug();
+                        setInternalOutput_520("1,0,0,1,0,0,0,0", "1,1,1,1,0,0,0,0");
+                    }else if(cur_internalData.at(4) == "1" && cur_internalData.at(6) == "1"){
+                        print_debug();
+                        setInternalOutput_520("1,0,1,1,0,0,0,0", "1,1,1,1,0,0,0,0");
+                    }
                 }
-                //setInternalOutput_520("1,0,1,1,0,0,0,0", "1,1,1,1,0,0,0,0");
 
-            }
-        }else{
-            if(cur_internalData.at(2) == "1"){
-                setInternalOutput_520("1,0,0,0,0,0,0,0", "1,1,1,1,0,0,0,0");
             }else{
-                dlgConfirm520 = new DialogConfirm(this, DialogConfirm::DlgConfirmType::OKCancel);
-                this->dlgConfirm520->setTitle(tr("Notice"));
-                this->dlgConfirm520->setText(tr("Are you sure you want to change the output settings opt?"));
+                if(cur_internalData.at(0) == "1" && cur_internalData.at(2) == "1"){
+                    print_debug();
+                    setInternalOutput_520("1,0,0,0,0,0,0,0", "1,1,1,1,0,0,0,0");
+                }else if(cur_internalData.at(0) == "0" && cur_internalData.at(2) == "1"){
 
-                int result = this->dlgConfirm520->exec();
+                    print_debug();
+                    setInternalOutput_520("1,0,0,0,0,0,0,0", "1,1,1,1,0,0,0,0");
+                }else if(cur_internalData.at(0) == "1" && cur_internalData.at(2) == "0"){
 
-                if(result == QDialog::Accepted){
-                    setInternalOutput_520("1,0,1,1,0,0,0,0", "1,1,1,1,0,0,0,0");
+                    print_debug();
+                    dlgConfirm520 = new DialogConfirm(this, DialogConfirm::DlgConfirmType::OKCancel);
+                    this->dlgConfirm520->setTitle(tr("Notice"));
+                    this->dlgConfirm520->setText(tr("Are you sure you want to change the output settings?"));
 
+                    int result = this->dlgConfirm520->exec();
+        //1000
+                    if(result == QDialog::Accepted){
+                        setInternalOutput_520("1,0,1,1,0,0,0,0", "1,1,1,1,0,0,0,0");
+
+                    }
+                }else if(cur_internalData.at(0) == "0" && cur_internalData.at(2) == "0"){
+
+                    print_debug();
+                    dlgConfirm520 = new DialogConfirm(this, DialogConfirm::DlgConfirmType::OKCancel);
+                    this->dlgConfirm520->setTitle(tr("Notice"));
+                    this->dlgConfirm520->setText(tr("Are you sure you want to change the output settings?"));
+
+                    int result = this->dlgConfirm520->exec();
+        //1000
+                    if(result == QDialog::Accepted){
+                        setInternalOutput_520("1,0,0,0,0,0,0,0", "1,1,1,1,0,0,0,0");
+
+                    }
                 }
-
             }
-        }
+
+
+
 
         break;
 
-    case OPT_OUT    ://   = 12;//      - btn520_opt_out
+    case OPT_OUT    ://0100   = 12;//      - btn520_opt_out
         //ToastMsg::show(this, "", tr("click %1-setInternalOutput520.").arg(OPT_OUT));
         //qDebug() << tr("click %1-setInternalOutput520.").arg(OPT_OUT);
-
+        print_debug();
+        qDebug() << "cur_internalData=" << cur_internalData;
+        qDebug() << "outputvalue=" << get_outputMode();
         //dlgConfirm520 = new DialogConfirm(this, DialogConfirm::DlgConfirmType::OKCancel);
-        if(cur_internalData.at(4) == "1" || cur_internalData.at(6) == "1"){
-            dlgConfirm520 = new DialogConfirm(this, DialogConfirm::DlgConfirmType::OKCancel);
-            this->dlgConfirm520->setTitle(tr("Notice"));
-            this->dlgConfirm520->setText(tr("Are you sure you want to change the output settings opt?"));
 
-            int result = this->dlgConfirm520->exec();
-//0100
-            if(result == QDialog::Accepted){
-                if(cur_internalData.at(4) == "1" && cur_internalData.at(6) != "1"){
-                    setInternalOutput_520("0,1,1,0,0,0,0,0", "1,1,1,1,0,0,0,0");
-                }else if(cur_internalData.at(4) != "1" && cur_internalData.at(6) == "1"){
-                    setInternalOutput_520("0,1,0,1,0,0,0,0", "1,1,1,1,0,0,0,0");
-                }else if(cur_internalData.at(4) == "1" && cur_internalData.at(6) == "1"){
-                    setInternalOutput_520("0,1,1,1,0,0,0,0", "1,1,1,1,0,0,0,0");
+            if(cur_internalData.at(4) == "1" || cur_internalData.at(6) == "1"){
+                if(inputvalue520 != 4) {
+                    dlgConfirm520 = new DialogConfirm(this, DialogConfirm::DlgConfirmType::OKCancel);
+                    this->dlgConfirm520->setTitle(tr("Notice"));
+                    this->dlgConfirm520->setText(tr("Are you sure you want to change the output settings?"));
+
+                    int result = this->dlgConfirm520->exec();
+        //1000
+                    if(result == QDialog::Accepted){
+
+                        if(cur_internalData.at(4) == "1" && cur_internalData.at(6) != "1"){
+                            print_debug();
+                            setInternalOutput_520("0,1,1,0,0,0,0,0", "1,1,1,1,0,0,0,0");
+                        }else if(cur_internalData.at(4) != "1" && cur_internalData.at(6) == "1"){
+                            print_debug();
+                            setInternalOutput_520("0,1,0,1,0,0,0,0", "1,1,1,1,0,0,0,0");
+                        }else if(cur_internalData.at(4) == "1" && cur_internalData.at(6) == "1"){
+                            print_debug();
+                            setInternalOutput_520("0,1,1,1,0,0,0,0", "1,1,1,1,0,0,0,0");
+                        }
+                          //  setInternalOutput_520("0,1,0,0,0,0,0,0", "1,1,1,1,0,0,0,0");
+                    }
+                }else{
+                    if(cur_internalData.at(4) == "1" && cur_internalData.at(6) != "1"){
+                        print_debug();
+                        setInternalOutput_520("0,1,1,0,0,0,0,0", "1,1,1,1,0,0,0,0");
+                    }else if(cur_internalData.at(4) != "1" && cur_internalData.at(6) == "1"){
+                        print_debug();
+                        setInternalOutput_520("0,1,0,1,0,0,0,0", "1,1,1,1,0,0,0,0");
+                    }else if(cur_internalData.at(4) == "1" && cur_internalData.at(6) == "1"){
+                        print_debug();
+                        setInternalOutput_520("0,1,1,1,0,0,0,0", "1,1,1,1,0,0,0,0");
+                    }
                 }
 
-                //setInternalOutput_520("0,1,1,1,0,0,0,0", "1,1,1,1,0,0,0,0");
-
-            }
-        }else{
-            if(cur_internalData.at(0) == "1"){
-                setInternalOutput_520("0,1,0,0,0,0,0,0", "1,1,1,1,0,0,0,0");
             }else{
-                dlgConfirm520 = new DialogConfirm(this, DialogConfirm::DlgConfirmType::OKCancel);
-                this->dlgConfirm520->setTitle(tr("Notice"));
-                this->dlgConfirm520->setText(tr("Are you sure you want to change the output settings opt?"));
 
-                int result = this->dlgConfirm520->exec();
+                if(cur_internalData.at(0) == "1" && cur_internalData.at(2) == "1"){
+                    print_debug();
+                    setInternalOutput_520("0,1,0,0,0,0,0,0", "1,1,1,1,0,0,0,0");
+                }else if(cur_internalData.at(0) == "0" && cur_internalData.at(2) == "1"){
 
-                if(result == QDialog::Accepted){
-                    setInternalOutput_520("0,1,1,1,0,0,0,0", "1,1,1,1,0,0,0,0");
+                    print_debug();
+                    dlgConfirm520 = new DialogConfirm(this, DialogConfirm::DlgConfirmType::OKCancel);
+                    this->dlgConfirm520->setTitle(tr("Notice"));
+                    this->dlgConfirm520->setText(tr("Are you sure you want to change the output settings?"));
 
+                    int result = this->dlgConfirm520->exec();
+        //1000
+                    if(result == QDialog::Accepted){
+                        setInternalOutput_520("0,1,1,1,0,0,0,0", "1,1,1,1,0,0,0,0");
+
+                    }
+
+                }else if(cur_internalData.at(0) == "1" && cur_internalData.at(2) == "0"){
+
+                    print_debug();
+                    setInternalOutput_520("0,1,0,0,0,0,0,0", "1,1,1,1,0,0,0,0");
+
+                }else if(cur_internalData.at(0) == "0" && cur_internalData.at(2) == "0"){
+
+                    print_debug();
+                    dlgConfirm520 = new DialogConfirm(this, DialogConfirm::DlgConfirmType::OKCancel);
+                    this->dlgConfirm520->setTitle(tr("Notice"));
+                    this->dlgConfirm520->setText(tr("Are you sure you want to change the output settings?"));
+
+                    int result = this->dlgConfirm520->exec();
+        //1000
+                    if(result == QDialog::Accepted){
+                        setInternalOutput_520("0,1,0,0,0,0,0,0", "1,1,1,1,0,0,0,0");
+
+                    }
                 }
 
             }
 
-        }
 
         break;
-    case SPEAKER://  = 51;//  - btn520_speaker
+    case SPEAKER://0001  = 51;//  - btn520_speaker
         //ToastMsg::show(this, "", tr("click %1-setInternalOutput520.").arg(SPEAKER));
         //qDebug() << tr("click %1-setInternalOutput520.").arg(SPEAKER);
+        print_debug();
+        qDebug() << "cur_internalData=" << cur_internalData;
 
-        if(cur_internalData.at(0) == "1" || cur_internalData.at(2) == "1"){
-            dlgConfirm520 = new DialogConfirm(this, DialogConfirm::DlgConfirmType::OKCancel);
-            this->dlgConfirm520->setTitle(tr("Notice"));
-            this->dlgConfirm520->setText(tr("Are you sure you want to change the output settings opt?"));
+            if(cur_internalData.at(0) == "1" || cur_internalData.at(2) == "1"){
+                if(inputvalue520 != 4) {
+                    dlgConfirm520 = new DialogConfirm(this, DialogConfirm::DlgConfirmType::OKCancel);
+                    this->dlgConfirm520->setTitle(tr("Notice"));
+                    this->dlgConfirm520->setText(tr("Are you sure you want to change the output settings?"));
 
-            int result = this->dlgConfirm520->exec();
+                    int result = this->dlgConfirm520->exec();
 
-            if(result == QDialog::Accepted){
-                if(cur_internalData.at(0) == "1" && cur_internalData.at(2) != "1"){
-                    setInternalOutput_520("1,0,0,1,0,0,0,0", "1,1,1,1,0,0,0,0");
-                }else if(cur_internalData.at(0) != "1" && cur_internalData.at(2) == "1"){
-                    setInternalOutput_520("0,1,0,1,0,0,0,0", "1,1,1,1,0,0,0,0");
-                }else if(cur_internalData.at(0) == "1" && cur_internalData.at(2) == "1"){
-                    setInternalOutput_520("1,1,0,1,0,0,0,0", "1,1,1,1,0,0,0,0");
-                }
-
-
-            }
-        }else{
-            if(cur_internalData.at(4) == "0"){
-                dlgConfirm520 = new DialogConfirm(this, DialogConfirm::DlgConfirmType::OKCancel);
-                this->dlgConfirm520->setTitle(tr("Notice"));
-                this->dlgConfirm520->setText(tr("Are you sure you want to change the output settings opt?"));
-
-                int result = this->dlgConfirm520->exec();
-
-                if(result == QDialog::Accepted){
-                    setInternalOutput_520("1,1,0,1,0,0,0,0", "1,1,1,1,0,0,0,0");
+                    if(result == QDialog::Accepted){
+                        if(cur_internalData.at(0) == "1" && cur_internalData.at(2) != "1"){
+                            print_debug();
+                            setInternalOutput_520("1,0,0,1,0,0,0,0", "1,1,1,1,0,0,0,0");
+                        }else if(cur_internalData.at(0) != "1" && cur_internalData.at(2) == "1"){
+                            print_debug();
+                            setInternalOutput_520("0,1,0,1,0,0,0,0", "1,1,1,1,0,0,0,0");
+                        }else if(cur_internalData.at(0) == "1" && cur_internalData.at(2) == "1"){
+                            print_debug();
+                            setInternalOutput_520("1,1,0,1,0,0,0,0", "1,1,1,1,0,0,0,0");
+                        }else if(cur_internalData.at(0) == "0" && cur_internalData.at(2) == "0"){
+                            print_debug();
+                            setInternalOutput_520("0,0,0,1,0,0,0,0", "1,1,1,1,0,0,0,0");
+                        }
 
 
+                    }
+                }else{
+                    if(cur_internalData.at(0) == "1" && cur_internalData.at(2) != "1"){
+                        print_debug();
+                        setInternalOutput_520("1,0,0,1,0,0,0,0", "1,1,1,1,0,0,0,0");
+                    }else if(cur_internalData.at(0) != "1" && cur_internalData.at(2) == "1"){
+                        print_debug();
+                        setInternalOutput_520("0,1,0,1,0,0,0,0", "1,1,1,1,0,0,0,0");
+                    }else if(cur_internalData.at(0) == "1" && cur_internalData.at(2) == "1"){
+                        print_debug();
+                        setInternalOutput_520("1,1,0,1,0,0,0,0", "1,1,1,1,0,0,0,0");
+                    }else if(cur_internalData.at(0) == "0" && cur_internalData.at(2) == "0"){
+                        print_debug();
+                        setInternalOutput_520("0,0,0,1,0,0,0,0", "1,1,1,1,0,0,0,0");
+                    }
                 }
 
             }else{
-                setInternalOutput_520("0,0,0,1,0,0,0,0", "1,1,1,1,0,0,0,0");
+                if(cur_internalData.at(4) == "0"){
+                    print_debug();
+                    dlgConfirm520 = new DialogConfirm(this, DialogConfirm::DlgConfirmType::OKCancel);
+                    this->dlgConfirm520->setTitle(tr("Notice"));
+                    this->dlgConfirm520->setText(tr("Are you sure you want to change the output settings?"));
 
+                    int result = this->dlgConfirm520->exec();
+
+                    if(result == QDialog::Accepted){
+                        print_debug();
+                        if(cur_internalData.at(6) == "1"){
+                            setInternalOutput_520("1,1,0,1,0,0,0,0", "1,1,1,1,0,0,0,0");
+                        }else{
+                            setInternalOutput_520("0,0,0,1,0,0,0,0", "1,1,1,1,0,0,0,0");
+                        }
+                    }
+
+
+                }else{
+                    print_debug();
+                    setInternalOutput_520("0,0,0,1,0,0,0,0", "1,1,1,1,0,0,0,0");
+
+                }
+                //
             }
-               //
-        }
-        //setInternalOutput_520("0,0,0,1,0,0,0,0", "1,1,1,1,0,0,0,0");
+
+
+            //setInternalOutput_520("0,0,0,1,0,0,0,0", "1,1,1,1,0,0,0,0");
         break;
 
-    case UNBALANCED_OUT_L:// = 18;//  - btn520_unbal2_out_l
+    case UNBALANCED_OUT_L://0010 = 18;//  - btn520_unbal2_out_l
     case UNBALANCED_OUT_R:
+        print_debug();
+        qDebug() << "cur_internalData=" << cur_internalData;
         //ToastMsg::show(this, "", tr("click %1-setInternalOutput520.").arg(UNBALANCED_OUT_L));
         //qDebug() << tr("click %1-setInternalOutput520.").arg(UNBALANCED_OUT_L);
 
+
         if(cur_internalData.at(0) == "1" || cur_internalData.at(2) == "1"){
-            dlgConfirm520 = new DialogConfirm(this, DialogConfirm::DlgConfirmType::OKCancel);
-            this->dlgConfirm520->setTitle(tr("Notice"));
-            this->dlgConfirm520->setText(tr("Are you sure you want to change the output settings opt?"));
-
-            int result = this->dlgConfirm520->exec();
-
-            if(result == QDialog::Accepted){
-                if(cur_internalData.at(0) == "1" && cur_internalData.at(2) != "1"){
-                    setInternalOutput_520("1,0,1,0,0,0,0,0", "1,1,1,1,0,0,0,0");
-                }else if(cur_internalData.at(0) != "1" && cur_internalData.at(2) == "1"){
-                    setInternalOutput_520("0,1,1,0,0,0,0,0", "1,1,1,1,0,0,0,0");
-                }else if(cur_internalData.at(0) == "1" && cur_internalData.at(2) == "1"){
-                    setInternalOutput_520("1,1,1,0,0,0,0,0", "1,1,1,1,0,0,0,0");
-                }
-
-
-            }
-        }else{
-            if(cur_internalData.at(6) == "0"){
+            if(inputvalue520 != 4) {
                 dlgConfirm520 = new DialogConfirm(this, DialogConfirm::DlgConfirmType::OKCancel);
                 this->dlgConfirm520->setTitle(tr("Notice"));
-                this->dlgConfirm520->setText(tr("Are you sure you want to change the output settings opt?"));
+                    this->dlgConfirm520->setText(tr("Are you sure you want to change the output settings?"));
 
-                int result = this->dlgConfirm520->exec();
+                    int result = this->dlgConfirm520->exec();
 
-                if(result == QDialog::Accepted){
-                    setInternalOutput_520("1,1,1,0,0,0,0,0", "1,1,1,1,0,0,0,0");
+                    if(result == QDialog::Accepted){
+                        if(cur_internalData.at(0) == "1" && cur_internalData.at(2) != "1"){
+                            print_debug();
+                            setInternalOutput_520("1,0,1,0,0,0,0,0", "1,1,1,1,0,0,0,0");
+                        }else if(cur_internalData.at(0) != "1" && cur_internalData.at(2) == "1"){
+                            print_debug();
+                            setInternalOutput_520("0,1,1,0,0,0,0,0", "1,1,1,1,0,0,0,0");
+                        }else if(cur_internalData.at(0) == "1" && cur_internalData.at(2) == "1"){
+                            print_debug();
+                            setInternalOutput_520("1,1,1,0,0,0,0,0", "1,1,1,1,0,0,0,0");
+                        }else if(cur_internalData.at(0) == "0" && cur_internalData.at(2) == "0"){
+                            print_debug();
+                            setInternalOutput_520("0,0,1,0,0,0,0,0", "1,1,1,1,0,0,0,0");
+                        }
 
 
+                    }
+                }else{
+                    if(cur_internalData.at(0) == "1" && cur_internalData.at(2) != "1"){
+                        print_debug();
+                        setInternalOutput_520("1,0,1,0,0,0,0,0", "1,1,1,1,0,0,0,0");
+                    }else if(cur_internalData.at(0) != "1" && cur_internalData.at(2) == "1"){
+                        print_debug();
+                        setInternalOutput_520("0,1,1,0,0,0,0,0", "1,1,1,1,0,0,0,0");
+                    }else if(cur_internalData.at(0) == "1" && cur_internalData.at(2) == "1"){
+                        print_debug();
+                        setInternalOutput_520("1,1,1,0,0,0,0,0", "1,1,1,1,0,0,0,0");
+                    }else if(cur_internalData.at(0) == "0" && cur_internalData.at(2) == "0"){
+                        print_debug();
+                        setInternalOutput_520("0,0,1,0,0,0,0,0", "1,1,1,1,0,0,0,0");
+                    }
                 }
 
             }else{
-                setInternalOutput_520("0,0,1,0,0,0,0,0", "1,1,1,1,0,0,0,0");
+                if(cur_internalData.at(6) == "0"){
+                    print_debug();
+                    dlgConfirm520 = new DialogConfirm(this, DialogConfirm::DlgConfirmType::OKCancel);
+                    this->dlgConfirm520->setTitle(tr("Notice"));
+                    this->dlgConfirm520->setText(tr("Are you sure you want to change the output settings?"));
 
+                    int result = this->dlgConfirm520->exec();
+
+                    if(result == QDialog::Accepted){
+                        print_debug();
+                        if(cur_internalData.at(4) == "1"){
+                            setInternalOutput_520("1,1,1,0,0,0,0,0", "1,1,1,1,0,0,0,0");
+                        }else{
+                            setInternalOutput_520("0,0,1,0,0,0,0,0", "1,1,1,1,0,0,0,0");
+                        }
+
+
+
+                    }
+
+                }else {
+                    print_debug();
+                    setInternalOutput_520("0,0,1,0,0,0,0,0", "1,1,1,1,0,0,0,0");
+
+                }
+                   //
             }
-               //
-        }
+
+
 
         //setInternalOutput_520("0,0,1,0,0,0,0,0", "1,1,1,1,0,0,0,0");
         break;
@@ -3277,47 +3474,93 @@ void SettingInputOutput::setUsbOutput201(){
 
 void SettingInputOutput::setOutput201(int outputNo){
     QJsonObject tmp_json;
-    NetworkHttp *network = new NetworkHttp;
+    //NetworkHttp *network = new NetworkHttp;
     qDebug() << "setOutput150(int outputNo) outputNo = " << outputNo;
 
-    if(outputNo == 3){
-        setUsbOutput201();
-    }else if(outputNo != 3){
-        tmp_json.insert("outputMode", outputNo);
+    if(outputNo == get_outputMode()){//c221013_1
+        print_debug();
+        NetworkHttp *network = new NetworkHttp;
+        tmp_json.insert("outputMode", 4);
+        //qDebug() << "=====================else--------setOutput520(int outputNo) outputNo = " << outputNo;
         connect(network, SIGNAL(response(int,QJsonObject)), SLOT(slot_responseHttp(int,QJsonObject)));
         network->request(HTTP_SET_MODE, QString("http://%1:%2/%3").arg(global.device.getDeviceIP()).arg(global.port).arg("output.mode.set"), tmp_json, true);
+
+        //linker->signal_reload_setting_clicked("inputOutput");//c221013_1
+
+    }else{
+        if(outputNo == 3){
+            setUsbOutput201();
+        }else if(outputNo != 3){
+            NetworkHttp *network = new NetworkHttp;
+            tmp_json.insert("outputMode", outputNo);
+            connect(network, SIGNAL(response(int,QJsonObject)), SLOT(slot_responseHttp(int,QJsonObject)));
+            network->request(HTTP_SET_MODE, QString("http://%1:%2/%3").arg(global.device.getDeviceIP()).arg(global.port).arg("output.mode.set"), tmp_json, true);
+        }
     }
-}
+    }
+
 
 
 void SettingInputOutput::setOutput150(int outputNo){
     QJsonObject tmp_json;
-    NetworkHttp *network = new NetworkHttp;
+
     //qDebug() << "setOutput150(int outputNo) outputNo = " << outputNo;
 
-    if(outputNo == 3){
-        setUsbOutput150();
-    }else if(outputNo != 3){
-        tmp_json.insert("outputMode", outputNo);
-        //qDebug() << "=====================else--------setOutput150(int outputNo) outputNo = " << outputNo;
+    if(outputNo == get_outputMode()){//c221013_1
+        print_debug();
+        NetworkHttp *network = new NetworkHttp;
+        tmp_json.insert("outputMode", 4);
+        //qDebug() << "=====================else--------setOutput520(int outputNo) outputNo = " << outputNo;
         connect(network, SIGNAL(response(int,QJsonObject)), SLOT(slot_responseHttp(int,QJsonObject)));
         network->request(HTTP_SET_MODE, QString("http://%1:%2/%3").arg(global.device.getDeviceIP()).arg(global.port).arg("output.mode.set"), tmp_json, true);
+
+        //linker->signal_reload_setting_clicked("inputOutput");//c221013_1
+
+    }else{
+        if(outputNo == 3){
+            setUsbOutput150();
+        }else if(outputNo != 3){
+            NetworkHttp *network = new NetworkHttp;
+            tmp_json.insert("outputMode", outputNo);
+            //qDebug() << "=====================else--------setOutput150(int outputNo) outputNo = " << outputNo;
+            connect(network, SIGNAL(response(int,QJsonObject)), SLOT(slot_responseHttp(int,QJsonObject)));
+            network->request(HTTP_SET_MODE, QString("http://%1:%2/%3").arg(global.device.getDeviceIP()).arg(global.port).arg("output.mode.set"), tmp_json, true);
+        }
     }
+
 }
 
 void SettingInputOutput::setOutput520(int outputNo){
     QJsonObject tmp_json;
-    NetworkHttp *network = new NetworkHttp;
+
     //qDebug() << "setOutput150(int outputNo) outputNo = " << outputNo;
 
-    if(outputNo == 3){
-        setUsbOutput520();
-    }else if(outputNo != 3){
-        tmp_json.insert("outputMode", outputNo);
+    if(outputNo == get_outputMode()){//c221013_1
+        print_debug();
+        NetworkHttp *network = new NetworkHttp;
+        tmp_json.insert("outputMode", 4);
         //qDebug() << "=====================else--------setOutput520(int outputNo) outputNo = " << outputNo;
         connect(network, SIGNAL(response(int,QJsonObject)), SLOT(slot_responseHttp(int,QJsonObject)));
         network->request(HTTP_SET_MODE, QString("http://%1:%2/%3").arg(global.device.getDeviceIP()).arg(global.port).arg("output.mode.set"), tmp_json, true);
+
+        //linker->signal_reload_setting_clicked("inputOutput");//c221013_1
+
+    }else{
+        if(outputNo == 3){
+            setUsbOutput520();
+        }else if(outputNo != 3){
+
+            NetworkHttp *network = new NetworkHttp;
+            tmp_json.insert("outputMode", outputNo);
+            //qDebug() << "=====================else--------setOutput520(int outputNo) outputNo = " << outputNo;
+            connect(network, SIGNAL(response(int,QJsonObject)), SLOT(slot_responseHttp(int,QJsonObject)));
+            network->request(HTTP_SET_MODE, QString("http://%1:%2/%3").arg(global.device.getDeviceIP()).arg(global.port).arg("output.mode.set"), tmp_json, true);
+
+
+
+        }
     }
+
 }
 
 void SettingInputOutput::slot_setOutput150(){
@@ -3326,7 +3569,8 @@ void SettingInputOutput::slot_setOutput150(){
     //qDebug() << "output: sender()->property(btnNo).toInt()  = " << sender()->property("btnNo").toInt();
     int btnSenderNo = sender()->property("btnNo").toInt();
   //  int usbDacFlag = false;
-    if(inputvalue150 == 4 || inputvalue250 == 4) {
+    if(inputvalue150 == 4 ) {
+        print_debug();
         //ToastMsg::show(this, "", tr("Please change the usb input mode and try again"));
         return;
     }
@@ -3348,17 +3592,33 @@ void SettingInputOutput::slot_setOutput150(){
 
 }
 
-void SettingInputOutput::slot_setOutput520(){
+void SettingInputOutput::slot_setOutput520(){//c221013_1
     //ToastMsg::show(this, "", tr("3-setOutput520."));//c220511
 
     //qDebug() << "output: sender()->property(btnNo).toInt()  = " << sender()->property("btnNo").toInt();
     int btnSenderNo = sender()->property("btnNo").toInt();
   //  int usbDacFlag = false;
-    if(inputvalue520 == 4 ||inputvalue150 == 4 || inputvalue250 == 4) {
-        //ToastMsg::show(this, "", tr("Please change the usb input mode and try again"));
+    if(inputvalue520 == 4) {
+        print_debug();
+        qDebug() << "inputvalue520=" << inputvalue520;
+        ToastMsg::show(this, "", tr("Please change the usb input mode and try again"));
         return;
     }
-    switch(btnSenderNo){
+    if(this->outputvalue == 4){
+        dlgConfirm520 = new DialogConfirm(this, DialogConfirm::DlgConfirmType::OKCancel);
+        this->dlgConfirm520->setTitle(tr("Notice"));
+        this->dlgConfirm520->setText(tr("Are you sure you want to change the output settings?"));
+
+        int result = this->dlgConfirm520->exec();
+
+        if(result == QDialog::Accepted){
+            print_debug();
+        }else{
+            return;
+        }
+
+    }
+    switch (btnSenderNo){
     case HDMI ://         = 52;//       - btn520_HDMI_out
         //ToastMsg::show(this, "", tr("click %1-setOutput520.").arg(HDMI));
         //qDebug() << tr("click %1-setOutput520.").arg(HDMI);
@@ -4295,8 +4555,14 @@ void SettingInputOutput::set_UsbName(QString a)
 
     mProductName = a;
     QString deviceType = global.device.getDeviceType();
-    if( deviceType == "RS150" || deviceType == "RS150B"){
+    if( deviceType == "RS150" || deviceType == "RS150B" ||deviceType == "RS250" || deviceType == "RS250B"){
         btn150_dac_2010_out->setText(a);
+    }else if( deviceType == "RS520" || deviceType == "RS520B"){
+            btn520_dac_2010_out->setText(a);
+
+    }else if( deviceType == "RS201" ){
+        btn_usb->setText(a);
+
     }
     qDebug() << "*set-mProductName:  " << mProductName;
 }
@@ -4307,8 +4573,14 @@ void SettingInputOutput::set_UsbName(int  a, QString b, int c)
     mProductName = b;
     mVendorId = c;
     QString deviceType = global.device.getDeviceType();
-    if( deviceType == "RS150" || deviceType == "RS150B"){
+    if( deviceType == "RS150" || deviceType == "RS150B" ||deviceType == "RS250" || deviceType == "RS250B"){
         btn150_dac_2010_out->setText(b);
+    }else if( deviceType == "RS520" || deviceType == "RS520B"){
+            btn520_dac_2010_out->setText(b);
+
+    }else if( deviceType == "RS201" ){
+        btn_usb->setText(b);
+
     }
     qDebug() << "*set-mProductName:  " << mProductName;
 }
@@ -4362,6 +4634,17 @@ qDebug() << "requestInputOutputMode()start-deviceType : " << deviceType  << ", g
                     btn150_setting_internal->setStyleSheet("#" + tobj + " { background-color:rgba(0,0,0,0); background-image: url('" + ":/images/fol_edit_ico1.png" + "'); background-repeat:no-repeat; background-position:center center; } ");
                     tobj = "btn150_setting_bal";
                     btn150_setting_bal->setStyleSheet("#" + tobj + " { background-color:rgba(0,0,0,0); background-image: url('" + ":/images/fol_edit_ico1.png" + "'); background-repeat:no-repeat; background-position:center center; } ");
+
+                }else{
+                    QString tobj = "btn150_setting_usb_2010";
+                    btn150_setting_usb_2010->setStyleSheet("#" + tobj + " { background-color:rgba(0,0,0,0); background-image: url('" + ":/images/fol_edit_ico1_2.png" + "'); background-repeat:no-repeat; background-position:center center; } ");
+                    tobj = "btn150_setting_hdmi";
+                    btn150_setting_hdmi->setStyleSheet("#" + tobj + " { background-color:rgba(0,0,0,0); background-image: url('" + ":/images/fol_edit_ico1_2.png" + "'); background-repeat:no-repeat; background-position:center center; } ");
+                    tobj = "btn150_setting_internal";
+                    btn150_setting_internal->setStyleSheet("#" + tobj + " { background-color:rgba(0,0,0,0); background-image: url('" + ":/images/fol_edit_ico1_2.png" + "'); background-repeat:no-repeat; background-position:center center; } ");
+                    tobj = "btn150_setting_bal";
+                    btn150_setting_bal->setStyleSheet("#" + tobj + " { background-color:rgba(0,0,0,0); background-image: url('" + ":/images/fol_edit_ico1_2.png" + "'); background-repeat:no-repeat; background-position:center center; } ");
+
                 }
                 set_InputMode150(inputMode);
                 this->setInputData(inputMode);
@@ -4369,18 +4652,31 @@ qDebug() << "requestInputOutputMode()start-deviceType : " << deviceType  << ", g
                 set_InputMode201(inputMode);
                 this->setInputData(inputMode);
             }else if( deviceType == "RS520"){
+
                 if(inputMode==4){
-                    QString tobj = "btn250_setting_usb_2010";
+                    QString tobj = "btn520_setting_usb_2010";
                     btn520_setting_usb_2010->setStyleSheet("#" + tobj + " { background-color:rgba(0,0,0,0); background-image: url('" + ":/images/fol_edit_ico1.png" + "'); background-repeat:no-repeat; background-position:center center; } ");
                     tobj = "btn520_setting_hdmi";
                     btn520_setting_hdmi->setStyleSheet("#" + tobj + " { background-color:rgba(0,0,0,0); background-image: url('" + ":/images/fol_edit_ico1.png" + "'); background-repeat:no-repeat; background-position:center center; } ");
                     tobj = "btn520_setting_internal";
                     btn520_setting_internal->setStyleSheet("#" + tobj + " { background-color:rgba(0,0,0,0); background-image: url('" + ":/images/fol_edit_ico1.png" + "'); background-repeat:no-repeat; background-position:center center; } ");
-                    tobj = "btn520_setting_bal";
+                    tobj = "btn520_setting_unbal";
                     btn520_setting_unbal->setStyleSheet("#" + tobj + " { background-color:rgba(0,0,0,0); background-image: url('" + ":/images/fol_edit_ico1.png" + "'); background-repeat:no-repeat; background-position:center center; } ");
                     btn520_setting_speaker->setStyleSheet("#" + tobj + " { background-color:rgba(0,0,0,0); background-image: url('" + ":/images/fol_edit_ico1.png" + "'); background-repeat:no-repeat; background-position:center center; } ");
 
+                }else{
+                    QString tobj = "btn520_setting_usb_2010";
+                    btn520_setting_usb_2010->setStyleSheet("#" + tobj + " { background-color:rgba(0,0,0,0); background-image: url('" + ":/images/fol_edit_ico1_2.png" + "'); background-repeat:no-repeat; background-position:center center; } ");
+                    tobj = "btn520_setting_hdmi";
+                    btn520_setting_hdmi->setStyleSheet("#" + tobj + " { background-color:rgba(0,0,0,0); background-image: url('" + ":/images/fol_edit_ico1_2.png" + "'); background-repeat:no-repeat; background-position:center center; } ");
+                    tobj = "btn520_setting_internal";
+                    btn520_setting_internal->setStyleSheet("#" + tobj + " { background-color:rgba(0,0,0,0); background-image: url('" + ":/images/fol_edit_ico1_2.png" + "'); background-repeat:no-repeat; background-position:center center; } ");
+                    tobj = "btn520_setting_unbal";
+                    btn520_setting_unbal->setStyleSheet("#" + tobj + " { background-color:rgba(0,0,0,0); background-image: url('" + ":/images/fol_edit_ico1_2.png" + "'); background-repeat:no-repeat; background-position:center center; } ");
+                    btn520_setting_speaker->setStyleSheet("#" + tobj + " { background-color:rgba(0,0,0,0); background-image: url('" + ":/images/fol_edit_ico1_2.png" + "'); background-repeat:no-repeat; background-position:center center; } ");
+
                 }
+
                 set_InputMode520(inputMode);
                 this->setInputData(inputMode);
             }else if( deviceType == "RS250" || deviceType == "RS250A"){
@@ -4393,6 +4689,17 @@ qDebug() << "requestInputOutputMode()start-deviceType : " << deviceType  << ", g
                     btn150_setting_internal->setStyleSheet("#" + tobj + " { background-color:rgba(0,0,0,0); background-image: url('" + ":/images/fol_edit_ico1.png" + "'); background-repeat:no-repeat; background-position:center center; } ");
                     tobj = "btn150_setting_bal";
                     btn150_setting_bal->setStyleSheet("#" + tobj + " { background-color:rgba(0,0,0,0); background-image: url('" + ":/images/fol_edit_ico1.png" + "'); background-repeat:no-repeat; background-position:center center; } ");
+
+                }else{
+                    QString tobj = "btn150_setting_usb_2010";
+                    btn150_setting_usb_2010->setStyleSheet("#" + tobj + " { background-color:rgba(0,0,0,0); background-image: url('" + ":/images/fol_edit_ico1_2.png" + "'); background-repeat:no-repeat; background-position:center center; } ");
+                    tobj = "btn150_setting_hdmi";
+                    btn150_setting_hdmi->setStyleSheet("#" + tobj + " { background-color:rgba(0,0,0,0); background-image: url('" + ":/images/fol_edit_ico1_2.png" + "'); background-repeat:no-repeat; background-position:center center; } ");
+                    tobj = "btn150_setting_internal";
+                    btn150_setting_internal->setStyleSheet("#" + tobj + " { background-color:rgba(0,0,0,0); background-image: url('" + ":/images/fol_edit_ico1_2.png" + "'); background-repeat:no-repeat; background-position:center center; } ");
+                    tobj = "btn150_setting_bal";
+                    btn150_setting_bal->setStyleSheet("#" + tobj + " { background-color:rgba(0,0,0,0); background-image: url('" + ":/images/fol_edit_ico1_2.png" + "'); background-repeat:no-repeat; background-position:center center; } ");
+
                 }
                 set_InputMode250(inputMode);
                 this->setInputData(inputMode);
@@ -4412,7 +4719,7 @@ qDebug() << "requestInputOutputMode()start-deviceType : " << deviceType  << ", g
             }else if( deviceType == "RS201"){
                 this->get_internalData(internalMode, itm3);
             }else if( deviceType == "RS520"){
-                this->get_internalData(internalMode, itm3);
+                this->get_internalData(internalMode, itm8);//c221017_1
             }else if( deviceType == "RS250" || deviceType == "RS250A"){
                 this->get_internalData(internalMode, itm3);
             }else if( deviceType == "RS350"){
@@ -4514,7 +4821,7 @@ qDebug() << "requestInputOutputMode()start-deviceType : " << deviceType  << ", g
                 set_InputMode201(inputMode);
                 this->setInputData(inputMode);
             }else if( deviceType == "RS520"){
-                set_InputMode201(inputMode);
+                set_InputMode520(inputMode);
                 this->setInputData(inputMode);
             }else if( deviceType == "RS250" || deviceType == "RS250A"){
                 set_InputMode250(inputMode);
@@ -4542,6 +4849,7 @@ qDebug() << "requestInputOutputMode()start-deviceType : " << deviceType  << ", g
             }
         }
         if(p_jsonObject.contains("outputMode")){
+            print_debug();
             outputMode = p_jsonObject["outputMode"].toInt(); //cheon14_io
             //print_debug(); //cheon14-io
             qDebug() << "HTTP_SET_MODEoutputMode  = " << outputMode;
@@ -4561,6 +4869,17 @@ qDebug() << "requestInputOutputMode()start-deviceType : " << deviceType  << ", g
                 btn150_setting_internal->setStyleSheet("#" + tobj + " { background-color:rgba(0,0,0,0); background-image: url('" + ":/images/fol_edit_ico1.png" + "'); background-repeat:no-repeat; background-position:center center; } ");
                 tobj = "btn150_setting_bal";
                 btn150_setting_bal->setStyleSheet("#" + tobj + " { background-color:rgba(0,0,0,0); background-image: url('" + ":/images/fol_edit_ico1.png" + "'); background-repeat:no-repeat; background-position:center center; } ");
+
+            }else{
+                QString tobj = "btn150_setting_usb_2010";
+                btn150_setting_usb_2010->setStyleSheet("#" + tobj + " { background-color:rgba(0,0,0,0); background-image: url('" + ":/images/fol_edit_ico1_2.png" + "'); background-repeat:no-repeat; background-position:center center; } ");
+                tobj = "btn150_setting_hdmi";
+                btn150_setting_hdmi->setStyleSheet("#" + tobj + " { background-color:rgba(0,0,0,0); background-image: url('" + ":/images/fol_edit_ico1_2.png" + "'); background-repeat:no-repeat; background-position:center center; } ");
+                tobj = "btn150_setting_internal";
+                btn150_setting_internal->setStyleSheet("#" + tobj + " { background-color:rgba(0,0,0,0); background-image: url('" + ":/images/fol_edit_ico1_2.png" + "'); background-repeat:no-repeat; background-position:center center; } ");
+                tobj = "btn150_setting_bal";
+                btn150_setting_bal->setStyleSheet("#" + tobj + " { background-color:rgba(0,0,0,0); background-image: url('" + ":/images/fol_edit_ico1_2.png" + "'); background-repeat:no-repeat; background-position:center center; } ");
+
             }
             this->setInputData(inputMode);
 
@@ -4582,6 +4901,7 @@ qDebug() << "requestInputOutputMode()start-deviceType : " << deviceType  << ", g
             print_debug();//cheon0219
             outputMode = get_data( 8, itm8);
             print_debug();//cheon0219
+
             if(inputMode==4){
                 QString tobj = "btn520_setting_usb_2010";
                 btn520_setting_usb_2010->setStyleSheet("#" + tobj + " { background-color:rgba(0,0,0,0); background-image: url('" + ":/images/fol_edit_ico1.png" + "'); background-repeat:no-repeat; background-position:center center; } ");
@@ -4589,9 +4909,20 @@ qDebug() << "requestInputOutputMode()start-deviceType : " << deviceType  << ", g
                 btn520_setting_hdmi->setStyleSheet("#" + tobj + " { background-color:rgba(0,0,0,0); background-image: url('" + ":/images/fol_edit_ico1.png" + "'); background-repeat:no-repeat; background-position:center center; } ");
                 tobj = "btn520_setting_internal";
                 btn520_setting_internal->setStyleSheet("#" + tobj + " { background-color:rgba(0,0,0,0); background-image: url('" + ":/images/fol_edit_ico1.png" + "'); background-repeat:no-repeat; background-position:center center; } ");
-                tobj = "btn520_setting_bal";
+                tobj = "btn520_setting_unbal";
                 btn520_setting_unbal->setStyleSheet("#" + tobj + " { background-color:rgba(0,0,0,0); background-image: url('" + ":/images/fol_edit_ico1.png" + "'); background-repeat:no-repeat; background-position:center center; } ");
                 btn520_setting_speaker->setStyleSheet("#" + tobj + " { background-color:rgba(0,0,0,0); background-image: url('" + ":/images/fol_edit_ico1.png" + "'); background-repeat:no-repeat; background-position:center center; } ");
+
+            }else{
+                QString tobj = "btn520_setting_usb_2010";
+                btn520_setting_usb_2010->setStyleSheet("#" + tobj + " { background-color:rgba(0,0,0,0); background-image: url('" + ":/images/fol_edit_ico1_2.png" + "'); background-repeat:no-repeat; background-position:center center; } ");
+                tobj = "btn520_setting_hdmi";
+                btn520_setting_hdmi->setStyleSheet("#" + tobj + " { background-color:rgba(0,0,0,0); background-image: url('" + ":/images/fol_edit_ico1_2.png" + "'); background-repeat:no-repeat; background-position:center center; } ");
+                tobj = "btn520_setting_internal";
+                btn520_setting_internal->setStyleSheet("#" + tobj + " { background-color:rgba(0,0,0,0); background-image: url('" + ":/images/fol_edit_ico1_2.png" + "'); background-repeat:no-repeat; background-position:center center; } ");
+                tobj = "btn520_setting_unbal";
+                btn520_setting_unbal->setStyleSheet("#" + tobj + " { background-color:rgba(0,0,0,0); background-image: url('" + ":/images/fol_edit_ico1_2.png" + "'); background-repeat:no-repeat; background-position:center center; } ");
+                btn520_setting_speaker->setStyleSheet("#" + tobj + " { background-color:rgba(0,0,0,0); background-image: url('" + ":/images/fol_edit_ico1_2.png" + "'); background-repeat:no-repeat; background-position:center center; } ");
 
             }
             this->setInputData(inputMode);
@@ -4613,6 +4944,17 @@ qDebug() << "requestInputOutputMode()start-deviceType : " << deviceType  << ", g
                 btn150_setting_internal->setStyleSheet("#" + tobj + " { background-color:rgba(0,0,0,0); background-image: url('" + ":/images/fol_edit_ico1.png" + "'); background-repeat:no-repeat; background-position:center center; } ");
                 tobj = "btn150_setting_bal";
                 btn150_setting_bal->setStyleSheet("#" + tobj + " { background-color:rgba(0,0,0,0); background-image: url('" + ":/images/fol_edit_ico1.png" + "'); background-repeat:no-repeat; background-position:center center; } ");
+
+            }else{
+                QString tobj = "btn150_setting_usb_2010";
+                btn150_setting_usb_2010->setStyleSheet("#" + tobj + " { background-color:rgba(0,0,0,0); background-image: url('" + ":/images/fol_edit_ico1_2.png" + "'); background-repeat:no-repeat; background-position:center center; } ");
+                tobj = "btn150_setting_hdmi";
+                btn150_setting_hdmi->setStyleSheet("#" + tobj + " { background-color:rgba(0,0,0,0); background-image: url('" + ":/images/fol_edit_ico1_2.png" + "'); background-repeat:no-repeat; background-position:center center; } ");
+                tobj = "btn150_setting_internal";
+                btn150_setting_internal->setStyleSheet("#" + tobj + " { background-color:rgba(0,0,0,0); background-image: url('" + ":/images/fol_edit_ico1_2.png" + "'); background-repeat:no-repeat; background-position:center center; } ");
+                tobj = "btn150_setting_bal";
+                btn150_setting_bal->setStyleSheet("#" + tobj + " { background-color:rgba(0,0,0,0); background-image: url('" + ":/images/fol_edit_ico1_2.png" + "'); background-repeat:no-repeat; background-position:center center; } ");
+
             }
             this->setInputData(inputMode);
 
@@ -5070,11 +5412,27 @@ void SettingInputOutput::internalMode_display250(QString status){
     }
 }
 
-void SettingInputOutput::setInternalData(){  //cheon09-io
+void SettingInputOutput::setInternalData(){  //c221013_2
 
     int output_data, itm3_data[3], itm8_data[8];
     QString deviceType = global.device.getDeviceType();
-
+    print_debug();
+    int curr_input_mode = get_curr_input_mode(deviceType);
+    /*
+    if(pre_input_mode >= 0){
+        if(curr_input_mode != pre_input_mode){
+            print_debug();
+            input_mode_flag = true;
+           // return;
+        }else{
+            input_mode_flag = false;
+        }
+        //return;
+    }else{
+        input_mode_flag = true;
+    }
+    pre_input_mode = curr_input_mode;
+    */
     if( deviceType == "RS150" || deviceType == "RS150B"){
 
         output_data = get_data(8, itm8_data);
@@ -5092,7 +5450,7 @@ void SettingInputOutput::setInternalData(){  //cheon09-io
         widget_box_setting_bal12_out->setStyleSheet("#widget_box_setting_bal12_out { border:1px solid #707070; }");
         print_debug();//cheon0219
         qDebug() << "output_data: " <<  output_data <<  ",inputvalue150 :  " <<inputvalue150 ;
-        if(output_data == 1 || output_data == 4 || inputvalue150 == 4 ){
+        if(output_data == 1 || output_data == 4 ){//|| inputvalue150 == 4 ){//c221017_1
         //if(output_data == 1 || output_data == 4 ){
           print_debug();//cheon0219
           internalMode_display(status);
@@ -5116,7 +5474,7 @@ void SettingInputOutput::setInternalData(){  //cheon09-io
         widget_box_setting_bal12_out->setStyleSheet("#widget_box_setting_bal12_out { border:1px solid #707070; }");
         print_debug();//cheon0219
         qDebug() << "output_data: " << output_data << ",inputvalue250 :  " << inputvalue250 << ", status :" << status;
-        if(output_data == 1 || output_data == 4 || inputvalue250 ==4){
+        if(inputvalue250 == 4 ){//c221017_1
           print_debug();//cheon0219
           internalMode_display250(status);
 
@@ -5188,13 +5546,12 @@ void SettingInputOutput::setInternalData(){  //cheon09-io
         widget_box_setting_speaker_out->setStyleSheet("#widget_box_setting_speaker_out { border:1px solid #707070; }");
         widget_box_setting_unbalance_out->setStyleSheet("#widget_box_setting_unbalance_out { border:1px solid #707070; }");
 
-        print_debug();//cheon0219
+        print_debug();
+        qDebug() << "output_mode_flag---" << output_mode_flag;
         qDebug() << "output_data: " <<  output_data <<  ",inputvalue520 :  " <<inputvalue520 ;
-        if(output_data == 1 || output_data == 4 || inputvalue520 == 4 ){
-        //if(output_data == 1 || output_data == 4 ){
-          print_debug();//cheon0219
-          internalMode_display520(status);
-
+        if(!output_mode_flag) {
+            print_debug();//cheon0219
+            internalMode_display520(status);
         }
 
     }else if( deviceType == "RS301"){
@@ -5205,11 +5562,48 @@ void SettingInputOutput::setInternalData(){  //cheon09-io
 
 }
 
-void SettingInputOutput::setOutputData(int outputMode){  //cheon09-io
+int SettingInputOutput::get_curr_input_mode(QString deviceType){
+    if(deviceType == "RS201"){
+        return inputvalue201;
+    }else if(deviceType == "RS250A"){
+        return inputvalue250;
+    }else if(deviceType == "RS250"){
+        return inputvalue250;
+    }else if(deviceType == "RS150"){
+        return inputvalue150;
+    }else if(deviceType == "RS150B"){
+        return inputvalue150;
+    }else if(deviceType == "RS520"){
+        return inputvalue520;
+    }else{
+        return inputvalue520;
+    }
+
+}
+void SettingInputOutput::setOutputData(int outputMode){  //c221013_2
 
     QString deviceType = global.device.getDeviceType();
     print_debug();//cheon0219
     qDebug() << "outputMode = " << outputMode;
+    int curr_input_mode = get_curr_input_mode(deviceType);
+    /*
+    if(pre_input_mode >= 0){
+        if(curr_input_mode != pre_input_mode){
+            print_debug();
+            input_mode_flag = true;
+            return;
+        }else{
+            input_mode_flag = false;
+        }
+        //return;
+    }else{
+        input_mode_flag = true;
+    }
+    */
+    QString cur_internalData  = get_data();
+    qDebug() << "outputvalue = " << outputvalue;
+    qDebug() << "cur_internalData = " << cur_internalData;
+    qDebug() << "inputvalue520 = " << inputvalue520;
     if( deviceType == "RS150" || deviceType == "RS150B"){
         btn150_dac_2010_out->setStyleSelected(false);
         btn150_HDMI_out->setStyleSelected(false);
@@ -5224,12 +5618,16 @@ void SettingInputOutput::setOutputData(int outputMode){  //cheon09-io
         widget_box_hdmi->setStyleSheet("#widget_box_hdmi { border:1px solid #707070;  }");
         widget_box_usb->setStyleSheet("#widget_box_usb { border:1px solid #707070;  }");
         widget_box_opt_out->setStyleSheet("#widget_box_opt_out { border:1px solid #707070; }");
-    }else if( deviceType == "RS520"){
+    }else if( deviceType == "RS520"){//c221013_2
+
+
         btn520_dac_2010_out->setStyleSelected(false);
         btn520_HDMI_out->setStyleSelected(false);
 
         widget_box_hdmi_out->setStyleSheet("#widget_box_hdmi_out { border:1px solid #707070;  }");
         widget_box_dac_2010_out->setStyleSheet("#widget_box_dac_2010_out { border:1px solid #707070;  }");
+
+
 
     }else if( deviceType == "RS250" || deviceType == "RS250A"){
         btn150_dac_2010_out->setStyleSelected(false);
@@ -5241,18 +5639,36 @@ void SettingInputOutput::setOutputData(int outputMode){  //cheon09-io
 
     }
     if(inputvalue150 == 4 || inputvalue250 == 4) {
-        ToastMsg::show(this, "", tr("Please change the usb input mode and try again"));
+        print_debug();//c221017_1
+        ToastMsg::show(this, "", tr("Please change the usb input mode and try again"));//c221017_1
         return;
     }
-    if(outputMode==3){
-
-//        QString deviceType = global.device.getDeviceType();
+    if(inputvalue520 == 4) {
+        print_debug();
+        //qDebug() << "inputvalue520=" << inputvalue520;
+       // ToastMsg::show(this, "", tr("Please change the usb input mode and try again"));
+        //return;
+    }
+    print_debug();
+    qDebug() << "input_mode_flag---" << input_mode_flag;
+    qDebug() << "outputvalue---" << outputvalue;
+    qDebug() << "get_UsbName()---" << get_UsbName();
+    if( outputvalue==3){
+//QString decName = get_UsbName();
+        //        QString deviceType = global.device.getDeviceType();
         if( deviceType == "RS150" || deviceType == "RS150B" ){
             btn150_dac_2010_out->setStyleSelected(true);
             widget_box_dac_2010_out->setStyleSheet("#widget_box_dac_2010_out { border:3px solid #B18658; }");
         }else  if( deviceType == "RS520"){
-            btn520_dac_2010_out->setStyleSelected(true);
-            widget_box_dac_2010_out->setStyleSheet("#widget_box_dac_2010_out { border:3px solid #B18658; }");
+            print_debug();
+            if(outputMode != 4 && (inputvalue520 != 4 && !get_UsbName().isEmpty())) {
+                print_debug();
+                output_mode_flag = true;
+                btn520_dac_2010_out->setStyleSelected(true);
+                widget_box_dac_2010_out->setStyleSheet("#widget_box_dac_2010_out { border:3px solid #B18658; }");
+            }else{
+                output_mode_flag = false;
+            }
         }else if( deviceType == "RS201"){
             btn_usb->setStyleSelected(true);
             widget_box_usb->setStyleSheet("#widget_box_usb { border:3px solid #B18658; }");
@@ -5264,19 +5680,23 @@ void SettingInputOutput::setOutputData(int outputMode){  //cheon09-io
 
         }
 
-    }else if(outputMode==2){
-
- //       QString deviceType = global.device.getDeviceType();
+    }else if(outputvalue==2){
+print_debug();
+qDebug() << "deviceType=" << deviceType;
+        //       QString deviceType = global.device.getDeviceType();
         if( deviceType == "RS150" || deviceType == "RS150B" ){
             btn150_HDMI_out->setStyleSelected(true);
             widget_box_hdmi_out->setStyleSheet("#widget_box_hdmi_out { border:3px solid #B18658; }");
         }else  if( deviceType == "RS520"){
-            btn520_HDMI_out->setStyleSelected(true);
-            widget_box_hdmi_out->setStyleSheet("#widget_box_hdmi_out { border:3px solid #B18658; }");
+            if(outputMode != 4 && inputvalue520 != 4) {
+                print_debug();
+                output_mode_flag = true;
+                btn520_HDMI_out->setStyleSelected(true);
+                widget_box_hdmi_out->setStyleSheet("#widget_box_hdmi_out { border:3px solid #B18658; }");
+            }else{
+                output_mode_flag = false;
+            }
         }else if( deviceType == "RS201"){
-            btn_hdmi->setStyleSelected(true);
-            widget_box_hdmi->setStyleSheet("#widget_box_hdmi { border:3px solid #B18658; }");
-        }else if( deviceType == "RS520"){
             btn_hdmi->setStyleSelected(true);
             widget_box_hdmi->setStyleSheet("#widget_box_hdmi { border:3px solid #B18658; }");
         }else if( deviceType == "RS250" || deviceType == "RS250A"){
@@ -5285,6 +5705,8 @@ void SettingInputOutput::setOutputData(int outputMode){  //cheon09-io
         }else if( deviceType == "RS350"){
 
         }
+    }else{
+        output_mode_flag = false;
     }
 }
 

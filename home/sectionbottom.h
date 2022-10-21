@@ -55,7 +55,8 @@ signals:
 
 private slots:
 
-   void slot_clickedYoutubeQuestion();//c220803
+    void slot_Update_call();//c221013_1
+    void slot_clickedYoutubeQuestion();//c220803
     void slot_player_valuestop();//c220705
     //void slot_playMusic_desktop(QJsonArray jsonArrMusic, bool flagPlayShuffle);//c220704
     void slot_desktopModeStart();//c220704
@@ -82,9 +83,10 @@ private:
     DesktopMediaPlayerThread *Dt_thread;//c220705
     Updater *m_updater_tmp;
     bool slot_sliderClick_flag = false;
-   // bool section_bottom_mouse_trigger_menu_flag = false;//c220625
+    // bool section_bottom_mouse_trigger_menu_flag = false;//c220625
     bool showHideCheckFlag = false;
     QString thumbnail="";              ///< 앨범 이미지 경로
+    bool isIsoOpen = false;
     QString thumbnail_realHttp="";     ///< 실제 세팅할 시점에만 실제 세팅한 이미지 풀경로를 저장하고 있는다 (동일한 앨범이미지를 계속 세팅할 필요 없게 하기위해 변수 추가)
     QString titleName="";              ///< 노래제목
     QString albumName="";              ///< 로즈튜브의 id ? ?

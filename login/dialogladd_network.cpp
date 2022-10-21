@@ -691,7 +691,7 @@ print_debug();
     int top = global.top_mainwindow+global.height_mainwindow/2- (dlgConfirmFinder->sizeHint().height() / 2);//c220804
     dlgConfirmFinder->move(left, top);//c220804
     //--------------
-    if(dlgConfirmFinder->property("flagShown").toBool()==false){
+    //if(dlgConfirmFinder->property("flagShown").toBool()==false){
         dlgConfirmFinder->setProperty("flagShown",true);
 
         int result = dlgConfirmFinder->exec();
@@ -700,7 +700,8 @@ print_debug();
 
 
         }
-    }
+        dlgConfirmFinder->setProperty("flagShown",false);
+    //}
     delete dlgConfirmFinder;
 }
 

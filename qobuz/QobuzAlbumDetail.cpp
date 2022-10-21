@@ -60,7 +60,6 @@ namespace qobuz {
      */
     void QobuzAlbumDetail::setJsonObject_forData(const QJsonObject &jsonObj){
 
-
         qobuz::AlbumItemData tmp_data_album = ConvertData::convertData_albumData(jsonObj);
 
         this->flagNeedReload = false;
@@ -132,9 +131,9 @@ namespace qobuz {
                 connect(proc_album, &ProcCommon::completeReq_list_albums, this, &QobuzAlbumDetail::slot_applyResult_sameArtist);
                 proc_album->request_qobuz_get_albuminfo(this->data_album.id);
 
-                ProcCommon *proc_track = new ProcCommon(this);
+                /*ProcCommon *proc_track = new ProcCommon(this);
                 connect(proc_track, &ProcCommon::completeReq_list_items_of_album, this, &QobuzAlbumDetail::slot_applyResult_tracks);
-                proc_track->request_qobuz_getList_items_of_album(this->data_album.id);
+                proc_track->request_qobuz_getList_items_of_album(this->data_album.id);*/
 
                 if(this->data_album.artist_id > 0){
                     ProcCommon *proc_artist = new ProcCommon(this);
@@ -185,6 +184,10 @@ namespace qobuz {
                 this->box_contents->removeWidget(this->widget_main_contents);
             }
 
+            GSCommon::clearLayout(this->box_contents);
+            this->box_contents->setAlignment(Qt::AlignTop);
+            this->scrollArea_main->setVerticalScrollBarPolicy(Qt::ScrollBarAsNeeded);
+
             this->box_main_contents = new QVBoxLayout();
             this->box_main_contents->setSpacing(0);
             this->box_main_contents->setContentsMargins(0, 0, 0, 0);
@@ -193,7 +196,7 @@ namespace qobuz {
             this->widget_main_contents->setStyleSheet("background:#212121; border:0px;");
             this->widget_main_contents->setLayout(this->box_main_contents);
 
-            this->box_contents->addWidget(widget_main_contents, 0, Qt::AlignTop);
+            this->box_contents->addWidget(widget_main_contents);
 
             this->flag_credit_ok = false;
 
@@ -485,8 +488,7 @@ namespace qobuz {
 
             // Update Data
             this->data_album = album_info;
-            print_debug();
-            qDebug() << "this->data_album.id=" << this->data_album.id ;
+
             // Update UI
             QString title_ver = "";
             if(this->data_album.version.isEmpty()){
@@ -541,6 +543,9 @@ namespace qobuz {
             }
         }
 
+        ProcCommon *proc_track = new ProcCommon(this);
+        connect(proc_track, &ProcCommon::completeReq_list_items_of_album, this, &QobuzAlbumDetail::slot_applyResult_tracks);
+        proc_track->request_qobuz_getList_items_of_album(this->data_album.id);
     }
 
     //c220818 share link
@@ -870,11 +875,12 @@ namespace qobuz {
 
         Q_UNUSED(flag_lastPage);
         ContentLoadingwaitingMsgHide();//c220620
+
         if(list_data.size() <= 0){
             NoData_Widget *noData_widget = new NoData_Widget(NoData_Widget::NoData_Message::Track_NoData);
             noData_widget->setFixedSize(1500, 300);
 
-            this->vl_tracks->addWidget(noData_widget, 0, Qt::AlignTop);
+            this->vl_tracks->addWidget(noData_widget);
 
             QJsonObject p_data;
             p_data.insert("pageCode", "track");
@@ -899,10 +905,6 @@ namespace qobuz {
 
                 int cd_num = 1;
                 for(int i = 0; i < max_cnt; i++){
-                    print_debug();
-                    // qDebug()<<"77777777777777777777777777777777777777777777777777777777777777777777777777777777777777777777777777777";//cheontidalhires
-                    //QJsonDocument doc(jsonArr_dataToPlay.at(i).toObject());  QString strJson(doc.toJson(QJsonDocument::Compact));  qDebug() << "QobuzAlbumDetail::slot_applyResult_tracks()-jsonObj =: " << strJson;//cheonprint//cheontidalhires
-
                     this->album_tracks[i] = new AlbumTrackDetailInfo_RHV;
                     connect(this->album_tracks[i], &AlbumTrackDetailInfo_RHV::clicked, this, &QobuzAlbumDetail::slot_clickedItemTrack_inList);
                     this->album_tracks[i]->setProperty("index", i);

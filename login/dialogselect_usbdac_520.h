@@ -23,6 +23,8 @@ public:
     };
 
 private slots:
+    //void slot_clickedDSDquestion();
+    //void slot_clickedMQAquestion();
     void slot_clickedAdd();
 private:
 

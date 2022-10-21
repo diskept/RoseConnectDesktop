@@ -228,7 +228,7 @@ void SectionLeft::slot_setSelectMenu(QString p_menuCode)//cheon211008
 void SectionLeft::setSmallSize(){
 
     this->lb_logo->setGeometry(18, 45, 45, 50);
-
+    this->setFixedWidth(MENU_W_MIN);
     //this->setMaximumWidth(MENU_W_MIN);
     lb_title_playList_my->setText(tr("My"));
     lb_title_playList_friend->setText(tr("friend"));
@@ -251,6 +251,7 @@ void SectionLeft::setBigSize(){
 
     this->lb_logo->setGeometry(18, 45, 125, 50);
 
+    this->setFixedWidth(MENU_W_MAX);
     //this->setMaximumWidth(MENU_W_MAX);
     lb_title_playList_my->setText(tr("My Playlist"));
     //    lb_title_playList_my->setText(tr("마이 플레이리스트"));

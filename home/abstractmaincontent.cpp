@@ -552,7 +552,8 @@ void AbstractMainContent::goToNextPage(){
  * @param p_pageCode
  */
 void AbstractMainContent::goToMoveNewOrderPage(const QJsonObject &p_data){
-
+print_debug();
+qDebug() << "p_data=" << p_data;
     QString tmp_pageCode = p_data[KEY_PAGE_CODE].toString();
     QString tmp_contentStep = "";
 
@@ -796,10 +797,33 @@ void AbstractMainContent::slot_get_dragDropText(){//c220820
     //QString videoID = jsonTrackData["playurl"].toString().split("?v=").last();
     //le_search->displayText();
     qDebug() << "le_search->text()=" << this->le_search_back->text();
-    if(this->le_search_back->text().size()<2){
+    if(this->le_search_back->text().size() < 2){
         return;
     }
-    QString tmp_str = this->le_search_back->text();
+
+    // Drag and Drop Error fixed 10/17/2022 by diskept
+    QString strInput = this->le_search_back->text();
+    QString strRelplace = "";
+    QString tmp_str = "";
+
+    if(strInput.contains("\n")){
+        QStringList removeNewline = strInput.split("\n");
+        strRelplace = removeNewline.at(0);
+    }
+    else{
+        strRelplace = strInput;
+    }
+
+    if(strRelplace.contains("\t")){
+        QStringList removeTab = strRelplace.split("\t");
+        tmp_str = removeTab.at(0);
+    }
+    else{
+         tmp_str = strRelplace;
+    }
+
+    tmp_str.replace(" ", "");
+
     global.dragDrop_pathStr = tmp_str;
     QString tmp_Path4 = tmp_str.split("&").at(0);
     qDebug() << "tmp_Path4=" << tmp_Path4;
@@ -845,6 +869,16 @@ void AbstractMainContent::slot_get_dragDropText(){//c220820
                                  , json
                                  , false
                                  , true);
+            }else if(tmp_str.contains("?v=")&& tmp_str.split("?v=").last().size()>0){
+                global.search_text = tmp_str.split("?v=").last();
+                qDebug() << "global.search_text" << global.search_text;
+                //this->slot_returnPressed(tmp_Path3);
+                print_debug();
+                //emit linker->signal_checkQueue(11, "");
+                slot_overrideSigalSearch(true);
+                //emit linker->signal_clickedMovePageRoseTubeSearchCall();
+                print_debug();
+                this->le_search_back->clear();
             }else{
                 qDebug() << "network->request=" << QString("https://api.roseaudio.kr/newpipe/v1/get?playurl=%1").arg(tmp_str);
                 network->request(5678

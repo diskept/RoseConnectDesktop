@@ -85,13 +85,13 @@ namespace playTypes{
     QString FM_TUNER = "FM_TUNER";
     QString YOUTUBE = "YOUTUBE";
     QString POD = "POD";
-    QString SPOTIFY = "SPOTIFY";
     QString TIDAL = "TIDAL";
     QString TIDAL_VIDEO = "TIDAL_VIDEO";
     QString BUGS = "BUGS";
     QString BUGS_MV = "BUGS_MV";
     QString QOBUZ = "QOBUZ";                            ///< Added Jeon 31/12/2020
     QString APPLE = "APPLE_MUSIC";
+    QString SPOTIFY = "SPOTIFY";
     QString ROON = "ROON";
     QString DLNA = "DLNA";
     QString AIRPLAY = "AIRPLAY";
@@ -103,8 +103,8 @@ namespace playTypes{
 SectionBottom::SectionBottom(QWidget *parent) : QWidget(parent)
 {
     linker = Linker::getInstance();
-    m_updater_tmp = new Updater();//c220414
-    m_updater_tmp->checkForUpdates_tmp();
+    //m_updater_tmp = new Updater();//c221013_1
+    //m_updater_tmp->checkForUpdates_tmp();//c221013_1
     /*dlg = new DialogConfirm(this);
     dlg->setAlertMode();
     dlg->setTitle(tr("Power stanby"));
@@ -284,7 +284,7 @@ SectionBottom::SectionBottom(QWidget *parent) : QWidget(parent)
 
     //linker = Linker::getInstance();//c1209
     connect(linker, SIGNAL(signal_checkQueue(int,QString)), this, SLOT(slot_checkQueueMsg(int, QString)));//c1209
-    connect(this->slider_playbar, SIGNAL(sliderReleased()) ,this, SLOT(changedSliderBar()));//c221007_1
+    //connect(this->slider_playbar, SIGNAL(sliderReleased()) ,this, SLOT(changedSliderBar()));//c221013_3
     //connect(linker, SIGNAL(signal_sliderclick(int)), this, SLOT(slot_sliderClick(int)));//c221007_1
     connect(this->slider_playbar, SIGNAL(signal_sliderclick(int)), this, SLOT(slot_sliderClick(int)));//c221007_1
 
@@ -315,7 +315,11 @@ SectionBottom::SectionBottom(QWidget *parent) : QWidget(parent)
     this->repeatMode = 0;//c220828_2
     this->shuffleMode = 0;//c220828_2
 
+     QTimer::singleShot(5000, this, SLOT(slot_Update_call()));//c221013_1
+
 }
+
+
 SectionBottom::~SectionBottom(){//c220705
 
 
@@ -324,6 +328,15 @@ SectionBottom::~SectionBottom(){//c220705
 
     this->deleteLater();
 }
+
+
+void SectionBottom::slot_Update_call(){//c221013_1
+
+    m_updater_tmp = new Updater();
+    m_updater_tmp->checkForUpdates_tmp();
+}
+
+
 void SectionBottom::slot_player_valuestop(){//c220705
 
     if(QMediaPlayer::PlayingState == global.music_player->state()){
@@ -448,26 +461,44 @@ void SectionBottom::slot_sliderClick(int p_value){
     this->thumbnail_realHttp = "";//c220727
     slot_sliderClick_flag = true;
     qDebug() << "p_value = " << p_value;
+    qDebug() << "this->isIsoOpen = " << this->isIsoOpen;
     qDebug() << "this->curPosition = " << this->curPosition;
     qDebug() << "this->duration = " << this->duration;
+    qDebug() << "global.device.CurrPlayType = " << global.device.CurrPlayType;
+    qDebug() << "global.desktopPlayerMode = " << global.desktopPlayerMode;
     //this->timer->stop();
     if(this->curPosition < 0 || this->curPosition > this->duration){
         print_debug();
-    }//this->playType!=playTypes::CD &&
-    if(!global.desktopPlayerMode && (global.device.CurrPlayType != "CD" && this->playType!=playTypes::ROSE_RADIO && this->playType!=playTypes::RADIO)){//c220903_2
-print_debug();
+    }//this->playType!=playTypes::CD &&global.device.CurrExtType
+    //if(!global.desktopPlayerMode && (global.device.CurrPlayType != "iso" && this->playType!=playTypes::ROSE_RADIO && this->playType!=playTypes::RADIO)){//c221014_1
+    if(!global.desktopPlayerMode && (this->playType!=playTypes::CD &&this->playType!=playTypes::ROSE_RADIO && this->playType!=playTypes::RADIO)){//c221014_1
+        print_debug();
+        //qDebug() << "global.currMainMenuCode=" << global.currMainMenuCode;
+        print_debug();
         NetworkHttp *network = new NetworkHttp(this);
-        connect(network, SIGNAL(response(int,QJsonObject)), SLOT(slot_responseHttp(int,QJsonObject)));
-    //HTTP_DEVICE_GET_CURRENT_STATE_PLAY
+        //connect(network, SIGNAL(response(int,QJsonObject)), SLOT(slot_responseHttp(int,QJsonObject)));
+        //HTTP_DEVICE_GET_CURRENT_STATE_PLAY
+        QJsonObject json;
+        json.insert("currentPlaySeekto",p_value);
+        json.insert("currentPlayState",22);                             // 항상 22 (라디오 제외 모든 메인메뉴 음원 재생시 모두 22 동일함-어플에서-)
+        json.insert("roseToken",global.device.getDeviceRoseToken());
+        network->request(HTTP_DEVICE_GET_CURRENT_STATE_PLAY, QString("http://%1:%2/current_play_state").arg(global.device.getDeviceIP()).arg(global.port), json, true);
+
+    //}else if(this->playType==playTypes::CD && global.currMainMenuCode == QString(GSCommon::MainMenuCode::CDplay)){
+    }else if(this->playType==playTypes::CD && this->isIsoOpen == false){
+        print_debug();
+        NetworkHttp *network = new NetworkHttp(this);
+        //connect(network, SIGNAL(response(int,QJsonObject)), SLOT(slot_responseHttp(int,QJsonObject)));
+        //HTTP_DEVICE_GET_CURRENT_STATE_PLAY
         QJsonObject json;
         json.insert("currentPlaySeekto",p_value);
         json.insert("currentPlayState",22);                             // 항상 22 (라디오 제외 모든 메인메뉴 음원 재생시 모두 22 동일함-어플에서-)
         json.insert("roseToken",global.device.getDeviceRoseToken());
         network->request(HTTP_DEVICE_GET_CURRENT_STATE_PLAY, QString("http://%1:%2/current_play_state").arg(global.device.getDeviceIP()).arg(global.port), json, true);
         //network->request(HTTP_DEVICE_GET_CURRENT_STATE_PLAY, QString("http://%1:%2/current_play_state").arg(global.device.getDeviceIP()).arg(global.port), json, true);
-
+//print_debug();
     }else{
-        print_debug();
+        //print_debug();
         global.window_activate_flag = true;
         ToastMsg::show(this, "", tr("You cannot move your play position in this playtype."), 2000);//
         qDebug() << "global.desktopPlayerMode=" << global.desktopPlayerMode;
@@ -475,9 +506,6 @@ print_debug();
         if(global.desktopPlayerMode){
             global.music_player->setPosition(p_value);
         }
-        //this->curPosition = p_value;
-
-
     }
 
 }
@@ -570,14 +598,18 @@ print_debug();
 
 void SectionBottom::ContentLoadingwaitingMsgShow(QString msg, int flag){ //c220616      //c211213
      print_debug();
+     qDebug() << "-----------------------------------------------------------------------------------------------------" << msg;
      qDebug() << "global.powerDialogShowFlag=" << global.powerDialogShowFlag;
      qDebug() << "global.window_activate_flag=" << global.window_activate_flag;
      qDebug() << "tmp_window_activate_flag=" << tmp_window_activate_flag;
+     if(global.pretoastmsg == msg) return;
+     global.pretoastmsg = msg;
     if(global.powerDialogShowFlag) return;//c220724
 
     if(!global.window_activate_flag){
-        if(!tmp_window_activate_flag) return;//c220724
+        return;//c221013_3
     }
+
     print_debug();
     tmp_window_activate_flag = false;
     QLabel *lb_msg = new QLabel();
@@ -619,7 +651,8 @@ void SectionBottom::ContentLoadingwaitingMsgShow(QString msg, int flag){ //c2206
     msg_dialog_wait->setLayout(vl_total);
 
     int left = global.left_mainwindow+global.width_mainwindow/2- (msg_dialog_wait->sizeHint().width() / 2);//c220804
-    int top = global.top_mainwindow+global.height_mainwindow/2- (msg_dialog_wait->sizeHint().height() / 2);//c220804
+    //int top = global.top_mainwindow+global.height_mainwindow + (msg_dialog_wait->sizeHint().height() / 2);//c220804
+    int top = global.top_mainwindow+global.height_mainwindow - (msg_dialog_wait->sizeHint().height()*2);
 
     msg_dialog_wait->move(left, top);//c220804
 
@@ -661,8 +694,7 @@ void SectionBottom::ContentLoadingwaitingMsgShow(QString msg, int flag){ //c2206
 
 void SectionBottom::slot_redirectUrl(const QString url){  //j220903 twitter
 
-    if(url != this->thumbnail){
-        this->cd_img_before = this->thumbnail;
+    if(url != this->cd_img_change){
         this->cd_img_change = url;
         this->filedownloader->setImageURL(QUrl(this->cd_img_change));
     }
@@ -984,7 +1016,9 @@ void SectionBottom::setJsonData(QJsonObject p_jsonObject){
 
     //print_debug();
     //QJsonDocument doc(p_jsonObject);    QString strJson(doc.toJson(QJsonDocument::Compact));    qDebug() << "SectionBottom::setJsonData-strJson = " << strJson;
-
+    //global.sectionBottomTop = this->pos().y();//c221021_1
+//qDebug() <<"global.top_mainwindow="<<global.top_mainwindow;
+//qDebug() <<"global.height_mainwindow="<<global.height_mainwindow;
     if(this->isActiveWindow()) {//c220907_1
         //print_debug();//c220909_1
         global.window_activate_flag = true;
@@ -1070,6 +1104,7 @@ void SectionBottom::setJsonData(QJsonObject p_jsonObject){
     }
 //print_debug();
     if(p_jsonObject.contains("data")){
+        //print_debug();
         QJsonObject tmp_data = p_jsonObject["data"].toObject();
         if(tmp_data.contains("playType")){
             if(tmp_data["playType"].toString() == ""){
@@ -1340,25 +1375,52 @@ void SectionBottom::setJsonData(QJsonObject p_jsonObject){
             if(tmp_data_subAppCurrentData.contains("mDirectFileInfo")){
             }
         }
+
         if(tmp_data.contains("thumbnail")){
             QJsonArray tmp_array = tmp_data["thumbnail"].toArray();
             if(tmp_array.count()>0){
                 if(playType==playTypes::ROSE_RADIO){
                     QString temp = tmp_array.first().toString().replace("//","/");
                     this->thumbnail = temp.replace("https:/","https://");;
-                }else{
-                    this->thumbnail = tmp_array.first().toString();
                 }
+                else if(playType==playTypes::SPOTIFY || playType==playTypes::ROON || playType==playTypes::DLNA || playType==playTypes::AIRPLAY){
+                    QString temp = tmp_array.first().toString();
 
+                    if(temp.contains("http://")){
+                        this->thumbnail = temp;
+                    }
+                    else{
+                        this->thumbnail = "http://" + global.device.getDeviceIP() + ":" + global.port_img + temp;
+                    }
+                }
+                else{
+                    if(playType==playTypes::CD){
+                        this->thumbnail = tmp_array.first().toString();
+                        QString isIsoOpen_str = tmp_array.last().toString();
+
+                        QString isIsoOpen_bool = isIsoOpen_str.split(":").last();
+                        //qDebug() << "isIsoOpen_bool=" << isIsoOpen_bool;
+                        if(isIsoOpen_bool == "true"){
+                            this->isIsoOpen = true;
+                        }else{
+                            this->isIsoOpen = false;
+                        }
+
+                    }else{
+                        this->thumbnail = tmp_array.first().toString();
+                    }
+                }
             }
+
             // 하단 현재재생플레이바의 array[2] 인덱스 접근시, count 확인하는 if 문 추가..
             // 경우따라 array갯수가 다르게 들어오는경우가 잇는 모양인가보옴. API가 그렇게 생겨서 어쩔수 없음.. if문 걸어놓고 하는 수밖에
-            if(tmp_array.count()>=3){
+            if(tmp_array.count() >= 3){
                 QString tmp_isShareFile = tmp_array[2].toString();
                 if(tmp_isShareFile.startsWith("isShareFile") && tmp_isShareFile.endsWith("true")){
                     this->isShareFile = true;
                 }
             }
+
             if(tmp_array.count()>=5){
                 QString tmp_audioId = tmp_array[4].toString();
                 if(tmp_audioId.startsWith("audioId:")){
@@ -1379,7 +1441,8 @@ void SectionBottom::setJsonData(QJsonObject p_jsonObject){
        // print_debug();
        // bottomInfo_flag = false;
     }else{
-        //print_debug();
+        print_debug();
+        //return 0;
        // bottomInfo_flag = true;
     }
 
@@ -1406,6 +1469,7 @@ void SectionBottom::setJsonData(QJsonObject p_jsonObject){
             //emit linker->signal_rosefmChannelChanged(p_jsonObject);
         }
     }
+    //return 1;
    // print_debug();
 }
 
@@ -1527,6 +1591,12 @@ void SectionBottom::setUIDataBasicInfo(){
         tmp_iconPath = ":/images/playBar/cd_play_ico.png";
         tmp_imgURL = QString("%1").arg(this->thumbnail);
 
+        if(this->thumbnail != this->cd_img_before){
+            this->cd_img_change = "";
+
+            CommonGetRedirectUrl *redirectUrl = new CommonGetRedirectUrl("CD", this->thumbnail);                        //j220903 twitter
+            connect(redirectUrl, &CommonGetRedirectUrl::signal_redirectUrl, this, &SectionBottom::slot_redirectUrl);    //j220903 twitter
+        }
     }
 
 
@@ -1556,7 +1626,7 @@ void SectionBottom::setUIDataBasicInfo(){
 
     this->lb_albumThumbText->hide();
     if(this->thumbnail != ""){
-        this->thumbnail_realHttp = tmp_imgURL;
+        this->cd_img_before = tmp_imgURL;
 
         // 앨범이미지 download
         if(this->playType==playTypes::CD){     //j220903 twitter
@@ -1583,8 +1653,8 @@ void SectionBottom::setUIDataBasicInfo(){
                 painter.drawPixmap(0, 0, tmp_pixmap);
                 painter.end();
 
-                //this->lb_albumThumb->setPixmap(pixmapIMG);
-                this->pixmap_albumImg = &pixmapIMG;
+                this->lb_albumThumb->setPixmap(pixmapIMG);
+                //this->pixmap_albumImg = &pixmapIMG;
             }
             else{
                 this->filedownloader->setImageURL(QUrl(this->cd_img_change));

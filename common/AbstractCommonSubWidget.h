@@ -117,6 +117,7 @@ namespace common {
         void slot_singleShot_clickQobuz();
         void slot_singleShot_clickRoseRadio();
         void slot_singleShot_clickBugs();
+
         // OptMorePopup 관련
         virtual void slot_optMorePopup_menuClicked(const OptMorePopup::ClickMode, const int, const int);
 
@@ -140,11 +141,9 @@ namespace common {
 
 
     protected:
-
         // Edit delegate 관련
         void createList_itemEditDelegate_applyingWithData_showImage(const QList<editDelegate::ItemEditData>& list_data, QListWidget *p_listWidget, const int start_index, bool flagAdjustHeight);
         void applyImageData_itemEditDelegate_withFileDownload(FileDownloader *fileDownload_sender, QListWidget *p_listWidget, QList<editDelegate::ItemEditData>* p_list_item);
-
 
         // about UI
         void addUIControl_mainTitle(const QString mainTitle);

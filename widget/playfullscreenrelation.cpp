@@ -36,10 +36,6 @@
 #include <QMetaEnum>
 
 
-
-
-
-
 // 현재 재생중인 곡의 타입
 const QString PLAYTYPE_MUSIC = "MUSIC";                 ///< 음악
 const QString PLAYTYPE_CD = "CD";                       ///< CD
@@ -56,6 +52,11 @@ const QString PLAYTYPE_BUGS_MV = "BUGS_MV";             ///< 벅스 비디오
 const QString PLAYTYPE_QOBUZ = "QOBUZ";                 ///< 코부즈 음악 (비디오와 구분됨)
 const QString PLAYTYPE_QOBUZ_VIDEO = "QOBUZ_VIDEO";     ///< 코부즈 비디오
 const QString PLAYTYPE_APPLE = "APPLE_MUSIC";           ///< 애플뮤직 음악 (비디오와 구분됨)
+const QString PLAYTYPE_SPOTIFY = "SPOTIFY";
+const QString PLAYTYPE_ROON = "ROON";
+const QString PLAYTYPE_DLNA = "DLNA";
+const QString PLAYTYPE_AIR = "AIRPLAY";
+
 
 // 현재 재생중인 곡의 앨범 이미지 사이즈
 const int PAGE_W_MIN = 945;
@@ -785,6 +786,24 @@ void PlayFullScreenRelation::setUIfromData(){
         this->btn_icon_menu->setVisible(true);
 
     }
+    else if(this->playType==PLAYTYPE_SPOTIFY || this->playType==PLAYTYPE_ROON || this->playType==PLAYTYPE_DLNA || this->playType==PLAYTYPE_AIR){
+        QString temp = QString("%1").arg(this->thumbnail);
+
+        if(temp.contains("http://")){
+           tmp_imgURL = temp;
+        }
+        else{
+            tmp_imgURL = "http://" + global.device.getDeviceIP() + ":" + global.port_img + temp;
+        }
+
+        this->widget_starOnly->setVisible(false);
+        this->btn_list_fav_icon->setVisible(false);
+        this->btn_icon_menu->setVisible(false);
+        if(this->isShareFile==true){
+            this->btn_icon_menu->setVisible(false);
+        }
+    }
+
 
     if(this->titleName==""){
         this->lb_title->setText(tr("The selected playlist is empty."));
@@ -809,22 +828,21 @@ void PlayFullScreenRelation::setUIfromData(){
         else{
             this->filedownloader->setImageURL(QUrl(tmp_imgURL));
         }
-    }else{
-
+    }
+    else{
         if(this->playType==PLAYTYPE_CD){
             this->pixmap_albumImg = GSCommon::getUIPixmapImg(":/images/cd/cd_thum_1500.png");
         }
-        else{
-            this->pixmap_albumImg = GSCommon::getUIPixmapImg(":/images/def_mus_550.png");
-        }
-
-        if(this->playType==PLAYTYPE_RADIO){
+        else if(this->playType==PLAYTYPE_RADIO){
             this->pixmap_albumImg = GSCommon::getUIPixmapImg(":/images/radio_thumd_play.png");
 
             QString radio_name = this->titleName;
             radio_name = radio_name.replace("_"," ");
             this->lb_albumThumbText->setText(radio_name);
             this->lb_albumThumbText->show();
+        }
+        else{
+            this->pixmap_albumImg = GSCommon::getUIPixmapImg(":/images/def_mus_550.png");
         }
 
         // 앨범 이미지
