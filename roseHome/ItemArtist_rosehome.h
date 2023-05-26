@@ -3,7 +3,7 @@
 
 #include "roseHome/rosehome_struct.h"
 
-#include "tidal/AbstractItem.h"     // TODO :: Added Jeon 16/12/2020
+#include "tidal/AbstractItem.h"     // TODO :: Added diskept 16/12/2020
 
 
 namespace roseHome {
@@ -11,15 +11,18 @@ namespace roseHome {
     /**
      * @brief Qobuz 전용으로 사용하는 Artist 아이템 UI
      */
-    class ItemArtist_roseHome : public tidal::AbstractItem
+    class ItemArtist_rosehome : public tidal::AbstractItem
     {
         Q_OBJECT
 
     public:
-        explicit ItemArtist_roseHome(int index, int section, ImageSizeMode imageSizeMode, QWidget *parent = nullptr);
+        explicit ItemArtist_rosehome(int index, int section, ImageSizeMode imageSizeMode, QWidget *parent = nullptr);
+        ~ItemArtist_rosehome();
 
         void setData(const roseHome::ArtistItemData &p_data_artist);
         int get_fixedHeight() override;
+        int get_fixedWidth();
+        int get_rightMargin();
 
     private:
         void setUIControl();

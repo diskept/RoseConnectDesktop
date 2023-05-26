@@ -89,7 +89,7 @@ namespace tidal {
         QPushButton *btnView_all[10];
 
         QVBoxLayout *box_main_contents;
-        QWidget *widget_main_contents;
+        QWidget *widget_main_contents = nullptr; ///< j230407 Removing ghosting effect
 
         QWidget *widget_topHit;
         QWidget *widget_artist;

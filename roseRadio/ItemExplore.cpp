@@ -57,7 +57,7 @@ namespace roseRadio {
         this->label_icon->setStyleSheet("background-color:transparent;");
 
         this->label_name = new QLabel(this->label_background);
-        this->label_name->setFixedSize(234, 28);
+        this->label_name->setFixedSize(234, 32);
         this->label_name->setStyleSheet("background-color:transparent; color:#FFFFFF; font-size:24px; font-weight:bold; line-height: 0.71;");
         this->label_name->setGeometry(25, 237, 0, 0);
 
@@ -176,7 +176,7 @@ namespace roseRadio {
 
             QPixmap tmp_pixmap;
             tmp_pixmap = tmp_pixmap.fromImage(image);
-            tmp_pixmap = tmp_pixmap.scaled(96, 96, Qt::KeepAspectRatioByExpanding, Qt::SmoothTransformation);
+            tmp_pixmap = tmp_pixmap.scaled(96, 96, Qt::KeepAspectRatio, Qt::SmoothTransformation);
 
             QPainter painter (&pixmapIMG);
             painter.setRenderHint(QPainter::Antialiasing, true);
@@ -184,9 +184,13 @@ namespace roseRadio {
             painter.setRenderHint(QPainter::SmoothPixmapTransform, true);
 
             QPainterPath path = QPainterPath();
-            path.addRoundedRect(0, 0, 96, 96, 2, Qt::RelativeSize);
+            path.addRoundedRect(0, 0, 96, 96, 4, 4);
+
+            int leftValue = (96 - tmp_pixmap.width()) / 2;
+            int topValue = (96 - tmp_pixmap.height()) / 2;
+
             painter.setClipPath(path);
-            painter.drawPixmap(0, 0, tmp_pixmap);
+            painter.drawPixmap(leftValue, topValue, tmp_pixmap);
             painter.end();
 
             this->label_icon->setPixmap(pixmapIMG);
@@ -210,7 +214,7 @@ namespace roseRadio {
         QPixmap pixmapIMG = QPixmap(QSize(96, 96));
         pixmapIMG.fill(Qt::transparent);
 
-        pixmap = pixmap.scaled(96, 96, Qt::KeepAspectRatioByExpanding, Qt::SmoothTransformation);
+        pixmap = pixmap.scaled(96, 96, Qt::KeepAspectRatio, Qt::SmoothTransformation);
 
         QPainter painter (&pixmapIMG);
         painter.setRenderHint(QPainter::Antialiasing, true);
@@ -218,9 +222,13 @@ namespace roseRadio {
         painter.setRenderHint(QPainter::SmoothPixmapTransform, true);
 
         QPainterPath path = QPainterPath();
-        path.addRoundedRect(0, 0, 96, 96, 2, Qt::RelativeSize);
+        path.addRoundedRect(0, 0, 96, 96, 4, 4);
+
+        int leftValue = (96 - pixmap.width()) / 2;
+        int topValue = (96 - pixmap.height()) / 2;
+
         painter.setClipPath(path);
-        painter.drawPixmap(0, 0, pixmap);
+        painter.drawPixmap(leftValue, topValue, pixmap);
         painter.end();
 
         this->label_icon->setPixmap(pixmapIMG);

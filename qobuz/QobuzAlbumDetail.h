@@ -58,7 +58,6 @@ namespace qobuz {
         void setActivePage() override;                                          ///< 페이지 초기활성화 관련. (페이지 초기활성화시 호출)
 
     protected slots:
-
         // AlbumImageDetailInfo의 signal 처리를 위해
         void slot_detailInfo_btnClicked(const AbstractImageDetailContents_RHV::BtnClickMode) override;
 
@@ -99,10 +98,7 @@ namespace qobuz {
 
         void slot_qobuz_logChange();
 
-
-
     private:
-        //void setUIShare();//c220816
         // function about UI
         void setUIControl_basic();
         void setUIControl_sameArtsit();
@@ -113,11 +109,11 @@ namespace qobuz {
         QHBoxLayout* setUIControl_hBoxLayout_forArtist();
 
     private:
-
-        qobuz::QobuzSettings *qobuzSettings;
+        Linker *linker;
 
         DialogNotice *dlgAlbumInfo;
 
+        qobuz::QobuzSettings *qobuzSettings;
         AbstractImageDetailContents_RHV *album_detail_info;
         AlbumTrackDetailInfo_RHV *album_tracks[9999];
         AlbumTrackDetailInfoCredit_RHV *album_credit[9999];

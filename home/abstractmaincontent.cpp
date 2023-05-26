@@ -160,7 +160,7 @@ void AbstractMainContent::showPlayScreenBG(){
     // ----------------------------------------------------------------
     //  현재 전체재생 화면인 경우에만 show
     // ----------------------------------------------------------------
-    if(stackedWidget_content->currentWidget()==playFullScreenRelation){
+    if(stackedWidget_content->currentWidget() == playFullScreenRelation){
         lb_BG->resize(wg_total->width(), wg_total->height());
         lb_BGOpacity->resize(wg_total->width(), wg_total->height());
         lb_BG->show();
@@ -174,6 +174,7 @@ void AbstractMainContent::showPlayScreenBG(){
  * @brief AbstractMainContentForPodcast::hideBG : 재생화면 채널 BG Hide
  */
 void AbstractMainContent::hidePlayScreenBG(){
+
     lb_BG->hide();
     lb_BGOpacity->hide();
     widget_roseTubeBG->setStyleSheet("#widget_roseTubeBG {background-color:#171717;}");
@@ -187,7 +188,7 @@ void AbstractMainContent::hidePlayScreenBG(){
 void AbstractMainContent::slot_showBG(const QPixmap &pixmap){
 
     if(pixmap.isNull()==false){
-        lb_BG->setPixmap(pixmap.scaled(this->width(),this->height(), Qt::KeepAspectRatioByExpanding, Qt::SmoothTransformation));
+        lb_BG->setPixmap(pixmap.scaled(this->width(), this->height(), Qt::KeepAspectRatioByExpanding, Qt::SmoothTransformation));
     }
 
     showPlayScreenBG();
@@ -228,6 +229,12 @@ void AbstractMainContent::resetCurrPlayData(const QJsonObject &p_jsonData){
 }
 
 
+void AbstractMainContent::changeCurrHdmiData(const bool flag){
+
+     this->playFullScreenRelation->setDataHDMIStateChange(flag);
+}
+
+
 /**
  * @brief AbstractMainContent::slot_clickedHoverItem [SLOT] 앨범 hover 위 more/play/fav 아이콘을 클릭시 처리
  * @param p_code 더보기/재생/하트 (more/play/fav)
@@ -235,13 +242,12 @@ void AbstractMainContent::resetCurrPlayData(const QJsonObject &p_jsonData){
  */
 void AbstractMainContent::slot_clickedHoverItem(QString p_code, QJsonObject p_jsonData){
 
-
     const QString jsonKey_data_fav = "data_fav";
     const QString jsonKey_flag_favor_channel = "flagFavorChannel";
 
 
     // hide가 안되고 새로 생성되는 경우도 잇어서..항상 생성 직전에 delete
-    for(int i=0; i<this->list_popup.count(); i++){
+    for(int i = 0; i < this->list_popup.count(); i++){
         this->list_popup.at(i)->hide();
         this->list_popup.at(i)->deleteLater();
         this->list_popup.clear();
@@ -256,7 +262,7 @@ void AbstractMainContent::slot_clickedHoverItem(QString p_code, QJsonObject p_js
     this->list_popup.append(optionPopupNew);
 
     // 옵션팝업에 데이터 세팅
-    if(p_jsonData.contains(KEY_MAIN_CODE)==false){
+    if(p_jsonData.contains(KEY_MAIN_CODE) == false){
         p_jsonData.insert(KEY_MAIN_CODE, this->topMenuBar->getCurrMainMenuCode());  // key 추가
     }
     optionPopupNew->setDataPopup(p_jsonData);
@@ -399,15 +405,14 @@ void AbstractMainContent::setResultOfFavoriteForRadio(const bool &p_flagIsFavor,
     }
 }
 
+
 /**
  * @brief AbstractMainContent::requestFavoriteAdd 하트 설정하는 API 호출
  * @param p_jsonObject
  */
 void AbstractMainContent::requestFavoriteAdd(QJsonObject p_jsonObject, DataPopup *p_dataPopup, QString p_albumImg){
 
-
     Q_UNUSED(p_jsonObject);
-
 
     if(!global.device.getDeviceIP().isEmpty()){
 
@@ -443,9 +448,9 @@ void AbstractMainContent::requestFavoriteAdd(QJsonObject p_jsonObject, DataPopup
         NetworkHttp *network = new NetworkHttp;
         connect(network, SIGNAL(response(int,QJsonObject)), SLOT(slot_responseHttp(int,QJsonObject)));
         network->request(HTTP_FAVORITE_ADD, QString("%1%2").arg(global.legacy_v3).arg("/track/favorite/add"), tmp_json, true, true);
-
     }
 }
+
 
 /**
  * @brief AbstractMainContent::slot_responseHttp : Http 요청 결과 처리 함수
@@ -483,7 +488,7 @@ void AbstractMainContent::goToBackPage(){
     this->indexPageOrdering_curr--;
 
     QString tmp_pageCode = this->list_pageCodeOrdering->at(this->indexPageOrdering_curr);
-    QJsonObject tmp_data = this->list_pageDataOrdering->at(this->indexPageOrdering_curr);;
+    QJsonObject tmp_data = this->list_pageDataOrdering->at(this->indexPageOrdering_curr);
 
     if(tmp_pageCode2 == "albumInfo" && tmp_pageCode == "album"){
         tmp_data.insert("pageCode2", tmp_pageCode2);
@@ -500,9 +505,16 @@ void AbstractMainContent::goToBackPage(){
     else if(tmp_pageCode2 == "search" && tmp_pageCode == "home"){
         tmp_data.insert("pageCode2", tmp_pageCode2);
     }
-    else if(tmp_pageCode2 == "T_ADD_PLAYLIST" || tmp_pageCode2 == "Q_ADD_PLAYLIST" || tmp_pageCode2 == "RH_ADD_PLAYLIST"){
+    else if(tmp_pageCode2 == PAGECODE_RH_ADD_PLAYLIST || tmp_pageCode2 == PAGECODE_M_ADDPLAYLIST || tmp_pageCode2 == PAGECODE_RT_ADDPLAYLIST
+            || tmp_pageCode2 == PAGECODE_T_ADD_PLAYLIST || tmp_pageCode2 == PAGECODE_BUGS__MY_PLAYLIST_ADD || tmp_pageCode2 == PAGECODE_Q_ADD_PLAYLIST
+            || tmp_pageCode2 == PAGECODE_RH_RECENTLY_LIST_DELETE || tmp_pageCode2 == PAGECODE_VA_RECENTLY_LIST_DELETE || tmp_pageCode2 == PAGECODE_VA_HOME_RECENTLY_DELETE
+            || tmp_pageCode2 == PAGECODE_T_MY_RECENTLY_LIST_DELETE || tmp_pageCode2 == PAGECODE_BUGS__MY_RECENTLY_LIST_DELETE || tmp_pageCode2 == PAGECODE_Q_MY_RECENTLY_LIST_DELETE){
+        //qDebug() << "before count : " << this->list_pageCodeOrdering->count();
+
         this->list_pageCodeOrdering->removeAt(this->indexPageOrdering_curr + 1);
         this->list_pageDataOrdering->removeAt(this->indexPageOrdering_curr + 1);
+
+        //qDebug() << "after count : " << this->list_pageCodeOrdering->count();
     }
 
     //qDebug() << tmp_pageCode << tmp_data;
@@ -552,11 +564,50 @@ void AbstractMainContent::goToNextPage(){
  * @param p_pageCode
  */
 void AbstractMainContent::goToMoveNewOrderPage(const QJsonObject &p_data){
-print_debug();
-qDebug() << "p_data=" << p_data;
+
+    global.user_forBugs.savePageData(p_data);//c230421
+    global.user_forTidal.savePageData(p_data);//c230421
+    global.user_forQobuz.savePageData(p_data);//c230421
+    //print_debug();
+    //qDebug() << "p_data=" << p_data;
     QString tmp_pageCode = p_data[KEY_PAGE_CODE].toString();
+    QJsonObject tmp_pageData = ProcJsonEasy::getJsonObject(p_data, "data");
+
     QString tmp_contentStep = "";
 
+    //-------------c221116_1
+    QJsonObject p_data_tmp = ProcJsonEasy::getJsonObject(p_data, "data");
+    //qDebug() << "ProcJsonEasy::getString(p_data_tmp, type)=" << ProcJsonEasy::getString(p_data_tmp, "type");
+
+    if(ProcJsonEasy::getString(p_data_tmp, "type")=="BUGS"){
+        if(global.user_forBugs.isLogined()){
+            print_debug();
+        }else{
+
+            print_debug();
+            ToastMsg::show(this,"", tr("Bugs type is currently logged out."), 3000, 0, 2);//c221118
+            return;
+        }
+    }else if(ProcJsonEasy::getString(p_data_tmp, "type")=="TIDAL"){
+        if(global.user_forTidal.isLogined()){
+            print_debug();
+        }else{
+
+            print_debug();
+            ToastMsg::show(this,"", tr("Tidal type is currently logged out."), 3000, 0, 2);//c221118
+            return;
+        }
+    }else if(ProcJsonEasy::getString(p_data_tmp, "type")=="QOBUZ"){
+        if(global.user_forQobuz.isLogined()){
+            print_debug();
+        }else{
+
+            print_debug();
+            ToastMsg::show(this,"", tr("Qobuz type is currently logged out."), 3000, 0, 2);//c221118
+            return;
+        }
+    }
+    //-----------------c221116_1  end
     if(indexPageOrdering_curr >= 0){
         //qDebug() << tmp_pageCode << list_pageCodeOrdering->at(indexPageOrdering_curr);
         if(tmp_pageCode == list_pageCodeOrdering->at(indexPageOrdering_curr) && global.user_forBugs.dlg_isShow() == true){
@@ -573,13 +624,35 @@ qDebug() << "p_data=" << p_data;
         tmp_contentStep = p_data[KEY_CONTENT_STEP].toString();
     }
 
+    if(this->indexPageOrdering_curr >= 0){
+
+        /*qDebug() << this->list_pageDataOrdering->at(this->indexPageOrdering_curr);
+
+        for(int i = 0; i < indexPageOrdering_curr; i++){
+            qDebug() << this->list_pageCodeOrdering->at(this->indexPageOrdering_curr);
+        }*/
+
+        QString currPage = ProcJsonEasy::getString(this->list_pageDataOrdering->at(this->indexPageOrdering_curr), "pageCode");
+        QJsonObject currData = ProcJsonEasy::getJsonObject(this->list_pageDataOrdering->at(this->indexPageOrdering_curr), "data");
+
+        if(currPage == tmp_pageCode && currData == tmp_pageData){
+            if(global.abs_ani_dialog_wait->isHidden() != true){
+                print_debug();
+                global.abs_ani_dialog_wait->hide(); //cheontidal
+
+            }
+            return;
+        }
+    }
+
     // 2) 페이지 기억
     this->goToMoveNewOrderPage_subStep(p_data);
 
     // 3) 기존페이지가 아닌 새페이지 이동 및 데이터 init
     this->movePageOnly(tmp_pageCode, p_data);
-
 }
+
+
 /**
  * @brief AbstractMainContent::goToMoveNewOrderPage_subStep
  * @param p_data
@@ -588,7 +661,8 @@ void AbstractMainContent::goToMoveNewOrderPage_subStep(const QJsonObject &p_data
 
     QString tmp_pageCode = p_data[KEY_PAGE_CODE].toString();
     QString tmp_contentStep = "";
-    if( p_data.contains(KEY_CONTENT_STEP)){
+
+    if(p_data.contains(KEY_CONTENT_STEP)){
         tmp_contentStep = p_data[KEY_CONTENT_STEP].toString();
     }
     {
@@ -617,7 +691,7 @@ void AbstractMainContent::goToMoveNewOrderPage_subStep(const QJsonObject &p_data
             }
         }
 
-        if(flagAddMemoryPage==true){
+        if(flagAddMemoryPage == true){
             this->list_pageCodeOrdering->append(tmp_pageCode);
             this->list_pageDataOrdering->append(p_data);
             this->indexPageOrdering_curr++;

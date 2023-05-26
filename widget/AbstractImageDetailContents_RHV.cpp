@@ -1,12 +1,19 @@
 #include "widget/AbstractImageDetailContents_RHV.h"
 
-#include "widget/VerticalScrollArea.h"
+#include "apple/Apple_struct.h"
+#include "bugs/bugs_struct.h"
+#include "qobuz/qobuz_struct.h"
+#include "roseHome/rosehome_struct.h"
+#include "tidal/tidal_struct.h"
 
+#include "common/global.h"
 #include "common/gscommon.h"
 #include "common/ProcJsonEasy.h"
 #include "common/commonGetRedirectUrl.h"    //j220903 twitter
 
 #include "roseHome/ProcCommon_forRosehome.h"
+
+#include "widget/dialogconfirm.h"//c230215
 
 #include <QJsonArray>
 #include <QJsonObject>
@@ -40,7 +47,7 @@ const QString IMAGE_PATH_DEFAULT_APPLE = ":/images/apple/apple_def.png";
 const QString IMAGE_PATH_DEFAULT_MUSIC_PLAYLIST = ":/images/def_mus_550.png";
 const QString IMAGE_PATH_DEFAULT_ROSETUBE_PLAYLIST = ":/images/def_tube_340.png";
 const QString IMAGE_PATH_DEFAULT_TIDAL_PLAYLIST = ":/images/tidal/tidal_def_video.png";
-const QString IMAGE_PATH_DEFAULT_BUGS_PLAYLIST = ":/images/bugs/bugs_def_284.png";
+const QString IMAGE_PATH_DEFAULT_Bugs_pdAlbum = ":/images/bugs/bugs_def_284.png";
 const QString IMAGE_PATH_DEFAULT_QOBUZ_PLAYLIST = ":/images/qobuz/qobuz_default_384.png";
 const QString IMAGE_PATH_DEFAULT_APPLE_PLAYLIST = ":/images/apple/apple_def.png";
 
@@ -145,7 +152,7 @@ AbstractImageDetailContents_RHV::AbstractImageDetailContents_RHV(ContentsUIType 
 
         case Bugs_artist:
         case Bugs_album:
-        case Bugs_playlist:
+        case Bugs_pdAlbum:
         case Bugs_video:
             this->setUIControl_basic();
             this->setUIControl_btnAddFavMore();
@@ -278,13 +285,11 @@ void AbstractImageDetailContents_RHV::setUIControl_basic(){
             img_path = IMAGE_PATH_DEFAULT_TIDAL_PLAYLIST;
             break;
         case Bugs_album:
+        case Bugs_pdAlbum:
             img_path = IMAGE_PATH_DEFAULT_BUGS;
             break;
-        case Bugs_playlist:
-            img_path = IMAGE_PATH_DEFAULT_BUGS_PLAYLIST;
-            break;
         case Bugs_video:
-            img_path = IMAGE_PATH_DEFAULT_BUGS_PLAYLIST;
+            img_path = IMAGE_PATH_DEFAULT_Bugs_pdAlbum;
             break;
         case Qobuz_album:
             img_path = IMAGE_PATH_DEFAULT_QOBUZ;
@@ -315,30 +320,43 @@ void AbstractImageDetailContents_RHV::setUIControl_basic(){
     this->widget_info_main->setContentsMargins(0, 0, 0, 0);
 
     // Big Image (Album or Playlist Main Image)
-    this->label_imageBig = new QLabel(this->widget_info_main);
+    this->btn_Label_imageBig = new QPushButton(this->widget_info_main);//c230215
+    this->btn_Label_imageBig->setProperty("imagePath","");//c230215
+    this->btn_Label_imageBig->setFixedSize(this->image_width, this->image_height);
+    this->btn_Label_imageBig->setCursor(Qt::PointingHandCursor);//c230215
+
+    connect(this->btn_Label_imageBig, &QPushButton::clicked, this, &AbstractImageDetailContents_RHV::slot_imageClick);//c230215
+
+    //this->label_imageBig = new QLabel(this->widget_info_main);
+    this->label_imageBig = new QLabel(this->btn_Label_imageBig);//c230215
     this->label_imageBig->setFixedSize(this->image_width, this->image_height);
+    this->label_imageBig->setGeometry(0, 0, 0, 0);
 
     if(this->curr_contentsType == Qobuz_playlist){
-        this->label_imageBig->setGeometry(8, 107, 0, 0);    //384, 186
+        this->btn_Label_imageBig->setGeometry(8, 107, 0, 0);    //384, 186
+        //this->label_imageBig->setGeometry(8, 107, 0, 0);    //384, 186
     }
     else if(this->curr_contentsType == Rosetube_userplaylist){
-        this->label_imageBig->setGeometry(20, 100, 0, 0);    //360, 200
+        this->btn_Label_imageBig->setGeometry(20, 100, 0, 0);    //360, 200
+        //this->label_imageBig->setGeometry(20, 100, 0, 0);    //360, 200
     }
     else if(this->curr_contentsType == Video){
-        this->label_imageBig->setGeometry(70, 3, 0, 0);    //280, 394
+        this->btn_Label_imageBig->setGeometry(70, 3, 0, 0);    //280, 394
+        //this->label_imageBig->setGeometry(70, 3, 0, 0);    //280, 394
     }
     else{
-        this->label_imageBig->setGeometry(0, 0, 0, 0);
+        this->btn_Label_imageBig->setGeometry(0, 0, 0, 0);
+        //this->label_imageBig->setGeometry(0, 0, 0, 0);
     }
 
     this->label_imageType = new QLabel(this->label_imageBig);
     this->label_imageType->setStyleSheet("background-color:transparent;");
 
     // Title, Description, CreatorName
-    this->label_titleUp = new LabelLongAnimation(800, 500, 60, this->widget_info_main);
-//    this->label_titleUp->setTextInteractionFlags(Qt::TextSelectableByMouse);
-    this->label_titleUp->setStyleSheet("background-color:transparent;color:#FFFFFF;font-size:50px;font-weight:500;");
-    this->label_titleUp->setGeometry(450, 60, 800, 60);
+    this->label_title = new LabelLongAnimation(800, 500, 70, this->widget_info_main);
+    //this->label_title->setTextInteractionFlags(Qt::TextSelectableByMouse);
+    this->label_title->setStyleSheet("background-color:transparent;color:#ffffff;font-size:50px;font-weight:500;line-height: 1.2;font-style: normal;text-align: top;");
+    this->label_title->setGeometry(450, 20, 800, 70);
 
     this->label_imageHiRes = new QLabel(this->widget_info_main);
 
@@ -362,20 +380,19 @@ void AbstractImageDetailContents_RHV::setUIControl_basic(){
 
     this->label_creatorName = new QLabel(this->widget_info_main);
     this->label_creatorName->setTextInteractionFlags(Qt::TextSelectableByMouse);
-    this->label_creatorName->setTextInteractionFlags(Qt::TextSelectableByMouse);
     this->label_creatorName->setWordWrap(true);
-    this->label_creatorName->setStyleSheet("background-color:transparent;color:#B18658;font-size:25px;font-weight:300;");
-    this->label_creatorName->setGeometry(450, 180, 700, 30);
+    this->label_creatorName->setStyleSheet("background-color:transparent;font-size:25px;font-weight:300;font-style:normal;line-height:1.34;text-align:left;color:#e6e6e6;");
+    this->label_creatorName->setGeometry(450, 175, 700, 40);
 
     this->label_artist = new QLabel(this->widget_info_main);
     this->label_artist->setTextInteractionFlags(Qt::TextSelectableByMouse);
     this->label_artist->setCursor(Qt::PointingHandCursor);
     this->label_artist->setWordWrap(true);
-    this->label_artist->setStyleSheet("background-color:transparent;color:#E6E6E6;font-size:25px;font-weight:300;");
+    this->label_artist->setStyleSheet("background-color:transparent;font-size:25px;font-weight:300;font-style:normal;line-height:1.34;text-align:left;color:#e6e6e6;");
     this->label_artist->setGeometry(450, 180, 700, 30);
 
     this->label_resolution = new QLabel(this->widget_info_main);
-    this->label_resolution->setStyleSheet("background-color:transparent;color:#777777;font-size:16px;font-weight:300;");
+    this->label_resolution->setStyleSheet("background-color:transparent;color:#777777;font-size:16px;font-weight:300;font-style: normal;line-height: 2.1;text-align: left;");
     this->label_resolution->setGeometry(450, 215, 700, 24);
 
     this->widget_Addbtn_Icon = new QWidget(this->widget_info_main);
@@ -390,10 +407,10 @@ void AbstractImageDetailContents_RHV::setUIControl_basic(){
     this->widget_Addbtn_PlayCannot->setFixedSize(700, 50);
     this->widget_Addbtn_PlayCannot->setGeometry(450, 350, 0, 0);
 
-    this->info_hbox = new QVBoxLayout();
-    this->info_hbox->setContentsMargins(0, 20, 0, 0);
-    this->info_hbox->addWidget(this->widget_info_main);
-    this->info_hbox->addSpacing(70);
+    this->vBox_info = new QVBoxLayout();
+    this->vBox_info->setContentsMargins(0, 20, 0, 0);
+    this->vBox_info->addWidget(this->widget_info_main);
+    this->vBox_info->addSpacing(70);
 
     this->widget_Addbtn_Open = new QWidget();
     this->widget_Addbtn_Open->setStyleSheet("background-color:transparent; border:1px;");
@@ -413,8 +430,40 @@ void AbstractImageDetailContents_RHV::setUIControl_basic(){
         this->label_mInfo->setStyleSheet("background-color:transparent;color:#777777;font-size:20px;font-weight:300;");
         this->label_mInfo->setGeometry(0, 10, 700, 30);
         this->label_mInfo->hide();
+    }*/
+    if(this->curr_contentsType == Bugs_pdAlbum){
+
+        this->widget_info_tag = new QWidget(this->widget_info_main);
+        this->widget_info_tag->setStyleSheet("background-color:transparent;");
+        this->widget_info_tag->setFixedSize(900, 45);
+        this->widget_info_tag->setGeometry(450, 240, 0, 0);
+
+        this->widget_Addbtn_Icon->setGeometry(450, 280, 0, 0);
+
+        this->flowLayout_tag = new FlowLayout(this->widget_info_tag, 4, 6);
+        this->flowLayout_tag->setSizeConstraint(QLayout::SetMinimumSize);
+        this->flowLayout_tag->setContentsMargins(0,0,0,0);
+
+        this->label_description = new QLabel(this->widget_Addbtn_Open);
+        //this->label_description->setTextFormat(Qt::RichText);
+        this->label_description->setWordWrap(true);
+        this->label_description->setGeometry(0, 0, 1450, 40);
+        this->label_description->setStyleSheet("background-color:transparent; border:1px;");
+
+        this->label_open = new QLabel(this->widget_Addbtn_Open);
+        this->label_open->setStyleSheet("background-color:transparent; border:0px;");
+        this->label_open->setGeometry(0, 37, 1450, 30);
+
+        this->btn_open = GSCommon::getUIBtnImg("btn_open", ":/images/text_open_ico.png", this->label_open);
+        this->btn_open->setCursor(Qt::PointingHandCursor);
+        this->btn_open->setGeometry(735, 0, 30, 30);
+
+        connect(this->btn_open, &QPushButton::clicked, this, &AbstractImageDetailContents_RHV::slot_btnClicked_open);
+
+        this->vBox_info->addWidget(this->widget_Addbtn_Open);
+        this->vBox_info->addSpacing(10);
     }
-    else*/ if(this->curr_contentsType != Music_artist && this->curr_contentsType != Tidal_artist && this->curr_contentsType != Bugs_artist &&
+    else if(this->curr_contentsType != Music_artist && this->curr_contentsType != Tidal_artist && this->curr_contentsType != Bugs_artist &&
             this->curr_contentsType != Qobuz_artist && this->curr_contentsType != Apple_artist){
 
         this->label_description = new QLabel(this->widget_Addbtn_Open);
@@ -433,16 +482,19 @@ void AbstractImageDetailContents_RHV::setUIControl_basic(){
 
         connect(this->btn_open, &QPushButton::clicked, this, &AbstractImageDetailContents_RHV::slot_btnClicked_open);
 
-        this->info_hbox->addWidget(this->widget_Addbtn_Open);
-        this->info_hbox->addSpacing(10);
+        this->vBox_info->addWidget(this->widget_Addbtn_Open);
+        this->vBox_info->addSpacing(10);
     }
     else if(this->curr_contentsType == Music_artist || this->curr_contentsType == Tidal_artist || this->curr_contentsType == Bugs_artist ||
                 this->curr_contentsType == Qobuz_artist || this->curr_contentsType == Apple_artist){
 
+        //this->label_title->setGeometry(450,10,0,0);
+
         this->label_biography = new QLabel(this->widget_info_main);
-        this->label_biography->setGeometry(450, 110, 1000, 90);
+        this->label_biography->setGeometry(450, 90, 1000, 110);
         this->label_biography->setTextInteractionFlags(Qt::TextSelectableByMouse);
-        this->label_biography->setStyleSheet("background-color:transparent;color:#e6e6e6;font-size:25px;");
+        this->label_biography->setTextFormat(Qt::RichText);
+        this->label_biography->setStyleSheet("background-color:transparent;color:#e6e6e6;font-size:25px;font-weight: normal;font-style: normal;line-height: 1.2;text-align: left;");
         this->label_biography->setWordWrap(true);
 
         this->btn_more_artist = new QPushButton(this->widget_info_main);
@@ -456,9 +508,10 @@ void AbstractImageDetailContents_RHV::setUIControl_basic(){
         label_more->setText(tr("More"));        
         label_more->setGeometry(0, 0, 200, 23);
         label_more->setAlignment(Qt::AlignLeft | Qt::AlignVCenter);
+
     }
 
-    this->setLayout(info_hbox);
+    this->setLayout(vBox_info);
 }
 
 
@@ -491,9 +544,13 @@ void AbstractImageDetailContents_RHV::setUIControl_btnAddFavMore(){
         list_btn = {};
         list_mode = {};
     }
+    else if(this->curr_contentsType == Tidal_artist || this->curr_contentsType == Bugs_artist || this->curr_contentsType == Qobuz_artist  || this->curr_contentsType == Apple_artist){
+        list_btn = {this->btn_fav_toAdd, this->btn_fav_toAddx2, this->btn_fav_toAddx3, this->btn_fav_toDelete, this->btn_share, this->btn_more};
+        list_mode = {Favorite_toAdd, Favorite_toAddx2, Favorite_toAddx3, Favorite_toDelete, Share, More};
+    }
     else if(this->curr_contentsType == Music_album){
-        list_btn = {this->btn_fav_toAdd, this->btn_fav_toAddx2, this->btn_fav_toAddx3, this->btn_fav_toDelete, this->btn_info, this->btn_more};
-        list_mode = {Favorite_toAdd, Favorite_toAddx2, Favorite_toAddx3, Favorite_toDelete, Info, More};
+        list_btn = {this->btn_addCollect, this->btn_fav_toAdd, this->btn_fav_toAddx2, this->btn_fav_toAddx3, this->btn_fav_toDelete, this->btn_info, this->btn_more};
+        list_mode = {AddCollection, Favorite_toAdd, Favorite_toAddx2, Favorite_toAddx3, Favorite_toDelete, Info, More};
     }
     else if(this->curr_contentsType == Music_playlist){
         list_btn = {this->btn_fav_toAdd, this->btn_fav_toAddx2, this->btn_fav_toAddx3, this->btn_fav_toDelete, this->btn_more};
@@ -507,10 +564,6 @@ void AbstractImageDetailContents_RHV::setUIControl_btnAddFavMore(){
     else if(this->curr_contentsType == Music_userplaylist || this->curr_contentsType == rose_userplaylist || this->curr_contentsType == Rosetube_userplaylist){
         list_btn = {this->btn_thumb_toAdd, this->btn_thumb_toDelete, this->btn_share, this->btn_more};
         list_mode = {Thumbup_toAdd, Thumbup_toDelete, Share, More};
-    }
-    else if(this->curr_contentsType == Tidal_artist || this->curr_contentsType == Bugs_artist || this->curr_contentsType == Qobuz_artist  || this->curr_contentsType == Apple_artist){
-        list_btn = {this->btn_fav_toAdd, this->btn_fav_toAddx2, this->btn_share, this->btn_more};
-        list_mode = {Favorite_toAdd, Favorite_toDelete, Share, More};
     }
     else if(this->curr_contentsType == Tidal_playlistMix){
         list_btn = {this->btn_addCollect, this->btn_fav_toAdd, this->btn_fav_toAddx2, this->btn_fav_toAddx3, this->btn_fav_toDelete, this->btn_more};
@@ -563,10 +616,10 @@ void AbstractImageDetailContents_RHV::setUIControl_btnPlays(){
     label_play_img->setStyleSheet("background-color:transparent;");
 
     QLabel *label_play = new QLabel(btn_play);
-    label_play->setFixedSize(41, 29);
-    label_play->setGeometry(67, 11, 0, 0);
+    //label_play->setFixedSize(41, 29);
     label_play->setStyleSheet("background-color:transparent;font-size:20px;font-weight:500;color:#FFFFFF;");
     label_play->setText("Play");
+    label_play->setGeometry(67, 11, label_play->sizeHint().width(), 29);
 
 
     // Shuffle Play
@@ -586,10 +639,10 @@ void AbstractImageDetailContents_RHV::setUIControl_btnPlays(){
         label_stop_img->setStyleSheet("background-color:#FFFFFF;");
 
         QLabel *label_stop = new QLabel(btn_shuffle);
-        label_stop->setFixedSize(68, 29);
-        label_stop->setGeometry(58, 11, 0, 0);
+//        label_stop->setFixedSize(68, 29);
         label_stop->setStyleSheet("background-color:transparent;font-size:20px;font-weight:500;color:#FFFFFF;");
         label_stop->setText("Stop");
+        label_stop->setGeometry(58, 11, label_stop->sizeHint().width(), 29);
     }
     else{
         QLabel *label_shuffle_img = GSCommon::getUILabelImg(ICON_PATH___playShuffle, btn_shuffle);
@@ -598,10 +651,10 @@ void AbstractImageDetailContents_RHV::setUIControl_btnPlays(){
         label_shuffle_img->setStyleSheet("background-color:transparent;");
 
         QLabel *label_shuffle = new QLabel(btn_shuffle);
-        label_shuffle->setFixedSize(68, 29);
-        label_shuffle->setGeometry(58, 11, 0, 0);
+//        label_shuffle->setFixedSize(68, 29);
         label_shuffle->setStyleSheet("background-color:transparent;font-size:20px;font-weight:500;color:#FFFFFF;");
         label_shuffle->setText("Shuffle");
+        label_shuffle->setGeometry(58, 11, this->sizeHint().width(), 29);
     }
 }
 
@@ -673,7 +726,7 @@ void AbstractImageDetailContents_RHV::request_shareLlink(const QString thumnail,
             param = "BUGS/ALBUM/" + QString("%1").arg(id);
             break;
 
-        case Bugs_playlist:
+        case Bugs_pdAlbum:
             param = "BUGS/musicpd/" + QString("%1").arg(id);
             break;
 
@@ -725,6 +778,8 @@ void AbstractImageDetailContents_RHV::setImage(QString imagePath){
     else{
         this->paint_imageBig(*this->pixmap_albumImg_default);
     }
+
+    this->btn_Label_imageBig->setProperty("imagePath",imagePath);//c230215
 }
 
 
@@ -750,7 +805,7 @@ void AbstractImageDetailContents_RHV::initView(){
 
     this->setImage("");
 
-    this->label_titleUp->setText("");
+    this->label_title->setText("");
     this->label_creatorName->setText("");
     this->label_artist->setText("");
     this->label_resolution->setText("");    
@@ -775,6 +830,9 @@ void AbstractImageDetailContents_RHV::initView(){
             this->setFavorite(false, 0);
         }
         this->label_biography->setText("");
+    }
+    else if(this->curr_contentsType == Bugs_pdAlbum){
+
     }
 
     if(this->flagBtnOpen == true){
@@ -833,7 +891,7 @@ void AbstractImageDetailContents_RHV::setData_fromRoseData(const QJsonObject &js
         this->type_image_path = image_type;
         this->setImage(img_path);
 
-        this->label_titleUp->setText(title);
+        this->label_title->setText(title);
 
         QLabel *tmp_creator = new QLabel();
         tmp_creator->setStyleSheet("background-color:transparent;color:#B18658;font-size:25px;font-weight:300;");
@@ -864,7 +922,7 @@ void AbstractImageDetailContents_RHV::setData_fromRoseData(const QJsonObject &js
                     }
                     tmp_creator->setText(tmp_creator_line1);
 
-                    if(tmp_creator->sizeHint().width() > 750){
+                    if(tmp_creator->sizeHint().width() > 700){
                         tmp_creator->setText("");
                         tmp_creator_line1.replace(splitToken.at(i), "");
                         break;
@@ -875,14 +933,18 @@ void AbstractImageDetailContents_RHV::setData_fromRoseData(const QJsonObject &js
             tmp_creator->setText("");
             tmp_creator->setText(tmp_creator_line1);
 
-            creator_width = tmp_creator->sizeHint().width() + 750;
+            creator_width = tmp_creator->sizeHint().width() + 700;
 
             this->label_creatorName->setText(GSCommon::getTextCutFromLabelWidth(owner, creator_width, this->label_creatorName->font()));
-            this->label_creatorName->setGeometry(450, 150, 700, 60);
+            if(this->label_creatorName->text().contains("…")){
+                this->label_creatorName->setToolTip(owner);
+                this->label_creatorName->setToolTipDuration(2000);
+            }
+            this->label_creatorName->setGeometry(450, 140, 700, 80);
         }
         else{
             this->label_creatorName->setText(owner);
-            this->label_creatorName->setGeometry(450, 180, 700, 30);
+            this->label_creatorName->setGeometry(450, 175, 700, 40);
         }
 
         QString str_resol = "";
@@ -944,8 +1006,8 @@ void AbstractImageDetailContents_RHV::setData_fromRoseData(const QJsonObject &js
         this->label_description->setText(setHTML);
 
         this->widget_Addbtn_Open->setFixedSize(1500, 80);
-        this->label_description->setGeometry(0, 0, 1450, 34);
-        this->label_open->setGeometry(0, 37, 1450, 30);
+        this->label_description->setGeometry(0, 0, 1450, 40);
+        this->label_open->setGeometry(0, 43, 1450, 30);
         this->btn_open->setStyleSheet(this->btn_open->styleSheet().replace("text_close_ico.png", "text_open_ico.png"));
         this->widget_Addbtn_Open->show();
     }
@@ -1006,7 +1068,7 @@ void AbstractImageDetailContents_RHV::setData_fromRoseData(const QJsonObject &js
         this->type_image_path = image_type;
         this->setImage(img_path);
 
-        this->label_titleUp->setText(title);
+        this->label_title->setText(title);
 
         QLabel *tmp_creator = new QLabel();
         tmp_creator->setStyleSheet("background-color:transparent;color:#B18658;font-size:25px;font-weight:300;");
@@ -1037,7 +1099,7 @@ void AbstractImageDetailContents_RHV::setData_fromRoseData(const QJsonObject &js
                     }
                     tmp_creator->setText(tmp_creator_line1);
 
-                    if(tmp_creator->sizeHint().width() > 750){
+                    if(tmp_creator->sizeHint().width() > 700){
                         tmp_creator->setText("");
                         tmp_creator_line1.replace(splitToken.at(i), "");
                         break;
@@ -1048,14 +1110,18 @@ void AbstractImageDetailContents_RHV::setData_fromRoseData(const QJsonObject &js
             tmp_creator->setText("");
             tmp_creator->setText(tmp_creator_line1);
 
-            creator_width = tmp_creator->sizeHint().width() + 750;
+            creator_width = tmp_creator->sizeHint().width() + 700;
 
             this->label_creatorName->setText(GSCommon::getTextCutFromLabelWidth(owner, creator_width, this->label_creatorName->font()));
-            this->label_creatorName->setGeometry(450, 150, 700, 60);
+            if(this->label_creatorName->text().contains("…")){
+                this->label_creatorName->setToolTip(owner);
+                this->label_creatorName->setToolTipDuration(2000);
+            }
+            this->label_creatorName->setGeometry(450, 140, 700, 80);
         }
         else{
             this->label_creatorName->setText(owner);
-            this->label_creatorName->setGeometry(450, 180, 700, 30);
+            this->label_creatorName->setGeometry(450, 175, 700, 40);
         }
 
         QString str_resol = "";
@@ -1117,8 +1183,8 @@ void AbstractImageDetailContents_RHV::setData_fromRoseData(const QJsonObject &js
         this->label_description->setText(setHTML);
 
         this->widget_Addbtn_Open->setFixedSize(1500, 80);
-        this->label_description->setGeometry(0, 0, 1450, 34);
-        this->label_open->setGeometry(0, 37, 1450, 30);
+        this->label_description->setGeometry(0, 0, 1450, 40);
+        this->label_open->setGeometry(0, 43, 1450, 30);
         this->btn_open->setStyleSheet(this->btn_open->styleSheet().replace("text_close_ico.png", "text_open_ico.png"));
         this->widget_Addbtn_Open->show();
     }
@@ -1177,7 +1243,7 @@ void AbstractImageDetailContents_RHV::setData_fromRoseData(const QJsonObject &js
         this->type_image_path = image_type;
         this->setImage(img_path);
 
-        this->label_titleUp->setText(title);
+        this->label_title->setText(title);
 
         QLabel *tmp_creator = new QLabel();
         tmp_creator->setStyleSheet("background-color:transparent;color:#B18658;font-size:25px;font-weight:300;");
@@ -1208,7 +1274,7 @@ void AbstractImageDetailContents_RHV::setData_fromRoseData(const QJsonObject &js
                     }
                     tmp_creator->setText(tmp_creator_line1);
 
-                    if(tmp_creator->sizeHint().width() > 750){
+                    if(tmp_creator->sizeHint().width() > 700){
                         tmp_creator->setText("");
                         tmp_creator_line1.replace(splitToken.at(i), "");
                         break;
@@ -1219,14 +1285,18 @@ void AbstractImageDetailContents_RHV::setData_fromRoseData(const QJsonObject &js
             tmp_creator->setText("");
             tmp_creator->setText(tmp_creator_line1);
 
-            creator_width = tmp_creator->sizeHint().width() + 750;
+            creator_width = tmp_creator->sizeHint().width() + 700;
 
             this->label_creatorName->setText(GSCommon::getTextCutFromLabelWidth(owner, creator_width, this->label_creatorName->font()));
-            this->label_creatorName->setGeometry(450, 150, 700, 60);
+            if(this->label_creatorName->text().contains("…")){
+                this->label_creatorName->setToolTip(owner);
+                this->label_creatorName->setToolTipDuration(2000);
+            }
+            this->label_creatorName->setGeometry(450, 140, 700, 80);
         }
         else{
             this->label_creatorName->setText(owner);
-            this->label_creatorName->setGeometry(450, 180, 700, 30);
+            this->label_creatorName->setGeometry(450, 175, 700, 40);
         }
 
         QString str_resol = "";
@@ -1286,8 +1356,8 @@ void AbstractImageDetailContents_RHV::setData_fromRoseData(const QJsonObject &js
         this->label_description->setText(setHTML);
 
         this->widget_Addbtn_Open->setFixedSize(1500, 80);
-        this->label_description->setGeometry(0, 0, 1450, 34);
-        this->label_open->setGeometry(0, 37, 1450, 30);
+        this->label_description->setGeometry(0, 0, 1450, 40);
+        this->label_open->setGeometry(0, 43, 1450, 30);
         this->btn_open->setStyleSheet(this->btn_open->styleSheet().replace("text_close_ico.png", "text_open_ico.png"));
         this->widget_Addbtn_Open->show();
     }
@@ -1306,9 +1376,12 @@ void AbstractImageDetailContents_RHV::setData_fromMusicData(const QJsonObject &j
 
         this->setImage(img_path);
 
-        this->label_titleUp->setText(title);
+        this->label_title->setText(title);
     }
     else if(this->curr_contentsType == Music_album){
+
+        this->label_artist->setVisible(true);
+        this->label_creatorName->setVisible(false);
 
         QString img_path = ProcJsonEasy::getString(jsonObj, "image");
         QString title = ProcJsonEasy::getString(jsonObj, "title");
@@ -1318,15 +1391,17 @@ void AbstractImageDetailContents_RHV::setData_fromMusicData(const QJsonObject &j
         int track_count = ProcJsonEasy::getInt(jsonObj, "track_count");
         int duration = ProcJsonEasy::getInt(jsonObj, "duration");
 
-        this->label_artist->setVisible(true);
-        this->label_creatorName->setVisible(false);
+        // 데이터를 UI에 세팅한다.
+        QString image_type = ":/images/rosehome/home_musicx2.png";
 
+        this->flag_type_image = true;
+        this->type_image_path = image_type;
         this->setImage(img_path);
 
-        this->label_titleUp->setText(title);
+        this->label_title->setText(title);
 
-        int mime_left = this->label_titleUp->sizeHint().width();
-        int mime_top = this->label_titleUp->geometry().top() + 10;
+        int mime_left = this->label_title->sizeHint().width();
+        int mime_top = this->label_title->geometry().top() + 10;
 
         if(!mime.isEmpty()){
             int width_set = 0;
@@ -1374,7 +1449,7 @@ void AbstractImageDetailContents_RHV::setData_fromMusicData(const QJsonObject &j
                     }
                     tmp_artist->setText(tmp_artist_line1);
 
-                    if(tmp_artist->sizeHint().width() > 750){
+                    if(tmp_artist->sizeHint().width() > 700){
                         tmp_artist->setText("");
                         tmp_artist_line1.replace(splitToken.at(i), "");
                         break;
@@ -1385,14 +1460,18 @@ void AbstractImageDetailContents_RHV::setData_fromMusicData(const QJsonObject &j
             tmp_artist->setText("");
             tmp_artist->setText(tmp_artist_line1);
 
-            artist_width = tmp_artist->sizeHint().width() + 750;
+            artist_width = tmp_artist->sizeHint().width() + 700;
 
             this->label_artist->setText(GSCommon::getTextCutFromLabelWidth(artist, artist_width, this->label_artist->font()));
-            this->label_artist->setGeometry(450, 150, 700, 60);
+            if(this->label_artist->text().contains("…")){
+                this->label_artist->setToolTip(artist);
+                this->label_artist->setToolTipDuration(2000);
+            }
+            this->label_artist->setGeometry(450, 140, 700, 80);
         }
         else{
             this->label_artist->setText(artist);
-            this->label_artist->setGeometry(450, 180, 700, 30);
+            this->label_artist->setGeometry(450, 175, 700, 40);
         }
 
         QString str_resol = "";
@@ -1426,140 +1505,149 @@ void AbstractImageDetailContents_RHV::setData_fromMusicData(const QJsonObject &j
 void AbstractImageDetailContents_RHV::setData_fromRosetubeData(const QJsonObject &jsonObj){
 
     if(this->curr_contentsType == Rosetube_userplaylist){
-            QString img_path = ProcJsonEasy::getString(jsonObj, "image");
 
-            QString title = ProcJsonEasy::getString(jsonObj, "title");
-            QString owner = ProcJsonEasy::getString(jsonObj, "owner");
+        // Playlist 모드로 배치한다.
+        this->label_artist->setVisible(false);
+        this->label_creatorName->setVisible(true);
 
-            int track_count = ProcJsonEasy::getInt(jsonObj, "track_count");
+        QString img_path = ProcJsonEasy::getString(jsonObj, "image");
 
-            QString registDateTime = ProcJsonEasy::getString(jsonObj, "registDateTime");
+        QString title = ProcJsonEasy::getString(jsonObj, "title");
+        QString owner = ProcJsonEasy::getString(jsonObj, "owner");
 
-            QString comment = ProcJsonEasy::getString(jsonObj, "comment");
+        int track_count = ProcJsonEasy::getInt(jsonObj, "track_count");
 
-            // Playlist 모드로 배치한다.
-            this->label_artist->setVisible(false);
-            this->label_creatorName->setVisible(true);
+        QString registDateTime = ProcJsonEasy::getString(jsonObj, "registDateTime");
 
-            // 데이터를 UI에 세팅한다.
-            this->setImage(img_path);
+        QString comment = ProcJsonEasy::getString(jsonObj, "comment");
 
-            this->label_titleUp->setText(title);
+        // 데이터를 UI에 세팅한다.
+        QString image_type = ":/images/rosehome/home_tubex2.png";
 
-            QLabel *tmp_creator = new QLabel();
-            tmp_creator->setStyleSheet("background-color:transparent;color:#B18658;font-size:25px;font-weight:300;");
-            tmp_creator->setText(owner);
+        this->flag_type_image = true;
+        this->type_image_path = image_type;
+        this->setImage(img_path);
 
-            int creator_width = 0;
-            creator_width = tmp_creator->sizeHint().width();
+        this->label_title->setText(title);
 
-            if(creator_width > 750){
+        QLabel *tmp_creator = new QLabel();
+        tmp_creator->setStyleSheet("background-color:transparent;color:#B18658;font-size:25px;font-weight:300;");
+        tmp_creator->setText(owner);
 
-                QString tmp_split = "";
-                QStringList splitToken;
-                QString tmp_creator_line1 = "";
+        int creator_width = 0;
+        creator_width = tmp_creator->sizeHint().width();
 
-                tmp_split = owner;
-                splitToken = tmp_split.split(" ");
+        if(creator_width > 750){
 
-                tmp_creator->setText("");
-                int i = 0;
-                if(splitToken.size() > 1){
+            QString tmp_split = "";
+            QStringList splitToken;
+            QString tmp_creator_line1 = "";
 
-                    for(i = 0; i < splitToken.count(); i++){
-                        if(i == 0){
-                            tmp_creator_line1 = splitToken.at(i);
-                        }
-                        else{
-                            tmp_creator_line1 += " " + splitToken.at(i);
-                        }
-                        tmp_creator->setText(tmp_creator_line1);
+            tmp_split = owner;
+            splitToken = tmp_split.split(" ");
 
-                        if(tmp_creator->sizeHint().width() > 750){
-                            tmp_creator->setText("");
-                            tmp_creator_line1.replace(splitToken.at(i), "");
-                            break;
-                        }
+            tmp_creator->setText("");
+            int i = 0;
+            if(splitToken.size() > 1){
+
+                for(i = 0; i < splitToken.count(); i++){
+                    if(i == 0){
+                        tmp_creator_line1 = splitToken.at(i);
+                    }
+                    else{
+                        tmp_creator_line1 += " " + splitToken.at(i);
+                    }
+                    tmp_creator->setText(tmp_creator_line1);
+
+                    if(tmp_creator->sizeHint().width() > 700){
+                        tmp_creator->setText("");
+                        tmp_creator_line1.replace(splitToken.at(i), "");
+                        break;
                     }
                 }
+            }
 
-                tmp_creator->setText("");
-                tmp_creator->setText(tmp_creator_line1);
+            tmp_creator->setText("");
+            tmp_creator->setText(tmp_creator_line1);
 
-                creator_width = tmp_creator->sizeHint().width() + 750;
+            creator_width = tmp_creator->sizeHint().width() + 700;
 
-                this->label_creatorName->setText(GSCommon::getTextCutFromLabelWidth(owner, creator_width, this->label_creatorName->font()));
-                this->label_creatorName->setGeometry(450, 150, 700, 60);
+            this->label_creatorName->setText(GSCommon::getTextCutFromLabelWidth(owner, creator_width, this->label_creatorName->font()));
+            if(this->label_creatorName->text().contains("…")){
+                this->label_creatorName->setToolTip(owner);
+                this->label_creatorName->setToolTipDuration(2000);
+            }
+            this->label_creatorName->setGeometry(450, 140, 700, 80);
+        }
+        else{
+            this->label_creatorName->setText(owner);
+            this->label_creatorName->setGeometry(450, 175, 700, 40);
+        }
+
+        QString str_resol = "";
+        if(global.lang == 0){
+            if(track_count > 1){
+                str_resol = QString("%1 tracks ").arg(track_count);
             }
             else{
-                this->label_creatorName->setText(owner);
-                this->label_creatorName->setGeometry(450, 180, 700, 30);
+                str_resol = QString("%1 track ").arg(track_count);
             }
+        }
+        else if(global.lang == 1){
+            str_resol = QString("총 %1개 트랙 ").arg(track_count);
+        }
 
-            QString str_resol = "";
+        if(!registDateTime.isEmpty()){
+            QString tmp_split = "";
+            QStringList splitToken;
+
+            tmp_split = registDateTime;
+            splitToken = tmp_split.split("T");
+
+            QDate lastupdated = QDate::fromString(splitToken.at(0), "yyyy-MM-dd");
+
             if(global.lang == 0){
-                if(track_count > 1){
-                    str_resol = QString("%1 tracks ").arg(track_count);
-                }
-                else{
-                    str_resol = QString("%1 track ").arg(track_count);
-                }
+                QLocale::setDefault(QLocale(QLocale::English, QLocale::UnitedStates));
+                str_resol += "| Registration date " + QLocale().toString(lastupdated, "MMM d, yyyy");
+
+                QLocale::setDefault(QLocale::system());
             }
             else if(global.lang == 1){
-                str_resol = QString("총 %1개 트랙 ").arg(track_count);
+                str_resol += "| 등록일자 " + lastupdated.toString("M월 d일, yyyy");
             }
-
-            if(!registDateTime.isEmpty()){
-                QString tmp_split = "";
-                QStringList splitToken;
-
-                tmp_split = registDateTime;
-                splitToken = tmp_split.split("T");
-
-                QDate lastupdated = QDate::fromString(splitToken.at(0), "yyyy-MM-dd");
-
-                if(global.lang == 0){
-                    QLocale::setDefault(QLocale(QLocale::English, QLocale::UnitedStates));
-                    str_resol += "| Registration date " + QLocale().toString(lastupdated, "MMM d, yyyy");
-
-                    QLocale::setDefault(QLocale::system());
-                }
-                else if(global.lang == 1){
-                    str_resol += "| 등록일자 " + lastupdated.toString("M월 d일, yyyy");
-                }
-            }
-
-            this->label_resolution->setText(str_resol);
-
-            QString setHTML = "";
-            int height = 0;
-            bool flag = false;
-            if(!comment.isEmpty()){
-                setHTML = comment;
-
-                QLabel *tmp_html = new QLabel();
-                tmp_html->setWordWrap(true);
-                tmp_html->setFixedWidth(1450);
-                tmp_html->setStyleSheet("background-color:transparent;color:#CCCCCC;font-size:16px;");
-                tmp_html->setText(setHTML);
-
-                height = tmp_html->sizeHint().height();
-                flag = true;
-            }
-            else{
-                setHTML = tr("There is no description for the playlist.");
-            }
-
-            this->setOpen_Height(height, flag);
-            this->label_description->setStyleSheet("background-color:transparent;color:#CCCCCC;font-size:16px;");
-            this->label_description->setText(setHTML);
-
-            this->widget_Addbtn_Open->setFixedSize(1500, 80);
-            this->label_description->setGeometry(0, 0, 1450, 34);
-            this->label_open->setGeometry(0, 37, 1450, 30);
-            this->btn_open->setStyleSheet(this->btn_open->styleSheet().replace("text_close_ico.png", "text_open_ico.png"));
-            this->widget_Addbtn_Open->show();
         }
+
+        this->label_resolution->setText(str_resol);
+
+        QString setHTML = "";
+        int height = 0;
+        bool flag = false;
+        if(!comment.isEmpty()){
+            setHTML = comment;
+
+            QLabel *tmp_html = new QLabel();
+            tmp_html->setWordWrap(true);
+            tmp_html->setFixedWidth(1450);
+            tmp_html->setStyleSheet("background-color:transparent;color:#CCCCCC;font-size:16px;");
+            tmp_html->setText(setHTML);
+
+            height = tmp_html->sizeHint().height();
+            flag = true;
+        }
+        else{
+            setHTML = tr("There is no description for the playlist.");
+        }
+
+        this->setOpen_Height(height, flag);
+        this->label_description->setStyleSheet("background-color:transparent;color:#CCCCCC;font-size:16px;");
+        this->label_description->setText(setHTML);
+
+        this->widget_Addbtn_Open->setFixedSize(1500, 80);
+        this->label_description->setGeometry(0, 0, 1450, 48);
+        this->label_open->setGeometry(0, 55, 1450, 30);
+        this->btn_open->setStyleSheet(this->btn_open->styleSheet().replace("text_close_ico.png", "text_open_ico.png"));
+        this->widget_Addbtn_Open->show();
+    }
 }
 
 
@@ -1575,7 +1663,8 @@ void AbstractImageDetailContents_RHV::setData_fromTidalData(const QJsonObject &j
         this->request_shareLlink(img_path, biography, name, QString("%1").arg(id));    //j220907 share link
 
         if(biography.length() < 173){
-            this->label_biography->setText(biography);
+            QString setHtml = QString("<html><head/><body><span style='font-size:14px; font-weight:normal; line-height: 1.14; color:#FFFFFF;'>%1</span></body></html>").arg(biography);
+            this->label_biography->setText(setHtml);
         }
         else{
             QString tmp_split = "";
@@ -1641,12 +1730,20 @@ void AbstractImageDetailContents_RHV::setData_fromTidalData(const QJsonObject &j
             int bio_total_width = set_bio_total->sizeHint().width();
 
             this->label_biography->setText(GSCommon::getTextCutFromLabelWidth(tmp_bio_total, bio_total_width, this->label_biography->font()));
+            if(this->label_biography->text().contains("…")){
+                this->label_biography->setToolTip(tmp_bio_total);
+                this->label_biography->setToolTipDuration(2000);
+            }
         }
 
-        this->label_titleUp->setText(name);
+        this->label_title->setText(name);
         this->setImage(img_path);
     }
     else if(this->curr_contentsType == Tidal_album){
+
+        this->label_artist->setVisible(true);
+        this->label_creatorName->setVisible(false);
+
         QString img_path = ProcJsonEasy::getString(jsonObj, "image");
 
         QString title = ProcJsonEasy::getString(jsonObj, "title");
@@ -1669,15 +1766,17 @@ void AbstractImageDetailContents_RHV::setData_fromTidalData(const QJsonObject &j
         int track_count = ProcJsonEasy::getInt(jsonObj, "track_count");
         int duration = ProcJsonEasy::getInt(jsonObj, "duration");
 
-        this->label_artist->setVisible(true);
-        this->label_creatorName->setVisible(false);
+        // 데이터를 UI에 세팅한다.
+        QString image_type = ":/images/rosehome/home_tidalx2.png";
 
+        this->flag_type_image = true;
+        this->type_image_path = image_type;
         this->setImage(img_path);
 
-        this->label_titleUp->setText(title);
+        this->label_title->setText(title);
 
-        int mqa_left = this->label_titleUp->sizeHint().width();
-        int mqa_top = this->label_titleUp->geometry().bottom() - 60;
+        int mqa_left = this->label_title->sizeHint().width();
+        int mqa_top = this->label_title->geometry().bottom() - 60;
 
         if(audioQuality == "HI_RES"){
             this->setHiRes_Left(mqa_left, mqa_top);
@@ -1712,7 +1811,7 @@ void AbstractImageDetailContents_RHV::setData_fromTidalData(const QJsonObject &j
                     }
                     tmp_artist->setText(tmp_artist_line1);
 
-                    if(tmp_artist->sizeHint().width() > 750){
+                    if(tmp_artist->sizeHint().width() > 700){
                         tmp_artist->setText("");
                         tmp_artist_line1.replace(splitToken.at(i), "");
                         break;
@@ -1723,14 +1822,18 @@ void AbstractImageDetailContents_RHV::setData_fromTidalData(const QJsonObject &j
             tmp_artist->setText("");
             tmp_artist->setText(tmp_artist_line1);
 
-            artist_width = tmp_artist->sizeHint().width() + 750;
+            artist_width = tmp_artist->sizeHint().width() + 700;
 
             this->label_artist->setText(GSCommon::getTextCutFromLabelWidth(artist, artist_width, this->label_artist->font()));
-            this->label_artist->setGeometry(450, 150, 700, 60);
+            if(this->label_artist->text().contains("…")){
+                this->label_artist->setToolTip(artist);
+                this->label_artist->setToolTipDuration(2000);
+            }
+            this->label_artist->setGeometry(450, 140, 700, 80);
         }
         else{
             this->label_artist->setText(artist);
-            this->label_artist->setGeometry(450, 180, 700, 30);
+            this->label_artist->setGeometry(450, 175, 700, 40);
         }
 
         QString str_resol = "";
@@ -1774,6 +1877,11 @@ void AbstractImageDetailContents_RHV::setData_fromTidalData(const QJsonObject &j
         this->label_resolution->setText(str_resol);
     }
     else if(this->curr_contentsType == Tidal_playlist || this->curr_contentsType == Tidal_playlistMix){
+
+        // Playlist 모드로 배치한다.
+        this->label_artist->setVisible(false);
+        this->label_creatorName->setVisible(true);
+
         QString img_path = ProcJsonEasy::getString(jsonObj, "image");
 
         QString title = ProcJsonEasy::getString(jsonObj, "title");
@@ -1793,14 +1901,14 @@ void AbstractImageDetailContents_RHV::setData_fromTidalData(const QJsonObject &j
             this->request_shareLlink(img_path, description, title, id);    //j220905 share link
         }
 
-        // Playlist 모드로 배치한다.
-        this->label_artist->setVisible(false);
-        this->label_creatorName->setVisible(true);
-
         // 데이터를 UI에 세팅한다.
+        QString image_type = ":/images/rosehome/home_tidalx2.png";
+
+        this->flag_type_image = true;
+        this->type_image_path = image_type;
         this->setImage(img_path);
 
-        this->label_titleUp->setText(title);
+        this->label_title->setText(title);
 
         QLabel *tmp_creator = new QLabel();
         tmp_creator->setStyleSheet("background-color:transparent;color:#B18658;font-size:25px;font-weight:300;");
@@ -1831,7 +1939,7 @@ void AbstractImageDetailContents_RHV::setData_fromTidalData(const QJsonObject &j
                     }
                     tmp_creator->setText(tmp_creator_line1);
 
-                    if(tmp_creator->sizeHint().width() > 750){
+                    if(tmp_creator->sizeHint().width() > 700){
                         tmp_creator->setText("");
                         tmp_creator_line1.replace(splitToken.at(i), "");
                         break;
@@ -1842,14 +1950,18 @@ void AbstractImageDetailContents_RHV::setData_fromTidalData(const QJsonObject &j
             tmp_creator->setText("");
             tmp_creator->setText(tmp_creator_line1);
 
-            creator_width = tmp_creator->sizeHint().width() + 750;
+            creator_width = tmp_creator->sizeHint().width() + 700;
 
             this->label_creatorName->setText(GSCommon::getTextCutFromLabelWidth(owner, creator_width, this->label_creatorName->font()));
-            this->label_creatorName->setGeometry(450, 150, 700, 60);
+            if(this->label_creatorName->text().contains("…")){
+                this->label_creatorName->setToolTip(owner);
+                this->label_creatorName->setToolTipDuration(2000);
+            }
+            this->label_creatorName->setGeometry(450, 140, 700, 80);
         }
         else{
             this->label_creatorName->setText(owner);
-            this->label_creatorName->setGeometry(450, 180, 700, 30);
+            this->label_creatorName->setGeometry(450, 175, 700, 40);
         }
 
         QString str_resol = "";
@@ -1921,8 +2033,8 @@ void AbstractImageDetailContents_RHV::setData_fromTidalData(const QJsonObject &j
         this->label_description->setText(setHTML);
 
         this->widget_Addbtn_Open->setFixedSize(1500, 80);
-        this->label_description->setGeometry(0, 0, 1450, 40);
-        this->label_open->setGeometry(0, 37, 1450, 30);
+        this->label_description->setGeometry(0, 0, 1450, 48);
+        this->label_open->setGeometry(0, 55, 1450, 30);
         this->btn_open->setStyleSheet(this->btn_open->styleSheet().replace("text_close_ico.png", "text_open_ico.png"));
         this->widget_Addbtn_Open->show();
     }
@@ -2007,12 +2119,20 @@ void  AbstractImageDetailContents_RHV::setData_fromBugsData(const QJsonObject &j
             int bio_total_width = set_bio_total->sizeHint().width();
 
             this->label_biography->setText(GSCommon::getTextCutFromLabelWidth(tmp_bio_total, bio_total_width, this->label_biography->font()));
+            if(this->label_biography->text().contains("…")){
+                this->label_biography->setToolTip(tmp_bio_total);
+                this->label_biography->setToolTipDuration(2000);
+            }
         }
 
-        this->label_titleUp->setText(name);
+        this->label_title->setText(name);
         this->setImage(img_path);
     }
     else if(this->curr_contentsType == Bugs_album){
+
+        this->label_artist->setVisible(true);
+        this->label_creatorName->setVisible(false);
+
         QString img_path = ProcJsonEasy::getString(jsonObj, "image");
 
         QString title = ProcJsonEasy::getString(jsonObj, "title");
@@ -2032,18 +2152,18 @@ void  AbstractImageDetailContents_RHV::setData_fromBugsData(const QJsonObject &j
 
         QString description = ProcJsonEasy::getString(jsonObj, "description");
 
-        QString id = ProcJsonEasy::getString(jsonObj, "id");    //j220905 share link*/
+        int id = ProcJsonEasy::getInt(jsonObj, "id");    //j220905 share link    //c221209
 
-        this->request_shareLlink(img_path, artist, title, id);    //j220905 share link
+        this->request_shareLlink(img_path, artist, title, QString("%1").arg(id));    //j220905 share link  //c221209
 
-        this->btn_addCollect->hide();
+        // 데이터를 UI에 세팅한다.
+        QString image_type = ":/images/rosehome/home_bugsx2.png";
 
-        this->label_artist->setVisible(true);
-        this->label_creatorName->setVisible(false);
-
+        this->flag_type_image = true;
+        this->type_image_path = image_type;
         this->setImage(img_path);
 
-        this->label_titleUp->setText(title);
+        this->label_title->setText(title);
 
         QLabel *tmp_artist = new QLabel();
         tmp_artist->setStyleSheet("background-color:transparent;color:#B18658;font-size:25px;font-weight:300;");
@@ -2074,7 +2194,7 @@ void  AbstractImageDetailContents_RHV::setData_fromBugsData(const QJsonObject &j
                     }
                     tmp_artist->setText(tmp_artist_line1);
 
-                    if(tmp_artist->sizeHint().width() > 750){
+                    if(tmp_artist->sizeHint().width() > 700){
                         tmp_artist->setText("");
                         tmp_artist_line1.replace(splitToken.at(i), "");
                         break;
@@ -2085,14 +2205,18 @@ void  AbstractImageDetailContents_RHV::setData_fromBugsData(const QJsonObject &j
             tmp_artist->setText("");
             tmp_artist->setText(tmp_artist_line1);
 
-            artist_width = tmp_artist->sizeHint().width() + 750;
+            artist_width = tmp_artist->sizeHint().width() + 700;
 
             this->label_artist->setText(GSCommon::getTextCutFromLabelWidth(artist, artist_width, this->label_artist->font()));
-            this->label_artist->setGeometry(450, 150, 700, 60);
+            if(this->label_artist->text().contains("…")){
+                this->label_artist->setToolTip(artist);
+                this->label_artist->setToolTipDuration(2000);
+            }
+            this->label_artist->setGeometry(450, 140, 700, 80);
         }
         else{
             this->label_artist->setText(artist);
-            this->label_artist->setGeometry(450, 180, 700, 30);
+            this->label_artist->setGeometry(450, 175, 700, 40);
         }
 
         QString str_resol = "";
@@ -2160,8 +2284,186 @@ void  AbstractImageDetailContents_RHV::setData_fromBugsData(const QJsonObject &j
         this->label_description->setText(setHTML);
 
         this->widget_Addbtn_Open->setFixedSize(1500, 80);
-        this->label_description->setGeometry(0, 0, 1450, 34);
-        this->label_open->setGeometry(0, 37, 1450, 30);
+        this->label_description->setGeometry(0, 0, 1450, 41);
+        this->label_open->setGeometry(0, 44, 1450, 30);
+        this->btn_open->setStyleSheet(this->btn_open->styleSheet().replace("text_close_ico.png", "text_open_ico.png"));
+        this->widget_Addbtn_Open->show();
+    }
+    else if(this->curr_contentsType == Bugs_pdAlbum){
+
+        this->label_artist->setVisible(false);
+        this->label_creatorName->setVisible(true);
+
+        QString img_path = ProcJsonEasy::getString(jsonObj, "image");
+
+        QString title = ProcJsonEasy::getString(jsonObj, "title");
+
+        QString artist = ProcJsonEasy::getString(jsonObj, "artist");
+
+        int track_count = ProcJsonEasy::getInt(jsonObj, "track_count");
+        int duration = ProcJsonEasy::getInt(jsonObj, "duration");
+
+        QStringList tmpRelease = ProcJsonEasy::getString(jsonObj, "releaseDate").split("T");
+        QString release = tmpRelease.at(0);
+
+        QString description = ProcJsonEasy::getString(jsonObj, "description");
+
+        int id = ProcJsonEasy::getInt(jsonObj, "id");    //j220905 share link    //c221209
+
+        this->request_shareLlink(img_path, artist, title, QString("%1").arg(id));    //j220905 share link  //c221209
+
+        // 데이터를 UI에 세팅한다.
+        QString image_type = ":/images/rosehome/home_bugsx2.png";
+
+        this->flag_type_image = true;
+        this->type_image_path = image_type;
+        this->setImage(img_path);
+
+        this->label_title->setText(title);
+
+        QLabel *tmp_artist = new QLabel();
+        tmp_artist->setStyleSheet("background-color:transparent;color:#B18658;font-size:25px;font-weight:300;");
+        tmp_artist->setText(artist);
+
+        int artist_width = 0;
+        artist_width = tmp_artist->sizeHint().width();
+
+        if(artist_width > 750){
+
+            QString tmp_split = "";
+            QStringList splitToken;
+            QString tmp_artist_line1 = "";
+
+            tmp_split = artist;
+            splitToken = tmp_split.split(" ");
+
+            tmp_artist->setText("");
+            int i = 0;
+            if(splitToken.size() > 1){
+
+                for(i = 0; i < splitToken.count(); i++){
+                    if(i == 0){
+                        tmp_artist_line1 = splitToken.at(i);
+                    }
+                    else{
+                        tmp_artist_line1 += " " + splitToken.at(i);
+                    }
+                    tmp_artist->setText(tmp_artist_line1);
+
+                    if(tmp_artist->sizeHint().width() > 700){
+                        tmp_artist->setText("");
+                        tmp_artist_line1.replace(splitToken.at(i), "");
+                        break;
+                    }
+                }
+            }
+
+            tmp_artist->setText("");
+            tmp_artist->setText(tmp_artist_line1);
+
+            artist_width = tmp_artist->sizeHint().width() + 700;
+
+            this->label_creatorName->setText(GSCommon::getTextCutFromLabelWidth(artist, artist_width, this->label_creatorName->font()));
+            if(this->label_creatorName->text().contains("…")){
+                this->label_creatorName->setToolTip(artist);
+                this->label_creatorName->setToolTipDuration(2000);
+            }
+            this->label_creatorName->setGeometry(450, 145, 700, 60);
+        }
+        else{
+            this->label_creatorName->setText(artist);
+            this->label_creatorName->setGeometry(450, 175, 700, 30);
+        }
+        this->label_creatorName->show();
+
+        QString str_resol = "";
+        if(track_count > 0){
+            if(global.lang == 0){
+                if(track_count > 1){
+                    str_resol = QString("%1 tracks ").arg(track_count);
+                }
+                else{
+                    str_resol = QString("%1 track ").arg(track_count);
+                }
+            }
+            else if(global.lang == 1){
+                str_resol = QString("총 %1개 트랙 ").arg(track_count);
+            }
+
+            if(duration == 0){
+
+            }
+            else if(duration >= 3600){
+                str_resol += QString("· %1 ").arg(QDateTime::fromTime_t(duration).toUTC().toString("hh:mm:ss"));
+            }
+            else{
+                str_resol += QString("· %1 ").arg(QDateTime::fromTime_t(duration).toUTC().toString("mm:ss"));
+            }
+
+            if(!release.isEmpty()){
+
+                QDate releaseDate = QDate::fromString(release, "yyyy-MM-dd");
+
+                if(global.lang == 0){
+                    QLocale::setDefault(QLocale(QLocale::English, QLocale::UnitedStates));
+                    str_resol += "| Release " + QLocale().toString(releaseDate, "MMM d, yyyy");
+
+                    QLocale::setDefault(QLocale::system());
+                }
+                else if(global.lang == 1){
+                    str_resol += "| 발매 " + releaseDate.toString("M월 d일, yyyy");
+                }
+            }
+        }
+        this->label_resolution->setText(str_resol);
+        this->label_resolution->setGeometry(450, 205, 700, 24);
+
+        QJsonArray tmpTag = ProcJsonEasy::getJsonArray(jsonObj, "tag");
+
+        this->list_tag_name.clear();
+        for(int i = 0; i < tmpTag.count(); i++){
+            QJsonObject dataTag = tmpTag.at(i).toObject();
+
+            // 태그 정보
+            this->list_tag_name.append(ProcJsonEasy::getString(dataTag, "name"));
+
+            QPushButton *btn_tag = new QPushButton();
+            btn_tag->setProperty("idx", i);
+            btn_tag->setText("#" + this->list_tag_name.at(i));
+            btn_tag->setStyleSheet("font-size:14px; background-color:#333333; color:#919191; padding: 2px 7px;");
+            btn_tag->setCursor(Qt::PointingHandCursor);
+            btn_tag->setFixedHeight(20);
+            connect(btn_tag, &QPushButton::clicked, this, &AbstractImageDetailContents_RHV::slot_btnClicked_tag);
+
+            this->flowLayout_tag->addWidget(btn_tag);
+        }
+
+        QString setHTML = "";
+        int height = 0;
+        bool flag = false;
+        if(!description.isEmpty()){
+            setHTML = description;
+
+            QLabel *tmp_html = new QLabel();
+            tmp_html->setWordWrap(true);
+            tmp_html->setFixedWidth(1450);
+            tmp_html->setStyleSheet("background-color:transparent;color:#CCCCCC;font-size:16px;");
+            tmp_html->setText(setHTML);
+
+            height = tmp_html->sizeHint().height();
+            flag = true;
+        }
+        else{
+            setHTML = tr("There is no description for the album.");
+        }
+
+        this->setOpen_Height(height, flag);
+        this->label_description->setStyleSheet("background-color:transparent;color:#CCCCCC;font-size:16px;");
+        this->label_description->setText(setHTML);
+
+        this->widget_Addbtn_Open->setFixedSize(1500, 80);
+        this->label_description->setGeometry(0, 0, 1450, 48);
+        this->label_open->setGeometry(0, 55, 1450, 30);
         this->btn_open->setStyleSheet(this->btn_open->styleSheet().replace("text_close_ico.png", "text_open_ico.png"));
         this->widget_Addbtn_Open->show();
     }
@@ -2246,12 +2548,19 @@ void AbstractImageDetailContents_RHV::setData_fromQobuzData(const QJsonObject &j
             int bio_total_width = set_bio_total->sizeHint().width();
 
             this->label_biography->setText(GSCommon::getTextCutFromLabelWidth(tmp_bio_total, bio_total_width, this->label_biography->font()));
+            if(this->label_biography->text().contains("…")){
+                this->label_biography->setToolTip(tmp_bio_total);
+                this->label_biography->setToolTipDuration(2000);
+            }
         }
 
-        this->label_titleUp->setText(name);        
+        this->label_title->setText(name);
         this->setImage(img_path);
     }
     else if(this->curr_contentsType == Qobuz_album){
+        this->label_artist->setVisible(true);
+        this->label_creatorName->setVisible(false);
+
         QString img_path = ProcJsonEasy::getString(jsonObj, "image");
 
         QString title = ProcJsonEasy::getString(jsonObj, "title");
@@ -2272,15 +2581,17 @@ void AbstractImageDetailContents_RHV::setData_fromQobuzData(const QJsonObject &j
 
         this->request_shareLlink(img_path, artist, title, id);    //j220905 share link
 
-        this->label_artist->setVisible(true);
-        this->label_creatorName->setVisible(false);
+        // 데이터를 UI에 세팅한다.
+        QString image_type = ":/images/rosehome/home_qobuzx2.png";
 
+        this->flag_type_image = true;
+        this->type_image_path = image_type;
         this->setImage(img_path);
 
-        this->label_titleUp->setText(title);
+        this->label_title->setText(title);
 
-        int hires_left = this->label_titleUp->sizeHint().width();
-        int hires_top = this->label_titleUp->geometry().bottom() - 60;
+        int hires_left = this->label_title->sizeHint().width();
+        int hires_top = this->label_title->geometry().bottom() - 60;
 
         if(hires){
             this->setHiRes_Left(hires_left, hires_top);
@@ -2315,7 +2626,7 @@ void AbstractImageDetailContents_RHV::setData_fromQobuzData(const QJsonObject &j
                     }
                     tmp_artist->setText(tmp_artist_line1);
 
-                    if(tmp_artist->sizeHint().width() > 750){
+                    if(tmp_artist->sizeHint().width() > 700){
                         tmp_artist->setText("");
                         tmp_artist_line1.replace(splitToken.at(i), "");
                         break;
@@ -2326,14 +2637,18 @@ void AbstractImageDetailContents_RHV::setData_fromQobuzData(const QJsonObject &j
             tmp_artist->setText("");
             tmp_artist->setText(tmp_artist_line1);
 
-            artist_width = tmp_artist->sizeHint().width() + 750;
+            artist_width = tmp_artist->sizeHint().width() + 700;
 
             this->label_artist->setText(GSCommon::getTextCutFromLabelWidth(artist, artist_width, this->label_artist->font()));
-            this->label_artist->setGeometry(450, 150, 700, 60);
+            if(this->label_artist->text().contains("…")){
+                this->label_artist->setToolTip(artist);
+                this->label_artist->setToolTipDuration(2000);
+            }
+            this->label_artist->setGeometry(450, 140, 700, 80);
         }
         else{
             this->label_artist->setText(artist);
-            this->label_artist->setGeometry(450, 180, 700, 30);
+            this->label_artist->setGeometry(450, 175, 700, 40);
         }
 
         QString str_resol = "";
@@ -2407,12 +2722,17 @@ void AbstractImageDetailContents_RHV::setData_fromQobuzData(const QJsonObject &j
         this->label_description->setText(setHTML);
 
         this->widget_Addbtn_Open->setFixedSize(1500, 80);
-        this->label_description->setGeometry(0, 0, 1450, 40);
-        this->label_open->setGeometry(0, 37, 1450, 30);
+        this->label_description->setGeometry(0, 0, 1450, 48);
+        this->label_open->setGeometry(0, 55, 1450, 30);
         this->btn_open->setStyleSheet(this->btn_open->styleSheet().replace("text_close_ico.png", "text_open_ico.png"));
         this->widget_Addbtn_Open->show();
     }
     else if(this->curr_contentsType == Qobuz_playlist){
+
+        // Playlist 모드로 배치한다.
+        this->label_artist->setVisible(false);
+        this->label_creatorName->setVisible(true);
+
         QString img_path = ProcJsonEasy::getString(jsonObj, "image");
 
         QString title = ProcJsonEasy::getString(jsonObj, "title");
@@ -2431,17 +2751,17 @@ void AbstractImageDetailContents_RHV::setData_fromQobuzData(const QJsonObject &j
 
         this->request_shareLlink(img_path, description, title, id);    //j220905 share link
 
-        // Playlist 모드로 배치한다.
-        this->label_artist->setVisible(false);
-        this->label_creatorName->setVisible(true);
-
         // 데이터를 UI에 세팅한다.
+        QString image_type = ":/images/rosehome/home_qobuzx2.png";
+
+        this->flag_type_image = true;
+        this->type_image_path = image_type;
         this->setImage(img_path);
 
-        this->label_titleUp->setText(title);
+        this->label_title->setText(title);
 
-        int hires_left = this->label_titleUp->sizeHint().width();
-        int hires_top = this->label_titleUp->geometry().bottom() - 60;
+        int hires_left = this->label_title->sizeHint().width();
+        int hires_top = this->label_title->geometry().bottom() - 60;
 
         if(hires){
             this->setHiRes_Left(hires_left, hires_top);
@@ -2476,7 +2796,7 @@ void AbstractImageDetailContents_RHV::setData_fromQobuzData(const QJsonObject &j
                     }
                     tmp_creator->setText(tmp_creator_line1);
 
-                    if(tmp_creator->sizeHint().width() > 750){
+                    if(tmp_creator->sizeHint().width() > 700){
                         tmp_creator->setText("");
                         tmp_creator_line1.replace(splitToken.at(i), "");
                         break;
@@ -2487,14 +2807,18 @@ void AbstractImageDetailContents_RHV::setData_fromQobuzData(const QJsonObject &j
             tmp_creator->setText("");
             tmp_creator->setText(tmp_creator_line1);
 
-            creator_width = tmp_creator->sizeHint().width() + 750;
+            creator_width = tmp_creator->sizeHint().width() + 700;
 
             this->label_creatorName->setText(GSCommon::getTextCutFromLabelWidth(owner, creator_width, this->label_creatorName->font()));
-            this->label_creatorName->setGeometry(450, 150, 700, 60);
+            if(this->label_creatorName->text().contains("…")){
+                this->label_creatorName->setToolTip(owner);
+                this->label_creatorName->setToolTipDuration(2000);
+            }
+            this->label_creatorName->setGeometry(450, 140, 700, 80);
         }
         else{
             this->label_creatorName->setText(owner);
-            this->label_creatorName->setGeometry(450, 180, 700, 30);
+            this->label_creatorName->setGeometry(450, 175, 700, 40);
         }
 
         QString str_resol = "";
@@ -2560,8 +2884,8 @@ void AbstractImageDetailContents_RHV::setData_fromQobuzData(const QJsonObject &j
         this->label_description->setText(setHTML);
 
         this->widget_Addbtn_Open->setFixedSize(1500, 80);
-        this->label_description->setGeometry(0, 0, 1450, 40);
-        this->label_open->setGeometry(0, 37, 1450, 30);
+        this->label_description->setGeometry(0, 0, 1450, 48);
+        this->label_open->setGeometry(0, 55, 1450, 30);
         this->btn_open->setStyleSheet(this->btn_open->styleSheet().replace("text_close_ico.png", "text_open_ico.png"));
         this->widget_Addbtn_Open->show();
     }
@@ -2575,10 +2899,18 @@ void AbstractImageDetailContents_RHV::setData_fromAppleData(const QJsonObject &j
     }
     else if(this->curr_contentsType == Apple_album){
 
+        this->label_artist->setVisible(true);
+        this->label_creatorName->setVisible(false);
+
         QJsonObject artwork = ProcJsonEasy::getJsonObject(jsonObj, "artwork");
         QString url = ProcJsonEasy::getString(artwork, "url");
         url.replace("{w}x{h}", "400x400");
 
+        // 데이터를 UI에 세팅한다.
+        QString image_type = ":/images/rosehome/home_applex2.png";
+
+        this->flag_type_image = true;
+        this->type_image_path = image_type;
         this->setImage(url);
 
         QString title = ProcJsonEasy::getString(jsonObj, "name");
@@ -2597,10 +2929,7 @@ void AbstractImageDetailContents_RHV::setData_fromAppleData(const QJsonObject &j
 
         this->request_shareLlink(url, artist, title, id);    //j220905 share link
 
-        this->label_artist->setVisible(true);
-        this->label_creatorName->setVisible(false);
-
-        this->label_titleUp->setText(title);
+        this->label_title->setText(title);
 
         QLabel *tmp_artist = new QLabel();
         tmp_artist->setStyleSheet("background-color:transparent;color:#B18658;font-size:25px;font-weight:300;");
@@ -2645,11 +2974,15 @@ void AbstractImageDetailContents_RHV::setData_fromAppleData(const QJsonObject &j
             artist_width = tmp_artist->sizeHint().width() + 700;
 
             this->label_artist->setText(GSCommon::getTextCutFromLabelWidth(artist, artist_width, this->label_artist->font()));
-            this->label_artist->setGeometry(450, 150, 700, 60);
+            if(this->label_artist->text().contains("…")){
+                this->label_artist->setToolTip(artist);
+                this->label_artist->setToolTipDuration(2000);
+            }
+            this->label_artist->setGeometry(450, 140, 700, 80);
         }
         else{
             this->label_artist->setText(artist);
-            this->label_artist->setGeometry(450, 180, 700, 30);
+            this->label_artist->setGeometry(450, 175, 700, 40);
         }
 
         QString str_resol = "";
@@ -2737,10 +3070,19 @@ void AbstractImageDetailContents_RHV::setData_fromAppleData(const QJsonObject &j
     }
     else if(this->curr_contentsType == Apple_playlist){
 
+        // Playlist 모드로 배치한다.
+        this->label_artist->setVisible(false);
+        this->label_creatorName->setVisible(true);
+
         QJsonObject artwork = ProcJsonEasy::getJsonObject(jsonObj, "artwork");
         QString url = ProcJsonEasy::getString(artwork, "url");
         url.replace("{w}x{h}", "400x400");
 
+        // 데이터를 UI에 세팅한다.
+        QString image_type = ":/images/rosehome/home_applex2.png";
+
+        this->flag_type_image = true;
+        this->type_image_path = image_type;
         this->setImage(url);
 
         QString title = ProcJsonEasy::getString(jsonObj, "name");
@@ -2758,11 +3100,7 @@ void AbstractImageDetailContents_RHV::setData_fromAppleData(const QJsonObject &j
 
         this->request_shareLlink(url, description, title, id);    //j220905 share link
 
-        // Playlist 모드로 배치한다.
-        this->label_artist->setVisible(false);
-        this->label_creatorName->setVisible(true);
-
-        this->label_titleUp->setText(title);
+        this->label_title->setText(title);
 
         QLabel *tmp_creator = new QLabel();
         tmp_creator->setStyleSheet("background-color:transparent;color:#B18658;font-size:25px;font-weight:300;");
@@ -2793,7 +3131,7 @@ void AbstractImageDetailContents_RHV::setData_fromAppleData(const QJsonObject &j
                     }
                     tmp_creator->setText(tmp_creator_line1);
 
-                    if(tmp_creator->sizeHint().width() > 750){
+                    if(tmp_creator->sizeHint().width() > 700){
                         tmp_creator->setText("");
                         tmp_creator_line1.replace(splitToken.at(i), "");
                         break;
@@ -2804,14 +3142,18 @@ void AbstractImageDetailContents_RHV::setData_fromAppleData(const QJsonObject &j
             tmp_creator->setText("");
             tmp_creator->setText(tmp_creator_line1);
 
-            creator_width = tmp_creator->sizeHint().width() + 750;
+            creator_width = tmp_creator->sizeHint().width() + 700;
 
             this->label_creatorName->setText(GSCommon::getTextCutFromLabelWidth(curator, creator_width, this->label_creatorName->font()));
-            this->label_creatorName->setGeometry(450, 150, 700, 60);
+            if(this->label_creatorName->text().contains("…")){
+                this->label_creatorName->setToolTip(curator);
+                this->label_creatorName->setToolTipDuration(2000);
+            }
+            this->label_creatorName->setGeometry(450, 140, 700, 80);
         }
         else{
             this->label_creatorName->setText(curator);
-            this->label_creatorName->setGeometry(450, 180, 700, 30);
+            this->label_creatorName->setGeometry(450, 175, 700, 40);
         }
 
         QString str_resol = "";
@@ -2971,7 +3313,7 @@ void AbstractImageDetailContents_RHV::setData_fromCDplayData(const QJsonObject &
 
         this->setImage(img_path);
 
-        this->label_titleUp->setText(title);
+        this->label_title->setText(title);
         //this->label_mInfo->setText(info);
 
         QLabel *tmp_artist = new QLabel();
@@ -3003,7 +3345,7 @@ void AbstractImageDetailContents_RHV::setData_fromCDplayData(const QJsonObject &
                     }
                     tmp_artist->setText(tmp_artist_line1);
 
-                    if(tmp_artist->sizeHint().width() > 750){
+                    if(tmp_artist->sizeHint().width() > 700){
                         tmp_artist->setText("");
                         tmp_artist_line1.replace(splitToken.at(i), "");
                         break;
@@ -3014,14 +3356,18 @@ void AbstractImageDetailContents_RHV::setData_fromCDplayData(const QJsonObject &
             tmp_artist->setText("");
             tmp_artist->setText(tmp_artist_line1);
 
-            artist_width = tmp_artist->sizeHint().width() + 750;
+            artist_width = tmp_artist->sizeHint().width() + 700;
 
             this->label_artist->setText(GSCommon::getTextCutFromLabelWidth(artist, artist_width, this->label_artist->font()));
-            this->label_artist->setGeometry(450, 150, 700, 60);
+            if(this->label_artist->text().contains("…")){
+                this->label_artist->setToolTip(artist);
+                this->label_artist->setToolTipDuration(2000);
+            }
+            this->label_artist->setGeometry(450, 140, 700, 80);
         }
         else{
             this->label_artist->setText(artist);
-            this->label_artist->setGeometry(450, 180, 700, 30);
+            this->label_artist->setGeometry(450, 175, 700, 40);
         }
 
         QString str_resol = "";
@@ -3077,8 +3423,8 @@ void AbstractImageDetailContents_RHV::setData_fromCDplayData(const QJsonObject &
         this->label_description->setText(setHTML);
 
         this->widget_Addbtn_Open->setFixedSize(1500, 80);
-        this->label_description->setGeometry(0, 0, 1450, 40);
-        this->label_open->setGeometry(0, 37, 1450, 30);
+        this->label_description->setGeometry(0, 0, 1450, 48);
+        this->label_open->setGeometry(0, 55, 1450, 30);
         this->btn_open->setStyleSheet(this->btn_open->styleSheet().replace("text_close_ico.png", "text_open_ico.png"));
         this->widget_Addbtn_Open->show();
     }
@@ -3092,9 +3438,14 @@ void AbstractImageDetailContents_RHV::setData_fromVideoData(const QJsonObject &j
     int track_count = ProcJsonEasy::getInt(jsonObj, "track_count");
     int duration = ProcJsonEasy::getInt(jsonObj, "duration");
 
+    // 데이터를 UI에 세팅한다.
+    QString image_type = ":/images/rosehome/home_videox2.png";
+
+    this->flag_type_image = true;
+    this->type_image_path = image_type;
     this->setImage(img_path);
 
-    this->label_titleUp->setText(title);
+    this->label_title->setText(title);
 
     QString str_resol = "";
     if(global.lang == 0){
@@ -3162,7 +3513,7 @@ void AbstractImageDetailContents_RHV::setData_Resolution(const QJsonObject &json
                         }
                         tmp_artist->setText(tmp_artist_line1);
 
-                        if(tmp_artist->sizeHint().width() > 750){
+                        if(tmp_artist->sizeHint().width() > 700){
                             tmp_artist->setText("");
                             tmp_artist_line1.replace(splitToken.at(i), "");
                             break;
@@ -3173,14 +3524,18 @@ void AbstractImageDetailContents_RHV::setData_Resolution(const QJsonObject &json
                 tmp_artist->setText("");
                 tmp_artist->setText(tmp_artist_line1);
 
-                artist_width = tmp_artist->sizeHint().width() + 750;
+                artist_width = tmp_artist->sizeHint().width() + 700;
 
                 this->label_artist->setText(GSCommon::getTextCutFromLabelWidth(owner, artist_width, this->label_artist->font()));
-                this->label_artist->setGeometry(450, 150, 700, 60);
+                if(this->label_artist->text().contains("…")){
+                    this->label_artist->setToolTip(owner);
+                    this->label_artist->setToolTipDuration(2000);
+                }
+                this->label_artist->setGeometry(450, 140, 700, 80);
             }
             else{
                 this->label_artist->setText(owner);
-                this->label_artist->setGeometry(450, 180, 700, 30);
+                this->label_artist->setGeometry(450, 175, 700, 40);
             }
         }
         else{
@@ -3213,7 +3568,7 @@ void AbstractImageDetailContents_RHV::setData_Resolution(const QJsonObject &json
                         }
                         tmp_creator->setText(tmp_creator_line1);
 
-                        if(tmp_creator->sizeHint().width() > 750){
+                        if(tmp_creator->sizeHint().width() > 700){
                             tmp_creator->setText("");
                             tmp_creator_line1.replace(splitToken.at(i), "");
                             break;
@@ -3224,14 +3579,18 @@ void AbstractImageDetailContents_RHV::setData_Resolution(const QJsonObject &json
                 tmp_creator->setText("");
                 tmp_creator->setText(tmp_creator_line1);
 
-                creator_width = tmp_creator->sizeHint().width() + 750;
+                creator_width = tmp_creator->sizeHint().width() + 700;
 
                 this->label_creatorName->setText(GSCommon::getTextCutFromLabelWidth(owner, creator_width, this->label_creatorName->font()));
-                this->label_creatorName->setGeometry(450, 150, 700, 60);
+                if(this->label_creatorName->text().contains("…")){
+                    this->label_creatorName->setToolTip(owner);
+                    this->label_creatorName->setToolTipDuration(2000);
+                }
+                this->label_creatorName->setGeometry(450, 140, 700, 80);
             }
             else{
                 this->label_creatorName->setText(owner);
-                this->label_creatorName->setGeometry(450, 180, 700, 30);
+                this->label_creatorName->setGeometry(450, 175, 700, 40);
             }
         }
     }
@@ -3364,6 +3723,10 @@ void AbstractImageDetailContents_RHV::setData_Biography(const QJsonObject &jsonO
         int bio_total_width = set_bio_total->sizeHint().width();
 
         this->label_biography->setText(GSCommon::getTextCutFromLabelWidth(tmp_bio_total, bio_total_width, this->label_biography->font()));
+        if(this->label_biography->text().contains("…")){
+            this->label_biography->setToolTip(tmp_bio_total);
+            this->label_biography->setToolTipDuration(2000);
+        }
     }
 }
 
@@ -3456,10 +3819,52 @@ void AbstractImageDetailContents_RHV::slot_fileDownload_loadImage()
     if(flagLoad){
         QPixmap pixmapIMG = QPixmap(QSize(this->image_width, this->image_height));
         pixmapIMG.fill(Qt::transparent);
+        /*if(this->curr_contentsType == Music_playlist || this->curr_contentsType == Music_userplaylist  || this->curr_contentsType == rose_playlist
+                || this->curr_contentsType == rose_userplaylist || this->curr_contentsType == Rosetube_userplaylist || this->curr_contentsType == Tidal_video
+                || this->curr_contentsType == Bugs_video || this->curr_contentsType == Qobuz_playlist || this->curr_contentsType == Video){
+            pixmapIMG.fill(Qt::black);
+        }
+        else{
+            pixmapIMG.fill(Qt::transparent);
+        }*/
 
         QPixmap tmp_pixmap;
         tmp_pixmap = tmp_pixmap.fromImage(image);
-        tmp_pixmap = tmp_pixmap.scaled(this->image_width, this->image_height, Qt::KeepAspectRatioByExpanding, Qt::SmoothTransformation);
+        /*if(this->curr_contentsType == Music_playlist || this->curr_contentsType == Music_userplaylist  || this->curr_contentsType == rose_playlist
+                || this->curr_contentsType == rose_userplaylist || this->curr_contentsType == Rosetube_userplaylist || this->curr_contentsType == Tidal_video
+                || this->curr_contentsType == Bugs_video || this->curr_contentsType == Qobuz_playlist || this->curr_contentsType == Video){
+            tmp_pixmap = tmp_pixmap.scaled(this->image_width, this->image_height, Qt::KeepAspectRatio, Qt::SmoothTransformation);
+        }
+        else{
+            if(this->image_width > tmp_pixmap.width() && this->image_height <= tmp_pixmap.height()){
+                pixmapIMG.fill(Qt::black);
+                tmp_pixmap = tmp_pixmap.scaled(tmp_pixmap.width(), this->image_height, Qt::KeepAspectRatioByExpanding, Qt::SmoothTransformation);
+            }
+            else if(this->image_width <= tmp_pixmap.width() && this->image_height > tmp_pixmap.height()){
+                pixmapIMG.fill(Qt::black);
+                tmp_pixmap = tmp_pixmap.scaled(this->image_width, tmp_pixmap.height(), Qt::KeepAspectRatioByExpanding, Qt::SmoothTransformation);
+            }
+            else{
+                tmp_pixmap = tmp_pixmap.scaled(this->image_width, this->image_height, Qt::KeepAspectRatioByExpanding, Qt::SmoothTransformation);
+            }
+        }*/
+
+        if(this->curr_contentsType == rose_artist || this->curr_contentsType == Music_artist || this->curr_contentsType == Tidal_artist || this->curr_contentsType == Bugs_artist || this->curr_contentsType == Qobuz_artist || this->curr_contentsType == Apple_artist){
+            tmp_pixmap = tmp_pixmap.scaled(this->image_width, this->image_height, Qt::KeepAspectRatioByExpanding, Qt::SmoothTransformation);
+        }
+        else{
+            if(tmp_pixmap.width() > tmp_pixmap.height()){
+                tmp_pixmap = tmp_pixmap.scaledToWidth(this->image_width, Qt::SmoothTransformation);
+                pixmapIMG.fill(Qt::black);
+            }
+            else if(tmp_pixmap.height() > tmp_pixmap.width()){
+                tmp_pixmap = tmp_pixmap.scaledToHeight(this->image_height, Qt::SmoothTransformation);
+                pixmapIMG.fill(Qt::black);
+            }
+            else{
+                tmp_pixmap = tmp_pixmap.scaled(this->image_width, this->image_height, Qt::KeepAspectRatioByExpanding, Qt::SmoothTransformation);
+            }
+        }
 
         QPainter painter (&pixmapIMG);
         painter.setRenderHint(QPainter::Antialiasing, true);
@@ -3469,19 +3874,10 @@ void AbstractImageDetailContents_RHV::slot_fileDownload_loadImage()
         QPainterPath path = QPainterPath();
         path.addRoundedRect(0, 0, this->image_width, this->image_height, this->image_cornerRadius, this->image_cornerRadius);
 
+        int leftValue = (this->image_width - tmp_pixmap.width()) / 2;
+        int topValue = (this->image_height - tmp_pixmap.height()) / 2;
+
         painter.setClipPath(path);
-
-        int leftValue = 0;
-        int topValue = 0;
-
-        if(tmp_pixmap.width() > this->image_width){
-            leftValue = (this->image_width - tmp_pixmap.width()) / 2;
-        }
-
-        if(tmp_pixmap.height() > this->image_height){
-            topValue = (this->image_height - tmp_pixmap.height()) / 2;
-        }
-
         painter.drawPixmap(leftValue, topValue, tmp_pixmap);
         painter.end();
 
@@ -3519,9 +3915,14 @@ void AbstractImageDetailContents_RHV::paint_imageBig(QPixmap &pixmap){
 
     QPainter painter (&pixmap_painter);
     painter.setRenderHint(QPainter::Antialiasing, true);
+    painter.setRenderHint(QPainter::HighQualityAntialiasing, true);
+    painter.setRenderHint(QPainter::SmoothPixmapTransform, true);
+
     QBrush brush = QBrush(pixmap);
     painter.setBrush(brush);
     painter.drawRoundedRect(0, 0, this->image_width, this->image_height, this->image_cornerRadius, this->image_cornerRadius);
+    painter.end();
+
     this->label_imageBig->setPixmap(pixmap_painter);
 
     if(this->flag_type_image){
@@ -3536,6 +3937,140 @@ void AbstractImageDetailContents_RHV::paint_imageBig(QPixmap &pixmap){
         this->label_imageType->setFixedSize(img.width(), img.height());
         this->label_imageType->setGeometry(0, 0, 0, 0);
     }
+}
+
+
+void AbstractImageDetailContents_RHV::downloadThumbImageBig(QString pathImg){//c230215
+
+    FileDownloader *fileDownloader = new FileDownloader(this);
+    fileDownloader->setProperty("filedown_name", "bigImg");
+    fileDownloader->setImageURL(pathImg);
+
+    connect(fileDownloader, SIGNAL(downloaded()), this, SLOT(slot_downloadThumbImageBig()));
+}
+
+
+void AbstractImageDetailContents_RHV::slot_downloadThumbImageBig(){//c230215
+
+    FileDownloader *fileDownloader = qobject_cast<FileDownloader*>(sender());
+    QString tmp_name = fileDownloader->property("filedown_name").toString();
+    print_debug();
+    if(tmp_name == "bigImg"){
+        QImage image;
+        bool flagLoaded = image.loadFromData(fileDownloader->downloadedData());
+
+        if(flagLoaded){
+            DialogConfirm *dlgConfirmOutput = new DialogConfirm(this);
+            QPixmap tmp_pixmap = tmp_pixmap.fromImage(image);
+
+            qDebug() << "tmp_pixmap.width()=" << tmp_pixmap.width();
+            qDebug() << "tmp_pixmap.height()=" << tmp_pixmap.height();
+
+            QWidget *topLevelWidget = this->window();       // 최상위 부모 윈도우를 가져옴
+            QSize size = topLevelWidget->size();            // 윈도우의 크기를 가져옴
+            int window_width = size.width();                // 윈도우의 가로 크기를 가져옴
+            int window_height = size.height();              // 윈도우의 세로 크기를 가져옴
+
+            int tmp_length;
+            if(window_width > window_height){
+                tmp_length = window_height;
+            }else{
+                tmp_length = window_width;
+            }
+
+            if(tmp_pixmap.width() != tmp_pixmap.height()){
+
+                double tmp_pixmap_width = tmp_pixmap.width();
+                double tmp_pixmap_height = tmp_pixmap.height();
+
+                if(tmp_pixmap_width >= tmp_pixmap_height){
+                    double k = tmp_pixmap_height/tmp_pixmap_width;
+                    this->bigImgWidth = tmp_length*0.8;
+                    this->bigImgHeight = (tmp_length*0.8)*k;
+                }
+                else{
+                    double k = tmp_pixmap_width/tmp_pixmap_height;
+                    this->bigImgWidth = (tmp_length*0.8)*k;
+                    this->bigImgHeight = tmp_length*0.8;
+                }
+            }else{
+
+                this->bigImgWidth = tmp_length*0.7;
+                this->bigImgHeight = tmp_length*0.7;
+            }
+            tmp_pixmap = tmp_pixmap.scaled(this->bigImgWidth, this->bigImgHeight, Qt::KeepAspectRatioByExpanding, Qt::SmoothTransformation);
+
+
+            /*if(800 <= tmp_pixmap.width() || 800 <= tmp_pixmap.height()){
+                this->bigImgWidth = tmp_pixmap.width();
+                this->bigImgHeight = tmp_pixmap.height();
+                tmp_pixmap = tmp_pixmap.scaled(tmp_pixmap.width(), tmp_pixmap.height(), Qt::KeepAspectRatioByExpanding, Qt::SmoothTransformation);
+            }
+            else{
+                this->bigImgWidth = tmp_pixmap.width()*1.5;
+                this->bigImgHeight = tmp_pixmap.height()*1.5;
+                tmp_pixmap = tmp_pixmap.scaled(this->bigImgWidth, this->bigImgHeight, Qt::KeepAspectRatioByExpanding, Qt::SmoothTransformation);
+            }*/
+
+            int left = global.left_mainwindow + ((global.width_mainwindow - (this->bigImgWidth + 50)) / 2);
+            int top = global.top_mainwindow + ((global.height_mainwindow - (this->bigImgHeight + 150)) / 2);
+
+            dlgConfirmOutput->setAlignment(Qt::AlignLeft);
+            dlgConfirmOutput->setTitle(tr("Image View"));
+            dlgConfirmOutput->setText(tr(""));
+            //dlgConfirmOutput->setTextHeight(250);
+            dlgConfirmOutput->setFixedWidth(this->bigImgWidth+50);
+            dlgConfirmOutput->setAlignment(Qt::AlignLeft);
+            dlgConfirmOutput->setGeometry(left, top, this->bigImgWidth + 50, this->bigImgHeight + 150);
+
+            dlgConfirmOutput->setAlertMode();
+            dlgConfirmOutput->setProperty("flagShown",false);
+
+
+            QLabel *lb_BigImg = new QLabel;
+            lb_BigImg->setFixedSize(this->bigImgWidth,this->bigImgHeight);
+            lb_BigImg->setPixmap(tmp_pixmap);
+
+            qDebug() << "this->bigImgWidth=" << this->bigImgWidth;
+            qDebug() << "this->bigImgHeight=" << this->bigImgHeight;
+
+            QHBoxLayout *lh_PI_Info = new QHBoxLayout;
+            lh_PI_Info->setSpacing(30);
+            lh_PI_Info->setContentsMargins(0,0,0,20);
+            lh_PI_Info->setAlignment(Qt::AlignTop | Qt::AlignHCenter);
+            lh_PI_Info->addWidget(lb_BigImg);
+            dlgConfirmOutput->setLayoutMy(lh_PI_Info);
+
+            if(dlgConfirmOutput->property("flagShown").toBool()==false){
+                dlgConfirmOutput->setProperty("flagShown",true);
+
+                int result = dlgConfirmOutput->exec();
+
+                if(result != QDialog::Rejected){
+                    print_debug();
+                    //dlgConfirmOutput->close();
+                    //delete lb_BigImg;
+                }
+            }
+        }
+        else{
+            //print_debug();
+        }
+
+    }
+
+    fileDownloader->deleteLater();
+}
+
+
+void AbstractImageDetailContents_RHV::slot_imageClick(){//c230215
+
+    QPushButton *tmp_clickableImg = dynamic_cast<QPushButton *>(sender());
+    qDebug() << "imagePath = " << tmp_clickableImg->property("imagePath").toString();
+    QString imagePath = tmp_clickableImg->property("imagePath").toString();
+
+    downloadThumbImageBig(imagePath);
+    //sender()->deleteLater();
 }
 
 
@@ -3567,12 +4102,13 @@ void AbstractImageDetailContents_RHV::slot_btnClicked_open(){
         this->widget_Addbtn_Open->hide();
         this->widget_Addbtn_Open->setFixedSize(1500, 80);
         if(this->curr_contentsType == Bugs_album){
-            this->label_description->setGeometry(0, 0, 1450, 34);
+            this->label_description->setGeometry(0, 0, 1450, 41);
+            this->label_open->setGeometry(0, 44, 1450, 30);
         }
         else{
-            this->label_description->setGeometry(0, 0, 1450, 40);
+            this->label_description->setGeometry(0, 0, 1450, 48);
+            this->label_open->setGeometry(0, 55, 1450, 30);
         }
-        this->label_open->setGeometry(0, 37, 1450, 30);
         this->btn_open->setStyleSheet(this->btn_open->styleSheet().replace("text_close_ico.png", "text_open_ico.png"));
         this->widget_Addbtn_Open->show();
 
@@ -3584,6 +4120,14 @@ void AbstractImageDetailContents_RHV::slot_btnClicked_open(){
 void AbstractImageDetailContents_RHV::slot_btnClicked_artistMore(){
 
     emit this->signal_clicked_artistMore();
+}
+
+
+void AbstractImageDetailContents_RHV::slot_btnClicked_tag(){
+
+    int idx = sender()->property("idx").toInt();
+
+    emit this->signal_clicked_tag(idx);
 }
 
 

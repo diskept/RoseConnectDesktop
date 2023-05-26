@@ -89,7 +89,7 @@ namespace qobuz {
         label_title->setAlignment(Qt::AlignCenter);
         label_title->setStyleSheet("color:#FFFFFF; font-size:22px; background-color:transparent; padding-left:70px;");
 
-        QPushButton *btn_close = GSCommon::getUIBtnImg("btn_close", ":images/icon_close_gray.png");
+        QPushButton *btn_close = GSCommon::getUIBtnImg("btn_close", ":/images/icon_close_gray.png");
         btn_close->setFixedSize(QSize(70,70));
         btn_close->setCursor(Qt::PointingHandCursor);
         connect(btn_close, SIGNAL(clicked()), this, SLOT(reject()));
@@ -141,7 +141,7 @@ namespace qobuz {
         // 로그인 상태 유지 On/Off 관련
         QLabel *lb_autoLogin = new QLabel;
         //lb_autoLogin->setText(tr("로그인 상태유지"));
-         lb_autoLogin->setText(tr("Stay signed in"));
+        lb_autoLogin->setText(tr("Stay signed in"));
         lb_autoLogin->setStyleSheet("color:#CCCCCC;font-size:18px;");
 
         // 자동 로그인

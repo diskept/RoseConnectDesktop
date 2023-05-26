@@ -19,6 +19,7 @@ namespace bugs {
         this->setUseBtn_favorite(false);
         this->setUseBtn_play(false);
         this->setUseBtn_more(true);
+        this->setUseArtist(true);
 
         this->setUseHover(true);
     }

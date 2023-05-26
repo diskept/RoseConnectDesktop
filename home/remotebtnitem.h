@@ -18,6 +18,7 @@ public:
     void setLabel(QString p_text = nullptr);
     void setCircle(int p_diameter);
     void setRectangle(int p_width, int p_height);
+
 signals:
     void clicked();
 

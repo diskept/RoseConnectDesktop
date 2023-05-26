@@ -108,6 +108,18 @@ namespace rosetube {
         return height;
     }
 
+    int ItemPlaylist_rosetube::get_fixedWidth(){
+
+        int width = this->get_imageWidth(this->m_imageSizeMode);
+
+        return width;
+    }
+
+
+    int ItemPlaylist_rosetube::get_rightMargin(){
+
+        return ITEM_BETWEEN_MARGIN_RIGHT;
+    }
 
     /**
      * @brief 페인트 이벤트 처리
@@ -170,6 +182,10 @@ namespace rosetube {
 
                 this->label_title->setGeometry(0, 0, all_width, (LABEL_HEIGHT_RT_PLAYLIST * 2));
                 this->label_title->setText(GSCommon::getTextCutFromLabelWidth(title, title_width, this->label_title->font()));
+                if(this->label_title->text().contains("…")){
+                    this->label_title->setToolTip(title);//c230321
+                    this->label_title->setToolTipDuration(2000);//c230321
+                }
 
                 QString owner = ProcJsonEasy::getString(this->data_playlist, "ownerName");
 

@@ -8,7 +8,7 @@
 #include "widget/NoData_Widget.h"
 #include "widget/VerticalScrollArea.h"
 
-#include <QScroller>
+#include <QScrollBar>
 
 
 namespace rosetube {
@@ -79,7 +79,7 @@ namespace rosetube {
 
             if(!global.user.getAccess_token().isEmpty()){
 
-                ContentLoadingwaitingMsgShow(tr("Content is being loaded. Please wait."));
+                print_debug();ContentLoadingwaitingMsgShow(tr("Content is being loaded. Please wait."));
 
                 this->setUIControl_requestSubscription();
             }
@@ -170,19 +170,26 @@ namespace rosetube {
         itemImage->setGeometry(0, 5, 60, 60);
 
         QLabel *itemTitle = new QLabel(list_body);
-        itemTitle->setStyleSheet("background-color:transparent;color:#FFFFFF;font-size:16px;");
+        itemTitle->setStyleSheet("background-color:transparent;color:#FFFFFF;font-size:18px;");
         itemTitle->setAlignment(Qt::AlignVCenter);
-        itemTitle->setGeometry(80, 15, 1000, 20);
-        itemTitle->setText(title);
+        //itemTitle->setGeometry(80, 15, 1200, 20);
+        itemTitle->setGeometry(80, 10, 1200, 49);
+        itemTitle->setText(GSCommon::getTextCutFromLabelWidth(title, 1200, itemTitle->font()));
+        if(itemTitle->text().contains("…")){
+            itemTitle->setToolTip(title);//c230321
+            itemTitle->setToolTipDuration(2000);//c230321
+        }
 
         QLabel *itemDescription = new QLabel(list_body);
         itemDescription->setStyleSheet("background-color:transparent;color:#999999;font-size:14px;");
         itemDescription->setAlignment(Qt::AlignVCenter);
-        itemDescription->setGeometry(80, 38, 1000, 20);
-
-        QString tmpDescription = GSCommon::getTextCutFromLabelWidth(description, 1000, itemDescription->font());
-        QString setDescription = QString("<html><head/><body><span style='font-size:14px; color:#999999;'>%1</span></body></html>").arg(tmpDescription);
-        itemDescription->setText(setDescription);
+        itemDescription->setGeometry(80, 38, 1200, 20);
+        itemDescription->setText(GSCommon::getTextCutFromLabelWidth(description, 1200, itemDescription->font()));
+        if(itemDescription->text().contains("…")){
+            itemDescription->setToolTip(description);//c230321
+            itemDescription->setToolTipDuration(2000);//c230321
+        }
+        itemDescription->hide();
 
         QPushButton *itemSubs = GSCommon::getUIBtnImg("itemSubs", ":/images/tube_sub_ico.png", list_body);
         itemSubs->setProperty("channel_idx", idx);
@@ -203,11 +210,12 @@ namespace rosetube {
 
     void RoseTube_Subscription::proc_wheelEvent_to_getMoreData(){
 
-        if((!this->flagReqMore_subscription && !this->flag_lastPage_subscription) && (this->subscription_total_cnt > this->subscription_draw_cnt) && (this->flag_subscription_draw == false)){
+        if((this->subscription_total_cnt > this->subscription_draw_cnt) && (this->flag_subscription_draw == false)
+                && (this->scrollArea_main->verticalScrollBar()->value() == this->scrollArea_main->verticalScrollBar()->maximum())){
 
             this->flag_subscription_draw = true;
 
-            ContentLoadingwaitingMsgShow(tr("Content is being loaded. Please wait."));
+            print_debug();ContentLoadingwaitingMsgShow(tr("Content is being loaded. Please wait."));
 
             this->setUIControl_drawSubscription();
         }
@@ -218,9 +226,9 @@ namespace rosetube {
 
         int startCnt = this->subscription_draw_cnt;
         int maxCnt = ((this->subscription_total_cnt - this->subscription_draw_cnt) > 20 ) ? 20 : (this->subscription_total_cnt - this->subscription_draw_cnt);
-        this->subscription_draw_cnt = maxCnt;
+        this->subscription_draw_cnt += maxCnt;
 
-        for(int i = startCnt; i < maxCnt; i++){
+        for(int i = startCnt; i < this->subscription_draw_cnt; i++){
 
             QJsonObject tmpObj = this->subscription_Arr.at(i).toObject();
 
@@ -323,6 +331,13 @@ namespace rosetube {
 
                     this->flag_subscription_draw = false;
                 }
+                else{
+                    int secondTotal = ProcJsonEasy::getInt(jsonObj, "totalCount");
+
+                    if(this->subscription_total_cnt != secondTotal){
+                        this->subscription_total_cnt = secondTotal;
+                    }
+                }
 
                 QJsonArray tmpChannel = ProcJsonEasy::getJsonArray(jsonObj, jsonKey_channel);
 
@@ -360,7 +375,7 @@ namespace rosetube {
 
                     this->setUIControl_requestSubscription();
                 }
-                else{
+                else if(this->subscription_Arr.count() <= 0){
                     this->slot_hide_msg();
 
                     NoData_Widget *noData_widget = new NoData_Widget(NoData_Widget::NoData_Message::Subscription_NoData);
@@ -369,7 +384,7 @@ namespace rosetube {
                     this->box_rose_contents->addWidget(noData_widget);
                 }
             }
-            else{
+            else if(this->subscription_Arr.count() <= 0){
                 this->slot_hide_msg();
 
                 NoData_Widget *noData_widget = new NoData_Widget(NoData_Widget::NoData_Message::Subscription_NoData);
@@ -378,7 +393,7 @@ namespace rosetube {
                 this->box_rose_contents->addWidget(noData_widget);
             }
         }
-        else{
+        else if(this->subscription_Arr.count() <= 0){
             this->slot_hide_msg();
 
             NoData_Widget *noData_widget = new NoData_Widget(NoData_Widget::NoData_Message::Subscription_NoData);

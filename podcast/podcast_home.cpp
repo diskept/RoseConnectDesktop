@@ -22,19 +22,17 @@ namespace podcast {
      * 인기 채널 목록 GET API : https://www.hifimp.com:18081/v2/rest/rose/IF_ROSEPODCAST_007
      * @param parent
      */
-    Podcast_Home::Podcast_Home(QWidget *parent) : roseHome::AbstractRoseHomeSubWidget(VerticalScroll_viewAll, parent)
+    Podcast_Home::Podcast_Home(QWidget *parent) : roseHome::AbstractRoseHomeSubWidget(VerticalScroll_roseviewAll, parent)
     {
 
         setInit();
         setUIControl();
-
-        if(global.enable_section_left == true){
-            global.enable_section_left = false;
-        }
     }
 
 
     Podcast_Home::~Podcast_Home(){
+
+        GSCommon::clearLayout(this->flowLayout_podcast);
 
         this->deleteLater();
     }
@@ -45,6 +43,7 @@ namespace podcast {
      */
     void Podcast_Home::setInit(){
 
+        global.isDrawingMainContent = false;
     }
 
 
@@ -80,18 +79,11 @@ namespace podcast {
         this->box_contents->setAlignment(Qt::AlignTop);
         this->scrollArea_main->setVerticalScrollBarPolicy(Qt::ScrollBarAsNeeded);
 
-        // layout for items
-        this->flowLayout_podcast = new FlowLayout(0, 20, 20);
-        this->flowLayout_podcast->setSizeConstraint(QLayout::SetMinimumSize);
+        this->podcast_widget_width = 214;
+        this->podcast_widget_margin = 10;
 
-        GSCommon::clearLayout(this->flowLayout_podcast);
+        this->flowLayout_podcast = this->get_addUIControl_flowLayout(0, 20);
 
-        this->widget_podcast = new QWidget();
-        this->widget_podcast->setLayout(this->flowLayout_podcast);
-        this->widget_podcast->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
-        this->widget_podcast->setStyleSheet("background-color:transparent;");
-
-        this->box_contents->addWidget(this->widget_podcast);
     }
 
 
@@ -106,8 +98,15 @@ namespace podcast {
         tmp_widget->setHover();
         tmp_widget->setCursor(Qt::PointingHandCursor);
 
+        QVBoxLayout *box_wrap = new QVBoxLayout;
+        box_wrap->setContentsMargins(10, 0, 10, 0);
+        box_wrap->addWidget(tmp_widget);
+
+        QWidget *wg_wrap = new QWidget;
+        wg_wrap->setLayout(box_wrap);
+
         //flowLayout->addWidget(tmp_widget);
-        this->flowLayout_podcast->addWidget(tmp_widget);
+        this->flowLayout_podcast->addWidget(wg_wrap);
     }
 
 
@@ -117,6 +116,7 @@ namespace podcast {
      */
     void Podcast_Home::setResultOfChannelList(const QJsonObject &p_jsonObject){
 
+        print_debug();ContentLoadingwaitingMsgShow(tr("Content is being loaded. Please wait."));//c230322_3
 
         const QString jsonKey_flagOk = "flagOk";
         const QString jsonKey_status = "status";
@@ -138,9 +138,8 @@ namespace podcast {
             }
         }
 
-        if(global.enable_section_left == true){
-            global.enable_section_left = false;
-        }
+        global.isDrawingMainContent = true;
+        print_debug();ContentLoadingwaitingMsgHide();//c230322_3
     }
 
 
@@ -149,7 +148,14 @@ namespace podcast {
      */
     void Podcast_Home::requestData(){
 
-        if(this->flowLayout_podcast->count()==0){
+        print_debug();ContentLoadingwaitingMsgShow(tr("Content is being loaded. Please wait."));//c230322_3
+
+        if(this->width()-(this->podcast_widget_width + this->podcast_widget_margin) >= 0){
+            this->setFlowLayoutResize(this, this->flowLayout_podcast, this->podcast_widget_width, this->podcast_widget_margin);
+        }
+
+        if(this->flowLayout_podcast->count() == 0 && flag_active_page == false){
+            this->flag_active_page = true;
             GSCommon::clearLayout(this->flowLayout_podcast);
 
             QSettings *settings = new QSettings(rosesettings.ORGANIZATION_NAME, rosesettings.APPLICATION_NAME);
@@ -168,6 +174,8 @@ namespace podcast {
                              .arg(global.release_roseaudio)
                              , json, true);
         }
+
+        print_debug();ContentLoadingwaitingMsgHide();//c230322_3
     }
 
 
@@ -183,5 +191,11 @@ namespace podcast {
         }
 
        sender()->deleteLater();
+    }
+
+    void Podcast_Home::resizeEvent(QResizeEvent *event){//c230223
+
+        Q_UNUSED(event);
+        this->setFlowLayoutResize(this, this->flowLayout_podcast, this->podcast_widget_width, this->podcast_widget_margin);
     }
 }

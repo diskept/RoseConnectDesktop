@@ -26,6 +26,8 @@ namespace apple {
         enum HttpRequestType {
             Get_userToken = 0
 
+            , GetRecommendations
+
             , GetAlbumInfo
             , GetPlaylistinfo
 
@@ -66,6 +68,8 @@ namespace apple {
         // HTTP 요청 - 공통으로 사용하는 Apple API
         void request_apple_getListGenres();
 
+        void request_apple_get_recommendations();
+
         void request_apple_get_album(const int album_id);
         void request_apple_get_playlist(const QString playlist_id);
 
@@ -80,6 +84,8 @@ namespace apple {
 
     private:
         void setResult_listGenres(const QJsonObject&);
+
+        void setResult_recommendations(const QJsonObject&);
 
         void setResult_album(const QJsonObject&);
         void setResult_playlist(const QJsonObject&);

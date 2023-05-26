@@ -79,11 +79,15 @@ namespace roseRadio {
             this->flag_lastPage_roseRadio = false;
 
             this->flag_flow_draw = false;
+            this->flag_roseRadio_draw = false;
 
-            ContentLoadingwaitingMsgShow(tr("Content is being loaded. Please wait."));
+            print_debug();ContentLoadingwaitingMsgShow(tr("Content is being loaded. Please wait."));
 
             // request HTTP API
             this->request_more_roseData();
+        }
+        else{
+            ContentLoadingwaitingMsgHide();
         }
     }
 
@@ -145,8 +149,6 @@ namespace roseRadio {
             }
             else{
                 this->next_offset++;
-
-                ContentLoadingwaitingMsgShow(tr("Content is being loaded. Please wait."));
             }
 
             // request HTTP API
@@ -169,13 +171,16 @@ namespace roseRadio {
                 proc_channel->request_rose_getList_radioChannel(roseHome::ProcCommon::HttpRequestType::GetList_Item_Local, this->apiPath, 0, "", this->next_offset, GET_ITEM_SIZE___ONCE);
             }
             else if(this->listType == "CountryPopular"){
-                proc_channel->request_rose_getList_radioChannel(roseHome::ProcCommon::HttpRequestType::GetList_Item_Local, this->apiPath, this->regionId, "POPULAR", this->next_offset, GET_ITEM_SIZE___ONCE);
+                //proc_channel->request_rose_getList_radioChannel(roseHome::ProcCommon::HttpRequestType::GetList_Item_Local, this->apiPath, this->regionId, "POPULAR", this->next_offset, GET_ITEM_SIZE___ONCE);
+                proc_channel->request_rose_getList_radioChannel(roseHome::ProcCommon::HttpRequestType::GetList_Item_Local, this->apiPath, this->regionId, "NAME_ASC", this->next_offset, GET_ITEM_SIZE___ONCE);
             }
             else if(this->listType == "RegionChannel"){
-                proc_channel->request_rose_getList_radioChannel(roseHome::ProcCommon::HttpRequestType::GetList_Item_Local, this->apiPath, this->regionId, "", this->next_offset, GET_ITEM_SIZE___ONCE);
+                //proc_channel->request_rose_getList_radioChannel(roseHome::ProcCommon::HttpRequestType::GetList_Item_Local, this->apiPath, this->regionId, "", this->next_offset, GET_ITEM_SIZE___ONCE);
+                proc_channel->request_rose_getList_radioChannel(roseHome::ProcCommon::HttpRequestType::GetList_Item_Local, this->apiPath, this->regionId, "NAME_ASC", this->next_offset, GET_ITEM_SIZE___ONCE);
             }
             else if(this->listType == "LanguageChannel"){
-                proc_channel->request_rose_getList_languageChannel(this->apiPath, this->regionId, this->next_offset, GET_ITEM_SIZE___ONCE, "POPULAR");
+                //proc_channel->request_rose_getList_languageChannel(this->apiPath, this->regionId, this->next_offset, GET_ITEM_SIZE___ONCE, "POPULAR");
+                proc_channel->request_rose_getList_languageChannel(this->apiPath, this->regionId, this->next_offset, GET_ITEM_SIZE___ONCE, "NAME_ASC");
             }
 
             if(this->next_offset == 0){

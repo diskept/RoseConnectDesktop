@@ -20,6 +20,8 @@ namespace roseHome {
         void setData(const roseHome::RecommendsItemData &p_data);
 
         int get_fixedHeight() override;
+        int get_fixedWidth();
+        int get_rightMargin();
 
     private:
         void setUIControl();
@@ -29,6 +31,7 @@ namespace roseHome {
         roseHome::RecommendsItemData data_recommends;
 
         // ui
+        QWidget *label_base;
         QLabel *label_title;
         QLabel *label_owner;
         QLabel *image_thumb;

@@ -125,6 +125,9 @@ namespace qobuz {
             this->album_star_fav = 0;
             this->topRelease_idx = 0;
         }
+        else{
+            print_debug();ContentLoadingwaitingMsgHide();   //j230328
+        }
     }
 
 
@@ -223,7 +226,7 @@ namespace qobuz {
                 this->explore_topRelease[i]->setObjectName("topRelease");
             }
 
-            ContentLoadingwaitingMsgShow(tr("Content is being loaded. Please wait."));
+            print_debug();ContentLoadingwaitingMsgShow(tr("Content is being loaded. Please wait."));
 
             this->setUIControl_requestGenres();
         }
@@ -293,7 +296,7 @@ namespace qobuz {
         // 상단 필터
         QWidget *widget_btnFilter = new QWidget();
         widget_btnFilter->setObjectName("widget_btnFilter");
-        widget_btnFilter->setStyleSheet("#widget_btnFilter { background-color:#171717; }");
+        widget_btnFilter->setStyleSheet("#widget_btnFilter { background-color: transparent; }");
         widget_btnFilter->setFixedSize(1680, 75);
 
         this->btn_filter_ico = GSCommon::getUIBtnImg("btn_filter",":/images/ico_filter.png", widget_btnFilter);
@@ -802,7 +805,7 @@ namespace qobuz {
         tmp_scrollArea->setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
         tmp_scrollArea->setStyleSheet("background-color:transparent; border:0px;");
         tmp_scrollArea->setContentsMargins(0,0,0,0);
-        tmp_scrollArea->setFixedHeight(275);
+        tmp_scrollArea->setFixedHeight(285);
 
         QScroller::grabGesture(tmp_scrollArea, QScroller::LeftMouseButtonGesture);
         //----------------------------------------------------------------------------------------------------  BODY : END
@@ -954,23 +957,23 @@ namespace qobuz {
     void QobuzExplore::slot_qobuz_completeReq_listAll_myFavoritesIds(const QJsonObject& p_jsonObj){
 
         // Favorite 정보를 전달해줌. 알아서 처리하라고. => OptMorePopup 에서 하라고, 가려줌
-        if(p_jsonObj.contains("flagOk") && ProcJsonEasy::get_flagOk(p_jsonObj)){
-            bool status  = ProcJsonEasy::getBool(p_jsonObj, "status");
+//        if(p_jsonObj.contains("flagOk") && ProcJsonEasy::get_flagOk(p_jsonObj)){
+//            bool status  = ProcJsonEasy::getBool(p_jsonObj, "status");
 
-            // Qobuz favorite toggle check
-            if(this->flag_send_track == true){
-                if((status == true && this->flag_album_fav == false) || (status == false && this->flag_album_fav == true)){
-                    // Qobuz Favorite toggle
-                    ProcCommon *proc = new ProcCommon(this);
-                    connect(proc, &qobuz::ProcCommon::completeReq_listAll_myFavoritesIds, this, &QobuzExplore::slot_qobuz_completeReq_listAll_myFavoritesIds);
-                    proc->request_qobuz_set_favorite("album", QString("%1").arg(this->album_id_fav), this->flag_album_fav);
-                }
-                this->flag_send_track = false;
-            }
-            else{
+//            // Qobuz favorite toggle check
+//            if(this->flag_send_track == true){
+//                if((status == true && this->flag_album_fav == false) || (status == false && this->flag_album_fav == true)){
+//                    // Qobuz Favorite toggle
+//                    ProcCommon *proc = new ProcCommon(this);
+//                    connect(proc, &qobuz::ProcCommon::completeReq_listAll_myFavoritesIds, this, &QobuzExplore::slot_qobuz_completeReq_listAll_myFavoritesIds);
+//                    proc->request_qobuz_set_favorite("album", QString("%1").arg(this->album_id_fav), this->flag_album_fav);
+//                }
+//                this->flag_send_track = false;
+//            }
+//            else{
 
-            }
-        }
+//            }
+//        }
     }
 
 
@@ -1291,7 +1294,7 @@ namespace qobuz {
             }
             this->btn_filter_clear->setEnabled(false);
 
-            ContentLoadingwaitingMsgShow(tr("Content is being loaded. Please wait."));
+            print_debug();ContentLoadingwaitingMsgShow(tr("Content is being loaded. Please wait."));
 
             this->setUIControl_initialized();
 
@@ -1454,7 +1457,7 @@ namespace qobuz {
             }
             this->btn_filter_clear->setEnabled(false);
 
-            ContentLoadingwaitingMsgShow(tr("Content is being loaded. Please wait."));
+            print_debug();ContentLoadingwaitingMsgShow(tr("Content is being loaded. Please wait."));
 
             this->setUIControl_initialized();
 
@@ -1485,13 +1488,13 @@ namespace qobuz {
         if(clickMode == PlaylistTrackDetailInfo_RHV::ClickMode::FavBtn){
 
             if(this->flag_check_album == false){
+
                 this->album_star_fav = this->explore_topRelease[idx]->getFavoritesStars();
                 this->flag_album_fav = false;
 
                 if(this->album_star_fav == 3){
                     this->album_star_fav = 0;
                     this->flag_album_fav = false;
-
                 }
                 else if(this->album_star_fav >= 0 && this->album_star_fav < 3){
                     this->album_star_fav++;
@@ -1500,21 +1503,16 @@ namespace qobuz {
 
                 if(this->album_star_fav == 0 || this->album_star_fav == 1){
                     // Qobuz Favorite toggle
-                    this->album_id_fav = this->list_top_release->at(idx).id;
-
                     ProcCommon *proc = new ProcCommon(this);
                     connect(proc, &qobuz::ProcCommon::completeReq_listAll_myFavoritesIds, this, &QobuzExplore::slot_qobuz_completeReq_listAll_myFavoritesIds);
-                    proc->request_qobuz_set_favorite("album", QString("%1").arg(this->album_id_fav), this->flag_album_fav);
+                    proc->request_qobuz_set_favorite("album", QString("%1").arg(this->list_top_release->at(idx).id), this->flag_album_fav);
                     this->flag_send_track = true;
                 }
 
-                this->album_idx_fav = idx;
-                QJsonObject jsonObj = this->jsonArr_albums.at(idx).toObject();
-
                 // request HTTP API - get favorite for Rose Server
-                roseHome::ProcCommon *proc_favCheck_track = new roseHome::ProcCommon(this);
-                connect(proc_favCheck_track, &roseHome::ProcCommon::completeCheck_rating_track, this, &QobuzExplore::slot_applyResult_checkRating_album);
-                proc_favCheck_track->request_rose_checkRating_Track("QOBUZ", QString("%1").arg(ProcJsonEasy::getInt(jsonObj, "id")));
+                roseHome::ProcCommon *proc_favCheck_album = new roseHome::ProcCommon(this);
+                connect(proc_favCheck_album, &roseHome::ProcCommon::completeCheck_rating_album, this, &QobuzExplore::slot_applyResult_checkRating_album);
+                proc_favCheck_album->request_rose_checkRating_Album("QOBUZ", this->list_top_release->at(idx).id);
                 this->flag_check_album = true;
 
                 this->explore_topRelease[idx]->setFavoritesIds(this->flag_album_fav, this->album_star_fav);

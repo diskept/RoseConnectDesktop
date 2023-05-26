@@ -4,6 +4,14 @@
 #include "roseHome/ProcCommon_forRosehome.h"
 #include "roseHome/ProcRosePlay_withRosehome.h"
 
+#include "bugs/ProcBugsAPI.h"
+#include "bugs/ConvertData_forBugs.h"
+#include "bugs/bugs_struct.h"
+
+#include "qobuz/ProcCommon_forQobuz.h"
+
+#include "tidal/ProcCommon.h"
+
 #include "common/gscommon.h"
 #include "common/networkhttp.h"
 #include "common/ProcJsonEasy.h"
@@ -85,7 +93,7 @@ namespace roseHome {
 
             this->flag_draw = false;
 
-            ContentLoadingwaitingMsgShow(tr("Content is being loaded. Please wait."));
+            print_debug();ContentLoadingwaitingMsgShow(tr("Content is being loaded. Please wait."));
 
             roseHome::ProcCommon *proc_playlist = new roseHome::ProcCommon(this);
             connect(proc_playlist, &roseHome::ProcCommon::completeReq_playlist, this, &RoseHomePlaylistDetail_Rose::slot_applyResult_playlist);
@@ -98,6 +106,9 @@ namespace roseHome {
                 connect(proc_thumb_playlist, &roseHome::ProcCommon::completeReq_rating_thumbup, this, &RoseHomePlaylistDetail_Rose::slot_applyResult_getRating_thumbup);
                 proc_thumb_playlist->request_rose_getRating_Thumbup("PLAY_LIST", QString("%1").arg(tmp_data_playlist.id));
             }
+        }
+        else{
+            print_debug();ContentLoadingwaitingMsgHide();   //j230328
         }
     }
 
@@ -160,7 +171,7 @@ namespace roseHome {
 
             this->flag_draw = true;
 
-            ContentLoadingwaitingMsgShow(tr("Content is being loaded. Please wait."));
+            print_debug();ContentLoadingwaitingMsgShow(tr("Content is being loaded. Please wait."));
             this->request_more_trackDraw();
         }
     }
@@ -320,6 +331,53 @@ namespace roseHome {
         }
     }
 
+
+    void RoseHomePlaylistDetail_Rose::slot_bugs_completeReq_listAll_myFavoritesIds(const QJsonObject& p_jsonObj){
+        // Favorite 정보를 전달해줌. 알아서 처리하라고. => OptMorePopup 에서 하라고, 가려줌
+        if(p_jsonObj.contains("flagOk") && ProcJsonEasy::get_flagOk(p_jsonObj)){
+            bool status  = ProcJsonEasy::getBool(p_jsonObj, "status");
+
+            // Qobuz favorite toggle check
+            if(this->flag_send_track == true){
+                if((status == true && this->flag_track_fav == false) || (status == false && this->flag_track_fav == true)){
+                    // Tidal Favorite toggle
+                    //ProcCommon *proc = new ProcCommon(this);
+                    //connect(proc, &tidal::ProcCommon::completeReq_listAll_myFavoritesIds, this, &BugsRecentlyTrackAll::slot_bugs_completeReq_listAll_myFavoritesIds);
+                    //proc->request_tidal_set_favorite("track", QString("%1").arg(this->track_id_fav), this->flag_track_fav);
+                }
+                //this->flag_send_track = false;
+            }
+        }
+    }
+
+    void RoseHomePlaylistDetail_Rose::slot_tidal_completeReq_listAll_myFavoritesIds(const QJsonObject& p_jsonObj){
+        // Favorite 정보를 전달해줌. 알아서 처리하라고.
+        if(p_jsonObj.contains("flagOk") && ProcJsonEasy::get_flagOk(p_jsonObj)){
+
+            // Tidal favorite check
+            if(this->flag_send_track == true){
+                QVariantList arr_myFavoriteIds = ProcJsonEasy::getJsonArray(p_jsonObj, "TRACK").toVariantList();
+                bool status = arr_myFavoriteIds.contains(this->track_id_fav);
+
+                if(status == true && this->flag_track_fav == false){
+                    // Tidal track Favorite del
+                    tidal::ProcCommon *proc = new tidal::ProcCommon(this);
+                    connect(proc, &tidal::ProcCommon::completeReq_listAll_myFavoritesIds, this, &RoseHomePlaylistDetail_Rose::slot_tidal_completeReq_listAll_myFavoritesIds);
+                    proc->request_tidal_del_favorite("tracks", QString("%1").arg(this->track_id_fav));
+                }
+                else if(status == false && this->flag_track_fav == true){
+                    // Tidal track Favorite add
+                    tidal::ProcCommon *proc = new tidal::ProcCommon(this);
+                    connect(proc, &tidal::ProcCommon::completeReq_listAll_myFavoritesIds, this, &RoseHomePlaylistDetail_Rose::slot_tidal_completeReq_listAll_myFavoritesIds);
+                    proc->request_tidal_set_favorite("tracks", QString("%1").arg(this->track_id_fav));
+                }
+                this->flag_send_track = false;
+            }
+            else{
+
+            }
+        }
+    }
 
     void RoseHomePlaylistDetail_Rose::slot_applyResult_getRating_playlist(const QJsonArray &contents){
 
@@ -520,18 +578,73 @@ print_debug();
         if(clickMode == PlaylistTrackDetailInfo_RHV::ClickMode::FavBtn){
 
             if(this->flag_check_track == false){
-                int star_cnt = this->playlist_track_info[idx]->getFavoritesStars();
+                this->track_star_fav = this->playlist_track_info[idx]->getFavoritesStars();
                 this->flag_track_fav = false;
 
-                if(star_cnt == 3){
-                    star_cnt = 0;
+                QString type = this->list_track->at(idx).type;
+
+                if(this->track_star_fav == 3){
+                    this->track_star_fav = 0;
                     this->flag_track_fav = false;
 
                 }
-                else if(star_cnt >= 0 && star_cnt < 3){
-                    star_cnt++;
+                else if(this->track_star_fav >= 0 && this->track_star_fav < 3){
+                    this->track_star_fav++;
                     this->flag_track_fav = true;
 
+                }
+                if(this->track_star_fav == 0 || this->track_star_fav == 1){
+                    if(type == "BUGS"){
+                        // Bugs Favorite toggle
+                        bugs::ItemPositionData itemPosData;
+                        itemPosData.section = section;
+                        itemPosData.index = idx;
+                        itemPosData.data_id = QString("%1").arg(this->list_track->at(idx).id);
+
+                        bugs::ProcBugsAPI *proc = new bugs::ProcBugsAPI(this);
+                        connect(proc, &bugs::ProcBugsAPI::completeReq_favarite_track, this, &RoseHomePlaylistDetail_Rose::slot_bugs_completeReq_listAll_myFavoritesIds);
+
+                        if(this->track_star_fav == 0){
+                            itemPosData.likes_yn = false;
+
+                            proc->request_bugs_deleteFavorite_track(this->list_track->at(idx).clientKey.toInt(), bugs::ConvertData_forBugs::getObjectJson_itemPositionData(itemPosData));
+                        }
+                        else if(this->track_star_fav == 1){
+                            itemPosData.likes_yn = true;
+
+                            proc->request_bugs_addFavorite_track(this->list_track->at(idx).clientKey.toInt(), bugs::ConvertData_forBugs::getObjectJson_itemPositionData(itemPosData));
+                        }
+
+                        this->flag_send_track = true;
+                    }
+                    else if(type == "QOBUZ"){
+                        this->track_id_fav = this->list_track->at(idx).clientKey.toInt();
+
+                        qobuz::ProcCommon *proc = new qobuz::ProcCommon(this);
+                        connect(proc, &qobuz::ProcCommon::completeReq_listAll_myFavoritesIds, this, &RoseHomePlaylistDetail_Rose::slot_bugs_completeReq_listAll_myFavoritesIds);
+                        proc->request_qobuz_set_favorite("track", QString("%1").arg(this->track_id_fav), this->flag_track_fav);
+                        this->flag_send_track = true;
+                    }
+                    else if(type == "TIDAL"){
+                        this->track_id_fav = this->list_track->at(idx).clientKey.toInt();
+
+                        if(this->track_star_fav == 1){
+                            // Tidal Track Favorite add
+                            tidal::ProcCommon *proc = new tidal::ProcCommon(this);
+                            proc->request_tidal_set_favorite("tracks", QString("%1").arg(this->track_id_fav));
+                        }
+                        else if(this->track_star_fav == 0){
+                            // Tidal Track Favorite del
+                            tidal::ProcCommon *proc = new tidal::ProcCommon(this);
+                            proc->request_tidal_del_favorite("tracks", QString("%1").arg(this->track_id_fav));
+                        }
+
+                        // favorite 정보 가져오기
+                        tidal::ProcCommon *proc_fav = new tidal::ProcCommon(this);
+                        connect(proc_fav, &tidal::ProcCommon::completeReq_listAll_myFavoritesIds, this, &RoseHomePlaylistDetail_Rose::slot_tidal_completeReq_listAll_myFavoritesIds);
+                        proc_fav->request_tidal_getAll_favorites();
+                        this->flag_send_track = true;
+                    }
                 }
 
                 QJsonObject track = this->jsonArr_tracks_toPlay.at(idx).toObject();
@@ -540,7 +653,7 @@ print_debug();
 
                 QJsonObject ratingInfo;
                 ratingInfo.insert("favorite", this->flag_track_fav);
-                ratingInfo.insert("star", star_cnt);
+                ratingInfo.insert("star", this->track_star_fav);
                 ratingInfo.insert("thumbup", false);
                 ratingInfo.insert("type", track_type);
 
@@ -551,10 +664,10 @@ print_debug();
                 // request HTTP API - get favorite for Rose Server
                 roseHome::ProcCommon *proc_fav_track = new roseHome::ProcCommon(this);
                 connect(proc_fav_track, &roseHome::ProcCommon::completeReq_rating_track, this, &RoseHomePlaylistDetail_Rose::slot_applyResult_getRating_track);
-                proc_fav_track->request_rose_setRating_Track(json, this->flag_track_fav, star_cnt);
+                proc_fav_track->request_rose_setRating_Track(json, this->flag_track_fav, this->track_star_fav);
                 this->flag_check_track = true;
 
-                this->playlist_track_info[idx]->setFavoritesIds(this->flag_track_fav, star_cnt);
+                this->playlist_track_info[idx]->setFavoritesIds(this->flag_track_fav, this->track_star_fav);
             }
         }
         else{
@@ -616,8 +729,6 @@ print_debug();
     void RoseHomePlaylistDetail_Rose::slot_optMorePopup_menuClicked(const OptMorePopup::ClickMode clickMode, const int index, const int section){
 
         if(section == SECTION_FOR_MORE_POPUP___playlists){
-            //this->proc_clicked_optMorePopup_fromPlaylist(this->data_playlist, index, section, clickMode);
-
             if(clickMode == OptMorePopup::ClickMode::Play_RightNow
                     || clickMode == OptMorePopup::ClickMode::SubMenu_QueueAdd_Last
                     || clickMode == OptMorePopup::ClickMode::SubMenu_QueueAdd_Empty
@@ -632,6 +743,9 @@ print_debug();
                 print_debug();
                 setUIShare();
                 qDebug() << "this->shareLink="<<this->shareLink;
+            }
+            else{
+                this->proc_clicked_optMorePopup_fromPlaylist(this->data_playlist, index, section, clickMode);
             }
         }
         else if(section == SECTION_FOR_MORE_POPUP___tracks){

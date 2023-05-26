@@ -84,6 +84,19 @@ namespace qobuz {
         return height;
     }
 
+    int ItemVideo_qobuz::get_fixedWidth(){
+
+        int width = this->get_imageWidth(this->m_imageSizeMode);
+
+        return width;
+    }
+
+
+    int ItemVideo_qobuz::get_rightMargin(){
+
+        return ITEM_BETWEEN_MARGIN_RIGHT;
+    }
+
 
     /**
      * @brief 페인트 이벤트 처리
@@ -110,16 +123,27 @@ namespace qobuz {
                 a >= 2 ? b =all_width/8.3-a : b = all_width/8.3;//cheon21071620-titleline2
                 //qDebug() << " b =" << b <<" a = " << a;//cheon21071620-titleline2
                 this->label_title->setText(GSCommon::getTextCutFromLabelWidth(data_video.title.insert(b, '\n'), (all_width - 20) * 2, label_title->font()));//cheon21071620-titleline2
-
+                if(this->label_title->text().contains("…")){
+                    this->label_title->setToolTip(data_video.title.insert(b, '\n'));//c230321
+                    this->label_title->setToolTipDuration(2000);//c230321
+                }
             }
             else{//cheon21071620-titleline2
                 //lb_title->setGeometry(0, this->SPACE_LABELS, all_width, this->LABEL_HEIGHT);
                 this->label_title->setGeometry(0, SPACE_LABELS, all_width, (LABEL_HEIGHT * 1));
                 this->label_title->setText(GSCommon::getTextCutFromLabelWidth(data_video.title, all_width, label_title->font()));//cheon21071620-titleline2
+                if(this->label_title->text().contains("…")){
+                    this->label_title->setToolTip(data_video.title);//c230321
+                    this->label_title->setToolTipDuration(2000);//c230321
+                }
 
             }
 
             label_creator->setText(GSCommon::getTextCutFromLabelWidth(data_video.list_artist_name.join(", "), all_width, label_creator->font()));
+            if(this->label_creator->text().contains("…")){
+                this->label_creator->setToolTip(data_video.list_artist_name.join(", "));//c230321
+                this->label_creator->setToolTipDuration(2000);//c230321
+            }
         }
     }
 

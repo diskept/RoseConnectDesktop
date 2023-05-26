@@ -67,17 +67,17 @@ void FrameMusicAlbum::setUIControl(){//c220415
     this->lb_title = new QLabel(label_base);
     this->lb_title->setWordWrap(true);
     this->lb_title->setTextInteractionFlags(Qt::TextSelectableByMouse);//cheon210714-mousecopy
-    this->lb_title->setStyleSheet("font-size:16px;color:#FFFFFF;");
+    this->lb_title->setStyleSheet("font-size:16px; font-weight: normal;font-style: normal;line-height: 1.25;text-align: left; color:#FFFFFF;");
     this->lb_title->setFixedWidth(IMG_WIDTH);
     //this->lb_title->setGeometry(0, (this->SPACE_LABELS * 2), img_width, this->LABEL_HEIGHT);
 
     this->lb_numSongs = new QLabel(label_base);
-    this->lb_numSongs->setStyleSheet("font-size:16px;color:#999999;");
+    this->lb_numSongs->setStyleSheet("font-size:16px; font-weight: normal;font-style: normal;line-height: 1.88;text-align: left; color: #999999;");
     this->lb_numSongs->setFixedWidth(IMG_WIDTH);
     //this->lb_numSongs->setGeometry(0, this->LABEL_HEIGHT + (this->SPACE_LABELS * 3), img_width, this->LABEL_HEIGHT);
 
     this->lb_artist = new QLabel();
-    this->lb_artist->setStyleSheet("font-size:16px;color:#999999;");
+    this->lb_artist->setStyleSheet("font-size:16px; font-weight: normal;font-style: normal;line-height: 1.88;text-align: left; color: #999999;");
     this->lb_artist->setFixedWidth(0);
 
     //this->lb_artist->setText("test");
@@ -207,9 +207,9 @@ QJsonArray FrameMusicAlbum::getDataForPlayMusic(){
         QString strQuery = "";
     //        strQuery = "SELECT album, album_id, _id AS id, _data AS data, title, artist, duration ";
     //        strQuery += " FROM audio WHERE album_id=%1 ORDER BY track ";
-        strQuery += "SELECT A.album, A.album_key, A.artist_key, A.artist_id, A.album_id, A._id AS id, A._data AS data, A.title, A.artist, A.duration, A.mime_type, A.samplerate, A.bitdepth, ART._data AS album_art ";
+        strQuery += " SELECT A.album, A.album_key, A.artist_key, A.artist_id, A.album_id, A._id AS id, A._display_name AS orderName, A._data AS data, A.bookmark, A.track, A.title, A.artist, A.duration, ART._data AS album_art , A.mime_type, A.samplerate, A.bitdepth ";
         strQuery += " FROM audio AS A LEFT JOIN album_art AS ART ON A.album_id=ART.album_id ";
-        strQuery += " WHERE A.album_id=%1 ORDER BY A.track ";
+        strQuery += " WHERE A.album_id=%1 ORDER BY A.bookmark ASC, A.track ASC, orderName ASC ";
 
         QVariantList dataDB;
         sqlite->exec(strQuery.arg(data->getAlbum_id()), dataDB);
@@ -386,7 +386,15 @@ void FrameMusicAlbum::paintEvent(QPaintEvent *event){
             this->lb_title->setGeometry(0, (this->SPACE_LABELS * 2), IMG_WIDTH, this->LABEL_HEIGHT);
             this->lb_numSongs->setGeometry(0, this->LABEL_HEIGHT + (this->SPACE_LABELS * 3), IMG_WIDTH, this->LABEL_HEIGHT);
             lb_title->setText(GSCommon::getTextCutFromLabelWidth(tr("Unknown"), IMG_WIDTH, lb_title->font()));
+            if(lb_title->text().contains("…")){
+                lb_title->setToolTip(tr("Unknown"));
+                lb_title->setToolTipDuration(2000);
+            }
             lb_numSongs->setText(GSCommon::getTextCutFromLabelWidth(QString("%3 %1 %2").arg(data->getNum_of_song()).arg(QString(tr("Song"))).arg(QString(data->getArtist())), IMG_WIDTH, lb_numSongs->font()));//cheon-210708-album
+            if(lb_numSongs->text().contains("…")){
+                lb_numSongs->setToolTip(QString("%3 %1 %2").arg(data->getNum_of_song()).arg(QString(tr("Song"))).arg(QString(data->getArtist())));
+                lb_numSongs->setToolTipDuration(2000);
+            }
         }
         else{
             int all_width = IMG_WIDTH;
@@ -403,18 +411,34 @@ void FrameMusicAlbum::paintEvent(QPaintEvent *event){
                     tmp_wordwrap->setStyleSheet("font-size:16px; color:#FFFFFF;");
                     tmp_wordwrap->setWordWrap(true);
                     tmp_wordwrap->setText(GSCommon::getTextCutFromLabelWidth(data->getAlbum(), (all_width * 2)-30, this->lb_title->font()));
+                    if(tmp_wordwrap->text().contains("…")){
+                        tmp_wordwrap->setToolTip(data->getAlbum());
+                        tmp_wordwrap->setToolTipDuration(2000);
+                    }
 
                     if(tmp_wordwrap->sizeHint().height() > this->LABEL_HEIGHT * 2){
                         this->lb_title->setText(GSCommon::getTextCutFromLabelWidth(data->getAlbum(), (all_width * 2)-80, this->lb_title->font()));
+                        if(this->lb_title->text().contains("…")){
+                            this->lb_title->setToolTip(data->getAlbum());
+                            this->lb_title->setToolTipDuration(2000);
+                        }
                     }
                     else{
                         this->lb_title->setText(GSCommon::getTextCutFromLabelWidth(data->getAlbum(), (all_width * 2)-30, this->lb_title->font()));
+                        if(this->lb_title->text().contains("…")){
+                            this->lb_title->setToolTip(data->getAlbum());
+                            this->lb_title->setToolTipDuration(2000);
+                        }
                     }
                 }
                 else{
                     this->lb_title->setGeometry(0, (this->SPACE_LABELS * 2), IMG_WIDTH, this->LABEL_HEIGHT);
                     this->lb_numSongs->setGeometry(0, (this->LABEL_HEIGHT * 2) + (this->SPACE_LABELS * 3), IMG_WIDTH, this->LABEL_HEIGHT);
-                    this->lb_title->setText(GSCommon::getTextCutFromLabelWidth(data->getAlbum(), IMG_WIDTH, lb_title->font()));//cheon-210708-album                    
+                    this->lb_title->setText(GSCommon::getTextCutFromLabelWidth(data->getAlbum(), IMG_WIDTH, lb_title->font()));//cheon-210708-album
+                    if(this->lb_title->text().contains("…")){
+                        this->lb_title->setToolTip(data->getAlbum());
+                        this->lb_title->setToolTipDuration(2000);
+                    }
                 }
             }
             else if(tmp_wordwrap->sizeHint().width() == IMG_WIDTH){
@@ -426,9 +450,17 @@ void FrameMusicAlbum::paintEvent(QPaintEvent *event){
                 this->lb_title->setGeometry(0, (this->SPACE_LABELS * 2), IMG_WIDTH, this->LABEL_HEIGHT);
                 this->lb_numSongs->setGeometry(0, this->LABEL_HEIGHT + (this->SPACE_LABELS * 3), IMG_WIDTH, this->LABEL_HEIGHT);
                 this->lb_title->setText(GSCommon::getTextCutFromLabelWidth(data->getAlbum(), IMG_WIDTH, lb_title->font()));//cheon-210708-album
+                if(this->lb_title->text().contains("…")){
+                    this->lb_title->setToolTip(data->getAlbum());
+                    this->lb_title->setToolTipDuration(2000);
+                }
             }
 
             this->lb_numSongs->setText(GSCommon::getTextCutFromLabelWidth(QString("%3 %1 %2").arg(data->getNum_of_song()).arg(QString(tr("Song"))).arg(QString(data->getArtist())), IMG_WIDTH, lb_numSongs->font()));
+            if(this->lb_numSongs->text().contains("…")){
+                this->lb_numSongs->setToolTip(QString("%3 %1 %2").arg(data->getNum_of_song()).arg(QString(tr("Song"))).arg(QString(data->getArtist())));
+                this->lb_numSongs->setToolTipDuration(2000);
+            }
         }
     }
 }

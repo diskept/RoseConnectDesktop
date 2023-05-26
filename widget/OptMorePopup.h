@@ -162,6 +162,7 @@ public:
 
     explicit OptMorePopup(QWidget *parent = nullptr);
     ~OptMorePopup();
+
     void setMenuMode(const PopupMenuMode curr_menuMode, const HeaderData &data_header, const int index=0, const int section=0, const bool p_flagForceHide_favorite=false);
     void showPopup();
 

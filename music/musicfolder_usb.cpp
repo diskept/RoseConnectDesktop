@@ -104,9 +104,9 @@ void MusicFolder_USB::setUIControl(){
     //Folder_ClickableRow *clickableRow_local = new Folder_ClickableRow(":/images/icon_local.png", tr("저장 된 음원"));
     Folder_ClickableRow *clickableRow_folder_bic = new Folder_ClickableRow(":/images/icon_folder_bic.png", tr("SanDisk USB drive"));//cheon210831-network
     //Folder_ClickableRow *clickableRow_folder_bic = new Folder_ClickableRow(":/images/icon_folder_bic.png", tr("SanDisk USB 드라이브"));
-    Folder_ClickableRow *clickableRow_network = new Folder_ClickableRow(":/images/icon_network.png", tr("network"));//cheon210831-network
+    Folder_ClickableRow *clickableRow_network = new Folder_ClickableRow(":/images/icon_network.png", tr("Network"));//cheon210831-network
     //Folder_ClickableRow *clickableRow_network = new Folder_ClickableRow(":/images/icon_network.png", tr("네트워크"));
-    Folder_ClickableRow *clickableRow_net_cloud = new Folder_ClickableRow(":/images/icon_net_cloud.png", tr("cloud"));
+    Folder_ClickableRow *clickableRow_net_cloud = new Folder_ClickableRow(":/images/icon_net_cloud.png", tr("Cloud"));
     //Folder_ClickableRow *clickableRow_net_cloud = new Folder_ClickableRow(":/images/icon_net_cloud.png", tr("클라우드"));
     Folder_ClickableRow *clickableRow_net_add_fol = new Folder_ClickableRow(":/images/icon_net_add_fol.png", tr("Add network folder"));
     //Folder_ClickableRow *clickableRow_net_add_fol = new Folder_ClickableRow(":/images/icon_net_add_fol.png", tr("네트워크 폴더 추가"));
@@ -152,7 +152,7 @@ void MusicFolder_USB::setUIControl(){
     //this->vl_list->addWidget(clickableRow_folder_bic);
     this->vl_list->addLayout(vl_usb);
     this->vl_list->addWidget(clickableRow_network);//c220908_2
-    //this->vl_list->addWidget(clickableRow_net_cloud);//c220908_2
+    this->vl_list->addWidget(clickableRow_net_cloud);//c220908_2
     this->vl_list->addWidget(clickableRow_net_add_fol);
     this->vl_list->addLayout(vl_networkList);
     //ToastMsg::show(this, "", tr("MusicFolder_USB::setUIControl- The current version is not supported by MAC Desktop.\n It will be supported in a future version.."));//cheon210831-network
@@ -174,17 +174,16 @@ void MusicFolder_USB::setUIControl(){
 
     this->page_fileTree = new MediaFileTree(this, flagIsMusic);
     this->page_network = new MusicFolder_Network(this);
-    this->page_cloud = new MusicFolder_Colud(this);
+    this->page_cloud = new MusicFolder_Colud(this, flagIsMusic);
     this->page_dirFileList = new DirFileListPage(DirFileListPage::ValiedFileType::Audio);//c220609
 
     // 스택 위젯
     this->stackedWidget_page = new QStackedWidget();
-    this->stackedWidget_page->addWidget(page_init);    // 탐색 첫 화면
+    this->stackedWidget_page->addWidget(page_init);                     // 탐색 첫 화면
     this->stackedWidget_page->addWidget(page_fileTree);
-    this->stackedWidget_page->addWidget(page_network);                 // 네트워크 클릭시 화면
-    this->stackedWidget_page->addWidget(page_cloud);
+    this->stackedWidget_page->addWidget(page_network);                  // 네트워크 클릭시 화면
+    this->stackedWidget_page->addWidget(page_cloud);                    // 클라우드 클릭시 화면
     this->stackedWidget_page->addWidget(page_dirFileList);
-    //this->stackedWidget->addWidget();                 // 클라우드 클릭시 화면
 
     this->vl_total= new QVBoxLayout();
     this->vl_total->setContentsMargins(0,0,0,0);
@@ -209,27 +208,27 @@ void MusicFolder_USB::setUIControl(){
     //connect(clickableRow_local, SIGNAL(signal_clicked()), this, SLOT(slot_clickedRow()));//c220609
     //connect(clickableRow_folder_bic, SIGNAL(signal_clicked()), this, SLOT(slot_clickedRow()));
     connect(clickableRow_network, SIGNAL(signal_clicked()), this, SLOT(slot_clickedRow()));//c220908_2
-    //connect(clickableRow_net_cloud, SIGNAL(signal_clicked()), this, SLOT(slot_clickedRow()));//c220908_2
+    connect(clickableRow_net_cloud, SIGNAL(signal_clicked()), this, SLOT(slot_clickedRow()));//c220908_2
     connect(clickableRow_net_add_fol, SIGNAL(signal_clicked()), this, SLOT(slot_clickedRow()));
 #endif//cheon210831-network
-    connect(topDirPath, SIGNAL(signal_changedDirPath(QString, QString)), this, SLOT(slot_changedRootPath(QString, QString)));
-    connect(page_network, SIGNAL(signal_clickedHost(QString,QString)), this, SLOT(slot_clickedNetworkHost(QString, QString)));
+    connect(this->topDirPath, SIGNAL(signal_changedDirPath(QString, QString)), this, SLOT(slot_changedRootPath(QString, QString)));
+    connect(this->page_network, SIGNAL(signal_clickedHost(QString, QString)), this, SLOT(slot_clickedNetworkHost(QString, QString)));
+    connect(this->page_cloud, SIGNAL(signal_clickedHost(QString, QString)), this, SLOT(slot_clickedCloudHost(QString, QString)));
+    connect(this->page_cloud, SIGNAL(signal_clickedDirName(QString, QString)), this, SLOT(slot_changeTopDirName(QString, QString)));
 
     connect(this->page_dirFileList, SIGNAL(signal_fileInfo_filePath_play(QString)), this, SLOT(slot_fileInfo_filePath_play(QString)));//c220609
-    connect(linker, SIGNAL(signal_fileInfo_filePath_stop()), this, SLOT(slot_fileInfo_filePath_stop()));//c220609
     connect(this->page_dirFileList, SIGNAL(signal_clickedDirName(QString, QString)), this, SLOT(slot_changeTopDirName(QString, QString)));//c220609
 
-    connect(linker, SIGNAL(signal_setMountShareFolder(QString, QString, QString, QString)), this, SLOT(slot_process_smb_ok(QString,QString,QString,QString)));//c220913_1
+    connect(this->linker, SIGNAL(signal_fileInfo_filePath_stop()), this, SLOT(slot_fileInfo_filePath_stop()));//c220609
+    connect(this->linker, SIGNAL(signal_setMountShareFolder(QString, QString, QString, QString)), this, SLOT(slot_process_smb_ok(QString,QString,QString,QString)));//c220913_1
 
     this->timer = new QTimer(this);
     this->timer->setInterval(1000); // 1초
     //connect(this->timer, SIGNAL(timeout()), SLOT(slot_timePlayValue()));
-   // QThread::usleep(2000);
+    // QThread::usleep(2000);
     this->timer->start();
-
-
-
 }
+
 
 void MusicFolder_USB::slot_process_smb_ok(QString ip, QString id, QString pw, QString folderName){//c220913_1
     print_debug();
@@ -319,7 +318,7 @@ void MusicFolder_USB::slot_responseHttp_volume(const int &p_id, const QJsonObjec
         }
         break;
     }
-   sender()->deleteLater();
+    sender()->deleteLater();
 }
 
 /**
@@ -388,8 +387,8 @@ void MusicFolder_USB::appendLocalNetworkFolderUI(const int &p_index){
         QString tmp_ip = listLocalNetworkFolder->at(p_index)->getIp();
         QString tmp_path = listLocalNetworkFolder->at(p_index)->getPath();
         QString tmp_folderName = QString("smb://%1/%2").arg(tmp_ip).arg(tmp_path=="/" ? "" :tmp_path);
-        QString tmp_imgPath = ":images/icon_net_fol_off.png";
-print_debug();
+        QString tmp_imgPath = ":/images/icon_net_fol_off.png";
+        print_debug();
 
         FolderNetwork_ClickableRow *clickableRow = new FolderNetwork_ClickableRow(tmp_imgPath, tmp_folderName);
         clickableRow->setProperty("type", TYPE_FOLDER_LOCAL_NETWORK_FOLDER);
@@ -440,12 +439,12 @@ void MusicFolder_USB::slot_networkIPConnected(){
     if(tmp_index < listNetworkFolder->count()){
         QString tmp_ip = listNetworkFolder->at(tmp_index)->getIp();
         QString tmp_path = listNetworkFolder->at(tmp_index)->getPath();
-    print_debug();
-        #if defined(Q_OS_WINDOWS)
-            openNetworkDriveForWindow(tmp_index);
-        #elif defined(Q_OS_MAC)
-        #endif
-qDebug() << "tmp_path=" << tmp_path;
+        print_debug();
+#if defined(Q_OS_WINDOWS)
+        openNetworkDriveForWindow(tmp_index);
+#elif defined(Q_OS_MAC)
+#endif
+        qDebug() << "tmp_path=" << tmp_path;
         if(checkAccessAbleFile(tmp_ip, tmp_path)){
             FolderNetwork_ClickableRow *folderRow = qobject_cast<FolderNetwork_ClickableRow*>(vl_networkList->itemAt(tmp_index)->widget());
             folderRow->setImage(":images/icon_net_fol_on.png");
@@ -470,10 +469,10 @@ void MusicFolder_USB::slot_localnetworkIPConnected(){
         QString tmp_path = listLocalNetworkFolder->at(tmp_index)->getPath();
 
         print_debug();
-        #if defined(Q_OS_WINDOWS)
-            openLocalNetworkDriveForWindow(tmp_index);
-        #elif defined(Q_OS_MAC)
-        #endif
+#if defined(Q_OS_WINDOWS)
+        openLocalNetworkDriveForWindow(tmp_index);
+#elif defined(Q_OS_MAC)
+#endif
 
         if(checkAccessAbleFile(tmp_ip, tmp_path)){
             FolderNetwork_ClickableRow *folderRow = qobject_cast<FolderNetwork_ClickableRow*>(vl_localnetworkList->itemAt(tmp_index)->widget());
@@ -526,27 +525,27 @@ void MusicFolder_USB::setData(){//c220616
 bool MusicFolder_USB::checkAccessAbleFile(const QString &p_ip, const QString &p_path){//c220913_1
 
     bool tmp_flagAccessAlbe = true;
-print_debug();
-    #if defined(Q_OS_WIN)
-        QFileInfo check_file("//"+p_ip+"/"+p_path);
-        if(!check_file.exists()){
+    print_debug();
+#if defined(Q_OS_WIN)
+    QFileInfo check_file("//"+p_ip+"/"+p_path);
+    if(!check_file.exists()){
 
-            tmp_flagAccessAlbe = false;
-            qDebug() << "checkAccessAbleFile-tmp_flagAccessAlbe" << tmp_flagAccessAlbe;
-        }else
-            qDebug() << "checkAccessAbleFile-tmp_flagAccessAlbe" << tmp_flagAccessAlbe;
-    #elif defined(Q_OS_MAC)
-qDebug() << "p_path=" << p_path;
-        QFileInfo check_file("/Volumes/"+p_ip+"-"+p_path);
-        //QFileInfo check_file("//"+p_ip+"/"+p_path);
-        if(!check_file.exists()){
+        tmp_flagAccessAlbe = false;
+        qDebug() << "checkAccessAbleFile-tmp_flagAccessAlbe" << tmp_flagAccessAlbe;
+    }else
+        qDebug() << "checkAccessAbleFile-tmp_flagAccessAlbe" << tmp_flagAccessAlbe;
+#elif defined(Q_OS_MAC)
+    qDebug() << "p_path=" << p_path;
+    QFileInfo check_file("/Volumes/"+p_ip+"-"+p_path);
+    //QFileInfo check_file("//"+p_ip+"/"+p_path);
+    if(!check_file.exists()){
 
-            tmp_flagAccessAlbe = false;
-            qDebug() << "tmp_flagAccessAlbe" << tmp_flagAccessAlbe;//c220909_1
-        }else
-            qDebug() << "tmp_flagAccessAlbe" << tmp_flagAccessAlbe;//c220909_1
+        tmp_flagAccessAlbe = false;
+        qDebug() << "tmp_flagAccessAlbe" << tmp_flagAccessAlbe;//c220909_1
+    }else
+        qDebug() << "tmp_flagAccessAlbe" << tmp_flagAccessAlbe;//c220909_1
 
-    #endif
+#endif
 
     return tmp_flagAccessAlbe;
 }
@@ -574,7 +573,7 @@ void MusicFolder_USB::openNetworkDriveForWindow(const int &p_index){
     }
     print_debug();
     qDebug() << "listNetworkFolder->at(p_index)->getName()=" << listNetworkFolder->at(p_index)->getName();
-qDebug() << "999999999999999999999999999999999----001";
+    qDebug() << "999999999999999999999999999999999----001";
     // net.exe 이용 smb 연결 삭제
     QProcess *process = new QProcess(this);
     process->setProgram("net.exe");
@@ -597,7 +596,7 @@ qDebug() << "999999999999999999999999999999999----001";
     process->setProgram("net.exe");
     process->setArguments(strListProcess);
 
-qDebug() << "999999999999999999999999999999999----002";
+    qDebug() << "999999999999999999999999999999999----002";
     process->startDetached();
     process->waitForFinished(-1);
     process->close();
@@ -681,7 +680,7 @@ void MusicFolder_USB::reCheckLocalNetworkDriveOpened( const int &p_index, const 
  * @details 비디오-폴더와 동일 API : IP:PORT/external_usb
  */
 void MusicFolder_USB::slot_requestNetworkFolderList(){
-print_debug();
+    print_debug();
     if(global.flagConnected){
         qDeleteAll(listNetworkFolder->begin(), listNetworkFolder->end());
         listNetworkFolder->clear();
@@ -703,7 +702,7 @@ print_debug();
 
 }
 void MusicFolder_USB::slot_requestLocalNetworkFolderList(){
-print_debug();
+    print_debug();
     if(global.flagConnected){
         qDeleteAll(listLocalNetworkFolder->begin(), listLocalNetworkFolder->end());
         listLocalNetworkFolder->clear();
@@ -734,38 +733,38 @@ void MusicFolder_USB::setResultOfNetworkFolderList(const QJsonObject &p_jsonData
     const QString jsonKey_externalArr = "externalArr";
     const QString jsonKey_status = "status";
     const QString jsonKey_outs = "outs";
-print_debug();
-qDebug()<< p_jsonData;
+    print_debug();
+    qDebug()<< p_jsonData;
     if(p_jsonData.contains(jsonKey_flagOk)&&p_jsonData[jsonKey_flagOk].toBool()){
         if(p_jsonData.contains(jsonKey_status)){
             QJsonObject jsonStatus = p_jsonData[jsonKey_status].toObject();
             // TODO:: Search Devices 16/02/2021 by disket
             //if(jsonStatus.contains(jsonKey_outs)&&jsonStatus[jsonKey_outs].toString().toLower()=="ok"){
-                if(p_jsonData.contains(jsonKey_externalArr)){
-                    QJsonArray jsonArrExternal = p_jsonData[jsonKey_externalArr].toArray();
-                    this->listNetworkFolder_cnt = jsonArrExternal.size();//c220908_1
-                    for(int i = 0; i < jsonArrExternal.size(); i++){
-                        DataNetworkFolder *data = new DataNetworkFolder;
-                        data->setData(jsonArrExternal.at(i).toObject());
+            if(p_jsonData.contains(jsonKey_externalArr)){
+                QJsonArray jsonArrExternal = p_jsonData[jsonKey_externalArr].toArray();
+                this->listNetworkFolder_cnt = jsonArrExternal.size();//c220908_1
+                for(int i = 0; i < jsonArrExternal.size(); i++){
+                    DataNetworkFolder *data = new DataNetworkFolder;
+                    data->setData(jsonArrExternal.at(i).toObject());
 
-                        if(data->getIsServer()){
+                    if(data->getIsServer()){
 
-                            // smb 드라이브 추가
-                            listNetworkFolder->append(data);
-                            appendNetworkFolderUI(listNetworkFolder->size()-1);
-                        }else{
-                            listUsb->append(data);
-                            // usb 드라이브 추가
-                            Folder_ClickableRow *clickableRow_usb = new Folder_ClickableRow(":/images/icon_folder_bic.png", data->getName());
-                            clickableRow_usb->setProperty("type", TYPE_FOLDER_USB);
-                            clickableRow_usb->setProperty("index", listUsb->size()-1);
-                            clickableRow_usb->setProperty(KEY_CONTENT_STEP.toStdString().c_str(), "usb_"+QString::number(listUsb->size()-1));
-                            vl_usb->insertWidget(1, clickableRow_usb);
+                        // smb 드라이브 추가
+                        listNetworkFolder->append(data);
+                        appendNetworkFolderUI(listNetworkFolder->size()-1);
+                    }else{
+                        listUsb->append(data);
+                        // usb 드라이브 추가
+                        Folder_ClickableRow *clickableRow_usb = new Folder_ClickableRow(":/images/icon_folder_bic.png", data->getName());
+                        clickableRow_usb->setProperty("type", TYPE_FOLDER_USB);
+                        clickableRow_usb->setProperty("index", listUsb->size()-1);
+                        clickableRow_usb->setProperty(KEY_CONTENT_STEP.toStdString().c_str(), "usb_"+QString::number(listUsb->size()-1));
+                        vl_usb->insertWidget(1, clickableRow_usb);
 
-                            connect(clickableRow_usb, SIGNAL(signal_clicked()), this, SLOT(slot_clickedRow()));
-                        }
+                        connect(clickableRow_usb, SIGNAL(signal_clicked()), this, SLOT(slot_clickedRow()));
                     }
                 }
+            }
             //}
         }
     }
@@ -776,36 +775,36 @@ void MusicFolder_USB::setResultOfLocalNetworkFolderList(const QJsonObject &p_jso
     const QString jsonKey_externalArr = "externalArr";
     const QString jsonKey_status = "status";
     const QString jsonKey_outs = "outs";
-print_debug();
+    print_debug();
     if(p_jsonData.contains(jsonKey_flagOk)&&p_jsonData[jsonKey_flagOk].toBool()){
         if(p_jsonData.contains(jsonKey_status)){
             QJsonObject jsonStatus = p_jsonData[jsonKey_status].toObject();
             // TODO:: Search Devices 16/02/2021 by disket
             //if(jsonStatus.contains(jsonKey_outs)&&jsonStatus[jsonKey_outs].toString().toLower()=="ok"){
-                if(p_jsonData.contains(jsonKey_externalArr)){
-                    QJsonArray jsonArrExternal = p_jsonData[jsonKey_externalArr].toArray();
+            if(p_jsonData.contains(jsonKey_externalArr)){
+                QJsonArray jsonArrExternal = p_jsonData[jsonKey_externalArr].toArray();
 
-                    for(int i = 0; i < jsonArrExternal.size(); i++){
-                        DataNetworkFolder *data = new DataNetworkFolder;
-                        data->setData(jsonArrExternal.at(i).toObject());
+                for(int i = 0; i < jsonArrExternal.size(); i++){
+                    DataNetworkFolder *data = new DataNetworkFolder;
+                    data->setData(jsonArrExternal.at(i).toObject());
 
-                        if(data->getIsServer()){
-                            // smb 드라이브 추가
-                            listLocalNetworkFolder->append(data);
-                            appendLocalNetworkFolderUI(listLocalNetworkFolder->size()-1);//c220505
-                        }else{
-                            listUsb->append(data);
-                            // usb 드라이브 추가
-                            Folder_ClickableRow *clickableRow_usb = new Folder_ClickableRow(":/images/icon_folder_bic.png", data->getName());
-                            clickableRow_usb->setProperty("type", TYPE_FOLDER_USB);
-                            clickableRow_usb->setProperty("index", listUsb->size()-1);
-                            clickableRow_usb->setProperty(KEY_CONTENT_STEP.toStdString().c_str(), "usb_"+QString::number(listUsb->size()-1));
-                            vl_usb->insertWidget(1, clickableRow_usb);
+                    if(data->getIsServer()){
+                        // smb 드라이브 추가
+                        listLocalNetworkFolder->append(data);
+                        appendLocalNetworkFolderUI(listLocalNetworkFolder->size()-1);//c220505
+                    }else{
+                        listUsb->append(data);
+                        // usb 드라이브 추가
+                        Folder_ClickableRow *clickableRow_usb = new Folder_ClickableRow(":/images/icon_folder_bic.png", data->getName());
+                        clickableRow_usb->setProperty("type", TYPE_FOLDER_USB);
+                        clickableRow_usb->setProperty("index", listUsb->size()-1);
+                        clickableRow_usb->setProperty(KEY_CONTENT_STEP.toStdString().c_str(), "usb_"+QString::number(listUsb->size()-1));
+                        vl_usb->insertWidget(1, clickableRow_usb);
 
-                            connect(clickableRow_usb, SIGNAL(signal_clicked()), this, SLOT(slot_clickedRow()));
-                        }
+                        connect(clickableRow_usb, SIGNAL(signal_clicked()), this, SLOT(slot_clickedRow()));
                     }
                 }
+            }
             //}
         }
     }
@@ -925,7 +924,7 @@ void MusicFolder_USB::setResultOfNetworkFolderRemove(const QJsonObject &p_jsonOb
 
 }
 void MusicFolder_USB::setResultOfLocalNetworkFolderRemove(const QJsonObject &p_jsonObject){
-print_debug();
+    print_debug();
     const QString jsonKey_flagOk = "flagOk";
     const QString jsonKey_status = "status";
     const QString jsonKey_outs = "outs";
@@ -936,11 +935,11 @@ print_debug();
             QJsonObject jsonStatus = p_jsonObject[jsonKey_status].toObject();
             //if(jsonStatus.contains(jsonKey_outs)&&jsonStatus[jsonKey_outs].toString().toLower()=="ok"){
 
-                if(p_jsonObject.contains(jsonKey_message)&&p_jsonObject[jsonKey_message].toString().toLower()!="success"){
-                    ToastMsg::show(this,"",p_jsonObject[jsonKey_message].toString());
-                }else{
-                    slot_requestLocalNetworkFolderList();
-                }
+            if(p_jsonObject.contains(jsonKey_message)&&p_jsonObject[jsonKey_message].toString().toLower()!="success"){
+                ToastMsg::show(this,"",p_jsonObject[jsonKey_message].toString());
+            }else{
+                slot_requestLocalNetworkFolderList();
+            }
             /*}else if(p_jsonObject.contains(jsonKey_message)){
                 ToastMsg::show(this,"",p_jsonObject[jsonKey_message].toString());
             }*/
@@ -960,7 +959,7 @@ print_debug();
  * @param p_jsonObject QJsonObject response
  */
 void MusicFolder_USB::slot_responseHttp(const int &p_id, const QJsonObject &p_jsonObject){
-print_debug();
+    print_debug();
     if(p_id == HTTP_NETWORK_FOLDER_LIST){
         setResultOfNetworkFolderList(p_jsonObject);
     }
@@ -980,15 +979,31 @@ print_debug();
 void MusicFolder_USB::slot_searchNetworkFolder(){//c220908_2
     print_debug();
 #if defined(Q_OS_WIN)
-    global.window_activate_flag = true;
-    ToastMsg::show(this, "", tr("Searching for local network... Please wait."), 3000);//c220906_1
+    if(!global.window_activate_flag){//c230127
+        global.window_activate_flag = true;
+        ToastMsg::show(this, "", tr("Searching for local network... Please wait."), 3000);//c220906_1
+
+        global.window_activate_flag = false;
+    }else{
+        ToastMsg::show(this, "", tr("Searching for local network... Please wait."), 3000);//c220906_1
+
+    }
+
     this->topDirPath->addDirName(tr("Network"), FOLDER_USB_DIR_CODE_NETWORK);
     //this->topDirPath->addDirName(tr("네트워크"), FOLDER_USB_DIR_CODE_NETWORK);
     this->stackedWidget_page->setCurrentWidget(this->page_network);
     page_network->requestFindIP(true);
 #elif defined(Q_OS_MAC)
-    global.window_activate_flag = true;
-    ToastMsg::show(this, "", tr("Searching for local network... Please wait."), 3000);//c220906_1
+    if(!global.window_activate_flag){//c230127
+        global.window_activate_flag = true;
+        ToastMsg::show(this, "", tr("Searching for local network... Please wait."), 3000);//c220906_1
+
+        global.window_activate_flag = false;
+    }else{
+        ToastMsg::show(this, "", tr("Searching for local network... Please wait."), 3000);//c220906_1
+
+    }
+
     this->topDirPath->addDirName(tr("Network"), FOLDER_USB_DIR_CODE_NETWORK);
     //this->topDirPath->addDirName(tr("네트워크"), FOLDER_USB_DIR_CODE_NETWORK);
     this->stackedWidget_page->setCurrentWidget(this->page_network);
@@ -1002,6 +1017,7 @@ void MusicFolder_USB::slot_searchNetworkFolder(){//c220908_2
  * @brief MusicFolder_USB::slot_clickedRow ROW 객체 클릭시
  */
 void MusicFolder_USB::slot_clickedRow(){//c220908_2
+
     print_debug();
     QString tmp_type = dynamic_cast<Folder_ClickableRow*>(sender())->property("type").toString();//cheon210704-list
     qDebug() << "tmp_type=" << tmp_type;
@@ -1033,7 +1049,7 @@ void MusicFolder_USB::slot_clickedRow(){//c220908_2
         //connect(this->page_dirFileList, SIGNAL(signal_fileInfo_filePath(QString)), this, SLOT(slot_fileInfo_filePath(QString)));//c220609
 
         //connect(this->page_dirFileList, SIGNAL(signal_clickedDirName(QString, QString)), this, SLOT(slot_changeTopDirName(QString, QString)));//c220609
-       // connect(this->topDirPath, SIGNAL(signal_clickedDirName(QString, QString)), this, SLOT(slot_changeTopDirName(QString, QString)));//c220609
+        // connect(this->topDirPath, SIGNAL(signal_clickedDirName(QString, QString)), this, SLOT(slot_changeTopDirName(QString, QString)));//c220609
 #endif
 
     }else if(tmp_type==TYPE_FOLDER_USB){//cheon210617-file
@@ -1048,7 +1064,6 @@ void MusicFolder_USB::slot_clickedRow(){//c220908_2
             ToastMsg::show(this, "", tr("There is no device in the usb port."));//cheon210617-file
         }
 
-
     }else if(tmp_type==TYPE_FOLDER_NETWORK){
 
         print_debug();
@@ -1056,14 +1071,14 @@ void MusicFolder_USB::slot_clickedRow(){//c220908_2
         this->topDirPath->addDirName(tr("Network"), FOLDER_USB_DIR_CODE_NETWORK);
         //this->topDirPath->addDirName(tr("네트워크"), FOLDER_USB_DIR_CODE_NETWORK);
         this->stackedWidget_page->setCurrentWidget(this->page_network);
-        page_network->requestFindIP(true);
+        this->page_network->requestFindIP(true);
 
     }else if(tmp_type==TYPE_FOLDER_CLOUD){
 
         this->topDirPath->addDirName(tr("Cloud"), FOLDER_USB_DIR_CODE_CLOUD);
         //this->topDirPath->addDirName(tr("클라우드"), FOLDER_USB_DIR_CODE_CLOUD);
-        this->stackedWidget_page->setCurrentWidget(page_cloud);
-        page_cloud->requestCloudlist(true);
+        this->stackedWidget_page->setCurrentWidget(this->page_cloud);
+        this->page_cloud->requestCloudlist(true);
 
     }else if(tmp_type==TYPE_FOLDER_ADD_NETWORK_FOLDER){
 
@@ -1077,6 +1092,7 @@ void MusicFolder_USB::slot_clickedRow(){//c220908_2
         }
 
         delete dlg_network;
+
     }
     else if(tmp_type==TYPE_FOLDER_NETWORK_FOLDER){
         print_debug();
@@ -1096,13 +1112,13 @@ void MusicFolder_USB::slot_clickedRow(){//c220908_2
 
         delete dlg_network;
     }else if(tmp_type==TYPE_FOLDER_USB){//cheon210617-file
-            int tmp_index = sender()->property("index").toInt();
-            QString tmp_contentStep = sender()->property(KEY_CONTENT_STEP.toStdString().c_str()).toString();
-            if(tmp_contentStep.size()> 0){//cheon220906_1
-                emit clickedUSB(tmp_contentStep, listUsb->at(tmp_index)->getData());//cheon210617-file
-            }else{
-                ToastMsg::show(this, "", tr("There is no device in the usb port."));//cheon210617-file
-            }
+        int tmp_index = sender()->property("index").toInt();
+        QString tmp_contentStep = sender()->property(KEY_CONTENT_STEP.toStdString().c_str()).toString();
+        if(tmp_contentStep.size()> 0){//cheon220906_1
+            emit clickedUSB(tmp_contentStep, listUsb->at(tmp_index)->getData());//cheon210617-file
+        }else{
+            ToastMsg::show(this, "", tr("There is no device in the usb port."));//cheon210617-file
+        }
     }else if(tmp_type==TYPE_FOLDER_NETWORK){
 
         print_debug();
@@ -1114,7 +1130,7 @@ void MusicFolder_USB::slot_clickedRow(){//c220908_2
     }
     else if(tmp_type==TYPE_FOLDER_ADD_NETWORK_FOLDER){//cheon210825-network
         //dialog_comfirmNetworkfolder_forFinder_add();//c220907_1
-/*
+        /*
         QProcess *process = new QProcess();
 
         //process->start(QString("sh -c \"echo 12345678 | sudo -S -l\""));//
@@ -1149,7 +1165,7 @@ void MusicFolder_USB::slot_clickedRow(){//c220908_2
 
         this->topDirPath->addDirName(tr("Cloud"), FOLDER_USB_DIR_CODE_CLOUD);
         //this->topDirPath->addDirName(tr("클라우드"), FOLDER_USB_DIR_CODE_CLOUD);
-        this->stackedWidget_page->setCurrentWidget(page_cloud);
+        this->stackedWidget_page->setCurrentWidget(this->page_cloud);
         page_cloud->requestCloudlist(true);
 
     }
@@ -1158,28 +1174,25 @@ void MusicFolder_USB::slot_clickedRow(){//c220908_2
 }
 
 
-
 /**
  * @brief MusicFolder_USB::goInitPage  폴더 메뉴 보고 있는 상태에서 또 폴더 메뉴 클릭시..
  * @note [예외상황임] 상단 TopNaviBar 클래스에서 동일 메뉴 클릭시 아무것도 처리 안하기 때문에 폴더메뉴는 별도로 처리 필요하다. ( 내부적으로 StackWidget 있지만 TopNaviBar에서 Page 관리를 안하기 때문이다)
  */
 void MusicFolder_USB::goInitPage(){
+
     this->topDirPath->clearDirName();
     this->topDirPath->addDirName(tr("Explore"), FOLDER_USB_DIR_CODE_INIT);
     //this->topDirPath->addDirName(tr("탐색"), FOLDER_USB_DIR_CODE_INIT);
     this->stackedWidget_page->setCurrentIndex(0);
 }
 
+
 void MusicFolder_USB::slot_fileInfo_filePath_stop(){//c220609
 
     print_debug();
 
-   // global.music_player->pause();
-
-
+    // global.music_player->pause();
 }
-
-
 
 
 /**
@@ -1200,57 +1213,64 @@ void MusicFolder_USB::slot_changeTopDirName(QString p_dirName, QString p_dirPath
  * @param p_dirPath
  */
 void MusicFolder_USB::slot_changedRootPath(QString p_dirName, QString p_dirPath){
-print_debug();
-qDebug() << "p_dirPath=" << p_dirPath;
-qDebug() << "global.music_folder_topdir=" << global.music_folder_topdir;
-qDebug() << "FOLDER_USB_DIR_CODE_DRIVER=" << FOLDER_USB_DIR_CODE_DRIVER;
-    if(p_dirPath==FOLDER_USB_DIR_CODE_INIT){
+    print_debug();
+    qDebug() << "p_dirPath=" << p_dirPath;
+    qDebug() << "global.music_folder_topdir=" << global.music_folder_topdir;
+    qDebug() << "FOLDER_USB_DIR_CODE_DRIVER=" << FOLDER_USB_DIR_CODE_DRIVER;
+
+    if(p_dirPath == FOLDER_USB_DIR_CODE_INIT){
 
         this->goInitPage();
 
-    }else if(p_dirPath==FOLDER_USB_DIR_CODE_DRIVER || global.music_folder_topdir == FOLDER_USB_DIR_CODE_DRIVER){
+    }
+    else if(p_dirPath == FOLDER_USB_DIR_CODE_DRIVER || global.music_folder_topdir == FOLDER_USB_DIR_CODE_DRIVER){
         print_debug();
 
         this->topDirPath->addDirName(tr("Driver"), FOLDER_USB_DIR_CODE_DRIVER);
         this->stackedWidget_page->setCurrentWidget(this->page_dirFileList);
         page_dirFileList->setInitDriver();
-
-
-    }else if(p_dirPath==FOLDER_USB_DIR_CODE_NETWORK){
-
+    }
+    else if(p_dirPath == FOLDER_USB_DIR_CODE_NETWORK){
         print_debug();
         global.music_folder_topdir = p_dirPath;
         qDebug()<<"global.music_folder_topdir =" << global.music_folder_topdir ;
 
-        this->topDirPath->addDirName(tr("network"), FOLDER_USB_DIR_CODE_NETWORK);
+        this->topDirPath->addDirName(tr("Network"), FOLDER_USB_DIR_CODE_NETWORK);
         //this->topDirPath->addDirName(tr("네트워크"), FOLDER_USB_DIR_CODE_NETWORK);
         this->stackedWidget_page->setCurrentWidget(page_network);
         page_network->requestFindIP();
-    }else if(p_dirPath==FOLDER_USB_DIR_CODE_CLOUD){
+    }
+    else if(p_dirPath == FOLDER_USB_DIR_CODE_CLOUD){
         print_debug();
         global.music_folder_topdir = p_dirPath;
         qDebug()<<"global.music_folder_topdir =" << global.music_folder_topdir ;
 
-        this->topDirPath->addDirName(tr("cloud"), FOLDER_USB_DIR_CODE_CLOUD);
+        this->topDirPath->addDirName(tr("Cloud"), FOLDER_USB_DIR_CODE_CLOUD);
         //this->topDirPath->addDirName(tr("클라우드"), FOLDER_USB_DIR_CODE_CLOUD);
         this->stackedWidget_page->setCurrentWidget(page_cloud);
-
-    }else{
+    }
+    else{
         print_debug();
         if(global.music_folder_topdir == TYPE_FOLDER_LOCAL){
             print_debug();
             // 상단 타이틀 디렉토리명 변경 요청
             this->topDirPath->addDirName(p_dirName, p_dirPath);
             page_dirFileList->setInitNetworkDriver(p_dirName,p_dirPath);
-        }else{
-            this->page_fileTree->slot_changedRootPath(p_dirName, p_dirPath);
         }
-
-
+        else{
+            if(this->stackedWidget_page->currentWidget() == this->page_cloud){
+                this->page_cloud->reqeustCloudlist_changePath(p_dirName, p_dirPath);
+            }
+            else{
+                this->page_fileTree->slot_changedRootPath(p_dirName, p_dirPath);
+            }
+        }
     }
 }
 
+
 void MusicFolder_USB::slot_clickedNetworkHost(const QString &p_ip, const QString &p_hostName){
+
     this->topDirPath->clearDirName();
     this->page_fileTree->setData(p_hostName, p_ip);
     this->stackedWidget_page->setCurrentWidget(this->page_fileTree);
@@ -1258,10 +1278,17 @@ void MusicFolder_USB::slot_clickedNetworkHost(const QString &p_ip, const QString
 }
 
 
+void MusicFolder_USB::slot_clickedCloudHost(const QString &cloudPath, const QString &p_cloudName){
+    this->topDirPath->clearDirName();
+    this->topDirPath->addDirName(p_cloudName, cloudPath);
+}
+
+
 /**
  * @brief MusicFolder_USB::slot_clickedRemoveNetwork::[슬롯]네트워크삭제 클릭
  */
 void MusicFolder_USB::slot_clickedRemoveNetwork(){
+
     DialogConfirm *dlg = new DialogConfirm(this);
     dlg->setTitle(tr("Delete network folder"));
     //dlg->setTitle(tr("네트워크 폴더 삭제"));
@@ -1276,7 +1303,10 @@ void MusicFolder_USB::slot_clickedRemoveNetwork(){
 
     delete dlg;
 }
+
+
 void MusicFolder_USB::slot_clickedRemoveLocalNetwork(){
+
     DialogConfirm *dlg = new DialogConfirm(this);
     dlg->setTitle(tr("Delete network folder"));
     //dlg->setTitle(tr("네트워크 폴더 삭제"));
@@ -1291,6 +1321,8 @@ void MusicFolder_USB::slot_clickedRemoveLocalNetwork(){
 
     delete dlg;
 }
+
+
 /**
  * @brief MusicFolder_USB::slot_clickedNetworkFolder::[슬롯]네트워크폴더 클릭
  */
@@ -1327,10 +1359,10 @@ void MusicFolder_USB::slot_clickedNetworkFolder(){
     else{
         if(tmp_flagOn && !tmp_flagAccess){//cheon210831-network
             print_debug();
-      #if defined(Q_OS_WIN)
-                ToastMsg::show(this,"",tr("Could not connect to network folder."));
-                //ToastMsg::show(this,"",tr("네트워크 폴더에 연결할 수 없습니다."));
-      #elif defined(Q_OS_MAC)//c220918_2
+#if defined(Q_OS_WIN)
+            ToastMsg::show(this,"",tr("Could not connect to network folder."));
+            //ToastMsg::show(this,"",tr("네트워크 폴더에 연결할 수 없습니다."));
+#elif defined(Q_OS_MAC)//c220918_2
             // show 네트워크 폴더 Add Dialog
             Dialog::DialogAdd_Network *dlg_network = new Dialog::DialogAdd_Network(this);
 
@@ -1345,24 +1377,26 @@ void MusicFolder_USB::slot_clickedNetworkFolder(){
 
             delete dlg_network;
 
-                //dialog_comfirmNetworkfolder_forFinder();
-                //ToastMsg::show(this,"",tr("Could not connect to network folder.\nIn the Finder App, click Go -> Connect to Server.. \nEnter smb://[address] in the server address field.\n\nFor example, if the server address is google.com/sharefolder, \nyou can enter as follows.\nAddress example: smb://google.com/sharefolder"),5000);//cheon210825-network
-       #endif
+            //dialog_comfirmNetworkfolder_forFinder();
+            //ToastMsg::show(this,"",tr("Could not connect to network folder.\nIn the Finder App, click Go -> Connect to Server.. \nEnter smb://[address] in the server address field.\n\nFor example, if the server address is google.com/sharefolder, \nyou can enter as follows.\nAddress example: smb://google.com/sharefolder"),5000);//cheon210825-network
+#endif
         }
 
     }
 
 }
+
+
 //dialog_comfirmNetworkfolder_forFinder_add
 void MusicFolder_USB::dialog_comfirmNetworkfolder_forFinder()//c220913_1
 {
     /*
      * Finder에서 이동(Go) -> 서버의 연결(Connect to Server..)을 눌러 창을 띄우고 (단축키 : Command + K)
-서버주소 란에 smb://[주소]를 입력한다.
-예를들어 서버 주소가 google.com/smb 라면 다음과 같이 입력하면 된다.
-주소 예 : smb://google.com/smb
-출처: https://reysion.tistory.com/17 [미로의 노트:티스토리]
-*/
+    서버주소 란에 smb://[주소]를 입력한다.
+    예를들어 서버 주소가 google.com/smb 라면 다음과 같이 입력하면 된다.
+    주소 예 : smb://google.com/smb
+    출처: https://reysion.tistory.com/17 [미로의 노트:티스토리]
+    */
     dlgConfirmFinder = new DialogConfirm_MacShare(this);
     dlgConfirmFinder->setTitle(tr("Network Folder Notice!!"));
     dlgConfirmFinder->setText(tr("\nCould not connect to network folder.\nin Finder App, click Go ->Connect to Server.. \nEnter smb://[address] in the server address field.\n\nFor example, if the server address is 192.168.1.34/sharefolder, \nyou can enter as follows.\nAddress example: smb://192.168.1.34/sharefolder.\n"));
@@ -1370,8 +1404,8 @@ void MusicFolder_USB::dialog_comfirmNetworkfolder_forFinder()//c220913_1
     //dlgConfirmFinder->setAlertMode();//c220907_1
     dlgConfirmFinder->setProperty("flagShown",false);
     //--------------
-//    dlgConfirmFinder->setTextHeight(150);
-print_debug();
+    //    dlgConfirmFinder->setTextHeight(150);
+    print_debug();
     QPixmap pixmapPI_off, pixmapPI_on;
     pixmapPI_off.load(":images/samba_finder01.png");
     pixmapPI_off = pixmapPI_off.scaled(300,300, Qt::IgnoreAspectRatio, Qt::SmoothTransformation);
@@ -1407,11 +1441,11 @@ print_debug();
 
         if(result == QDialog::Accepted){
 
-
         }
     }
     delete dlgConfirmFinder;
 }
+
 
 void MusicFolder_USB::dialog_comfirmNetworkfolder_forFinder_add()//c220913_1
 {
@@ -1433,6 +1467,7 @@ void MusicFolder_USB::dialog_comfirmNetworkfolder_forFinder_add()//c220913_1
     }
     delete dlgConfirmFinder;
 }
+
 
 void MusicFolder_USB::slot_clickedLocalNetworkFolder(){
 
@@ -1466,5 +1501,4 @@ void MusicFolder_USB::slot_clickedLocalNetworkFolder(){
         ToastMsg::show(this,"",tr("Could not connect to local network folder."));
         //ToastMsg::show(this,"",tr("네트워크 폴더에 연결할 수 없습니다."));
     }
-
 }

@@ -29,6 +29,7 @@ public:
         , SearchResult_NoData
         , CDplay_NoData//c220721
         , Radio_NoData
+        , History_NoDate
 
     };
     Q_ENUM(NoData_Message);

@@ -14,6 +14,8 @@
 
 #include "widget/toastmsg.h"
 
+#include "roseHome/ProcCommon_forRosehome.h"
+
 #include <QScrollArea>
 #include <QPainter>
 #include <QScroller>
@@ -49,7 +51,8 @@ SettingMyPage::SettingMyPage(QWidget *parent) : QWidget(parent)
     connect(linker, SIGNAL(signal_logined()), SLOT(slot_getMyInfo_loginAfter()));
     connect(linker, SIGNAL(signal_myPlaylistChanged()), SLOT(slot_myPlaylistChanged()));
     connect(linker, SIGNAL(signal_change_device_state(QString)), SLOT(slot_change_device_state(QString)));
-
+    print_debug();
+//    emit linker->signal_checkQueue(17, "");//c230313
     this->setUIControl();
 }
 
@@ -65,6 +68,7 @@ SettingMyPage::~SettingMyPage(){
  */
 void SettingMyPage::setUIControl()
 {
+    ToastMsg::delay(this,"", tr("delay"), 400);//c230313
 
     widget_loginBefore = this->setUIControl_loginBefore();
     widget_loginAfter = this->setUIControl_loginAfter();
@@ -136,6 +140,8 @@ QWidget* SettingMyPage::setUIControl_loginBefore(){
     // 커넥션
     connect(btn_login, &QPushButton::clicked, this, &SettingMyPage::slot_showLoginPage);
 
+    print_debug();
+//    emit linker->signal_checkQueue(6, "");//c230313
     return widget_loginBefore;
 }
 
@@ -160,6 +166,10 @@ QWidget* SettingMyPage::setUIControl_loginAfter(){
     widget_loginAfter->setObjectName("widget_loginAfter");
     widget_loginAfter->setLayout(vl_total_stackWidget);
     //widget_loginAfter->setStyleSheet("#widget_loginAfter { border:2px solid yellow }");
+
+    print_debug();
+//    emit linker->signal_checkQueue(6, "");//c230313
+
     return widget_loginAfter;
 }
 
@@ -379,8 +389,8 @@ QWidget* SettingMyPage::setUIControl_playListRoseTube(){
     widget_top->setLayout(boxTop);
 
     boxMyPlay_rosetube = new QHBoxLayout;
-    boxMyPlay_rosetube->setSpacing(0);
-    boxMyPlay_rosetube->setContentsMargins(0,0,0,0);
+    boxMyPlay_rosetube->setSpacing(20);
+    boxMyPlay_rosetube->setContentsMargins(10,10,0,0);
     boxMyPlay_rosetube->setSizeConstraint(QLayout::SetFixedSize);
 
     QWidget *widgetAlbum = new QWidget;
@@ -401,7 +411,7 @@ QWidget* SettingMyPage::setUIControl_playListRoseTube(){
     lb_emptyMyPlay_rosetube->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
     lb_emptyMyPlay_rosetube->setAlignment(Qt::AlignCenter);
     lb_emptyMyPlay_rosetube->setStyleSheet("font-size:18px;color:#FFFFFF;");
-    lb_emptyMyPlay_rosetube->setFixedHeight(263);
+    lb_emptyMyPlay_rosetube->setFixedHeight(335);
 
     stackMyPlay_rosetube = new QStackedWidget;
     //stackMyPlay->addWidget(wg_login);
@@ -652,6 +662,8 @@ void SettingMyPage::slot_getMyInfo_loginAfter(){
 
     if(global.user.isValid()==true){
 
+        print_debug();
+//        emit linker->signal_checkQueue(17, "");//c230313
         // 내 정보 가져오기
         // 내 정보 가져오기
         NetworkHttp *network = new NetworkHttp(this);
@@ -666,7 +678,7 @@ void SettingMyPage::slot_getMyInfo_loginAfter(){
                          , false
                          , true);
 
-        requestMusicMyPlaylist();     
+        requestMusicMyPlaylist();
         requestRosetubeMyPlaylist();
     }
 }
@@ -737,16 +749,20 @@ void SettingMyPage::requestMusicMyPlaylist(){
     lb_emptyMyPlayList_music->setText(tr("Gathering Information"));
     //lb_emptyMyPlayList_music->setText(tr("정보를 가져오는 중입니다."));
 
-    NetworkHttp *network = new NetworkHttp(this);
-    connect(network, SIGNAL(response(int,QJsonObject)), SLOT(slot_responseHttp(int,QJsonObject)));
+//    NetworkHttp *network = new NetworkHttp(this);
+//    connect(network, SIGNAL(response(int,QJsonObject)), SLOT(slot_responseHttp(int,QJsonObject)));
 
-    //QString url = global.legacy_v1.
-    QJsonObject json;
-    json.insert("local_ip", global.device.getDeviceIP());
-    json.insert("mac_address", global.device.getDeviceID());
-    network->request(HTTP_MY_PLYALIST, QString("%1/playlist?page=0&size=10")
-                     .arg(global.legacy_v3_api)
-                     , json, true,true);
+//    //QString url = global.legacy_v1.
+//    QJsonObject json;
+//    json.insert("local_ip", global.device.getDeviceIP());
+//    json.insert("mac_address", global.device.getDeviceID());
+//    network->request(HTTP_MY_PLYALIST, QString("%1/playlist?page=0&size=10")
+//                     .arg(global.legacy_v3_api)
+//                     , json, true,true);
+
+    roseHome::ProcCommon *proc_myPlaylist = new roseHome::ProcCommon(this);
+    connect(proc_myPlaylist, &roseHome::ProcCommon::completeReq_list_myplaylists, this, &SettingMyPage::slot_applyResult_myMusicPlaylist);
+    proc_myPlaylist->request_rose_getList_myPlaylists("member/playlist" , "MUSIC", 0, 10);
 }
 
 
@@ -762,16 +778,20 @@ void SettingMyPage::requestRosetubeMyPlaylist(){
     lb_emptyMyPlay_rosetube->setText(tr("Gathering Information"));
     //lb_emptyMyPlay_rosetube->setText(tr("정보를 가져오는 중입니다."));
 
-    NetworkHttp *network = new NetworkHttp(this);
-    connect(network, SIGNAL(response(int,QJsonObject)), SLOT(slot_responseHttp(int,QJsonObject)));
+//    NetworkHttp *network = new NetworkHttp(this);
+//    connect(network, SIGNAL(response(int,QJsonObject)), SLOT(slot_responseHttp(int,QJsonObject)));
 
-    QUrlQuery params;
-    params.addQueryItem("type","youtube");
-    params.addQueryItem("username",global.user.getUsername());
-    //params.addQueryItem("range_start",QString::number(0));
-    //params.addQueryItem("range_end",QString::number(15));
-    network->request(HTTP_ROSETUBE_PLAYLIST, QString("%1/playlist/fetch?range_start=0&range_end=10")
-                     .arg(global.legacy_mod_api), params, true,true);
+//    QUrlQuery params;
+//    params.addQueryItem("type","youtube");
+//    params.addQueryItem("username",global.user.getUsername());
+//    //params.addQueryItem("range_start",QString::number(0));
+//    //params.addQueryItem("range_end",QString::number(15));
+//    network->request(HTTP_ROSETUBE_PLAYLIST, QString("%1/playlist/fetch?range_start=0&range_end=10")
+//                     .arg(global.legacy_mod_api), params, true,true);
+
+    roseHome::ProcCommon *proc_myPlaylist = new roseHome::ProcCommon(this);
+    connect(proc_myPlaylist, &roseHome::ProcCommon::completeReq_list_myplaylists, this, &SettingMyPage::slot_applyResult_myRosetubePlaylist);
+    proc_myPlaylist->request_rose_getList_myPlaylists("member/playlist" , "YOUTUBE", 0, 10);
 }
 
 
@@ -879,13 +899,13 @@ void SettingMyPage::slot_responseHttp(const int &p_id, const QJsonObject &p_json
             // 4) 시그널 발생
             emit signal_changeMyInfoData();
         }*/
-    }else if(p_id == HTTP_MY_PLYALIST){
+    }/*else if(p_id == HTTP_MY_PLYALIST){ //bj230515
         this->setResultOfPlayListMusic(p_jsonObject);
 
-    }else if(p_id == HTTP_ROSETUBE_PLAYLIST){
+    /else if(p_id == HTTP_ROSETUBE_PLAYLIST){//bj230515
         this->setResultOfPlayListRosetube(p_jsonObject);
 
-    }else if(p_id == HTTP_SET_ROSE_USER_INFO){
+    }*/else if(p_id == HTTP_SET_ROSE_USER_INFO){
 
     }else if(p_id == HTTP_USER_DELETE){
 
@@ -901,9 +921,56 @@ void SettingMyPage::slot_responseHttp(const int &p_id, const QJsonObject &p_json
             ToastMsg::show(this, "", tr("Failed to delete account. Please try again."));
         }
     }
+    print_debug();
+//    emit linker->signal_checkQueue(6, "");//c230313
 
     sender()->deleteLater();
 }
+
+//bj230515
+void SettingMyPage::slot_applyResult_myMusicPlaylist(const QList<roseHome::PlaylistItemData> &list_data, const QJsonArray &jsonArr_dataToPlay, const bool flag_lastPage){
+
+    Q_UNUSED(jsonArr_dataToPlay);
+    Q_UNUSED(flag_lastPage);
+
+    if(list_data.length() > 0)
+    {
+        for(int i = 0; i < jsonArr_dataToPlay.size(); i++){
+            QJsonObject jsonPlayList = jsonArr_dataToPlay.at(i).toObject();
+            appendPlayListMusic(jsonPlayList);
+        }
+        //stackMyPlayList->setCurrentIndex(2);
+        stackMyPlayList_music->setCurrentIndex(1);
+    }else{
+        lb_emptyMyPlayList_music->setText(tr("There is no music playlist."));
+        //lb_emptyMyPlayList_music->setText(tr("음악 플레이 리스트가 없습니다."));
+    }
+
+
+}
+
+//bj230515
+void SettingMyPage::slot_applyResult_myRosetubePlaylist(const QList<roseHome::PlaylistItemData> &list_data, const QJsonArray &jsonArr_dataToPlay, const bool flag_lastPage){
+
+    Q_UNUSED(jsonArr_dataToPlay);
+    Q_UNUSED(flag_lastPage);
+
+    if(list_data.length() > 0)
+    {
+        for(int i = 0; i < jsonArr_dataToPlay.size(); i++){
+            QJsonObject jsonPlayList = jsonArr_dataToPlay.at(i).toObject();
+            appendPlayListRosetube(jsonPlayList);
+        }
+        //stackMyPlayList->setCurrentIndex(2);
+        stackMyPlay_rosetube->setCurrentIndex(1);
+    }else{
+        lb_emptyMyPlayList_music->setText(tr("There is no music playlist."));
+        //lb_emptyMyPlayList_music->setText(tr("음악 플레이 리스트가 없습니다."));
+    }
+
+
+}
+
 
 
 /**
@@ -942,7 +1009,7 @@ void SettingMyPage::setResponseProfile(QJsonObject p_jsonObject){
         widget_loginBefore->setVisible(true);
         widget_loginAfter->setVisible(false);
         //ToastMsg::show(this, "", tr("Account Information has been changed."));
-        //ToastMsg::show(this, "", tr("계정정보가 변경되었습니다."));        
+        //ToastMsg::show(this, "", tr("계정정보가 변경되었습니다."));
     }else{
         global.user.setUserInfo(p_jsonObject);
 
@@ -966,7 +1033,7 @@ void SettingMyPage::setResponseProfile(QJsonObject p_jsonObject){
         flowlayout_photos->addWidget(getUIAddPhotoWidget()); // TEST : 기능 구현 안되어있어서 hide 함
         //}
 
-        this->list_myPhotoEdit.clear();        
+        this->list_myPhotoEdit.clear();
         this->lb_title_regPhoto->setVisible(true);
         this->widget_flow->setVisible(true);
 
@@ -1232,86 +1299,7 @@ void SettingMyPage::setResponseDeletePhoto(QJsonObject p_jsonObject){
 }
 
 
-/**
- * @brief SettingMyPage::setResultOfMyPlayList : 음악 플레이리스트 요청 결과 처리
- * @param p_jsonObject QJsonObject
- */
-void SettingMyPage::setResultOfPlayListMusic(const QJsonObject &p_jsonObject){
-print_debug();
-    bool flagOk = false;
-    const QString jsonKey_flagOk = "flagOk";
-    const QString jsonKey_playLists = "playlists";
-    const QString jsonKey_totalcount = "totalcount";
 
-    if(p_jsonObject.contains(jsonKey_flagOk) && p_jsonObject[jsonKey_flagOk].toBool(false)){
-        if(p_jsonObject.contains(jsonKey_totalcount)){
-
-            flagOk = true;
-            int tmp_cntPlayList = p_jsonObject[jsonKey_totalcount].toInt(0);
-
-            if(tmp_cntPlayList){
-                if(p_jsonObject.contains(jsonKey_playLists)){
-                    QJsonArray jsonArr = p_jsonObject[jsonKey_playLists].toArray();
-
-                    for(int i = 0; i < jsonArr.size(); i++){
-                        QJsonObject jsonPlayList = jsonArr.at(i).toObject();
-                        appendPlayListMusic(jsonPlayList);
-                    }
-                    //stackMyPlayList->setCurrentIndex(2);
-                    stackMyPlayList_music->setCurrentIndex(1);
-                }
-            }else{
-                lb_emptyMyPlayList_music->setText(tr("There is no music playlist."));
-                //lb_emptyMyPlayList_music->setText(tr("음악 플레이 리스트가 없습니다."));
-            }
-        }
-    }
-
-    if(!flagOk){
-        lb_emptyMyPlayList_music->setText(tr("The music playlist information could not be verified."));
-        //lb_emptyMyPlayList_music->setText(tr("음악 플레이 리스트 정보를 확인할 수 없습니다."));
-    }
-}
-
-
-/**
- * @brief SettingMyPage::setResultOfPlayListRosetube : 로즈튜브 플레이리스트 요청 결과 처리
- * @param p_jsonObject QJsonObject
- */
-void SettingMyPage::setResultOfPlayListRosetube(const QJsonObject &p_jsonObject){
-print_debug();
-    bool flagOk = false;
-
-    const QString jsonKey_flagOk = "flagOk";
-    const QString jsonKey_result = "result";
-    const QString jsonKey_playlists = "playlists";
-
-    if(p_jsonObject.contains(jsonKey_flagOk) && p_jsonObject[jsonKey_flagOk].toBool(false)){
-        if(p_jsonObject.contains(jsonKey_playlists)){
-            flagOk = true;
-            QJsonArray jsonArr = p_jsonObject[jsonKey_playlists].toArray();
-
-            if(jsonArr.size() > 0){
-                for(int i = 0; i < jsonArr.size(); i++){
-                    appendPlayListRosetube(jsonArr.at(i).toObject());
-                }
-                //stackMyPlay->setCurrentIndex(2);
-                stackMyPlay_rosetube->setCurrentIndex(1);
-                //wg_myPlay->show();
-
-            }else{
-                lb_emptyMyPlay_rosetube->setText(tr("There is no RoseTube Playlist."));
-                //lb_emptyMyPlay_rosetube->setText(tr("로즈튜브 플레이리스트가 없습니다."));
-            }
-        }
-
-    }
-
-    if(!flagOk){
-        lb_emptyMyPlay_rosetube->setText(tr("Unable to verify the RoseTube playlist information."));
-        //lb_emptyMyPlay_rosetube->setText(tr("로즈튜브 플레이리스트 정보를 확인할 수 없습니다."));
-    }
-}
 
 
 /**
@@ -1334,7 +1322,7 @@ void SettingMyPage::appendPlayListMusic(const QJsonObject &p_json){
 void SettingMyPage::appendPlayListRosetube(const QJsonObject &p_json){
 
     const QString jsonKey_type = "type";
-    if(p_json.contains(jsonKey_type) && p_json[jsonKey_type].toString()=="youtube"){
+    if(p_json.contains(jsonKey_type) && p_json[jsonKey_type].toString()=="YOUTUBE"){ //bj230515
         FrameRoseTubePlayList *tmp_widget = new FrameRoseTubePlayList(OptionPopup::TypeMenu::RoseTube_Home_PlayList_My);
         tmp_widget->setData(p_json);
         tmp_widget->setHover();

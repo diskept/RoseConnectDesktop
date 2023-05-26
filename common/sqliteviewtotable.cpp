@@ -1,8 +1,11 @@
 #include "sqliteviewtotable.h"
+#include <common/global.h>//c230413
+#include <QLayout>
 
 #include <QJsonObject>
 #include <common/sqlitehelper.h>
 #include <QDateTime>
+#include "widget/dialogconfirm.h"//c230413
 
 /**
  * @brief SqliteViewToTable::SqliteViewToTable : rose.db View를 Table로 저장
@@ -10,17 +13,22 @@
  * 메모리 DB 미사용::DB 가상테이블 쿼리속도 낮음.
  * @param parent
  */
-SqliteViewToTable::SqliteViewToTable(QObject *parent)
+SqliteViewToTable::
+SqliteViewToTable(QObject *parent)
     :QObject(parent)
 {
-    setInit();
+    this->setInit();
 }
+
 
 /**
  * @brief SqliteViewToTable::~SqliteViewToTable : 소멸자
  */
 SqliteViewToTable::~SqliteViewToTable(){
+
+    this->deleteLater();
 }
+
 
 /**
  * @brief SqliteViewToTable::setInit 초기 세팅
@@ -38,15 +46,56 @@ void SqliteViewToTable::setInit(){
     });
 }
 
+
 /**
  * @brief SqliteViewToTable::viewToTable : rose db view to table 진행
  */
 void SqliteViewToTable::viewToTable(){
 
+    //c230413_start -----------------------------------------------
+   /* if(global.powerDialogShowFlag) return;
+    print_debug();
+    QLabel *lb_msg = new QLabel();
+    lb_msg->setText("The current Music DB file is being changed.\n Pleasure wait a minute.");
+    lb_msg->setAlignment(Qt::AlignCenter);
+
+    QHBoxLayout *hl_msgBox = new QHBoxLayout();
+    hl_msgBox->setContentsMargins(0,0,0,0);
+    hl_msgBox->setSpacing(0);
+    hl_msgBox->setContentsMargins(35,20,35,15);
+    hl_msgBox->addStretch(1);
+    hl_msgBox->addWidget(lb_msg);
+    hl_msgBox->addStretch(1);
+    QWidget *widget_msgBox = new QWidget();
+    widget_msgBox->setStyleSheet("background-color:#B18658;color:#FFFFFF;font-size:20px;border-radius:5px;");
+    widget_msgBox->setLayout(hl_msgBox);
+
+    QVBoxLayout *vl_total = new QVBoxLayout();
+    vl_total->setContentsMargins(0,0,0,0);
+    vl_total->setSpacing(0);
+    vl_total->addWidget(widget_msgBox, 0, Qt::AlignCenter);
+
+
+    QDialog *dialog = new QDialog();
+    dialog->setModal(true);
+    dialog->setStyleSheet("background-color:#55FF0000;border-radius:20px;");
+    dialog->setWindowFlags(Qt::Dialog | Qt::FramelessWindowHint);//c221001_1
+    dialog->setAttribute(Qt::WA_TranslucentBackground);
+    dialog->setLayout(vl_total);
+    dialog->show();
+    //dialog->raise();
+    int left = global.left_mainwindow+global.width_mainwindow/2 - (dialog->sizeHint().width() / 2);//c220804
+    int top = global.top_mainwindow+global.height_mainwindow/2 ;//- (dialog->sizeHint().height() / 2);//c220804
+    dialog->move(left, top);//c220804
+    //c230413_end -----------------------------------------------------------
+    */
+    print_debug();
+
     SqliteHelper *helper = new SqliteHelper;
     QSqlError err = helper->addConnectionRoseOld();
 
     if(err.type() == QSqlError::NoError){
+
         QString strQuery = "";
         strQuery += " SELECT * FROM sqlite_master WHERE type='view'";
 
@@ -119,11 +168,15 @@ void SqliteViewToTable::viewToTable(){
                 }
             }
         }
+
+        QCoreApplication::processEvents();
     }
 
-    QSqlDatabase::removeDatabase(helper->getDBName_Rose_Old());
+    QSqlDatabase::removeDatabase(helper->getDBName_Rose_Old());//c230413
     helper->close();
     delete helper;
+
+   // dialog->hide();
 
     emit signal_finished();
 }

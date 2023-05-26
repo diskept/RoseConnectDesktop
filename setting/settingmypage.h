@@ -11,6 +11,8 @@
 #include <common/filedownloader.h>
 #include <common/linker.h>
 
+#include "roseHome/rosehome_struct.h"
+
 #include <widget/myphotoedit.h>
 
 #include <widget/flowlayout.h>
@@ -40,6 +42,8 @@ signals:
 private slots:
     void slot_getMyInfo_profileImageDelete();
     void slot_responseHttp(const int &p_id, const QJsonObject &p_jsonObject);
+    void slot_applyResult_myMusicPlaylist(const QList<roseHome::PlaylistItemData>&, const QJsonArray&, const bool);
+    void slot_applyResult_myRosetubePlaylist(const QList<roseHome::PlaylistItemData>&, const QJsonArray&, const bool);
 
     void slot_showLoginPage();
     void slot_getMyInfo_loginAfter();
@@ -121,8 +125,6 @@ private:
     void setResponseProfile(QJsonObject p_jsonObject);
     void setResponseNickNameCheck(QJsonObject p_jsonObject);
     void setResponseDeletePhoto(QJsonObject p_jsonObject);
-    void setResultOfPlayListMusic(const QJsonObject &p_jsonObject);
-    void setResultOfPlayListRosetube(const QJsonObject &p_jsonObject);
     void appendPlayListMusic(const QJsonObject &p_json);
     void appendPlayListRosetube(const QJsonObject &p_json);
     void requestSetRoseUserInfo(QString p_userName, QString p_email, QString p_accesskey);

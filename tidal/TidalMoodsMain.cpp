@@ -51,6 +51,9 @@ namespace tidal{
             this->flagNeedReload = true;
             this->label_mainTitle->setText(ProcJsonEasy::getString(jsonObj, "name", "Noname genre"));
         }
+        else{
+            print_debug();ContentLoadingwaitingMsgHide();   //j230328
+        }
     }
 
 
@@ -72,7 +75,6 @@ namespace tidal{
             this->flag_lastPage_playlist = false;
             this->request_more_playlistData();
         }
-
     }
 
 

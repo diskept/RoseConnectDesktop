@@ -35,7 +35,6 @@ namespace bugs {
         void slot_clickedItemTrack_inList(const int, const PlaylistTrackDetailInfo_RHV::ClickMode) override;
 
         void slot_clickedItemAlbum(const tidal::AbstractItem::ClickMode clickMode) override;
-        //void slot_clickedItemArtist(const tidal::AbstractItem::ClickMode clickMode) override;
 
         void slot_applyResult_tracks(const QList<bugs::TrackItemData>&, const QJsonArray&, const bool) override;
         void slot_applyResult_albums(const QList<bugs::AlbumItemData>&, const bool) override;
@@ -46,6 +45,16 @@ namespace bugs {
     private slots:
         void slot_applyResult_artistInfo(bugs::ArtistItemData data_artist);
         void slot_artistInfo_btnClicked();
+
+        void slot_applyResult_checkRating_artist(const QJsonObject&);
+        void slot_applyResult_getRating_artist(const QJsonArray&);
+        void slot_applyResult_addRating_artist(const QJsonObject&);
+
+        void slot_applyResult_checkRating_track(const QJsonObject&);
+        void slot_applyResult_getRating_track(const QJsonArray&);
+        void slot_applyResult_addRating_track(const QJsonObject&);
+
+        void slot_bugs_completeReq_listAll_myFavoritesIds(const QJsonObject&);
 
         void slot_clickBtn_subTitle_viewAll();
 
@@ -58,6 +67,7 @@ namespace bugs {
         QHBoxLayout* setUIControl_hBoxLayout_forAlbum(QLayout *p_layout);
 
     private:
+        Linker *linker;
         DialogNotice *dlgArtistMore;
 
         AbstractImageDetailContents_RHV *artist_detail_info;
@@ -114,5 +124,4 @@ namespace bugs {
     };
 
 };
-
 #endif // BUGSARTISTDETAIL_H

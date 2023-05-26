@@ -66,9 +66,12 @@ namespace tidal {
 
             this->flag_video_draw = false;
 
-            ContentLoadingwaitingMsgShow(tr("Content is being loaded. Please wait."));
+            print_debug();ContentLoadingwaitingMsgShow(tr("Content is being loaded. Please wait."));
 
             this->request_more_videoData();
+        }
+        else{
+            print_debug();ContentLoadingwaitingMsgHide();   //j230328
         }
     }
 
@@ -112,12 +115,12 @@ namespace tidal {
      */
     void TidalSearchVidelAll::proc_wheelEvent_to_getMoreData(){
 
-        if((this->video_total_cnt > this->video_draw_cnt) && (this->list_video->size() > this->video_draw_cnt) && (this->flag_video_draw == false)
+        if((this->video_total_cnt > this->video_draw_cnt) && (this->flag_video_draw == false)
                 && (this->scrollArea_main->verticalScrollBar()->value() == this->scrollArea_main->verticalScrollBar()->maximum())){
 
             this->flag_video_draw = true;
 
-            ContentLoadingwaitingMsgShow(tr("Content is being loaded. Please wait."));
+            print_debug();ContentLoadingwaitingMsgShow(tr("Content is being loaded. Please wait."));
 
             this->request_more_videoDraw();
         }
@@ -136,7 +139,7 @@ namespace tidal {
             this->flagReqMore_video = true;
 
             // j220913 list count check
-            int width_cnt = global.LmtCnt / 220;
+            int width_cnt = global.LmtCnt / 304;
             int mod = this->video_widget_cnt % width_cnt;
             int height_cnt = 0;
 
@@ -178,7 +181,7 @@ namespace tidal {
     void TidalSearchVidelAll::request_more_videoDraw(){
 
         // j220913 list count check
-        int width_cnt = global.LmtCnt / 220;
+        int width_cnt = global.LmtCnt / 304;
         int mod = this->video_widget_cnt % width_cnt;
         int height_cnt = 0;
 
@@ -262,12 +265,13 @@ namespace tidal {
 
                     QCoreApplication::processEvents();
                 }
+                ContentLoadingwaitingMsgHide();
 
                 this->flag_flow_draw = true;
                 this->flag_video_draw = false;
             }
 
-            ContentLoadingwaitingMsgHide();
+
             this->request_more_videoData();
         }
         else{
@@ -325,7 +329,17 @@ namespace tidal {
                         break;
                 }
 
-                if(playType == OptMorePopup::ClickMode::SubMenu_Play_FromHere
+                QJsonArray tmpJsonArr = QJsonArray();
+                for(int i = index; i < this->list_video->size(); i++){
+                    QJsonObject tmpJsonObj = this->list_video->at(i).jsonObj_toPlay;
+                    tmpJsonArr.append(tmpJsonObj);
+                }
+
+                // Rose Play 요청
+                ProcRosePlay_withTidal *procRosePlay = new ProcRosePlay_withTidal(this);
+                procRosePlay->requestPlayRose_videolist(tmpJsonArr, playType);
+
+                /*if(playType == OptMorePopup::ClickMode::SubMenu_Play_FromHere
                         || playType == OptMorePopup::ClickMode::SubMenu_Play_FromHere_procEmpty
                         || playType == OptMorePopup::ClickMode::SubMenu_QueueAdd_FromHere_Last)
                 {
@@ -345,7 +359,7 @@ namespace tidal {
                     // Rose Play 요청
                     ProcRosePlay_withTidal *procRosePlay = new ProcRosePlay_withTidal(this);
                     procRosePlay->requestPlayRose_video(tmpJsonObj, playType);
-                }
+                }*/
             }
             else{
                 this->proc_clicked_itemVideo(this->list_video, clickMode, index, section);

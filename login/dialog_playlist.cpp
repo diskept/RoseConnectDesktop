@@ -155,6 +155,10 @@ void Dialog_Playlist::appendPlayListUI(int p_playlistNo, QString p_name, QString
 
     QLabel *lb_name = new QLabel();
     lb_name->setText(GSCommon::getTextCutFromLabelWidth(p_name,DLG_WIDTH-230,lb_name->font()));
+    if(lb_name->text().contains("…")){
+        lb_name->setToolTip(p_name);
+        lb_name->setToolTipDuration(2000);
+    }
     lb_name->setStyleSheet("color:#FFFFFF;font-size:16px;");
 
     QLabel *lb_count = new QLabel();

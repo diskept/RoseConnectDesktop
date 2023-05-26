@@ -11,6 +11,7 @@
 
 #include <QSlider>
 #include <QWidget>
+#include <QMouseEvent>
 
 
 /**
@@ -37,6 +38,7 @@ protected:
     bool event(QEvent *event) override;
     void mousePressEvent(QMouseEvent *event) override;
     void showEvent(QShowEvent *event) override;
+    void hideEvent(QHideEvent *event) override;
 
 private slots:
     void slot_responseHttp(const int &p_id, const QJsonObject &p_jsonObject);
@@ -44,8 +46,10 @@ private slots:
     void slot_connectedDevice();  // 장치 연결 슬롯
     void slot_searchWidget_adjust(bool flag);
 
-    void slot_volume_set(int p_value);
+    void slot_volume_set(int);
     void slot_volume_mute();
+    void slot_volume_change(int&);
+    void slot_slider_auto_change();
 
     void slot_clicked_remoteItem();
 
@@ -57,6 +61,8 @@ private:
 
 private:
     Linker *linker;
+
+    QTimer *timer;
 
     VerticalScrollArea *scrollArea_main;
 
@@ -88,6 +94,37 @@ private:
     bool flag_mute = false;
 
     bool flag_button_enable = false;
+    bool flag_auto_change = false;
 };
 
+
+
+
+
+class VolSlider_Remote : public QSlider
+{
+    Q_OBJECT
+public:
+    VolSlider_Remote(QWidget *parent = nullptr) : QSlider(parent) {}
+
+signals:
+    void signal_vol_slider_clicked(int);
+
+protected:
+    void mouseReleaseEvent(QMouseEvent *event) override {
+
+        QSlider::mouseReleaseEvent(event);
+
+        int value = this->maximum() - (event->y() / 3);
+
+        if(value >= 99){
+            value = 99;
+        }
+        else if(value <= 0){
+            value = 0;
+        }
+
+        emit signal_vol_slider_clicked(value);
+    };
+};
 #endif // REMOTEWIDGET_H

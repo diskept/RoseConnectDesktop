@@ -20,10 +20,12 @@
 #include "bugs/BugsTrackListAll_ofArtist.h"      // Track All View - of the Artist
 #include "bugs/BugsPDAlbumListAll.h"             // PD_Album All View (General)
 #include "bugs/BugsVideoList_withTrack.h"        // Video All View with the Track
+#include "bugs/BugsHistoryListAll.h"
 #include "bugs/BugsAlbumDetail.h"        // Album 상세
 #include "bugs/BugsArtistDetail.h"       // Artist 상세
 #include "bugs/BugsPDAlbumDetail.h"      // PD Album 상세
 #include "bugs/BugsMyAlbumDetail.h"      // My Album 상세
+#include "bugs/BugsHistoryDetail.h"
 
 #include "bugs/BugsSearchMain.h"         // 검색 메인
 #include "bugs/BugsSearchTrackAll.h"     // 검색 - Track All View
@@ -33,11 +35,13 @@
 #include "bugs/BugsSearchVideoAll.h"     // 검색 - Video All View
 
 #include "bugs/BugsMyAlbumAll.h"
+#include "bugs/BugsMyArtistAll.h"
 #include "bugs/BugsMyPlaylistAll.h"
 #include "bugs/BugsMyTrackAll.h"
 #include "bugs/BugsMyVideoAll.h"
-
 #include "bugs/BugsMyPlaylistDetail.h"
+#include "bugs/BugsAddPlaylist.h"
+#include "bugs/BugsRecentlyListDelete.h"
 
 #include <QJsonObject>
 #include <QWidget>
@@ -71,16 +75,13 @@ namespace bugs {
         void slot_dragEnterEvent_hide_show(bool show);//c220730
 
     private slots:
+        void slot_loginAcount();//c230426
         void slot_responseHttp(const int &p_id, const QJsonObject &p_jsonObject) override;//cheon211015
 
         void slot_clickedMoveSubPage(const QJsonObject &p_jsonData);
-        void slot_completeReq_get_session_info(const RoseSessionInfo_forBugs& sessionInfo);
 
         void slot_search(const QString&);
         void slot_dragEnterEvent_restore();//c220826_1
-
-    protected slots:
-//         void slot_linker_connectedDevice() override;
 
     protected:
         void movePageOnly(QString p_pageCode, const QJsonObject &p_data) override;
@@ -116,36 +117,47 @@ namespace bugs {
         BugsRecentlyAlbumAll *sub_recentlyAlbumAll = nullptr;
         BugsRecentlyPlaylistAll *sub_recentlyPlaylistAll = nullptr;
         BugsRecentlyTrackAll *sub_recentlyTrackAll = nullptr;
+        BugsRecenltyArtistAll *sub_recentlyArtistAll = nullptr;
         BugsPlaylistDetail *sub_playlistDetail = nullptr;
         BugsMyRosePlaylistAll *sub_myRosePlaylistAll = nullptr;
         BugsUserRosePlaylistAll *sub_userRosePlaylistAll = nullptr;
+        BugsHistoryListAll *sub_historyListAll = nullptr;
+        BugsHistoryDetail *sub_historyDetail = nullptr;
+        BugsPlaylistHistoryAll *sub_historyPlaylistAll = nullptr;
+        BugsAlbumHistoryAll *sub_historyAlbumAll = nullptr;
+        BugsTrackHistoryAll *sub_historyTrackAll = nullptr;
+        BugsArtistHistoryAll *sub_historyArtistAll = nullptr;
+        BugsAddPlaylist *sub_AddPlaylist = nullptr;                         ///< 벅스 > Playlist 추가/삭제/변경 화면
+        BugsRecentlyListDelete *sub_roseRecentlyDelete = nullptr;
 
-        BugsExplore *sub_explore = nullptr;                 ///< 벅스 > 탐색
-        BugsThemesChoose *sub_themeChoose = nullptr;        ///< 벅스 > 탐색 > 장르/테마 선택
+        BugsExplore *sub_explore = nullptr;                                 ///< 벅스 > 탐색
+        BugsThemesChoose *sub_themeChoose = nullptr;                        ///< 벅스 > 탐색 > 장르/테마 선택
 
-        BugsMyCollection *sub_myCollection = nullptr;       ///< 벅스 > My Collection
-        BugsMyLikeMusic *sub_myLikeMusic = nullptr;         ///< 벅스 > My Collection > 좋아한 음악
+        BugsMyCollection *sub_myCollection = nullptr;                       ///< 벅스 > My Collection
+        BugsMyLikeMusic *sub_myLikeMusic = nullptr;                         ///< 벅스 > My Collection > 좋아한 음악
+        BugsMyAlbumlistAll *sub_myAlbumlist = nullptr;                        ///< 벅스 > My Collection > 내 앨범
 
-        BugsSettings *sub_settings = nullptr;               ///< 벅스 > 설정
+        BugsSettings *sub_settings = nullptr;                               ///< 벅스 > 설정
 
-        BugsArtistDetail *sub_artistDetail = nullptr;       ///< 벅스 > Artist 상세
-        BugsAlbumDetail *sub_albumDetail = nullptr;         ///< 벅스 > Album 상세
-        BugsPDAlbumDetail *sub_pd_albumDetail = nullptr;    ///< 벅스 > PD's Album 상세
-        BugsMyAlbumDetail *sub_my_albumDetail = nullptr;    ///< 벅스 > My Album 상세 (user's playlist)
+        BugsArtistDetail *sub_artistDetail = nullptr;                       ///< 벅스 > Artist 상세
+        BugsAlbumDetail *sub_albumDetail = nullptr;                         ///< 벅스 > Album 상세
+        BugsPDAlbumDetail *sub_pd_albumDetail = nullptr;                    ///< 벅스 > PD's Album 상세
+        BugsMyAlbumDetail *sub_my_albumDetail = nullptr;                    ///< 벅스 > My Album 상세 (user's playlist)
 
         BugsTracksListAll *sub_trackAll = nullptr;                          ///< 벅스 > Track All View
+        BugsMostTracksListAll *sub_mostTrackAll = nullptr;                  ///< 벅스 > Track All View
         BugsTrackListAll_Share *sub_trackAll_Share = nullptr;               ///< 벅스 > Share Track All View
         BugsAlbumListAll_ofArtist *sub_albumAll_ofArtist = nullptr;         ///< 벅스 > Artist의 Album All View
         BugsTrackListAll_ofArtist *sub_trackAll_ofArtist = nullptr;         ///< 벅스 > Artist의 Track All View
         BugsPDAlbumListAll *sub_pd_albumAll = nullptr;                      ///< 벅스 > PD's Album All View
         BugsVideoList_withTrack *sub_videoAll_withTrack = nullptr;          ///< 벅스 > Video All View (with the Track)
 
-        BugsSearchMain *sub_searchMain = nullptr;                   ///< 검색 > 메인
-        BugsSearchTrackAll *sub_searchTrackAll = nullptr;           ///< 검색 > Track All View
-        BugsSearchArtistAll *sub_searchArtistAll = nullptr;         ///< 검색 > Artist All View
-        BugsSearchAlbumAll *sub_searchAlbumAll = nullptr;           ///< 검색 > Album All View
-        BugsSearchPD_AlbumAll *sub_searchPD_AlbumAll = nullptr;     ///< 검색 > PD's Album All View
-        BugsSearchVideoAll *sub_searchVideoAll = nullptr;           ///< 검색 > Video All View
+        BugsSearchMain *sub_searchMain = nullptr;                           ///< 검색 > 메인
+        BugsSearchTrackAll *sub_searchTrackAll = nullptr;                   ///< 검색 > Track All View
+        BugsSearchArtistAll *sub_searchArtistAll = nullptr;                 ///< 검색 > Artist All View
+        BugsSearchAlbumAll *sub_searchAlbumAll = nullptr;                   ///< 검색 > Album All View
+        BugsSearchPD_AlbumAll *sub_searchPD_AlbumAll = nullptr;             ///< 검색 > PD's Album All View
+        BugsSearchVideoAll *sub_searchVideoAll = nullptr;                   ///< 검색 > Video All View
 
 //        // 메뉴 관련 페이지  ---------------------- END
 

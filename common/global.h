@@ -31,6 +31,8 @@ class Global
 {
 
 public :
+    int menuUse_is_active = 0;//c230518
+    QWidget *pr = nullptr;//c230415
     DataDevice device;
     DataUser user;
 
@@ -41,6 +43,8 @@ public :
     DataUser_forBugs user_forBugs;
     DataUser_forQOBUZ user_forQobuz;//cheon2 code
     DataUser_forApple user_forApple;
+
+    QString curMenuCode;//c230423
 
     //Search button
     QPushButton *btn_Music;//cheon211008-search
@@ -56,7 +60,6 @@ public :
     bool searchMenuFlag = false;//cheon211008-search
     QString dragDrop_pathStr;//c220726
     QString smbParamPath_cmd;//c220907_1
-    QString pretoastmsg = "";//c221021_1
 
     /// 기본 포트 : 9283
     QString port = "9283";
@@ -80,7 +83,11 @@ public :
 
     //QString rosehome_userpick = "https://api.roseaudio.kr/v1/member/playlist/userpick/all";//cheon211015
     QString rosehome_userpick = "";
+    QString pretoastmsg = "";//c221021_1
 
+    bool isDrawingMainContent = true;
+
+    QDialog *dialog_delay = nullptr;//c230331
     int device_outputMode = 0;
     int indexCurrPlay[10] = {-1,0};//c220625
     int total_queue_list_count = 0;//c220528
@@ -100,7 +107,8 @@ public :
     bool bugsloginOk = false;//cheon210617-login
     bool updateCheckFlag = false;//cheon220519-network
     bool signal_device_connect_flag = false;
-
+    bool db_downloadComplete_flag = true;
+    int musicDB_DownloadingState = 0;
     //--------------------------------------------------//cheon210702-list
     int qobuz_playlist_cnt = 0;//cheon210703-list
     int qobuz_albumsuggested_cnt = 0;//cheon210703-list
@@ -262,8 +270,16 @@ public :
     bool  desktopPlayerMode = false;//c220609
     //bool device_playingState = false;
     QList<QMediaContent> musicPlaylistMediaContent;
-    QDialog *abs_ani_dialog_wait;
+    QDialog *abs_ani_dialog_wait = nullptr;//c230317
     QString savetypyingStr;//c220904_1
+    int menu_width = 0;//c230409
+    QStringList media;//c230516
+    QStringList mediaTypeList;//c230516
+
+    //QDialog *dialog_delay = nullptr;//c230317
+
+    int  setVolumeSync = 0;
+    bool setMuteState = false;
 
     Global() = default;
     Global(const Global&) = delete;

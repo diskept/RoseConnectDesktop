@@ -47,6 +47,7 @@ public:
     ~LabelLongAnimation();
 
     void setText(const QString &newText);
+    void setStyleSheet(const QString &style);
 
 private slots:
     void tmr_move_text();

@@ -55,6 +55,8 @@ namespace rosetube {
         // about 서브 타이틀의 버튼
         void slot_clickBtn_subTitle_viewAll();
 
+        void slot_applyResult_getRating_track(const QJsonArray&);
+
     private:
         // 초기 UI화면 구성
         void setUIControl_requestGenre();
@@ -105,6 +107,10 @@ namespace rosetube {
 
         int genre_totalCount = 0;
         int genre_drawCount = 0;
+
+        int flag_fav_idx = 0;
+        int flag_fav_star = 0;
+        int flag_fav_type = 0;
     };
 };
 

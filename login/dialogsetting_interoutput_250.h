@@ -55,6 +55,11 @@ private slots:
     void slot_clickedDVIAB();
 private:
 
+    QDialog *loding_ani_dialog = nullptr;
+    void loding_ani_init();
+    void loding_ani_show();
+    void loding_ani_hide();
+
     QLabel *lb_i2s_text;
     QComboBox *comboBoxOpt_coaxMQA;
     QComboBox *comboBoxOutputPCMMaxSampling, *comboBoxOutputPCMResampling;

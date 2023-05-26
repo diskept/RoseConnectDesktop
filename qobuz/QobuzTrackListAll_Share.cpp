@@ -97,10 +97,13 @@ namespace qobuz {
             this->flag_track_fav = false;
             this->flag_send_track = false;
 
-            ContentLoadingwaitingMsgShow(tr("Content is being loaded. Please wait."));
+            print_debug();ContentLoadingwaitingMsgShow(tr("Content is being loaded. Please wait."));
 
             // request HTTP API
             this->request_more_trackData();
+        }
+        else{
+            print_debug();ContentLoadingwaitingMsgHide();   //j230328
         }
     }
 
@@ -247,6 +250,8 @@ namespace qobuz {
      * @param list_data
      */
     void QobuzTrackListAll_Share::slot_applyResult_tracks(const QList<qobuz::TrackItemData> &list_data, const QJsonArray &jsonArr_dataToPlay, const bool flag_lastPage){
+
+        Q_UNUSED(flag_lastPage);
 
         if(list_data.size() > 0){
 

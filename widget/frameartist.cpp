@@ -253,6 +253,14 @@ void FrameArtist::paintEvent(QPaintEvent *event){
             lb_img->setImageUrl(QString("http://%1:%2%3").arg(global.device.getDeviceIP(),global.port_img,data->getAlbum_art()));
         }
         lb_title->setText(GSCommon::getTextCutFromLabelWidth(data->getArtist(), IMG_WIDTH, lb_title->font()));
+        if(lb_title->text().contains("…")){
+            lb_title->setToolTip(data->getArtist());//c230321
+            lb_title->setToolTipDuration(2000);//c230321
+        }
         lb_album_track->setText(GSCommon::getTextCutFromLabelWidth(str_album_track, IMG_WIDTH, lb_album_track->font()));
+        if(lb_album_track->text().contains("…")){
+            lb_album_track->setToolTip(str_album_track);//c230321
+            lb_album_track->setToolTipDuration(2000);//c230321
+        }
     }
 }

@@ -1,8 +1,11 @@
-#include "dialogWakeUp.h"
+#include "widget/dialogWakeUp.h"
+
 #include "common/global.h"
 #include "common/gscommon.h"
 #include "common/networkhttp.h"
+
 #include "widget/toastmsg.h"
+
 #include <QJsonObject>
 
 
@@ -10,6 +13,7 @@ const int DLG_WIDTH = 600;
 const int DLG_HIGHT = 600;
 
 const int HTTP_REMOTE_POW = 10;
+
 
 /**
  * @brief DialogConfirm::DialogConfirm : Confirm Dialog
@@ -30,22 +34,25 @@ DialogWakeUp::DialogWakeUp(QWidget *parent, DlgWakeUpType p_confirmType)
     setUIControl();
 }
 
+
 /**
  * @brief DialogConfirm::setInit : 초기 세팅
  */
 void DialogWakeUp::setInit(){
+
     this->setModal(true);
     this->setWindowFlags(Qt::Dialog | Qt::FramelessWindowHint);
     this->setAttribute(Qt::WA_TranslucentBackground);
-    this->setFixedWidth(DLG_WIDTH);
-    this->setFixedHeight(DLG_HIGHT);
+    this->setFixedSize(DLG_WIDTH, DLG_HIGHT);
     this->setStyleSheet("background-color:transparent;");
 }
+
 
 /**
  * @brief DialogConfirm::setUIControl : UI 세팅
  */
 void DialogWakeUp::setUIControl(){
+
     lb_title = new QLabel;
     lb_title->setAlignment(Qt::AlignCenter);
     lb_title->setStyleSheet("color:#FFFFFF;font-size:40px;background-color:transparent;");
@@ -165,13 +172,15 @@ void DialogWakeUp::setUIControl(){
 #endif
 }
 
+
 void DialogWakeUp::slot_tmpMac_reject(){
+
     ToastMsg::show(this, "", tr("Power ON the ROSE device and press the ON button."));
-
-
 }
 
+
 void DialogWakeUp::slot_power_on(){
+
     NetworkHttp *network = new NetworkHttp(this);
     connect(network, SIGNAL(response(int,QJsonObject)), SLOT(slot_responseHttp(int,QJsonObject)));
 
@@ -184,14 +193,63 @@ void DialogWakeUp::slot_power_on(){
     network->request(HTTP_REMOTE_POW, QString("http://%1:%2/remote_bar_order").arg(global.device.getDeviceIP()).arg(global.port), tmp_json, true);
 }
 
-void DialogWakeUp::slot_responseHttp(const int &p_id, const QJsonObject &p_jsonObject){
+
+void DialogWakeUp::slot_responseHttp(const int &p_id, const QJsonObject &p_jsonObject){//c230511
 
     Q_UNUSED(p_jsonObject);
 
     switch(p_id){
-    case HTTP_REMOTE_POW :
-        emit linker->signal_devicePowerChanged();
-        //emit linker->signal_change_device_state();
+    case HTTP_REMOTE_POW ://c230423
+        //emit linker->signal_devicePowerChanged();
+        QTimer::singleShot(2000,this,[=](){emit linker->signal_devicePowerChanged();});//c230511
+        /*
+        if(global.curMenuCode == QString(GSCommon::MainMenuCode::RoseHome)){
+            emit linker->signal_change_device_state(SIGNAL_CATEGORY_ROSE);//
+        }
+        else if(global.curMenuCode == QString(GSCommon::MainMenuCode::Music)){
+            emit linker->signal_change_device_state(SIGNAL_CATEGORY_MUSIC);//
+        }
+        else if(global.curMenuCode == QString(GSCommon::MainMenuCode::Video)){
+            emit linker->signal_change_device_state(SIGNAL_CATEGORY_ROSE);//
+        }
+        else if(global.curMenuCode == QString(GSCommon::MainMenuCode::Radio)){
+            emit linker->signal_change_device_state(SIGNAL_CATEGORY_ROSE);//
+        }
+        else if(global.curMenuCode == QString(GSCommon::MainMenuCode::RoseRadio)){
+            emit linker->signal_change_device_state(SIGNAL_CATEGORY_ROSE);//
+        }
+        else if(global.curMenuCode == QString(GSCommon::MainMenuCode::RoseFM)){
+            emit linker->signal_change_device_state(SIGNAL_CATEGORY_ROSE);//
+        }
+        else if(global.curMenuCode == QString(GSCommon::MainMenuCode::RoseTube)){
+            emit linker->signal_change_device_state(SIGNAL_CATEGORY_ROSE);//
+        }
+        else if(global.curMenuCode == QString(GSCommon::MainMenuCode::PodCast)){
+            emit linker->signal_change_device_state(SIGNAL_CATEGORY_ROSE);//
+        }
+        else if(global.curMenuCode == QString(GSCommon::MainMenuCode::CDplay)){
+            emit linker->signal_change_device_state(SIGNAL_CATEGORY_ROSE);//
+        }
+        else if(global.curMenuCode == QString(GSCommon::MainMenuCode::Tidal)){
+            emit linker->signal_change_device_state(SIGNAL_CATEGORY_TIDAL);//
+        }
+        else if(global.curMenuCode == QString(GSCommon::MainMenuCode::Bugs)){
+            emit linker->signal_change_device_state(SIGNAL_CATEGORY_BUGS);//
+        }
+        else if(global.curMenuCode == QString(GSCommon::MainMenuCode::Qobuz)){
+            emit linker->signal_change_device_state(SIGNAL_CATEGORY_QOBUZ);//
+        }
+        else if(global.curMenuCode == QString(GSCommon::MainMenuCode::AppleMusic)){
+            emit linker->signal_change_device_state(SIGNAL_CATEGORY_APPLE);//
+        }
+        else if(global.curMenuCode == QString(GSCommon::MainMenuCode::Spotify)){
+            emit linker->signal_change_device_state(SIGNAL_CATEGORY_ROSE);//
+        }
+        else if(global.curMenuCode == QString(GSCommon::MainMenuCode::Setting)){
+            emit linker->signal_change_device_state(SIGNAL_CATEGORY_ROSE);//
+        }
+        */
+
         break;
     }
 
@@ -199,41 +257,51 @@ void DialogWakeUp::slot_responseHttp(const int &p_id, const QJsonObject &p_jsonO
    this->hide();
 }
 
+
 /**
  * @brief DialogConfirm::setTitle : 타이틀 세팅 함수
  * @param p_title
  */
 void DialogWakeUp::setTitle(const QString &p_title){
+
     lb_title->setText(p_title);
 }
+
 
 /**
  * @brief DialogConfirm::setText : 텍스트 세팅함수
  * @param p_text
  */
 void DialogWakeUp::setText(const QString &p_text){
+
     lb_text->setText(p_text);
 }
+
 
 /**
  * @brief DialogConfirm::setText : 텍스트 세팅함수
  * @param p_text
  */
 void DialogWakeUp::setbText(const QString &p_text){
+
     lb_btext->setText(p_text);
 }
+
 
 /**
  * @brief DialogConfirm::setText : 텍스트 세팅함수
  * @param p_text
  */
 void DialogWakeUp::setDevice(const QString &p_name){
+
     lb_device->setText(p_name);
 }
+
 
 /**
  * @brief DialogConfirm::setAlertMode : Alert Mode 변환
  */
 void DialogWakeUp::setAlertMode(){
+
     btn_cancel->hide();
 }

@@ -82,9 +82,12 @@ namespace tidal {
 
             this->flag_album_draw = false;
 
-            ContentLoadingwaitingMsgShow(tr("Content is being loaded. Please wait."));
+            print_debug();ContentLoadingwaitingMsgShow(tr("Content is being loaded. Please wait."));
 
             this->request_more_albumData();//cheon210704-list
+        }
+        else{
+            print_debug();ContentLoadingwaitingMsgHide();   //j230328
         }
     }
 
@@ -106,7 +109,7 @@ namespace tidal {
 
             this->flag_album_draw = true;
 
-            ContentLoadingwaitingMsgShow(tr("Content is being loaded. Please wait."));
+            print_debug();ContentLoadingwaitingMsgShow(tr("Content is being loaded. Please wait."));
 
             this->request_more_albumDraw();
         }
@@ -260,9 +263,13 @@ namespace tidal {
                     QCoreApplication::processEvents();
                 }
 
+                ContentLoadingwaitingMsgHide();
+
                 this->flag_flow_draw = true;
                 this->flag_album_draw = false;
             }
+
+            this->request_more_albumData();
         }
         else{
             ContentLoadingwaitingMsgHide();      //cheon Tidal

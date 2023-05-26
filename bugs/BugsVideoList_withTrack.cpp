@@ -43,7 +43,9 @@ namespace bugs {
             this->flagNeedReload = true;
             this->data_track = tmp_data_track;
         }
-
+        else{
+            print_debug();ContentLoadingwaitingMsgHide();   //j230328
+        }
     }
 
 

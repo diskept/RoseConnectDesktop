@@ -36,7 +36,8 @@ TopNaviBar::TopNaviBar(QWidget *parent) : QWidget(parent)
     QWidget *widget = new QWidget();
     widget->setObjectName("topNaviBar");
     widget->setLayout(hlayout_etc);
-    widget->setStyleSheet("#topNaviBar { background-color:transparent;border-bottom:1px solid transparent; }");
+    //widget->setStyleSheet("#topNaviBar { background-color:transparent; border-bottom:1px solid transparent; }");
+    widget->setStyleSheet("#topNaviBar { background-color:transparent; }");
 
     QVBoxLayout *vl_total = new QVBoxLayout();
     vl_total->setContentsMargins(0,0,0,0);
@@ -137,9 +138,11 @@ void TopNaviBar::clickedNextBtn(){
  * @param event
  */
 void TopNaviBar::resizeEvent(QResizeEvent * /*event*/){
-    if(this->size().width()<=1150){
+    /*if(this->size().width()<=1150){
         this->searchRemoteBar->resetFixedWidth(450);
     }else{
         this->searchRemoteBar->resetFixedWidth(600);
-    }
+    }*/
+
+    this->searchRemoteBar->resetFixedWidth(600);
 }

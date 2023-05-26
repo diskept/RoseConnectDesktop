@@ -1030,7 +1030,7 @@ void dialogsetting_output_520::slot_clickedHOIquestion(){//c220708
     DialogConfirm *dlgConfirmOutput = new DialogConfirm(this);
     dlgConfirmOutput->setAlignment(Qt::AlignLeft);
     dlgConfirmOutput->setTitle(tr("Headphone Output Impedance"));
-    dlgConfirmOutput->setText(tr("This is a menu to set the Headphone Output Impedace.\nIf you select the output (16 Ohm, 32 Ohm, 50 Ohm, 100 Ohm) that matches your headphone specifications, you can enjoy better sound."));
+    dlgConfirmOutput->setText(tr("This is a menu to set the Headphone Output Impedace.\nIf you select the output (16 Ohm, 32 Ohm, 50 Ohm, 100 Ohm) that fits your headphone specifications, you can hear better sound quality."));
     dlgConfirmOutput->setAlignment(Qt::AlignLeft);
 
     dlgConfirmOutput->setGeometry((DLG_WIDTH + 80), (150 + 100), 350, 500);
@@ -1127,7 +1127,7 @@ void dialogsetting_output_520::slot_clickedFIRquestion(){//c220708
     DialogConfirm *dlgConfirmOutput = new DialogConfirm(this);
     dlgConfirmOutput->setAlignment(Qt::AlignLeft);
     dlgConfirmOutput->setTitle(tr("FIR Interpolation phase Filter"));
-    dlgConfirmOutput->setText(tr("Even if a specific filter is selected by the user, the 'Minimum Phase Slow Roll Off filter' is automatically selected to provide the best audio quality during MQA playback.\nFIR filters only apply to PCM data, no to DSD."));
+    dlgConfirmOutput->setText(tr("Even if a specific filter is selected by the user, the 'Minimum Phase Slow Roll Off filter' is automatically selected to provide the best audio quality during MQA playback.\nFIR filters only apply to PCM data, not to DSD."));
 
     dlgConfirmOutput->setGeometry((DLG_WIDTH + 80), (150 + 100), 350, 500);
     dlgConfirmOutput->setAlertMode();

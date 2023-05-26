@@ -41,8 +41,8 @@ private:
     const int IMG_HEIGHT = 186;
     const int MARGIN = 10;
 
-    const int LABEL_HEIGHT = 18;
-    const int SPACE_LABELS = 5;
+    const int LABEL_HEIGHT = 24;
+    const int SPACE_LABELS = 3;
 
     DataAlbum *data;
 

@@ -10,6 +10,8 @@
 #include "common/rosesettings.h"
 #include "common/sqlitehelper.h"
 
+#include "login/dialog_playlist_onRose.h"
+
 #include "widget/NoData_Widget.h"
 #include "widget/VerticalScrollArea.h"
 #include "widget/optionpopup.h"
@@ -75,7 +77,7 @@ namespace music {
 
         this->flagNeedReload = false;
 
-        if(isAlbum == true && (album != this->albumTitle || artist != this->artistName)){
+        if(isAlbum == true && (album != this->albumTitle || artist != this->artistName || tmpAlbumId != this->albumId)){
 
             this->flagNeedReload = true;
 
@@ -128,6 +130,7 @@ namespace music {
             this->albumTitle = album;
             this->albumMime = mime;
             this->artistName = artist;
+            this->albumId = tmpAlbumId;
 
             this->list_track = new QList<roseHome::TrackItemData>();
 
@@ -171,6 +174,7 @@ namespace music {
             this->widget_main_contents->setLayout(this->box_main_contents);
 
             this->box_contents->addWidget(widget_main_contents, 0, Qt::AlignTop);
+            this->scrollArea_main->setVerticalScrollBarPolicy(Qt::ScrollBarAsNeeded);
 
             QJsonArray *p_jsonArray_titlSub = new QJsonArray();
             QJsonObject sub1 { {"name", tr("Track")}, {"code", ALBTAB_STEP_TRACK} };
@@ -231,7 +235,7 @@ namespace music {
 
             this->box_main_contents->addLayout(this->vbox_trackList);
 
-            ContentLoadingwaitingMsgShow(tr("Content is being loaded. Please wait."));
+            print_debug();ContentLoadingwaitingMsgShow(tr("Content is being loaded. Please wait."));
 
             this->slot_applyResult_album(this->jsonArr_tracks_toPlay);
         }
@@ -424,7 +428,7 @@ namespace music {
 
             this->box_main_contents->addLayout(this->vbox_trackList);
 
-            ContentLoadingwaitingMsgShow(tr("Content is being loaded. Please wait."));
+            print_debug();ContentLoadingwaitingMsgShow(tr("Content is being loaded. Please wait."));
 
             this->slot_applyResult_album(this->jsonArr_tracks_toPlay);
         }
@@ -539,9 +543,12 @@ namespace music {
 
             this->box_main_contents->addLayout(this->vbox_trackList);
 
-            ContentLoadingwaitingMsgShow(tr("Content is being loaded. Please wait."));
+            print_debug();ContentLoadingwaitingMsgShow(tr("Content is being loaded. Please wait."));
 
             this->slot_applyResult_album(this->jsonArr_tracks_toPlay);
+        }
+        else{
+            print_debug();ContentLoadingwaitingMsgHide();   //j230328
         }
     }
 
@@ -571,7 +578,7 @@ namespace music {
 
             this->flag_draw = true;
 
-            ContentLoadingwaitingMsgShow(tr("Content is being loaded. Please wait."));
+            print_debug();ContentLoadingwaitingMsgShow(tr("Content is being loaded. Please wait."));
             this->request_more_trackDraw();
         }
     }
@@ -639,6 +646,7 @@ namespace music {
                 if(i == 0){
                     this->albumId = ProcJsonEasy::getInt(tmpObj, "album_id");
                     this->albumKey = ProcJsonEasy::getString(tmpObj, "album_key");
+                    this->albumPath = ProcJsonEasy::getString(tmpObj, "album_art");
                 }
             }
         }
@@ -654,15 +662,29 @@ namespace music {
 
         this->album_detail_info->setData_fromMusicData(albumObj);
 
-        // album favorite check
-        /*roseHome::ProcCommon *proc_fav_album = new roseHome::ProcCommon(this);
-        connect(proc_fav_album, &roseHome::ProcCommon::completeReq_rating_album, this, &AlbumDetail::slot_applyResult_getRating_album);
-        proc_fav_album->request_rose_getRating_Album("MUSIC", this->albumKey);
-        this->flag_check_album = true;*/
+        QJsonObject content;
+        content.insert("clientKey", this->albumKey);
+        content.insert("macAddress", global.device.getDeviceID());
+        content.insert("path", this->albumPath);
+        content.insert("star", 0);
 
+        QJsonArray contentArr;
+        contentArr.append(content);
+
+        QJsonObject rateObj;
+        rateObj.insert("contents", contentArr);
+        rateObj.insert("mediaType", "MUSIC");
+        rateObj.insert("last", false);
+        rateObj.insert("offset", 0);
+        rateObj.insert("page", 0);
+        rateObj.insert("size", 0);
+        rateObj.insert("totalCount", 0);
+        rateObj.insert("result", false);
+
+        // album favorite check
         roseHome::ProcCommon *proc_fav_album = new roseHome::ProcCommon(this);
-        connect(proc_fav_album, &roseHome::ProcCommon::completeCheck_rating_album, this, &AlbumDetail::slot_applyResult_checkRating_album);
-        proc_fav_album->request_rose_checkRating_Album("MUSIC", this->albumKey);
+        connect(proc_fav_album, &roseHome::ProcCommon::completeReq_rating_album, this, &AlbumDetail::slot_applyResult_getRating_album);
+        proc_fav_album->request_rose_getRating_Album("MUSIC", rateObj);
     }
 
 
@@ -685,20 +707,18 @@ namespace music {
             this->track_drawCount = max_cnt;
 
             this->cd_ico_cnt = 0;
-            int track_start_num = 0;
-            int album_start_id = 0;
+            int start_bookmark = 0;
             for(int i = 0; i < this->jsonArr_tracks_toPlay.size(); i++){
                 QJsonObject tmpObj = this->jsonArr_tracks_toPlay.at(i).toObject();
-                int track_num = ProcJsonEasy::getInt(tmpObj, "track");
-                int album_id = ProcJsonEasy::getInt(tmpObj, "album_id");
+                int bookmark = ProcJsonEasy::getInt(tmpObj, "bookmark");
 
                 if(i == 0){
-                    track_start_num = track_num;
-                    album_start_id = album_id;
+                    start_bookmark = bookmark;
                     this->cd_ico_cnt++;
                 }
                 else{
-                    if((album_start_id == album_id) && (track_start_num == track_num)){
+                    if(start_bookmark != bookmark){
+                        start_bookmark = bookmark;
                         this->cd_ico_cnt++;
                     }
                 }
@@ -716,9 +736,9 @@ namespace music {
                 this->album_track_info[i]->setProperty("index", i);
 
                 QJsonObject tmpObj = this->jsonArr_tracks_toPlay.at(i).toObject();
-                int track_num = ProcJsonEasy::getInt(tmpObj, "track");
+                int bookmark = ProcJsonEasy::getInt(tmpObj, "bookmark");
 
-                if((this->cd_ico_cnt > 1) && (track_start_num == track_num)){
+                if((this->cd_ico_cnt > 1) && (cd_num == bookmark)){
                     QWidget *tracks_header = new QWidget();
                     tracks_header->setFixedSize(1500, 52);
                     tracks_header->setContentsMargins(0, 0, 0, 0);
@@ -746,11 +766,35 @@ namespace music {
                 this->vl_tracks->addWidget(this->album_track_info[i]);
             }
 
+            QJsonArray contentArr;
             for(int i = 0; i < max_cnt; i++){
-                this->album_track_info[i]->setDataTrackInfo_Music(this->jsonArr_tracks_toPlay.at(i).toObject());
+                QJsonObject tmpTrack = this->jsonArr_tracks_toPlay.at(i).toObject();
+                this->album_track_info[i]->setDataTrackInfo_Music(tmpTrack);
+
+                QJsonObject content;
+                content.insert("clientKey", ProcJsonEasy::getString(tmpTrack, "id"));
+                content.insert("macAddress", global.device.getDeviceID());
+                content.insert("path", ProcJsonEasy::getString(tmpTrack, "data"));
+
+                contentArr.append(content);
 
                 QCoreApplication::processEvents();
             }
+
+            QJsonObject rateObj;
+            rateObj.insert("contents", contentArr);
+            rateObj.insert("mediaType", "MUSIC");
+            rateObj.insert("last", false);
+            rateObj.insert("offset", 0);
+            rateObj.insert("page", 0);
+            rateObj.insert("size", 0);
+            rateObj.insert("totalCount", 0);
+            rateObj.insert("result", false);
+
+            // album favorite check
+            roseHome::ProcCommon *proc_fav_track = new roseHome::ProcCommon(this);
+            connect(proc_fav_track, &roseHome::ProcCommon::completeReq_rating_track, this, &AlbumDetail::slot_applyResult_getRating_track);
+            proc_fav_track->request_rose_getRating_Track("MUSIC", rateObj);
 
             ContentLoadingwaitingMsgHide();
             this->flag_track_ok = true;
@@ -1000,6 +1044,25 @@ namespace music {
     }
 
 
+    void AlbumDetail::slot_add_rosePlaylist_withMusic(const int &idx, const QJsonObject &dataObj){
+
+        QString view_type = "";
+        if(idx < 0){
+            view_type = "create";
+        }
+        else{
+            view_type = "add";
+        }
+
+        QJsonObject jsonObj_move = dataObj;
+        jsonObj_move.insert("view_type", view_type);
+        jsonObj_move.insert("type", "MUSIC");
+        jsonObj_move.insert(KEY_PAGE_CODE, PAGECODE_M_ADDPLAYLIST);
+
+        emit linker->signal_clickedMovePage(jsonObj_move);
+    }
+
+
     void AlbumDetail::changedOnlyTabUI_notSendSignal(QString p_step){
 
         this->contentStep_Album = p_step;
@@ -1131,6 +1194,20 @@ namespace music {
 
                 NetworkHttp *network = new NetworkHttp;
                 network->request(0, QString("http://%1:%2/%3").arg(global.device.getDeviceIP()).arg(global.port).arg("music_song"), tmp_json, true, true);
+            }
+            else if(clickMode == AbstractImageDetailContents_RHV::BtnClickMode::AddCollection){
+
+                QJsonObject json = QJsonObject();
+                json.insert("tracks", this->jsonArr_tracks_toPlay);
+
+                Dialog::Dialog_Playlist_onRose *dialog_playlist = new Dialog::Dialog_Playlist_onRose(Dialog::Dialog_Playlist_onRose::MUSIC, json, this);
+                dialog_playlist->request_playlist_fetch();
+                connect(dialog_playlist, &Dialog::Dialog_Playlist_onRose::signal_clicked_playlist, this, &AlbumDetail::slot_add_rosePlaylist_withMusic);
+                int result = dialog_playlist->exec();
+
+                if(result == QDialog::Accepted){
+                    delete dialog_playlist;
+                }
             }
         }
     }
@@ -1289,7 +1366,20 @@ namespace music {
             }
             else if(clickMode == AlbumTrackDetailInfo_RHV::ClickMode::AddCollectionBtn){
                 // 플레이리스트 담기 - Track
-                //this->showDialog_toAddMyCollection(data_track.id, Dialog_ChoosePlaylist_forQobuz::ItemType_forAddCollection::Track);
+                QJsonArray tracks;
+                tracks.append(this->jsonArr_tracks_toPlay.at(idx).toObject());
+
+                QJsonObject json = QJsonObject();
+                json.insert("tracks", tracks);
+
+                Dialog::Dialog_Playlist_onRose *dialog_playlist = new Dialog::Dialog_Playlist_onRose(Dialog::Dialog_Playlist_onRose::MUSIC, json, this);
+                dialog_playlist->request_playlist_fetch();
+                connect(dialog_playlist, &Dialog::Dialog_Playlist_onRose::signal_clicked_playlist, this, &AlbumDetail::slot_add_rosePlaylist_withMusic);
+                int result = dialog_playlist->exec();
+
+                if(result == QDialog::Accepted){
+                    delete dialog_playlist;
+                }
             }
             else if(clickMode == AlbumTrackDetailInfo_RHV::ClickMode::MoreBtn){
 
@@ -1475,9 +1565,12 @@ namespace music {
         QSqlError err = sqlite->addConnectionRose();
         if(err.type() == QSqlError::NoError){
             QString strQuery = "";
-            strQuery += " SELECT A.album, A.album_key, A.artist_key, A.artist_id, A.album_id, A._id AS id, A._data AS data, A.title, A.artist, A.duration, A.mime_type, A.samplerate, A.bitdepth, ART._data AS album_art ";
+            /*strQuery += " SELECT A.album, A.album_key, A.artist_key, A.artist_id, A.album_id, A._id AS id, A._data AS data, A.title, A.artist, A.duration, A.mime_type, A.samplerate, A.bitdepth, ART._data AS album_art ";
             strQuery += " FROM audio AS A LEFT JOIN album_art AS ART ON A.album_id=ART.album_id ";
-            strQuery += " WHERE A.album_id=%1 ORDER BY A.track ";
+            strQuery += " WHERE A.album_id=%1 ORDER BY A.track ";*/
+            strQuery += " SELECT A.album, A.album_key, A.artist_key, A.artist_id, A.album_id, A._id AS id, A._display_name AS orderName, A._data AS data, A.title, A.artist, A.duration, A.bookmark, A.track, A.mime_type, A.samplerate, A.bitdepth, ART._data AS album_art ";
+            strQuery += " FROM audio AS A LEFT JOIN album_art AS ART ON A.album_id=ART.album_id ";
+            strQuery += " WHERE A.album_id=%1 ORDER BY A.bookmark ASC, A.track ASC, orderName ASC ";
 
             QVariantList dataDB;
             sqlite->exec(strQuery.arg(album_id), dataDB);

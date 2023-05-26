@@ -48,7 +48,7 @@ namespace apple {
     private:
         // 초기 UI화면 구성
         void setUIControl_playlist();
-        void setUiControl_filter();
+        void setUIControl_filter();
 
         void request_more_playlistData();
         void request_more_playlistDraw();

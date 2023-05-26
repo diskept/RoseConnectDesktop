@@ -164,6 +164,9 @@ namespace bugs {
         void completeReq_favarite_album(const QJsonObject& jsonObj_opt);
         void failedReq_favorite_album(const QJsonObject& jsonObj_opt);
 
+        void completeReq_favarite_pd_album(const QJsonObject& jsonObj_opt);
+        void failedReq_favorite_pd_album(const QJsonObject& jsonObj_opt);
+
         void completeReq_favarite_artist(const QJsonObject& jsonObj_opt);
         void failedReq_favorite_artist(const QJsonObject& jsonObj_opt);
 
@@ -248,6 +251,7 @@ namespace bugs {
 
     private:
 
+        Linker *linker;//c230421
         void procQueryList(const QList<QString> &list_query);
 
 
@@ -279,6 +283,7 @@ namespace bugs {
         // HTTP 응답처리 함수 about Favorite (add, delete --> response가 같음. 같은 함수 사용)
         void setResult_favorite_track(const QJsonObject &p_jsonObj, QJsonObject p_jsonObj_opt);
         void setResult_favorite_album(const QJsonObject &p_jsonObj, QJsonObject p_jsonObj_opt);
+        void setResult_favorite_pd_album(const QJsonObject &p_jsonObj, QJsonObject p_jsonObj_opt);
         void setResult_favorite_artist(const QJsonObject &p_jsonObj, QJsonObject p_jsonObj_opt);
         void setResult_favorite_video(const QJsonObject &p_jsonObj, QJsonObject p_jsonObj_opt);
 

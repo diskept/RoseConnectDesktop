@@ -11,6 +11,9 @@
 
 #include "widget/NoData_Widget.h"
 
+#include <QResizeEvent>
+#include <QScrollBar>
+
 
 namespace roseHome {
 
@@ -24,7 +27,7 @@ namespace roseHome {
      * @brief RoseHomePlaylistListAll::RoseHomePlaylistListAll
      * @param parent
      */
-    RoseHomeRosetubeListAll::RoseHomeRosetubeListAll(QWidget *parent) : AbstractRoseHomeSubWidget(MainUIType::VerticalScroll_viewAll, parent) {
+    RoseHomeRosetubeListAll::RoseHomeRosetubeListAll(QWidget *parent) : AbstractRoseHomeSubWidget(MainUIType::VerticalScroll_roseviewAll, parent) {
 
         // 기본 UI 세팅
         this->setUIControl_rosetube();
@@ -48,11 +51,12 @@ namespace roseHome {
         PageInfo_PlaylistAllView data_pageInfo = ConvertData::convertData_pageInfo_playlistAllView(jsonObj);
         this->flagNeedReload = false;
 
-        if(this->curr_api_subPath != data_pageInfo.api_subPath || this->curr_api_mainTitle != data_pageInfo.pathTitle){
+        if(this->current_pageInfo.api_subPath != data_pageInfo.api_subPath || this->current_pageInfo.type != data_pageInfo.type){
             this->flagNeedReload = true;
 
-            this->curr_api_subPath = data_pageInfo.api_subPath;
-            this->label_mainTitle->setText(data_pageInfo.pathTitle);
+            this->current_pageInfo = data_pageInfo;
+            this->label_mainTitle->setText(this->current_pageInfo.pathTitle);
+            this->label_mainTitle->setGeometry(33, 15, this->label_mainTitle->sizeHint().width(), this->label_mainTitle->sizeHint().height());
 
             // init
             this->next_offset = 0;
@@ -67,9 +71,17 @@ namespace roseHome {
 
             this->flag_playlist_draw = false;
 
-            ContentLoadingwaitingMsgShow(tr("Content is being loaded. Please wait."));
+            print_debug();ContentLoadingwaitingMsgShow(tr("Content is being loaded. Please wait."));
 
             this->request_more_rosetubeData();
+        }
+        else{
+            print_debug();ContentLoadingwaitingMsgShow(tr("Content is being loaded. Please wait."));
+
+            // request HTTP API
+            roseHome::ProcCommon *proc = new roseHome::ProcCommon(this);
+            connect(proc, &roseHome::ProcCommon::completeReq_list_rosetubes, this, &RoseHomeRosetubeListAll::slot_applyResult_rosetubelistCheck);
+            proc->request_rose_getList_recentlyRosetube("member/track/recent", "YOUTUBE", 0, 10);
         }
     }
 
@@ -106,16 +118,82 @@ namespace roseHome {
      */
     void RoseHomeRosetubeListAll::setUIControl_rosetube(){
 
-        this->label_mainTitle = this->get_addUIControl_mainTitle("Recently played rosetube");
+        GSCommon::clearLayout(this->box_mainTitle);
 
-        GSCommon::clearLayout(this->box_contents);      // Layout 초기화
-        this->box_contents->setAlignment(Qt::AlignTop | Qt::AlignLeft);
+        this->widget_mainTitle = new QWidget();
+        this->widget_mainTitle->setStyleSheet("background-color:#171717;");
+        this->widget_mainTitle->setMinimumSize(800, 69);
+        this->widget_mainTitle->resize(global.LmtCnt, 69);
+
+        this->label_mainTitle = new QLabel(this->widget_mainTitle);
+        this->label_mainTitle->setStyleSheet("background-color:transparent; font-size:26px; color:#FFFFFF;");
+        this->label_mainTitle->setText("");
+        this->label_mainTitle->setGeometry(33, 15, this->label_mainTitle->sizeHint().width(), this->label_mainTitle->sizeHint().height());
+
+        this->btn_mainTitle = new QPushButton(this->widget_mainTitle);
+        this->btn_mainTitle->setObjectName("btn_mainTitle");
+        this->btn_mainTitle->setCursor(Qt::PointingHandCursor);
+        this->btn_mainTitle->setStyleSheet("background-color:transparent;");
+
+        connect(this->btn_mainTitle, &QPushButton::clicked, this, &RoseHomeRosetubeListAll::slot_btnClicked_Delete);
+
+        this->label_delete_icon = GSCommon::getUILabelImg(":/images/q_del_ico.png", this->btn_mainTitle);
+        this->label_delete_icon->setGeometry(0, 10, 50, 50);
+
+        this->label_delete = new QLabel(this->btn_mainTitle);
+        this->label_delete->setText(tr("Delete"));
+        this->label_delete->setStyleSheet("background-color:transparent;font-size:20px;color:#FFFFFF;");
+        this->label_delete->setAlignment(Qt::AlignVCenter | Qt::AlignLeft);
+        this->label_delete->setGeometry(60, 23, this->label_delete->sizeHint().width(), this->label_delete->sizeHint().height());
+
+        this->btn_mainTitle->setGeometry(global.LmtCnt - (this->label_delete->sizeHint().width() + 60 + 53), 0, (this->label_delete->sizeHint().width() + 60), 50);
+
+        this->box_mainTitle->addWidget(this->widget_mainTitle);
+
+        // 하단에 구분 라인
+        this->addUIControl_dividedLine_onMain();
+
+        // get widget width, right margin - by diskept j230317 start
+        GSCommon::clearLayout(this->box_contents);
+        this->box_contents->setAlignment(Qt::AlignTop);
         this->scrollArea_main->setVerticalScrollBarPolicy(Qt::ScrollBarAsNeeded);
+
+        rosetube::ItemTrack_rosetube *listRosetube = new rosetube::ItemTrack_rosetube(0, 0, tidal::AbstractItem::ImageSizeMode::Ractangle_284x157, true);
+
+        this->playlist_widget_width = listRosetube->get_fixedWidth();
+        this->playlist_widget_margin = listRosetube->get_rightMargin();
+
+        //qDebug() << "[Debug] RoseHomeRosetubeListAll::setUIControl_playlists " << listRosetube->get_fixedWidth() << listRosetube->get_rightMargin();
+
+        delete listRosetube;
+        //  get widget width, right margin - by diskept j230317 finish
 
         // layout for items
         this->flowLayout_rosetube = this->get_addUIControl_flowLayout(0, 20);
+    }
+
+
+    /**
+     * @brief 데이터 , UI 초기화
+     */
+    void RoseHomeRosetubeListAll::initAll(){
+
+        // init
+        this->next_offset = 0;
+        this->playlist_total_cnt = 0;
+        this->playlist_draw_cnt = 0;
+
+        this->playlist_Arr = QJsonArray();
+
+        // request HTTP API
+        this->flagReqMore_playlist = false;
+        this->flag_lastPage_playlist = false;
+
+        this->flag_playlist_draw = false;
+
         GSCommon::clearLayout(this->flowLayout_rosetube);
 
+        print_debug();ContentLoadingwaitingMsgShow(tr("Content is being loaded. Please wait."));
     }
 
 
@@ -124,30 +202,59 @@ namespace roseHome {
      */
     void RoseHomeRosetubeListAll::proc_wheelEvent_to_getMoreData(){
 
-        if((this->playlist_total_cnt > this->playlist_draw_cnt) && (this->playlist_Arr.size() > this->playlist_draw_cnt) && (this->flag_playlist_draw == false)){
+        // wheel evnet change - by diskept j230317 start
+        if((!this->flagReqMore_playlist && !this->flag_lastPage_playlist) && (this->scrollArea_main->verticalScrollBar()->value() == this->scrollArea_main->verticalScrollBar()->maximum())){
+            this->flagReqMore_playlist = true;
 
-            this->flag_playlist_draw = true;
+            print_debug();ContentLoadingwaitingMsgShow(tr("Content is being loaded. Please wait."));
 
-            ContentLoadingwaitingMsgShow(tr("Content is being loaded. Please wait."));
+            this->request_more_rosetubeData();
+        }
+        else if((this->playlist_total_cnt > this->playlist_draw_cnt) && this->flag_playlist_draw == false && (this->scrollArea_main->verticalScrollBar()->value() == this->scrollArea_main->verticalScrollBar()->maximum())){
+
+            print_debug();ContentLoadingwaitingMsgShow(tr("Content is being loaded. Please wait."));
 
             this->request_more_rosetubeDraw();
         }
+        // wheel evnet change - by diskept j230317 start
     }
 
 
     // MARK : Request HTTP API  ------------------------------------------------------------------------------------------
 
     /**
-     * @brief Album 데이터를 더 요청한다.
+     * @brief playlist 데이터를 더 요청한다.
      * @param page
      */
     void RoseHomeRosetubeListAll::request_more_rosetubeData(){
 
-        if(!this->flagReqMore_playlist && !this->flag_lastPage_playlist){
+        // request api change - by diskept j230317 start
+        // next_offset
+        if(this->playlist_Arr.size() == 0){
+            this->next_offset = 0;
+        }
+        else{
+            this->next_offset++;
+        }
+
+        // request HTTP API
+        roseHome::ProcCommon *proc = new roseHome::ProcCommon(this);
+        connect(proc, &roseHome::ProcCommon::completeReq_list_rosetubes, this, &RoseHomeRosetubeListAll::slot_applyResult_rosetube);
+        proc->setProperty("idx", this->next_offset);
+        proc->request_rose_getList_recentlyRosetube("member/track/recent", "YOUTUBE", this->next_offset, 200);
+        // request api change - by diskept j230317 finish
+
+
+        /*if(!this->flagReqMore_playlist && !this->flag_lastPage_playlist){
             this->flagReqMore_playlist = true;
 
             // j220913 list count check
-            int width_cnt = global.LmtCnt / 304;
+            int width_cnt;//c230223
+            if(flowLayout_rosetube->sizeHint().width() < 0) {//c230223
+                width_cnt = global.LmtCnt / 304;
+            }else{
+                width_cnt = global.LmtCnt / flowLayout_rosetube->sizeHint().width();//
+            }
             int mod = this->playlist_draw_cnt % width_cnt;
 
             if(mod == 0){
@@ -168,20 +275,73 @@ namespace roseHome {
 
             // request HTTP API
             roseHome::ProcCommon *proc = new roseHome::ProcCommon(this);
-            connect(proc, &roseHome::ProcCommon::completeReq_list_rosetubes, this, &RoseHomeRosetubeListAll::slot_applyResult_myPlaylist_rose);
+            connect(proc, &roseHome::ProcCommon::completeReq_list_rosetubes, this, &RoseHomeRosetubeListAll::slot_applyResult_rosetube);
+            proc->setProperty("idx", this->next_offset);
             proc->request_rose_getList_recentlyRosetube("member/track/recent", "YOUTUBE", this->next_offset, this->playlist_widget_cnt);
 
             if(this->next_offset == 0){
                 this->flag_playlist_draw = true;
             }
-        }
+        }*/
     }
 
 
     void RoseHomeRosetubeListAll::request_more_rosetubeDraw(){
 
-        // j220913 list count check
-        int width_cnt = global.LmtCnt / 304;
+        // widget draw change - by diskept j230317 start
+        this->flag_playlist_draw = true;
+
+        int f_width = this->flowLayout_rosetube->geometry().width();
+
+        if(this->flowLayout_rosetube->geometry().width() <= 0){
+            f_width = this->width() - (65 + 65) - 10;
+        }
+
+        int f_wg_cnt = f_width / (this->playlist_widget_width + this->playlist_widget_margin);
+        int f_mod = this->playlist_draw_cnt % f_wg_cnt;
+
+        if(f_mod == 0){
+            this->playlist_widget_cnt = f_wg_cnt * 10;
+        }
+        else{
+            this->playlist_widget_cnt = f_wg_cnt * 10 + (f_wg_cnt - f_mod);
+        }
+
+        //qDebug() << "[Debug] RoseHomeAlbumListAll::slot_applyResult_albums " << f_width << f_wg_cnt << f_mod << this->playlist_widget_cnt;
+
+        int start_index = this->playlist_draw_cnt;
+        int max_cnt = ((this->playlist_total_cnt - this->playlist_draw_cnt) > this->playlist_widget_cnt ) ? this->playlist_widget_cnt : (this->playlist_total_cnt - this->playlist_draw_cnt);
+        this->playlist_draw_cnt += max_cnt;
+
+        //qDebug() << "[Debug] RoseHomeAlbumListAll::slot_applyResult_albums " << start_index << max_cnt;
+
+        for(int i = start_index; i < this->playlist_draw_cnt; i++){
+            this->recently_rosetube[i] = new rosetube::ItemTrack_rosetube(i, SECTION_FOR_MORE_POPUP___RecentlyRosetube, tidal::AbstractItem::ImageSizeMode::Ractangle_284x157, true);
+            QCoreApplication::processEvents();
+        }
+
+        for(int i = start_index; i < this->playlist_draw_cnt; i++){
+            this->recently_rosetube[i]->setData(this->playlist_Arr.at(i).toObject());
+            QCoreApplication::processEvents();
+        }
+
+        for(int i = start_index; i < this->playlist_draw_cnt; i++){
+            this->flowLayout_rosetube->addWidget(this->recently_rosetube[i]);
+            connect(this->recently_rosetube[i], &rosetube::ItemTrack_rosetube::signal_clicked, this, &RoseHomeRosetubeListAll::slot_clickedItemPlaylist);
+        }
+
+        ContentLoadingwaitingMsgHide();
+
+        this->flag_playlist_draw = false;
+        // widget draw change - by diskept j230317 finish
+
+        /*// j220913 list count check
+        int width_cnt;//c230223
+        if(flowLayout_rosetube->sizeHint().width() < 0) {//c230223
+            width_cnt = global.LmtCnt / 304;
+        }else{
+            width_cnt = global.LmtCnt / flowLayout_rosetube->sizeHint().width();//
+        }
         int mod = this->playlist_draw_cnt % width_cnt;
 
         if(mod == 0){
@@ -210,7 +370,25 @@ namespace roseHome {
         }
 
         ContentLoadingwaitingMsgHide();
-        this->flag_playlist_draw = false;
+        this->flag_playlist_draw = false;*/
+    }
+
+
+    void RoseHomeRosetubeListAll::slot_btnClicked_Delete(){
+
+        QStringList tmpTitle = this->current_pageInfo.pathTitle.split("(");
+
+        QJsonObject tmpObj;
+        tmpObj.insert("contents_type", tmpTitle.at(0));
+        tmpObj.insert("list_type", "YOUTUBE");
+        tmpObj.insert("api_subPath", this->current_pageInfo.api_subPath);
+        tmpObj.insert("filter_type", this->current_pageInfo.filter_type);
+
+        QJsonObject tmpObj_move;
+        tmpObj_move.insert(KEY_PAGE_CODE, PAGECODE_RH_RECENTLY_LIST_DELETE);
+        tmpObj_move.insert(KEY_DATA, tmpObj);
+
+        emit this->linker->signal_clickedMovePage(tmpObj_move);
     }
 
 
@@ -219,6 +397,32 @@ namespace roseHome {
     // MARK : User Event Handler (slots)
     //
     //-----------------------------------------------------------------------------------------------------------------------
+
+    void RoseHomeRosetubeListAll::slot_applyResult_getRating_track(const QJsonArray &contents){
+
+        if(contents.size() > 0){
+
+            QJsonObject tmpObj = contents.at(0).toObject();
+
+            if(tmpObj.value("flagOk").toBool() == true && tmpObj.value("message").toString() == "정상"){
+                if(this->flag_fav_type == SECTION_FOR_MORE_POPUP___RecentlyRosetube){
+                    this->recently_rosetube[this->flag_fav_idx]->setFavorite_btnHeart(this->flag_fav_star == 0 ? false : true, this->flag_fav_star);
+                }
+            }
+        }
+
+        ContentLoadingwaitingMsgHide();
+
+        if(contents.size() > 0 && this->flag_fav_star == 0){
+            // request HTTP API
+            roseHome::ProcCommon *proc = new roseHome::ProcCommon(this);
+            connect(proc, &roseHome::ProcCommon::completeReq_list_rosetubes, this, &RoseHomeRosetubeListAll::slot_applyResult_rosetubelistCheck);
+            proc->request_rose_getList_recentlyRosetube("member/track/recent", "YOUTUBE", 0, 10);
+
+            print_debug();ContentLoadingwaitingMsgShow(tr("Content is being loaded. Please wait."));
+        }
+    }
+
 
     void RoseHomeRosetubeListAll::slot_responseHttp(const int& p_id, const QJsonObject& p_jsonObj){
 
@@ -238,42 +442,51 @@ namespace roseHome {
         // ClickMode 별로 처리
         if(section == SECTION_FOR_MORE_POPUP___RecentlyRosetube){
 
-            if(clickMode == tidal::AbstractItem::ClickMode::FavBtn_Add){
+            if(clickMode == tidal::AbstractItem::ClickMode::FavBtn_Add || clickMode == tidal::AbstractItem::ClickMode::FavBtn_Addx2
+                    || clickMode == tidal::AbstractItem::ClickMode::FavBtn_Addx3 || clickMode == tidal::AbstractItem::ClickMode::FavBtn_Delete){
 
-                /*if(this->flag_check_track == false){
-                    this->track_star_fav = this->home_recently_track[idx]->getFavoritesStars();
-                    this->flag_track_fav = false;
+                bool flag_fav = false;
+                int star_fav = 0;
 
-                    if(this->track_star_fav == 3){
-                        this->track_star_fav = 0;
-                        this->flag_track_fav = false;
-                    }
-                    else if(this->track_star_fav >= 0 && this->track_star_fav < 3){
-                        this->track_star_fav++;
-                        this->flag_track_fav = true;
-                    }
+                if(clickMode == tidal::AbstractItem::ClickMode::FavBtn_Add){
+                    flag_fav = true;
+                    star_fav = 1;
+                }
+                else if(clickMode == tidal::AbstractItem::ClickMode::FavBtn_Addx2){
+                    flag_fav = true;
+                    star_fav = 2;
+                }
+                else if(clickMode == tidal::AbstractItem::ClickMode::FavBtn_Addx3){
+                    flag_fav = true;
+                    star_fav = 3;
+                }
+                else if(clickMode == tidal::AbstractItem::ClickMode::FavBtn_Delete){
+                    flag_fav = true;
+                    star_fav = 0;
+                }
 
-                    this->track_idx_fav = idx;
+                this->flag_fav_idx = index;
+                this->flag_fav_star = star_fav;
+                this->flag_fav_type = SECTION_FOR_MORE_POPUP___RecentlyRosetube;
 
-                    QJsonObject ratingInfo;
-                    ratingInfo.insert("favorite", this->flag_track_fav);
-                    ratingInfo.insert("star", this->track_star_fav);
-                    ratingInfo.insert("thumbup", false);
-                    ratingInfo.insert("type", );
+                QJsonObject track = this->playlist_Arr.at(index).toObject();
 
-                    QJsonObject track = this->jsonArr_tracks_toPlay.at(idx).toObject();
+                QJsonObject ratingInfo;
+                ratingInfo.insert("favorite", flag_fav);
+                ratingInfo.insert("star", star_fav);
+                ratingInfo.insert("thumbup", false);
+                ratingInfo.insert("type", "YOUTUBE");
 
-                    QJsonObject json;
-                    json.insert("ratingInfo", ratingInfo);
-                    json.insert("track", track);
+                QJsonObject json;
+                json.insert("track", track);
+                json.insert("ratingInfo", ratingInfo);
 
-                    // request HTTP API - get favorite for Rose Server
-                    roseHome::ProcCommon *proc_fav_track = new roseHome::ProcCommon(this);
-                    connect(proc_fav_track, &roseHome::ProcCommon::completeReq_rating_track, this, &RoseHome::slot_applyResult_getRating_track);
-                    proc_fav_track->request_rose_setRating_Track(json, this->flag_track_fav, this->track_star_fav);
+                // request HTTP API - get favorite for Rose Server
+                roseHome::ProcCommon *proc_fav_track = new roseHome::ProcCommon(this);
+                connect(proc_fav_track, &roseHome::ProcCommon::completeReq_rating_track, this, &RoseHomeRosetubeListAll::slot_applyResult_getRating_track);
+                proc_fav_track->request_rose_setRating_Track(json, flag_fav, star_fav);
 
-                    this->flag_check_track = true;
-                }*/
+                print_debug();ContentLoadingwaitingMsgShow(tr("Content is being loaded. Please wait."));
             }
             else{
 
@@ -338,13 +551,21 @@ namespace roseHome {
         }
     }
 
+
     /**
-         * @brief
-         * @param list_data
-         */
-    void RoseHomeRosetubeListAll::slot_applyResult_myPlaylist_rose(const QJsonArray &jsonArr_dataToPlay, const int &totalCnt, const bool flag_lastPage){
-print_debug();
-        ContentLoadingwaitingMsgHide();//c220616
+     * @brief
+     * @param list_data
+     */
+    void RoseHomeRosetubeListAll::slot_applyResult_rosetube(const QJsonArray &jsonArr_dataToPlay, const int &totalCnt, const bool flag_lastPage){
+
+        int idx = sender()->property("idx").toInt();
+
+        if(idx != this->next_offset){
+            return;
+        }
+
+        //qDebug() << "[Debug] RoseHomeAlbumListAll::slot_applyResult_albums " << jsonArr_dataToPlay.count();
+
         if(jsonArr_dataToPlay.size() > 0){
             this->flagReqMore_playlist = false;
             this->flag_lastPage_playlist = flag_lastPage;
@@ -358,41 +579,147 @@ print_debug();
             ProcJsonEasy::mergeJsonArray(this->playlist_Arr, jsonArr_dataToPlay);
 
             if(start_index == 0){
-                int max_cnt = this->playlist_Arr.size();
-                this->playlist_draw_cnt = max_cnt;
+                // widget draw change - by diskept j230317 start
+                int f_width = this->flowLayout_rosetube->geometry().width();
+
+                if(this->flowLayout_rosetube->geometry().width() <= 0){
+                    f_width = this->width() - (65 + 65) - 10;
+                }
+
+                int f_wg_cnt = f_width / (this->playlist_widget_width + this->playlist_widget_margin);
+                int f_mod = this->playlist_draw_cnt % f_wg_cnt;
+
+                if(f_mod == 0){
+                    this->playlist_widget_cnt = f_wg_cnt * 10;
+                }
+                else{
+                    this->playlist_widget_cnt = f_wg_cnt * 10 + (f_wg_cnt - f_mod);
+                }
+
+                //qDebug() << "[Debug] RoseHomeAlbumListAll::slot_applyResult_albums " << f_width << f_wg_cnt << f_mod << this->playlist_widget_cnt;
+
+                int start_index = this->playlist_draw_cnt;
+                int max_cnt = ((this->playlist_total_cnt - this->playlist_draw_cnt) > this->playlist_widget_cnt ) ? this->playlist_widget_cnt : (this->playlist_total_cnt - this->playlist_draw_cnt);
+                this->playlist_draw_cnt += max_cnt;
+
+                //qDebug() << "[Debug] RoseHomeAlbumListAll::slot_applyResult_albums " << start_index << max_cnt;
 
                 for(int i = start_index; i < this->playlist_draw_cnt; i++){
                     this->recently_rosetube[i] = new rosetube::ItemTrack_rosetube(i, SECTION_FOR_MORE_POPUP___RecentlyRosetube, tidal::AbstractItem::ImageSizeMode::Ractangle_284x157, true);
-                    connect(this->recently_rosetube[i], &rosetube::ItemTrack_rosetube::signal_clicked, this, &RoseHomeRosetubeListAll::slot_clickedItemPlaylist);
+                    QCoreApplication::processEvents();
                 }
 
                 for(int i = start_index; i < this->playlist_draw_cnt; i++){
                     this->recently_rosetube[i]->setData(this->playlist_Arr.at(i).toObject());
-
-                    this->flowLayout_rosetube->addWidget(this->recently_rosetube[i]);
-
                     QCoreApplication::processEvents();
                 }
+
+                for(int i = start_index; i < this->playlist_draw_cnt; i++){
+                    this->flowLayout_rosetube->addWidget(this->recently_rosetube[i]);
+                    connect(this->recently_rosetube[i], &rosetube::ItemTrack_rosetube::signal_clicked, this, &RoseHomeRosetubeListAll::slot_clickedItemPlaylist);
+                }
+
+                ContentLoadingwaitingMsgHide();
 
                 this->flag_flow_draw = true;
                 this->flag_playlist_draw = false;
             }
-
-            ContentLoadingwaitingMsgHide();
-
-            if(flag_lastPage == false){
-                this->request_more_rosetubeData();
+            else{
+                this->request_more_rosetubeDraw();
             }
+
+            // request call change - by diskept j230317 start
+            /*if(this->flag_lastPage_playlist == false){
+                this->request_more_rosetubeData();
+            }*/
+            // request call change - by diskept j230317 finish
         }
         else{
             ContentLoadingwaitingMsgHide();
 
             if(this->playlist_draw_cnt <= 0){
+                // noData widget change - by diskept j230317 start
+                int f_width = this->flowLayout_rosetube->geometry().width();
+
+                if(this->flowLayout_rosetube->geometry().width() <= 0){
+                    f_width = this->width() - (65 + 65) - 10;
+                }
+
                 NoData_Widget *noData_widget = new NoData_Widget(NoData_Widget::NoData_Message::Rosetube_NoData);
-                noData_widget->setFixedSize(1500, 500);
+                noData_widget->setFixedSize(f_width, 500);
+                // noData widget change - by diskept j230317 finish
 
                 this->flowLayout_rosetube->addWidget(noData_widget);
             }
+        }
+    }
+
+
+    void RoseHomeRosetubeListAll::slot_applyResult_rosetubelistCheck(const QJsonArray &jsonArr_dataToPlay, const int &totalCnt, const bool flag_lastPage){
+
+        Q_UNUSED(jsonArr_dataToPlay);
+        Q_UNUSED(flag_lastPage);
+
+        int change_flag = 0;
+
+        if(jsonArr_dataToPlay.size() > 0){
+            if(this->playlist_total_cnt == 0){
+                QString tmpTitle = tr("Recently Played Rosetube") + QString(" (%1)").arg(totalCnt);
+                this->label_mainTitle->setText(tmpTitle);
+                this->label_mainTitle->setGeometry(33, 15, this->label_mainTitle->sizeHint().width(), this->label_mainTitle->sizeHint().height());
+
+                this->initAll();
+
+                print_debug();ContentLoadingwaitingMsgShow(tr("Content is being loaded. Please wait."));
+                this->request_more_rosetubeData();
+
+                this->flagNeedReload = true;
+                this->setActivePage();
+            }
+            else{
+                for(int i = 0; i < jsonArr_dataToPlay.count(); i++){
+                    QJsonObject tmpData = jsonArr_dataToPlay.at(i).toObject();
+                    QJsonObject tmpObj = this->playlist_Arr.at(i).toObject();
+
+                    if(tmpData != tmpObj){
+                        change_flag++;
+                    }
+                }
+
+                if((totalCnt != this->playlist_total_cnt) || (change_flag > 0)){
+
+                    QString tmpTitle = tr("Recently Played Rosetube") + QString(" (%1)").arg(totalCnt);
+                    this->label_mainTitle->setText(tmpTitle);
+                    this->label_mainTitle->setGeometry(33, 15, this->label_mainTitle->sizeHint().width(), this->label_mainTitle->sizeHint().height());
+
+                    this->initAll();
+
+                    print_debug();ContentLoadingwaitingMsgShow(tr("Content is being loaded. Please wait."));
+                    this->request_more_rosetubeData();
+
+                    this->flagNeedReload = true;
+                    this->setActivePage();
+                }
+                else{
+                    ContentLoadingwaitingMsgHide();
+                }
+            }
+        }
+        else if(totalCnt == 0){
+            QString tmpTitle = tr("Recently Played Rosetube (0)");
+            this->label_mainTitle->setText(tmpTitle);
+            this->label_mainTitle->setGeometry(33, 15, this->label_mainTitle->sizeHint().width(), this->label_mainTitle->sizeHint().height());
+
+            this->initAll();
+
+            print_debug();ContentLoadingwaitingMsgShow(tr("Content is being loaded. Please wait."));
+            this->request_more_rosetubeData();
+
+            this->flagNeedReload = true;
+            this->setActivePage();
+        }
+        else{
+            ContentLoadingwaitingMsgHide();
         }
     }
 
@@ -537,5 +864,23 @@ print_debug();
                                  true);
             }
         }
+    }
+
+
+    /**
+     * @brief RoseHomeRosetubeListAll::resizeEvent
+     * @param event
+     */
+    void RoseHomeRosetubeListAll::resizeEvent(QResizeEvent *event){//c230223
+
+        AbstractRoseHomeSubWidget::resizeEvent(event);
+        Q_UNUSED(event);
+
+        // flowlayout spacing change - by diskept j230317 start
+        this->setFlowLayoutResize(this, this->flowLayout_rosetube, this->playlist_widget_width, this->playlist_widget_margin);
+        // flowlayout spacing change - by diskept j230317 finish
+
+        this->widget_mainTitle->resize(this->width(), 69);
+        this->btn_mainTitle->setGeometry(this->width() - (this->label_delete->sizeHint().width() + 60 + 53), 0, (this->label_delete->sizeHint().width() + 60), 50);
     }
 }

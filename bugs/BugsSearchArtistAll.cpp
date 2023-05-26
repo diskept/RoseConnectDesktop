@@ -3,6 +3,8 @@
 #include "bugs/ConvertData_forBugs.h"
 #include "bugs/ProcBugsAPI.h"
 
+#include "roseHome/ProcCommon_forRosehome.h"
+
 #include "common/gscommon.h"
 #include "common/ProcJsonEasy.h"
 
@@ -67,10 +69,13 @@ namespace bugs {
 
             this->flag_artist_draw = false;
 
-            ContentLoadingwaitingMsgShow(tr("Content is being loaded. Please wait."));
+            print_debug();ContentLoadingwaitingMsgShow(tr("Content is being loaded. Please wait."));
 
             // request HTTP API
             this->request_more_artistData();
+        }
+        else{
+            print_debug();ContentLoadingwaitingMsgHide();   //j230328
         }
     }
 
@@ -173,7 +178,7 @@ namespace bugs {
 
             this->flag_artist_draw = true;
 
-            ContentLoadingwaitingMsgShow(tr("Content is being loaded. Please wait."));
+            print_debug();ContentLoadingwaitingMsgShow(tr("Content is being loaded. Please wait."));
 
             this->request_more_artistDraw();
         }
@@ -295,12 +300,12 @@ namespace bugs {
 
                     QCoreApplication::processEvents();
                 }
+                ContentLoadingwaitingMsgHide();      //cheon Tidal
 
                 this->flag_flow_draw = true;
                 this->flag_artist_draw = false;
             }
 
-            ContentLoadingwaitingMsgHide();
             this->request_more_artistData();
         }
         else{

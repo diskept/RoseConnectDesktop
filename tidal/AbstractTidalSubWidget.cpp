@@ -5,6 +5,8 @@
 #include "tidal/ProcRosePlay_withTidal.h"
 #include "tidal/PushBtn_withID.h"
 
+#include "roseHome/ConvertData_rosehome.h"
+
 #include "common/global.h"
 #include "common/gscommon.h"
 #include "common/ProcJsonEasy.h"
@@ -693,13 +695,24 @@ namespace tidal {
                     procRosePlay->requestPlayRose_byAlbumID(data_album.id, OptMorePopup::ClickMode::Play_RightNow);
                 }
                 else if(clickMode == AbstractItem::ClickMode::AllBox){
-                    // Album Detail 페이지 진입
-                    QJsonObject jsonObj_move = ConvertData::getObjectJson_albumData(data_album);
-                    jsonObj_move.insert(KEY_PAGE_CODE, PAGECODE_T_ALBUM_DETAIL);
-                    emit this->signal_clickedMovePage(jsonObj_move);            // 페이지 이동 signal
+                    if(global.user_forTidal.flag_rosehome == true){
+                        global.user_forTidal.rosehome_obj = QJsonObject();
+                        global.user_forTidal.rosehome_obj.insert(KEY_PAGE_CODE, PAGECODE_T_ALBUM_DETAIL);
+                        tidal::AlbumItemData tmp_data_album;
+                        tmp_data_album.id = data_album.id;
+                        QJsonObject tmp_data = ConvertData::getObjectJson_albumData(tmp_data_album);
+                        global.user_forTidal.rosehome_obj.insert(KEY_DATA, tmp_data);
+
+                        emit linker->signal_RoseHome_movePage(QString(GSCommon::MainMenuCode::Tidal));
+                    }
+                    else{
+                        // Album Detail 페이지 진입
+                        QJsonObject jsonObj_move = ConvertData::getObjectJson_albumData(data_album);
+                        jsonObj_move.insert(KEY_PAGE_CODE, PAGECODE_T_ALBUM_DETAIL);
+                        emit this->signal_clickedMovePage(jsonObj_move);            // 페이지 이동 signal
+                    }
                 }
                 else if(clickMode == AbstractItem::ClickMode::MoreBtn){
-
                     // OptionPopup 띄우기 필요
                     this->makeObj_optMorePopup(OptMorePopup::Tidal_Album, ConvertData::getConvertOptHeaderData(data_album), index, section);
                 }
@@ -726,8 +739,6 @@ namespace tidal {
             if(real_index >= 0){                
                 tidal::AlbumItemData data = list_album->at(real_index);
                 this->proc_clicked_itemAlbum(data, clickMode, real_index, section);
-
-
             }
         }
         print_debug();
@@ -751,10 +762,22 @@ namespace tidal {
         else{
             if(index >= 0){
                 if(clickMode == AbstractItem::ClickMode::AllBox){
-                    // Artist Detail 페이지 진입
-                    QJsonObject jsonObj_move = ConvertData::getObjectJson_artistData(data_artist);
-                    jsonObj_move.insert(KEY_PAGE_CODE, PAGECODE_T_ARTIST_DETAIL);
-                    emit this->signal_clickedMovePage(jsonObj_move);            // 페이지 이동 signal
+                    if(global.user_forTidal.flag_rosehome == true){
+                        global.user_forTidal.rosehome_obj = QJsonObject();
+                        global.user_forTidal.rosehome_obj.insert(KEY_PAGE_CODE, PAGECODE_T_ARTIST_DETAIL);
+                        tidal::ArtistItemData tmp_data_artist;
+                        tmp_data_artist.id = data_artist.id;
+                        QJsonObject tmp_data = ConvertData::getObjectJson_artistData(tmp_data_artist);
+                        global.user_forTidal.rosehome_obj.insert(KEY_DATA, tmp_data);
+
+                        emit linker->signal_RoseHome_movePage(QString(GSCommon::MainMenuCode::Tidal));
+                    }
+                    else{
+                        // Artist Detail 페이지 진입
+                        QJsonObject jsonObj_move = ConvertData::getObjectJson_artistData(data_artist);
+                        jsonObj_move.insert(KEY_PAGE_CODE, PAGECODE_T_ARTIST_DETAIL);
+                        emit this->signal_clickedMovePage(jsonObj_move);            // 페이지 이동 signal
+                    }
                 }
                 else if(clickMode == AbstractItem::ClickMode::MoreBtn){
                     // OptionPopup 띄우기 필요
@@ -818,19 +841,11 @@ namespace tidal {
                     tidal::VideoItemData tmp_data = ConvertData::make_videoData_fromTidalJsonObj(tmpObj);
                     QString desc = tmp_data.list_artist_name.join(",");
 
-
                     // OptMorePopup 띄우기
                     this->makeObj_optMorePopup(OptMorePopup::Tidal_Video, ConvertData::getConvertOptHeaderData(data_video), index, section);
                 }
             }
         }
-        print_debug();
-    }
-
-
-    void AbstractTidalSubWidget::slot_applyResult_getShareLink(const QString &link){//c220824-1
-
-        this->shareLink = link;
     }
 
 
@@ -843,6 +858,7 @@ namespace tidal {
      * @param section
      */
     void AbstractTidalSubWidget::proc_clicked_itemVideo(QList<tidal::VideoItemData>* list_video, const AbstractItem::ClickMode clickMode, const int index, const int section){
+
         if(this->is_tidal_logined() == false){
             this->showNeededLoginTidal();               // TIDAL 로그인 안된 경우
         }
@@ -852,11 +868,7 @@ namespace tidal {
                 tidal::VideoItemData data = list_video->at(real_index);
                 this->proc_clicked_itemVideo(data, clickMode, real_index, section);
             }
-
-
         }
-        print_debug();
-
     }
 
 
@@ -1222,6 +1234,58 @@ namespace tidal {
     }
 
 
+    /**
+     * @brief ItemHistroy에서 발생한 custom click 이벤트에 대한 실제 처리를 진행함  [overloading]
+     * @details 편의 제공을 위해 overloading.
+     * @param data_history
+     * @param clickMode
+     * @param index
+     * @param section
+     */
+    void AbstractTidalSubWidget::proc_clicked_itemHistory(roseHome::HistoryItemData& data_history, const tidal::AbstractItem::ClickMode clickMode, const int index, const int section){
+
+        Q_UNUSED(section);
+
+        if(index >= 0){
+            if(clickMode == tidal::AbstractItem::ClickMode::AllBox){
+                // History 페이지 진입
+                QJsonObject jsonObj_move = roseHome::ConvertData::getObjectJson_historyData(data_history);
+                jsonObj_move.insert(KEY_PAGE_CODE, PAGECODE_T_HISTORY_DETAIL);
+                emit this->signal_clickedMovePage(jsonObj_move);            // 페이지 이동 signal
+            }
+            else if(clickMode == tidal::AbstractItem::ClickMode::MoreBtn){
+                // OptionPopup 띄우기 필요
+                //this->makeObj_optMorePopup(OptMorePopup::Rosehome_Album, ConvertData::getConvertOptHeaderData(data_history), index, section);
+            }
+        }
+    }
+
+
+    /**
+     * @brief ItemHistory에서 발생한 custom click 이벤트에 대한 실제 처리를 진행함  [overloading]
+     * @details 편의 제공을 위해 overloading.
+     * @param list_history
+     * @param clickMode
+     * @param index
+     * @param section
+     */
+    void AbstractTidalSubWidget::proc_clicked_itemHistory(QList<roseHome::HistoryItemData>* list_history, const tidal::AbstractItem::ClickMode clickMode, const int index, const int section){
+
+        int real_index = this->checkValid_index(list_history->length(), index);
+
+        if(real_index >= 0){
+            roseHome::HistoryItemData data = list_history->at(real_index);
+            this->proc_clicked_itemHistory(data, clickMode, real_index, section);
+        }
+    }
+
+
+    void AbstractTidalSubWidget::slot_applyResult_getShareLink(const QString &link){//c220824-1
+
+        this->shareLink = link;
+    }
+
+
     //-----------------------------------------------------------------------------------------------------------------------
     //
     // MARK : OptMorePopup 객체의 signal 대하여, Data Type 별로 처리하는 함수 모음
@@ -1511,32 +1575,8 @@ namespace tidal {
         )
         {
             // Rose Play 요청
-            //ProcRosePlay_withTidal *procRosePlay = new ProcRosePlay_withTidal(this);
-            //procRosePlay->requestPlayRose_byTracks(jsonArr_toPlayAll, index, clickMode);
-
-            if(clickMode == OptMorePopup::ClickMode::SubMenu_Play_FromHere
-                    || clickMode == OptMorePopup::ClickMode::SubMenu_Play_FromHere_procEmpty
-                    || clickMode == OptMorePopup::ClickMode::SubMenu_QueueAdd_FromHere_Last)
-            {
-                QJsonArray tmpJsonArr = QJsonArray();
-                for(int i = index; i < jsonArr_toPlayAll.size(); i++){
-                    QJsonObject tmpJsonObj = jsonArr_toPlayAll.at(i).toObject();
-                    tmpJsonArr.append(tmpJsonObj);
-                }
-
-                // Rose Play 요청
-                ProcRosePlay_withTidal *procRosePlay = new ProcRosePlay_withTidal(this);
-                procRosePlay->requestPlayRose_byTracks(tmpJsonArr, 0, clickMode);
-            }
-            else{
-                QJsonObject tmpJsonObj = jsonArr_toPlayAll.at(index).toObject();
-                QJsonArray tmpJsonArr = QJsonArray();
-                tmpJsonArr.append(tmpJsonObj);
-
-                // Rose Play 요청
-                ProcRosePlay_withTidal *procRosePlay = new ProcRosePlay_withTidal(this);
-                procRosePlay->requestPlayRose_byTracks(tmpJsonArr, 0, clickMode);
-            }
+            ProcRosePlay_withTidal *procRosePlay = new ProcRosePlay_withTidal(this);
+            procRosePlay->requestPlayRose_byTracks(jsonArr_toPlayAll, index, clickMode);
         }
         else if(clickMode == OptMorePopup::ClickMode::Add_Favorite){
             // 즐겨찾기 추가 - Track
@@ -1606,9 +1646,9 @@ namespace tidal {
             if(global.user_forTidal.flag_rosehome == true){
                 global.user_forTidal.rosehome_obj = QJsonObject();
                 global.user_forTidal.rosehome_obj.insert(KEY_PAGE_CODE, PAGECODE_T_ALBUM_DETAIL);
-                tidal::ArtistItemData tmp_data_album;
+                tidal::AlbumItemData tmp_data_album;
                 tmp_data_album.id = data_track.album_id;
-                QJsonObject tmp_data = ConvertData::getObjectJson_artistData(tmp_data_album);
+                QJsonObject tmp_data = ConvertData::getObjectJson_albumData(tmp_data_album);
                 global.user_forTidal.rosehome_obj.insert(KEY_DATA, tmp_data);
 
                 emit linker->signal_RoseHome_movePage(QString(GSCommon::MainMenuCode::Tidal));
@@ -2019,6 +2059,7 @@ namespace tidal {
     void AbstractTidalSubWidget::movePage_video_allView(tidal::PageInfo_VideoAllView& data_pageInfo){
         QJsonObject jsonObj_move = ConvertData::getObjectJson_pageInfo_videoAllView(data_pageInfo);
         jsonObj_move.insert(KEY_PAGE_CODE, PAGECODE_T_VIDEO_ALL_LIST_VIEW);
+        print_debug();ContentLoadingwaitingMsgShow("BugsHome::setUIControl_appendWidget");
         emit this->signal_clickedMovePage(jsonObj_move);            // 페이지 이동 signal
     }
 
@@ -2029,6 +2070,7 @@ namespace tidal {
     void AbstractTidalSubWidget::movePage_track_allView(tidal::PageInfo_TrackAllView& data_pageInfo){
         QJsonObject jsonObj_move = ConvertData::getObjectJson_pageInfo_trackAllView(data_pageInfo);
         jsonObj_move.insert(KEY_PAGE_CODE, PAGECODE_T_TRACK_ALL_LIST_VIEW);
+        print_debug();ContentLoadingwaitingMsgShow("BugsHome::setUIControl_appendWidget");
         emit this->signal_clickedMovePage(jsonObj_move);            // 페이지 이동 signal
     }
 
@@ -2039,6 +2081,7 @@ namespace tidal {
     void AbstractTidalSubWidget::movePage_album_allView(tidal::PageInfo_AlbumAllView& data_pageInfo){
         QJsonObject jsonObj_move = ConvertData::getObjectJson_pageInfo_albumAllView(data_pageInfo);
         jsonObj_move.insert(KEY_PAGE_CODE, PAGECODE_T_ALBUM_ALL_LIST_VIEW);
+        print_debug();ContentLoadingwaitingMsgShow("BugsHome::setUIControl_appendWidget");
         emit this->signal_clickedMovePage(jsonObj_move);            // 페이지 이동 signal
     }
 
@@ -2050,6 +2093,7 @@ namespace tidal {
     void AbstractTidalSubWidget::movePage_playlist_allView(tidal::PageInfo_PlaylistAllView& data_pageInfo){
         QJsonObject jsonObj_move = ConvertData::getObjectJson_pageInfo_playlistAllView(data_pageInfo);
         jsonObj_move.insert(KEY_PAGE_CODE, PAGECODE_T_PLAYLIST_ALL_LIST_VIEW);
+        print_debug();ContentLoadingwaitingMsgShow("BugsHome::setUIControl_appendWidget");
         emit this->signal_clickedMovePage(jsonObj_move);
     }
 
@@ -2061,6 +2105,7 @@ namespace tidal {
     void AbstractTidalSubWidget::movePage_playlist_editOfMine(tidal::PlaylistItemData& data_playlist){
         QJsonObject jsonObj_move = ConvertData::getObjectJson_playlistData(data_playlist);
         jsonObj_move.insert(KEY_PAGE_CODE, PAGECODE_T_MY_COLLECTION_PLAYLIST_EDIT);
+        print_debug();ContentLoadingwaitingMsgShow("BugsHome::setUIControl_appendWidget");
         emit this->signal_clickedMovePage(jsonObj_move);
     }
 
@@ -2079,6 +2124,7 @@ namespace tidal {
 
             QJsonObject jsonObj_move = ConvertData::getObjectJson_artistData(tmp_data_artist);
             jsonObj_move.insert(KEY_PAGE_CODE, PAGECODE_T_ARTIST_DETAIL);
+            print_debug();ContentLoadingwaitingMsgShow("BugsHome::setUIControl_appendWidget");
             emit this->signal_clickedMovePage(jsonObj_move);                    // 페이지 이동 signal
         }
     }
@@ -2096,6 +2142,7 @@ namespace tidal {
 
             QJsonObject jsonObj_move = ConvertData::getObjectJson_albumData(tmp_data_album);
             jsonObj_move.insert(KEY_PAGE_CODE, PAGECODE_T_ALBUM_DETAIL);
+            print_debug();ContentLoadingwaitingMsgShow("BugsHome::setUIControl_appendWidget");
             emit this->signal_clickedMovePage(jsonObj_move);                    // 페이지 이동 signal
         }
     }
@@ -2183,8 +2230,7 @@ namespace tidal {
         }
         else{
 
-            QJsonObject data;
-            data.insert("tracks", ProcJsonEasy::getJsonArray(dataObj, "tracks"));
+            QJsonObject data = dataObj;
             data.insert("view_type", view_type);
             data.insert("type", "TIDAL");
 

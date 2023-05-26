@@ -132,6 +132,9 @@ void DataPopup::setJsonData(const QJsonObject &p_data){
     if(p_data.contains("track")){
         this->track = p_data["track"].toInt();
     }
+    if(p_data.contains("bookmark")){
+        this->bookmark = p_data["bookmark"].toInt();
+    }
 
     // 비디오 전용
     if(p_data.contains("duration")){
@@ -171,6 +174,9 @@ void DataPopup::setJsonData(const QJsonObject &p_data){
     }
     if(p_data.contains("thumbnailUrl")){
         this->thumbnailUrl = p_data["thumbnailUrl"].toString();
+    }
+    if(p_data.contains("strDuration")){
+        this->strDuration = p_data["strDuration"].toString();
     }
 
     // 네트워크 음원재생 전용
@@ -233,6 +239,7 @@ QJsonObject DataPopup::getJsonData() const
     tmp_json.insert("samplerate", samplerate);
     tmp_json.insert("bitdepth", bitdepth);
     tmp_json.insert("track", track);
+    tmp_json.insert("bookmark", bookmark);
 
     // 비디오 전용
     tmp_json.insert("duration", duration);
@@ -250,6 +257,7 @@ QJsonObject DataPopup::getJsonData() const
     tmp_json.insert("channelId", channelId);
     tmp_json.insert("channelName", channelName);
     tmp_json.insert("thumbnailUrl", thumbnailUrl);
+    tmp_json.insert("strDuration", strDuration);
 
     // Favorite 전용
     tmp_json.insert("favorite_id", favorite_id);

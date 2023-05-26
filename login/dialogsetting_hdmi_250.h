@@ -49,8 +49,14 @@ private slots:
     void slot_clickedPassquestion();//c220511
     void slot_clickedRoonquestion();//c220511
     void slot_clickedbit32question();//c220511
+//    void slot_modeOnOff_drc();
 
 private:
+
+    QDialog *loding_ani_dialog = nullptr;
+    void loding_ani_init();
+    void loding_ani_show();
+    void loding_ani_hide();
 
     QComboBox *comboBoxHdmiMQA;
     QComboBox *comboBoxHdmiPCM, *comboBoxHdmiPCM_Max;

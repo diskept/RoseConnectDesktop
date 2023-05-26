@@ -28,6 +28,7 @@ namespace tidal {
 
         void setJsonObject_forData(const QJsonObject& jsonObj) override;
         void setActivePage() override;
+        void resizeEvent(QResizeEvent *event) override;         // filter Box 사이즈 조절을 위해//c230223
 
     protected slots:
         void slot_applyResult_playlists(const QList<tidal::PlaylistItemData>&, const QJsonArray&, const bool) override;

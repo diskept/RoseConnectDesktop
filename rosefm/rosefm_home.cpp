@@ -404,7 +404,7 @@ void RoseFmHome::setUIControl(){
     sliderWidget->setGeometry(61, 25, 1176, 181);
 
     this->fre_slider = new QSlider(Qt::Horizontal, sliderWidget);
-    this->fre_slider->setStyleSheet("QSlider::handle:horizontal{image: url(:/images/roseFM/fm_ needle);}"
+    this->fre_slider->setStyleSheet("QSlider::handle:horizontal{image: url(:/images/roseFM/fm_ needle.png);}"
                             "QSlider::groove:horizontal{image: url(:/images/roseFM/fm_fre_kr.png); Qt::AlignCenter}"
                             "QSlider::groove:horizontal{background-image: url(:/images/roseFM/fm_fre_on_bg.png);}");
     this->fre_slider->setMaximum(248);

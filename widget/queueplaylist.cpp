@@ -155,17 +155,17 @@ QueuePlayList::QueuePlayList(QWidget *parent) : QWidget(parent)
 {
     //print_debug();
     //this->list_queueItem = QList<QueueItem*>();
-    pixmapDefault.load(":images/def_mus_60.png");
-    pixmapCheckOff.load(":images/playlist/list_check_off.png");
-    pixmapCheckOn.load(":images/playlist/list_check_on.png");
-    pixmapDel.load(":images/playlist/fol_del_ico.png");
+    pixmapDefault.load(":/images/def_mus_60.png");
+    pixmapCheckOff.load(":/images/playlist/list_check_off.png");
+    pixmapCheckOn.load(":/images/playlist/list_check_on.png");
+    pixmapDel.load(":/images/playlist/fol_del_ico.png");
 
-    pixmapMore.load(":images/icon_menu.png");
-    pixmapNet.load(":images/playBar/net_play_ico.png");
-    pixmapShare.load(":images/playBar/mus_play_ico_share.png");
-    pixmapPlaying.load(":images/playing_icon.png");
-    pixmapFlac.load(":images/flac_mini.png");
-    pixmapChange_list.load(":images/change_list_ico_b.png");
+    pixmapMore.load(":/images/icon_menu.png");
+    pixmapNet.load(":/images/playBar/net_play_ico.png");
+    pixmapShare.load(":/images/playBar/mus_play_ico_share.png");
+    pixmapPlaying.load(":/images/playing_icon.png");
+    pixmapFlac.load(":/images/flac_mini.png");
+    pixmapChange_list.load(":/images/change_list_ico_b.png");
 
     this->nextPlayNo = -1;
     //delegate = new QueueItemDelegate(this);
@@ -222,12 +222,13 @@ QueuePlayList::QueuePlayList(QWidget *parent) : QWidget(parent)
 
     menu_click_init();
 
-    btn_PlayPosition = new QPushButton(tr("Refresh"));//c220718
-    btn_PlayPosition->setObjectName("btn_PlayPosition");
+    btn_PlayPosition = new QPushButton();
+    btn_PlayPosition->setIcon(QIcon(":/images/refresh_ico2.png"));
+    btn_PlayPosition->setIconSize(QSize(50, 50));//70,70
     btn_PlayPosition->setCursor(Qt::PointingHandCursor);
-    btn_PlayPosition->setFixedSize(80,30);            //45, 50
+    btn_PlayPosition->setObjectName("btn_PlayPosition");
     //btn_PlayPosition->setStyleSheet("#btn_PlayPosition { font-size:16px; color:#ececec;  background-color:transparent;  border:2px solid #CCCCCC;border-radius:13px;  } ");
-    btn_PlayPosition->setStyleSheet("QPushButton {font-size:16px; color:#ececec;  background-color:transparent;  border:2px solid #CCCCCC;border-radius:13px;} QPushButton:hover {background-color: #505050; color: white;} QPushButton:pressed{background-color: #F79862;} QPushButton:checked{background-color: #F79862;border:none;} QToolTip{ color: #404040; }");
+    btn_PlayPosition->setStyleSheet("QPushButton {font-size:16px; color:#ececec;  background-color:transparent;  border-radius:13px;} QPushButton:hover {background-color: #505050; color: white;} QPushButton:pressed{background-color: #F79862;} QPushButton:checked{background-color: #F79862;border:none;} QToolTip{ color: #404040; }");
 
 
     // 편집모드일때 보이는 버튼
@@ -247,15 +248,15 @@ QueuePlayList::QueuePlayList(QWidget *parent) : QWidget(parent)
     btn_delok->setObjectName("btn_delok");
     btn_delok->setCursor(Qt::PointingHandCursor);
     btn_delok->setFixedSize(80,26);            //45, 50
-    btn_delok->setStyleSheet("#btn_delok {font-weight:200; font-size:14px; color:#B18658;  background-color:transparent; border:1px solid #B18658;border-radius:13px;  } ");
-    btn_delok->setStyleSheet("QPushButton {font-size:14px; color:#ececec;  background-color:transparent;  border:2px solid #CCCCCC;border-radius:13px;} QPushButton:hover {background-color: #505050; color: white;} QPushButton:pressed{background-color: #F79862;} QPushButton:checked{background-color: #F79862;border:none;} QToolTip{ color: #404040; }");
+    btn_delok->setStyleSheet("#btn_delok {font-weight:200; font-size:14px; color:#b18658;  background-color:transparent; border:1px solid #b18658;border-radius:13px;  } ");
+    btn_delok->setStyleSheet("QPushButton {font-size:14px; color:#ececec;  background-color:transparent;  border:2px solid #CCCCCC;border-radius:13px;} QPushButton:hover {background-color: transparent; color: #b18658;border:2px solid #b18658;border-radius:13px;} QPushButton:pressed{background-color: #F79862;} QPushButton:checked{background-color: #F79862;border:none;} QToolTip{ color: #404040; }");
 
 
     btn_del = new QPushButton(tr("Delete"));
     btn_del->setObjectName("btn_delok");
     btn_del->setCursor(Qt::PointingHandCursor);
     btn_del->setFixedSize(70,26);            //45, 50
-    btn_del->setStyleSheet("#btn_delok { font-size:14px; color:#ececec;  background-color:transparent;  border-radius:13px;  } ");
+    btn_del->setStyleSheet("QPushButton {font-size:14px; color:#ececec;  background-color:transparent;} QPushButton:hover {background-color: transparent; color: #b18658;} QPushButton:pressed{background-color: #F79862;} QPushButton:checked{background-color: #F79862;border:none;} QToolTip{ color: #404040; }");
 
     QHBoxLayout *hl_editMode = new QHBoxLayout();
     hl_editMode->setContentsMargins(0,0,10,0);
@@ -267,10 +268,9 @@ QueuePlayList::QueuePlayList(QWidget *parent) : QWidget(parent)
 
     widget_editMode = new QWidget();
     widget_editMode->setObjectName("widget_editMode");
-    widget_editMode->setFixedHeight(33);
-
+    widget_editMode->setFixedHeight(50);
     widget_editMode->setLayout(hl_editMode);
-    widget_editMode->setStyleSheet("#widget_editMode { background-color:#494949; border-bottom:1px solid #494949; }");//#494949
+    widget_editMode->setStyleSheet("#widget_editMode { background-color:#333333; border-bottom:1px solid #4d4d4d; }");//#494949
 
     //-----------------------------------------------------------
 
@@ -302,18 +302,18 @@ QueuePlayList::QueuePlayList(QWidget *parent) : QWidget(parent)
     lb_title->setText(tr("Queue List"));
     lb_title->setFixedHeight(30);
     //lb_title->setText(tr("재생목록"));
-    lb_title->setStyleSheet("font-weight:200;font-size:22px;font:bold;color:#FFFFFF;");
+    lb_title->setStyleSheet("font-weight:normal;font-size:20px;color:#FFFFFF;");
 
     lb_title_cnt = new QLabel();
     lb_title_cnt->setText(tr("0/3,000"));
-
+    lb_title_cnt->setContentsMargins(3,0,0,0);
     lb_title_cnt->setFixedHeight(20);
     lb_title_cnt->setStyleSheet("font-weight:200;font-size:18px;color:#bbbbbb;");
     //---------------
     lb_position_label = new QLabel();
     lb_position_label->setText(tr("Currently Playing : "));
     lb_position_label->setFixedSize(135,20);
-    lb_position_label->setStyleSheet("font-weight:200;font-size:16px;color:#FFFFFF;");
+    lb_position_label->setStyleSheet("font-weight: 200;font-size:16px;color:#FFFFFF;");
 
     lb_position_site = new QLabel();
     lb_position_site->setText(tr("Tidal"));
@@ -346,10 +346,11 @@ QueuePlayList::QueuePlayList(QWidget *parent) : QWidget(parent)
     //------------------
 
     QVBoxLayout *vl_lb_title = new QVBoxLayout();
-    vl_lb_title->setContentsMargins(0,10,0,10);
+    vl_lb_title->setContentsMargins(0,5,0,0);
     vl_lb_title->setSpacing(0);
     vl_lb_title->setAlignment(Qt::AlignTop);
     vl_lb_title->addWidget(lb_title);
+    vl_lb_title->addSpacing(5);
     vl_lb_title->addWidget(lb_title_cnt);
 
     widget_title = new QWidget();
@@ -359,12 +360,12 @@ QueuePlayList::QueuePlayList(QWidget *parent) : QWidget(parent)
     lb_title_move->setText(tr("OrderEdit"));
     lb_title_move->setFixedHeight(70);
     //lb_title_move->setText(tr("재생목록"));
-    lb_title_move->setStyleSheet("font-weight:200;font-size:22px;color:#FFFFFF;");
+    lb_title_move->setStyleSheet("font-weight:200;font-size:20px;color:#FFFFFF;");
 
     lb_title_del = new QLabel();
     lb_title_del->setText(tr("0 songs selected"));
     lb_title_del->setFixedHeight(70);
-    lb_title_del->setStyleSheet("font-weight:200;font-size:22px;color:#FFFFFF;");
+    lb_title_del->setStyleSheet("font-weight:normal;font-size:20px;color:#FFFFFF;");
 
     QHBoxLayout *hl_top = new QHBoxLayout();
     //hl_top->setContentsMargins(12,15,12,18);
@@ -377,7 +378,7 @@ QueuePlayList::QueuePlayList(QWidget *parent) : QWidget(parent)
 
     hl_top->addStretch(1);
     hl_top->addWidget(btn_PlayPosition);
-    hl_top->addSpacing(10);//c220720
+//    hl_top->addSpacing(10);//c220720
     hl_top->addWidget(btn_edit);
     hl_top->addWidget(btn_mov);
     hl_top->addWidget(btn_moveok);
@@ -385,13 +386,14 @@ QueuePlayList::QueuePlayList(QWidget *parent) : QWidget(parent)
 
     QWidget *widget_top = new QWidget();
     widget_top->setObjectName("widget_top");
-    widget_top->setStyleSheet("#widget_top { background-color:#333333; border-bottom:1px solid #5A5A5A; }");
+    widget_top->setFixedHeight(70);
+    widget_top->setStyleSheet("#widget_top { background-color:#333333; border-bottom:0.5px solid #919191; }");
     widget_top->setLayout(hl_top);
     //----------------------------------------------------------
 
-    pixmapPlaying = pixmapPlaying.scaled(50,50, Qt::IgnoreAspectRatio, Qt::SmoothTransformation);
-    pixmapDefault = pixmapDefault.scaled(50,50, Qt::IgnoreAspectRatio, Qt::SmoothTransformation);
-    pixmapChange_list = pixmapChange_list.scaled(50,50, Qt::IgnoreAspectRatio, Qt::SmoothTransformation);
+    pixmapPlaying = pixmapPlaying.scaled(60,60, Qt::IgnoreAspectRatio, Qt::SmoothTransformation);
+    pixmapDefault = pixmapDefault.scaled(60,60, Qt::IgnoreAspectRatio, Qt::SmoothTransformation);
+    pixmapChange_list = pixmapChange_list.scaled(60,60, Qt::IgnoreAspectRatio, Qt::SmoothTransformation);
 
     linker = Linker::getInstance();
 
@@ -421,7 +423,7 @@ QueuePlayList::QueuePlayList(QWidget *parent) : QWidget(parent)
     //this->stackWidget_queue = new QStackedWidget();//c220625
 
     temp_menuWidget =  new QWidget();
-    temp_menuWidget->setStyleSheet("background-color:#111111;");
+    temp_menuWidget->setStyleSheet("background-color:#333333; border: 0px solid #fff");
     temp_menuWidget->setLayout(box_contents);
 
 
@@ -463,7 +465,7 @@ QueuePlayList::QueuePlayList(QWidget *parent) : QWidget(parent)
     QWidget *widget_menuIcon = new QWidget();
     widget_menuIcon->setFixedWidth(50);
     widget_menuIcon->setObjectName("widget_menuIcon");
-    widget_menuIcon->setStyleSheet("#widget_menuIcon { background-color:#666666;border-top-left-radius:15px;border-bottom-left-radius:15px; }");
+    widget_menuIcon->setStyleSheet("#widget_menuIcon { background-color:#4d4d4d;border-top-left-radius:15px;border-bottom-left-radius:15px; }");
     widget_menuIcon->setLayout(vl_menuIcon);
     QVBoxLayout *vl_menuIconTotal = new QVBoxLayout();
     vl_menuIconTotal->setContentsMargins(0,0,0,0);
@@ -580,7 +582,7 @@ QueuePlayList::QueuePlayList(QWidget *parent) : QWidget(parent)
     print_debug();
     connect(this, SIGNAL(signal_playCurr_recomm()), this, SLOT(slot_playCurr_recomm()));
 
-    connect(linker, SIGNAL(signal_queue_recent_track_add()), this, SLOT(slot_queue_recent_track_add_http_signal()));//cheon211206
+    connect(linker, SIGNAL(signal_recommand_data_change()), this, SLOT(slot_queue_recent_track_add_http_signal()));//c230429
     connect(linker, SIGNAL(signal_queuelist_musicStart()), this, SLOT(slot_queuelistPositionGet_http_signal()));
     //connect(linker, SIGNAL(signal_queuelist_reload()), this, SLOT(slot_queuelistPositionGet_http_signal()));
 
@@ -776,8 +778,14 @@ ListWidget *QueuePlayList::setListWidget(){
 
     listWidget->setVerticalScrollBarPolicy(Qt::ScrollBarAsNeeded);
     listWidget->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
-    listWidget->setStyleSheet("background-color:#222222;");
+    listWidget->setStyleSheet("background-color:#333333;spacing: size-policy: preferred;");
 
+    listWidget->verticalScrollBar()->setStyleSheet("QScrollBar:vertical {border: none; background-color: transparent; width: 6px; margin: 0px 0px 0px 0px; }"
+                                                   "QScrollBar::handle:vertical {background-color: #b18658; min-height: 60px; border-radius: 3px; }"
+                                                   "QScrollBar::add-line:vertical {height: 0px; subcontrol-position: bottom; subcontrol-origin: margin; }"
+                                                   "QScrollBar::sub-line:vertical {height: 0 px; subcontrol-position: top; subcontrol-origin: margin; }"
+                                                   "QScrollBar::add-page:vertical, QScrollBar::sub-page:vertical {background: none; }");
+    /*
     listWidget->verticalScrollBar()->
 
             setStyleSheet(QString::fromUtf8("QScrollBar:vertical {"
@@ -800,7 +808,7 @@ ListWidget *QueuePlayList::setListWidget(){
                                             "     background: rgba (0,0,0,50%);"//When the mouse is placed on the scroll bar, the color becomes darker
                                             "     border-radius: 4px;"
                                             "     min-height: 20 px;"
-                                            " }"));
+                                            " }"));*/
 
     //this->listWidget->verticalScrollBar()->setPageStep(1000);//c220620
     //this->listWidget->verticalScrollBar()->setSingleStep(1000);//c220620
@@ -815,7 +823,7 @@ void QueuePlayList::slot_sliderReleased(){
     qDebug() << "Released----------------------------------------------";
     qDebug() << "this->scrollArea->verticalScrollBar()->sliderPosition()=" << listWidget_total[global.now_Section]->verticalScrollBar()->sliderPosition();
     this->CurrViewRow =  listWidget_total[global.now_Section]->verticalScrollBar()->sliderPosition();
-    for(int i = 0; i < global.LmtCnt_H/70*4+3; i++){
+    for(int i = 0; i < global.LmtCnt_H/80*4+3; i++){
         if(this->CurrViewRow+i < current_queue_cnt){
             QLayout* layout = widget[global.now_Section].at(this->CurrViewRow+i)->layout();
             if (layout == 0){
@@ -858,130 +866,85 @@ void QueuePlayList::listwidgetcurrentRow_append(const int &p_index){
 }
 
 
-
 void QueuePlayList::slot_listwidgetcurrentRowChanged(int row){  //c220620
     print_debug();
 
     qDebug() << "row=" << row;
 
-    //emit linker->signal_checkQueue(17, "");
-    //qDebug() << "current_queue_cnt--------==" << current_queue_cnt;
-    //qDebug() << "this->list_dataTrackForDelegate[global.now_Section].count()--------==" << this->list_dataTrackForDelegate[global.now_Section].count();
-
-    //qDebug() << "this->CurrViewRow--------==" << this->CurrViewRow;
-    //qDebug() << "this->PreViewRow--------==" << this->PreViewRow;
-    //qDebug() << "this->indexCurrPlay[global.now_Section]--------==" << this->indexCurrPlay[global.now_Section];
-
-    //int index = get_fromABSNextIndexNo_toSUBIndex(this->indexCurrPlay[global.now_Section]);
-    //if(index < 0){
-    //    index = 0;
-    //}
-    //qDebug() << "index--------==" << index;
     int sliderPosition = this->listWidget_total[global.now_Section]->verticalScrollBar()->sliderPosition();
-    curr_sliderPosition = sliderPosition;
+
     qDebug() << "################this->listWidget_total[global.now_Section]->verticalScrollBar()->sliderPosition()=" << this->listWidget_total[global.now_Section]->verticalScrollBar()->sliderPosition();
     int rrow = row;//c220624
 #if defined(Q_OS_WINDOWS)
 
 #endif
 #if defined(Q_OS_MAC)
-    rrow = rrow/70;//c220624
+    rrow = rrow/80;//c220624
+    curr_sliderPosition = sliderPosition/80;
 #endif
     if(rrow<0||rrow>=current_queue_cnt) rrow = 0;//c220627
 
     this->CurrViewRow = rrow;
     //int compare = this->CurrViewRow - this->PreViewRow;
     int compare = curr_sliderPosition - pre_sliderPosition;
+
     qDebug() << "#################################-curr_sliderPosition= " << curr_sliderPosition;
     qDebug() << "#################################-pre_sliderPosition= " << pre_sliderPosition;
     qDebug() << "#################################-compare= " << compare;
 
     if(listWidget_total[global.now_Section]->count() > 0 && widget[global.now_Section].count() > 0){
 
-        if(compare >=0 ){
-            if(compare > global.LmtCnt_H/70*4+3) {
-                //this->PreViewRow = rrow;
-                print_debug();
-                mouse_all_clear();
-                pre_sliderPosition = sliderPosition;
-                return;
-            }
+        qDebug () << "global.LmtCnt_H/80*4+3=" << global.LmtCnt_H/80*4+3;
+        //if(compare >=0 ){//c221205_1
+        if(compare > global.LmtCnt_H/80*4+3) {
+            //this->PreViewRow = rrow;
             print_debug();
-            if(listWidget_total[global.now_Section]->count()> global.LmtCnt_H/70*2){
-                for(int i = 0; i < global.LmtCnt_H/70*4+3; i++){
-                    if(widget[global.now_Section].count() > this->CurrViewRow+i && 0 <= this->CurrViewRow+i){
-                        //listwidgetcurrentRow_append(this->CurrViewRow+i);
-                        if(this->CurrViewRow+i >= 0 && this->CurrViewRow+i < current_queue_cnt){
-                            //qDebug() << "i=" << i;
-                            //qDebug() << "this->CurrViewRow+i=" << this->CurrViewRow+i;
-                            QLayout* layout = widget[global.now_Section].at(this->CurrViewRow+i)->layout();
-                            //print_debug();
-                            if (layout == 0){
-                                //listwidgetcurrentRow_append(i);
-                                downloadThumbImageMore_playbarChanged(this->CurrViewRow+i);
-                                this->std_listWidget_one_lineItemUI(this->CurrViewRow+i);
-                            }else{
-                                // print_debug();
-                            }
-                        }
-                    }
-                }
-            }else{
-                for(int i = 0; i < global.LmtCnt_H/70*2+3; i++){
-                    if(widget[global.now_Section].count() > this->CurrViewRow+i && 0 <= this->CurrViewRow+i){
-                        //listwidgetcurrentRow_append(this->CurrViewRow+i);
-                        if(this->CurrViewRow+i >= 0 && this->CurrViewRow+i < current_queue_cnt){
-                            //qDebug() << "this->CurrViewRow+i=" << this->CurrViewRow+i;
-                            QLayout* layout = widget[global.now_Section].at(this->CurrViewRow+i)->layout();
-                            if (layout == 0){
-                                //listwidgetcurrentRow_append(i);
-                                downloadThumbImageMore_playbarChanged(this->CurrViewRow+i);
-                                this->std_listWidget_one_lineItemUI(this->CurrViewRow+i);
-                            }else{
-                                // print_debug();
-                            }
+            mouse_all_clear();
+            pre_sliderPosition = curr_sliderPosition;
+
+            return;
+        }
+        print_debug();
+        if(listWidget_total[global.now_Section]->count()> global.LmtCnt_H/80*2){
+            //print_debug();
+            //qDebug() << "this->CurrViewRow=" << this->CurrViewRow;
+            for(int i = 0; i < global.LmtCnt_H/80*4+3; i++){
+                if(widget[global.now_Section].count() > this->CurrViewRow+i && 0 <= this->CurrViewRow+i){
+                    //listwidgetcurrentRow_append(this->CurrViewRow+i);
+                    if(this->CurrViewRow+i >= 0 && this->CurrViewRow+i < current_queue_cnt){
+                        //qDebug() << "i=" << i;
+                        //qDebug() << "this->CurrViewRow+i=" << this->CurrViewRow+i;
+                        QLayout* layout = widget[global.now_Section].at(this->CurrViewRow+i)->layout();
+                        //print_debug();
+                        if (layout == 0){
+                            //listwidgetcurrentRow_append(i);
+                            downloadThumbImageMore_playbarChanged(this->CurrViewRow+i);
+                            this->std_listWidget_one_lineItemUI(this->CurrViewRow+i);
+                        }else{
+                            // print_debug();
                         }
                     }
                 }
             }
         }else{
-            //c1111//widget[global.now_Section].count() > this->PreViewRow-i &&
-            print_debug();
-            if(listWidget_total[global.now_Section]->count()> global.LmtCnt_H/70*2){
-                for(int i = 0; i < global.LmtCnt_H/70*4+3; i++){
-                    if(widget[global.now_Section].count() > this->PreViewRow-i &&0 <= this->PreViewRow-i){
-                        if(this->PreViewRow-i >= 0 && this->PreViewRow-i < current_queue_cnt){
-                            //listwidgetcurrentRow_append(this->PreViewRow-i);
-                            QLayout* layout = widget[global.now_Section].at(this->PreViewRow-i)->layout();
-                            if (layout == 0){
-
-                                downloadThumbImageMore_playbarChanged(this->PreViewRow-i);
-                                this->std_listWidget_one_lineItemUI(this->PreViewRow-i);
-                            }else{
-                                // print_debug();
-                            }
-                        }
-                    }
-                }
-            }else{
-                for(int i = 0; i < global.LmtCnt_H/70*2+3; i++){
-                    if(widget[global.now_Section].count() > this->PreViewRow-i &&0 <= this->PreViewRow-i){
-                        if(this->PreViewRow-i >= 0 && this->PreViewRow-i < current_queue_cnt){
-                            //listwidgetcurrentRow_append(this->PreViewRow-i);
-                            QLayout* layout = widget[global.now_Section].at(this->PreViewRow-i)->layout();
-                            if (layout == 0){
-
-                                downloadThumbImageMore_playbarChanged(this->PreViewRow-i);
-                                this->std_listWidget_one_lineItemUI(this->PreViewRow-i);
-                            }else{
-                                // print_debug();
-                            }
+            //print_debug();
+            //qDebug() << "this->CurrViewRow=" << this->CurrViewRow;
+            for(int i = 0; i < global.LmtCnt_H/80*2+3; i++){
+                if(widget[global.now_Section].count() > this->CurrViewRow+i && 0 <= this->CurrViewRow+i){
+                    //listwidgetcurrentRow_append(this->CurrViewRow+i);
+                    if(this->CurrViewRow+i >= 0 && this->CurrViewRow+i < current_queue_cnt){
+                        //qDebug() << "this->CurrViewRow+i=" << this->CurrViewRow+i;
+                        QLayout* layout = widget[global.now_Section].at(this->CurrViewRow+i)->layout();
+                        if (layout == 0){
+                            //listwidgetcurrentRow_append(i);
+                            downloadThumbImageMore_playbarChanged(this->CurrViewRow+i);
+                            this->std_listWidget_one_lineItemUI(this->CurrViewRow+i);
+                        }else{
+                            // print_debug();
                         }
                     }
                 }
             }
-
-
         }
         this->PreViewRow = rrow;
         print_debug();
@@ -990,11 +953,11 @@ void QueuePlayList::slot_listwidgetcurrentRowChanged(int row){  //c220620
 
     }
 
-    pre_sliderPosition = sliderPosition;
-
+    pre_sliderPosition = curr_sliderPosition;
 }
 
-void QueuePlayList::slot_listwidgetcurrentRowChanged_start(int row){  //c220620
+
+void QueuePlayList::slot_listwidgetcurrentRowChanged_start(int row){  //c221216
     print_debug();
 
     qDebug() << "current_queue_cnt--------==" << current_queue_cnt;
@@ -1004,27 +967,39 @@ void QueuePlayList::slot_listwidgetcurrentRowChanged_start(int row){  //c220620
     //qDebug() << "this->PreViewRow--------==" << this->PreViewRow;
     qDebug() << "this->indexCurrPlay[global.now_Section]--------==" << this->indexCurrPlay[global.now_Section];
     //int index = get_fromABSNextIndexNo_toSUBIndex(row);
+    /*
+#if defined(Q_OS_MAC)
+    row = row/80;//c220624
+#endif
+    if(row<0||row>=current_queue_cnt) row = 0;//c220627
+*/
     int index = row;
     if(index < 0){
         index = 0;
     }
+    if(current_queue_cnt <=0) {
+        emit linker->signal_checkQueue(61, "");
+        return;
+    }
     //index = index;
     qDebug() << "----------------------------------------------------------------------index--------==" << index;
-    qDebug() << "global.LmtCnt_H/70--------==" << global.LmtCnt_H/70;
+    qDebug() << "global.LmtCnt_H/80--------==" << global.LmtCnt_H/80;
     qDebug() << "global.now_Section--------==" << global.now_Section;
 
     if(listWidget_total[global.now_Section]->count() > 0 && widget[global.now_Section].count() > 0){
 
         qDebug() << "this->CurrViewRow--------==" << this->CurrViewRow;
-        int temp = index-global.LmtCnt_H/70+1;
+        int temp = index-global.LmtCnt_H/80+1;
         if(temp < 0) temp = 0;
         this->CurrViewRow = temp;
         qDebug() << "--------------------------------------------------- temp = " << temp;
-        for(int i = temp; i < temp+global.LmtCnt_H/70*2+2; i++){
+        for(int i = temp; i < temp+global.LmtCnt_H/80*2+2; i++){
             //listwidgetcurrentRow_append(i);
             //print_debug();qDebug() << "----------------------------------- i = " << i;
             if(i < current_queue_cnt && widget[global.now_Section].count() > i){
+                // print_debug();
                 QLayout* layout = widget[global.now_Section].at(i)->layout();
+                // print_debug();
                 if (layout == 0){
 
                     downloadThumbImageMore_playbarChanged(i);
@@ -1039,10 +1014,11 @@ void QueuePlayList::slot_listwidgetcurrentRowChanged_start(int row){  //c220620
         this->PreViewRow = this->CurrViewRow;
 
         //listWidget_total[global.now_Section]->setCurrentRow(index);
+        queuelist_change_replace(false, current_queue_cnt);//pppppp
 
     }
     print_debug();
-    queuelist_change_replace(false, current_queue_cnt);
+    //queuelist_change_replace(false, current_queue_cnt);//pppppp
 
 }
 
@@ -1144,12 +1120,12 @@ void QueuePlayList::slot_editModeClicked(QListWidgetItem *item){  //1126
 
 void QueuePlayList::slot_setWidgetColor(int i){
     print_debug();
-    widget[global.now_Section].at(i)->setStyleSheet(widget[global.now_Section].at(i)->styleSheet().replace("#111111", "#222222"));
+    widget[global.now_Section].at(i)->setStyleSheet(widget[global.now_Section].at(i)->styleSheet().replace("#222222", "#333333"));
     print_debug();
 }
 void QueuePlayList::slot_setWidgetColor_recomm(int i){
     print_debug();
-    widget_recomm[global.now_Section].at(i)->setStyleSheet(widget_recomm[global.now_Section].at(i)->styleSheet().replace("#111111", "#222222"));
+    widget_recomm[global.now_Section].at(i)->setStyleSheet(widget_recomm[global.now_Section].at(i)->styleSheet().replace("#222222", "#333333"));
     print_debug();
 }
 
@@ -1157,16 +1133,21 @@ void QueuePlayList::itemPressesBackground(int i){
     print_debug();
     qDebug() << "i=" << i;
     qDebug() << " widget[global.now_Section].count()=" <<  widget[global.now_Section].count();
-    widget[global.now_Section].at(i)->setStyleSheet(widget[global.now_Section].at(i)->styleSheet().replace("#222222", "#111111"));
-    print_debug();
-    QTimer::singleShot(100, this, SLOT(slot_setWidgetColor(i)));
+    if(i >= 0 && widget[global.now_Section].count() > 0 && widget[global.now_Section].count()>i){//c221219
+        widget[global.now_Section].at(i)->setStyleSheet(widget[global.now_Section].at(i)->styleSheet().replace("#333333", "#222222"));
+        print_debug();
+        QTimer::singleShot(10, this, SLOT(slot_setWidgetColor(i)));//c221219
+    }
+
 }
 
 void QueuePlayList::itemPressesBackground_recomm(int i){
     print_debug();
-    widget_recomm[global.now_Section].at(i)->setStyleSheet(widget_recomm[global.now_Section].at(i)->styleSheet().replace("#222222", "#111111"));
-    print_debug();
-    QTimer::singleShot(100, this, SLOT(slot_setWidgetColor_recomm(i)));
+    if(i >= 0 && widget_recomm[global.now_Section].count() > 0 && widget_recomm[global.now_Section].count()>i){//c221219
+        widget_recomm[global.now_Section].at(i)->setStyleSheet(widget_recomm[global.now_Section].at(i)->styleSheet().replace("#333333", "#222222"));
+        print_debug();
+        QTimer::singleShot(10, this, SLOT(slot_setWidgetColor_recomm(i)));//c221219
+    }
 }
 
 
@@ -1214,6 +1195,7 @@ void QueuePlayList::slot_listwidgetItemPressed(QListWidgetItem *item){  //cheon2
         }
     }
 
+
 }
 
 /**
@@ -1231,7 +1213,7 @@ void QueuePlayList::slot_listwidgetItemClicked(QListWidgetItem *item){  //cheon2
     qDebug() << "this->list_dataTrackForDelegate[global.now_Section].count() = " << this->list_dataTrackForDelegate[global.now_Section].count();
     qDebug() << "this->widget[global.now_Section].count() = " << this->widget[global.now_Section].count();
 
-
+    ToastMsg::delay(this,"", tr("delay"), 500);//c230311
     print_debug();
     if(this->isEditMode == true){
         print_debug();
@@ -1248,18 +1230,19 @@ void QueuePlayList::slot_listwidgetItemClicked(QListWidgetItem *item){  //cheon2
 
     if(!this->mouse_trigger_flag){
         print_debug();
-        emit linker->signal_checkQueue(7, "");
+        emit linker->signal_checkQueue(3, "");
         return;
     }
     if(tmp_index < this->list_dataTrackForDelegate[global.now_Section].count()){
         print_debug();
         if(this->mouse_trigger_flag == false){
-            emit linker->signal_checkQueue(7, "");
+            emit linker->signal_checkQueue(3, "");
             //ContentLoadingwaitingMsgShow(tr("Please wait... Downloading Queuelist."), 1);
             print_debug();
             return;
         }
 
+        emit linker->signal_checkQueue(14, "");
         this->playCurr(tmp_index);
 
     }
@@ -1269,32 +1252,19 @@ void QueuePlayList::slot_listwidgetItemClicked(QListWidgetItem *item){  //cheon2
     }
     else if(tmp_index > this->list_dataTrackForDelegate[global.now_Section].count()){
         print_debug();
-        if(this->mouse_trigger_menu_flag == false){
-            emit linker->signal_checkQueue(7, "");
+        if(this->mouse_trigger_flag == false){
+            emit linker->signal_checkQueue(3, "");
             //ContentLoadingwaitingMsgShow(tr("Please wait... Downloading Queuelist."), 1);
             print_debug();
             return;
         }
+        emit linker->signal_checkQueue(14, "");
         this->playCurr_recomm(tmp_index - (this->list_dataTrackForDelegate[global.now_Section].count()+1));
-        /*
-        if(total_queue_list_count ==3000){
-            print_debug();
-            widget_recomm[global.now_Section].at(tmp_index)->setStyleSheet("background-color:#9c9c9c;");
-print_debug();
-            print_debug();
-            emit linker->signal_checkQueue(2, "");
-            print_debug();
-            playAfterDeleteIndex = tmp_index - (this->list_dataTrackForDelegate[global.now_Section].count()+1);
-            print_debug();
-            oneTrackDelete(0);
-            print_debug();
-        }else{
-            print_debug();
-            this->playCurr_recomm(tmp_index - (this->list_dataTrackForDelegate[global.now_Section].count()+1));
-        }
-*/
+
 
     }
+
+    this->mouse_trigger_flag = false;//c221207
 
 
 }
@@ -1528,12 +1498,14 @@ void QueuePlayList::slot_dragAndDropEdit(){
 
         }else{
             print_debug();
+            global.queue_recent_track_addFlag = true;//c230502_1
             this->changeEditMode(true, false, false);
             emit linker->signal_checkQueue(0, "");
 
             force_reflash(p_id);
         }
     }else{
+        global.queue_recent_track_addFlag = true;//c230502_1
         this->changeEditMode(true, false, false);
         emit linker->signal_checkQueue(13, "");
         slot_clickedPlay();
@@ -1705,23 +1677,25 @@ QWidget* QueuePlayList::getUIControlOption(QString p_title){//cheon211122-02
     onOff = new OnOffWidget;
     onOff->setValue(true);
     onOff->setCursor(Qt::PointingHandCursor);
+    onOff->setStyleSheet("border:0px;");
     QPushButton *btn_onOffHover = new QPushButton(onOff);
     btn_onOffHover->setProperty("btnNo", 4);
-    btn_onOffHover->setFixedSize(80,40);
+    btn_onOffHover->setFixedSize(74,36);
     btn_onOffHover->setStyleSheet("background-color:transparent;border:0px;");
 
     QLabel *label = new QLabel();
     label->setText(p_title);
-    label->setStyleSheet("font-size: 24px; color: white; background-color:#5A5A5A;");
+    label->setStyleSheet("font-size: 18px; color: white; background-color:#333333; border:0px;");
 
     QHBoxLayout *layout = new QHBoxLayout();
     layout->addWidget(label);
 
     QWidget *widget = new QWidget();
     widget->setLayout(layout);
+    widget->setStyleSheet("background-color:#333333;");
 
     QHBoxLayout *hl_lb = new QHBoxLayout();
-    hl_lb->setContentsMargins(33,0,30,0);
+    hl_lb->setContentsMargins(45,0,15,0);
     hl_lb->setSpacing(0);
     hl_lb->addWidget(widget);
     //hl_lb->addWidget(btn_question);
@@ -1730,7 +1704,7 @@ QWidget* QueuePlayList::getUIControlOption(QString p_title){//cheon211122-02
     QWidget *widget_total = new QWidget();
     widget_total->setObjectName("widget_total");
     //widget_total->setStyleSheet("#widget_total {background-color:#5A5A5A; border-bottom:1px solid #5A5A5A; } ");
-    widget_total->setStyleSheet("background-color:#5A5A5A;  ");
+    widget_total->setStyleSheet("background-color:#333333;");
     widget_total->setLayout(hl_lb);
 
     connect(btn_onOffHover, SIGNAL(clicked(bool)), this, SLOT(slot_modeOnOff(bool)));
@@ -1739,6 +1713,7 @@ QWidget* QueuePlayList::getUIControlOption(QString p_title){//cheon211122-02
 
 void QueuePlayList::slot_modeOnOff(bool flagOn){//1126
     print_debug();
+    ToastMsg::delay(this,"", tr("delay"), 2000);//c230319
     if(flagOn==false){
 
     }else{
@@ -1785,7 +1760,7 @@ void QueuePlayList::slot_sliderMoved_notifySliderMove(int index){//cheon211120-3
 
     //if(index+listWidget_total[global.now_Section]->height()/70 >= vb1->maximum()||index+(listWidget_total[global.now_Section]->height()+listWidget_recomm->height()+widget_top_recomm->height())/70 >= vb1->maximum()){
 
-    if(index+listWidget_total[global.now_Section]->height()/70 >= vb1->maximum()){
+    if(index+listWidget_total[global.now_Section]->height()/80 >= vb1->maximum()){
 
     }
     sender()->deleteLater();
@@ -1828,7 +1803,8 @@ void QueuePlayList::saveJson(QJsonDocument document, QString fileName) {
 
 void QueuePlayList::setTotalQueueList(int p_id, const QJsonObject &p_jsonObject){  //c220609
     print_debug();
-    //mtx.lock();
+    QTime queueTimer;
+    queueTimer.start();
 
     QJsonDocument doc(p_jsonObject); QString strJson(doc.toJson(QJsonDocument::Compact));
     //qDebug() << "QueuePlayList::setTotalQueueList---- " << strJson << "\n";
@@ -3178,7 +3154,7 @@ void QueuePlayList::setTotalQueueList(int p_id, const QJsonObject &p_jsonObject)
 
                 }
 #if defined(Q_OS_WINDOWS)
-                // QCoreApplication::processEvents();
+                 //QCoreApplication::processEvents();
 #endif
 #if defined(Q_OS_MAC)
 #endif
@@ -3189,7 +3165,8 @@ void QueuePlayList::setTotalQueueList(int p_id, const QJsonObject &p_jsonObject)
             print_debug();
         }//else  //cheon211102
     }
-    // mtx.unlock();
+    int nElaspsedTime = queueTimer.elapsed();
+    qDebug() <<"setTotalQueueList-경과된시간=" << nElaspsedTime;
 
 }
 
@@ -3234,10 +3211,10 @@ void QueuePlayList::slot_thumbnailDownloaded(){//1126
         if(flagLoaded){
             //print_debug();
             //qDebug() << "tmp_index = " << tmp_index;
-            image = image.scaled( 50, 50, Qt::KeepAspectRatio, Qt::SmoothTransformation);
+            image = image.scaled( 60, 60, Qt::KeepAspectRatio, Qt::SmoothTransformation);
             QPixmap tmp_pixmap = QPixmap::fromImage(image,  Qt::AutoColor);
 
-            tmp_pixmap = tmp_pixmap.scaled(50,50, Qt::IgnoreAspectRatio, Qt::SmoothTransformation);
+            tmp_pixmap = tmp_pixmap.scaled(60,60, Qt::IgnoreAspectRatio, Qt::SmoothTransformation);
             //mutex.lock();
             if(lb_queueListImg[global.now_Section].count() > 0 ){
 
@@ -3289,21 +3266,99 @@ void QueuePlayList::slot_thumbnailDownloaded_playbarChanged(){
         if(flagLoaded){
             QPixmap tmp_pixmap = tmp_pixmap.fromImage(image);
 
-            tmp_pixmap = tmp_pixmap.scaled(50,50, Qt::IgnoreAspectRatio, Qt::SmoothTransformation);
+            tmp_pixmap = tmp_pixmap.scaled(60,60, Qt::IgnoreAspectRatio, Qt::SmoothTransformation);
             if(lb_queueListImg[global.now_Section].count() > 0 ){
 
                 if(tmp_index != this->indexCurrPlay[global.now_Section]){
                     this->lb_queueListImg[global.now_Section].at(tmp_index)->setPixmap(tmp_pixmap);
                 }else{
-                    this->lb_queueListImg[global.now_Section].at(tmp_index)->setPixmap(pixmapPlaying);
+
+                    QPixmap pixmapCopy = tmp_pixmap.copy();
+
+                    QPixmap pixmapWithAlpha(pixmapCopy.size());  // 투명한 QPixmap 객체 생성
+                    pixmapWithAlpha.fill(Qt::black);  // QPixmap 객체를 완전히 투명하게 만듦
+
+
+                    QPainter painter(&pixmapWithAlpha);
+                    painter.setCompositionMode(QPainter::CompositionMode_Source);
+                    painter.drawPixmap(0,0, pixmapCopy);
+
+                    QColor blackTransparent(Qt::black); // 검정색 지정
+                    blackTransparent.setAlphaF(0.3); // 알파값 조절
+
+                    painter.setCompositionMode(QPainter::CompositionMode_DestinationIn);
+                    painter.fillRect(pixmapWithAlpha.rect(),blackTransparent);
+
+                    painter.end();
+
+                    QPixmap pixmapCopy2 = pixmapWithAlpha.copy();
+
+
+                    QPainter painter2(&pixmapCopy2);
+                    painter2.setCompositionMode(QPainter::CompositionMode_SourceOver);
+
+                    QSize originalSize = pixmapWithAlpha.size();
+                    QSize smallSize = QSize(30, 30);
+
+                    int x = (originalSize.width() - smallSize.width()) / 2;
+                    int y = (originalSize.height() - smallSize.height()) / 2;
+
+
+
+                    painter2.drawPixmap(x,y,smallSize.width(),smallSize.height(),QPixmap(pixmapPlaying));
+
+                    painter2.end();
+
+                    this->lb_queueListImg[global.now_Section].at(tmp_index)->setPixmap(pixmapCopy2);
                 }
             }
         }else{
-            this->lb_queueListImg[global.now_Section].at(tmp_index)->setPixmap(QPixmap(pixmapDefault));
+            //--bj230509
+            if(tmp_index != this->indexCurrPlay[global.now_Section]){
+                this->lb_queueListImg[global.now_Section].at(tmp_index)->setPixmap(pixmapDefault);
+            }else{
+                QPixmap pixmapCopy = pixmapDefault.copy();
+
+                QPixmap pixmapWithAlpha(pixmapCopy.size());  // 투명한 QPixmap 객체 생성
+                pixmapWithAlpha.fill(Qt::black);  // QPixmap 객체를 완전히 투명하게 만듦
+
+
+                QPainter painter(&pixmapWithAlpha);
+                painter.setCompositionMode(QPainter::CompositionMode_Source);
+                painter.drawPixmap(0,0, pixmapCopy);
+
+                QColor blackTransparent(Qt::black); // 검정색 지정
+                blackTransparent.setAlphaF(0.3); // 알파값 조절
+
+                painter.setCompositionMode(QPainter::CompositionMode_DestinationIn);
+                painter.fillRect(pixmapWithAlpha.rect(),blackTransparent);
+
+                painter.end();
+
+                QPixmap pixmapCopy2 = pixmapWithAlpha.copy();
+
+
+                QPainter painter2(&pixmapCopy2);
+                painter2.setCompositionMode(QPainter::CompositionMode_SourceOver);
+
+                QSize originalSize = pixmapWithAlpha.size();
+                QSize smallSize = QSize(30, 30);
+
+                int x = (originalSize.width() - smallSize.width()) / 2;
+                int y = (originalSize.height() - smallSize.height()) / 2;
+
+
+
+                painter2.drawPixmap(x,y,smallSize.width(),smallSize.height(),QPixmap(pixmapPlaying));
+
+                painter2.end();
+
+                this->lb_queueListImg[global.now_Section].at(tmp_index)->setPixmap(QPixmap(pixmapCopy2));
+            }
+
         }
         //emit signal_assignImg0();
     }
-
 
     fileDownloader->deleteLater();
 
@@ -3324,7 +3379,7 @@ void QueuePlayList::slot_thumbnailDownloaded_playbarChanged_section(){
         if(flagLoaded){
             QPixmap tmp_pixmap = tmp_pixmap.fromImage(image);
 
-            tmp_pixmap = tmp_pixmap.scaled(50,50, Qt::IgnoreAspectRatio, Qt::SmoothTransformation);
+            tmp_pixmap = tmp_pixmap.scaled(60,60, Qt::IgnoreAspectRatio, Qt::SmoothTransformation);
             if(lb_queueListImg[section].count() > 0 ){
 
                 //if(this->currMenu == CURRMENU_TOTAL){
@@ -3350,7 +3405,7 @@ void QueuePlayList::slot_thumbnailDownloaded_playbarChanged_section(){
 
 void QueuePlayList::downloadThumbImageMore_playbarChanged(int i){
     //print_debug();
-
+    if(this->list_thumbPath[global.now_Section].count()<=0)return;//c221205_1
     FileDownloader *fileDownloader = new FileDownloader(this);
     fileDownloader->setProperty("filedown_index", i);
     fileDownloader->setImageURL(this->list_thumbPath[global.now_Section].at(i));
@@ -3445,7 +3500,7 @@ void QueuePlayList::downloadThumbImageMore(){//1126
     //    QObject::disconnect(disConId[i]);
     //}
     disConId_cnt = this->list_thumbPath[global.now_Section].count();
-    pixmapDefault = pixmapDefault.scaled(50,50, Qt::IgnoreAspectRatio, Qt::SmoothTransformation);
+    pixmapDefault = pixmapDefault.scaled(60,60, Qt::IgnoreAspectRatio, Qt::SmoothTransformation);
     //if(global.current_duration==60000){
     //    emit linker->signal_checkQueue(10, "");
     //}
@@ -3566,7 +3621,7 @@ void QueuePlayList::slot_thumbnailDownloaded_recomm(){
             QPixmap tmp_pixmap = tmp_pixmap.fromImage(image);
 
             if(!tmp_pixmap.isNull()){
-                tmp_pixmap = tmp_pixmap.scaled(50,50, Qt::IgnoreAspectRatio, Qt::SmoothTransformation);
+                tmp_pixmap = tmp_pixmap.scaled(60,60, Qt::IgnoreAspectRatio, Qt::SmoothTransformation);
             }else {
                 tmp_pixmap = pixmapDefault;
             }
@@ -3939,8 +3994,8 @@ void QueuePlayList::slot_queuelistScrollbarMotify(const int &p_id){//c220629
 
         if( this->indexCurrPlay[global.now_Section] >= 0){
 
-            if(this->indexCurrPlay[global.now_Section] > global.LmtCnt_H/70){
-                this->CurrViewRow = this->indexCurrPlay[global.now_Section] - global.LmtCnt_H/70;
+            if(this->indexCurrPlay[global.now_Section] > global.LmtCnt_H/80){
+                this->CurrViewRow = this->indexCurrPlay[global.now_Section] - global.LmtCnt_H/80;
             }else {
                 this->CurrViewRow = this->indexCurrPlay[global.now_Section];
             }
@@ -4270,7 +4325,9 @@ void QueuePlayList::setTotalQueueList_recomm(int p_id, const QJsonObject &p_json
 
                 this->queMode = p_jsonObject["mode"].toBool(); // 현재 진행중인 곡 스타일 설정
                 global.onOffModeFlag = this->queMode;
-                this->onOff->setValue(this->queMode);
+                if(this->onOff != nullptr){ //bj230515
+                    this->onOff->setValue(this->queMode);
+                }
             }
         }
     }
@@ -4938,10 +4995,10 @@ void QueuePlayList::listWidget_recommTitledrawingUI()//1126
     //listWidget_total[global.now_Section]->setStyleSheet("QListWidget::item {background-color:#707070; }");//transperant
     print_debug();
 #if defined(Q_OS_WINDOWS)
-    item->setSizeHint(QSize(90, 70));
+    item->setSizeHint(QSize(90, 80));
 #endif
 #if defined(Q_OS_MAC)
-    item->setSizeHint(QSize(90, 70));
+    item->setSizeHint(QSize(90, 80));
 #endif
     //print_debug();
     listWidget_total[global.now_Section]->addItem(item);
@@ -4950,10 +5007,10 @@ void QueuePlayList::listWidget_recommTitledrawingUI()//1126
     lb_title_recomm = new QLabel();
     lb_title_recomm->setText(tr("Recommand List"));
     lb_title_recomm->setFixedHeight(50);
-    lb_title_recomm->setStyleSheet("font-size:20px;font:bold;color:#FFFFFF;background-color:#5A5A5A;");
+    lb_title_recomm->setStyleSheet("font-size:20px;font:normal;color:#FFFFFF;background-color:#333333;");
 
     QHBoxLayout *hl_top_recomm = new QHBoxLayout();
-    hl_top_recomm->setContentsMargins(10,0,0,0);
+    hl_top_recomm->setContentsMargins(10,1,0,1);
     hl_top_recomm->setSpacing(0);
     hl_top_recomm->addWidget(lb_title_recomm);
     hl_top_recomm->addWidget(this->getUIControlOption(tr("AutoPlay")));
@@ -4961,8 +5018,8 @@ void QueuePlayList::listWidget_recommTitledrawingUI()//1126
     QWidget *widget_top_recomm = new QWidget();
 
     widget_top_recomm->setObjectName("widget_top_recomm");
-    //widget_top_recomm->setStyleSheet("#widget_top_recomm { background-color:#5A5A5A; border-top:1px solid #5A5A5A;border-bottom:1px solid #5A5A5A; }");
-    widget_top_recomm->setStyleSheet("#widget_top_recomm { background-color:#5A5A5A; }");
+    widget_top_recomm->setStyleSheet("#widget_top_recomm { background-color:#333333; border-top:0.5px solid #919191; border-bottom:0.5px solid #919191;}");
+    //widget_top_recomm->setStyleSheet("#widget_top_recomm { background-color:#333333; ");
     widget_top_recomm->setLayout(hl_top_recomm);
     //widget_top_recomm->setCursor(Qt::PointingHandCursor);
 
@@ -4999,15 +5056,15 @@ void QueuePlayList::view_listWidget_setItemWidget_recomm(const int &p_id){//c220
             //qDebug() << i;
             QListWidgetItem *item = new QListWidgetItem();
             if(i == this->list_dataTrackForDelegate_recomm[global.now_Section].count()-1){
-                item->setSizeHint(QSize(90, 100));
+                item->setSizeHint(QSize(90, 80));
             }else{
-                item->setSizeHint(QSize(90, 70));
+                item->setSizeHint(QSize(90, 80));
             }
             listWidget_total[global.now_Section]->addItem(item);
 
 
             lb_queueListImg_recomm[global.now_Section].append(new QLabel());
-            lb_queueListImg_recomm[global.now_Section].at(i)->setFixedSize(50,50);
+            lb_queueListImg_recomm[global.now_Section].at(i)->setFixedSize(60,60);
             widget_recomm[global.now_Section].append( new QWidget());
             // QListWidgetItem *item = listWidget_total[global.now_Section]->item(i);
             listWidget_total[global.now_Section]->setItemWidget(item,widget_recomm[global.now_Section].at(i));
@@ -5025,13 +5082,13 @@ void QueuePlayList::view_listWidget_setItemWidget_recomm(const int &p_id){//c220
             if(list_dataTrackForDelegate_recomm[global.now_Section].at(i).type == DataTrackforDelegate::Types_Data::AppleMusic){
                 QListWidgetItem *item = new QListWidgetItem();
                 if(i == this->list_dataTrackForDelegate_recomm[global.now_Section].count()-1){
-                    item->setSizeHint(QSize(90, 100));
+                    item->setSizeHint(QSize(90, 80));
                 }else{
-                    item->setSizeHint(QSize(90, 70));
+                    item->setSizeHint(QSize(90, 80));
                 }
                 listWidget_total[global.now_Section]->addItem(item);
                 lb_queueListImg_recomm[global.now_Section].append(new QLabel());
-                lb_queueListImg_recomm[global.now_Section].at(i)->setFixedSize(50,50);
+                lb_queueListImg_recomm[global.now_Section].at(i)->setFixedSize(60,60);
                 //listWidget_total[global.now_Section]->setStyleSheet("QListWidget::item {border-bottom: 1px solid #707070;background-color:#222222; }");//transperant
                 widget_recomm[global.now_Section].append( new QWidget());
                 listWidget_total[global.now_Section]->setItemWidget(item,widget_recomm[global.now_Section].at(k++));
@@ -5053,13 +5110,13 @@ void QueuePlayList::view_listWidget_setItemWidget_recomm(const int &p_id){//c220
             if(list_dataTrackForDelegate_recomm[global.now_Section].at(i).type == DataTrackforDelegate::Types_Data::Tidal){
                 QListWidgetItem *item = new QListWidgetItem();
                 if(i == this->list_dataTrackForDelegate_recomm[global.now_Section].count()-1){
-                    item->setSizeHint(QSize(90, 100));
+                    item->setSizeHint(QSize(90, 80));
                 }else{
-                    item->setSizeHint(QSize(90, 70));
+                    item->setSizeHint(QSize(90, 80));
                 }
                 listWidget_total[global.now_Section]->addItem(item);
                 lb_queueListImg_recomm[global.now_Section].append(new QLabel());
-                lb_queueListImg_recomm[global.now_Section].at(i)->setFixedSize(50,50);
+                lb_queueListImg_recomm[global.now_Section].at(i)->setFixedSize(60,60);
                 //listWidget_total[global.now_Section]->setStyleSheet("QListWidget::item {border-bottom: 1px solid #707070;background-color:#222222; }");//transperant
                 widget_recomm[global.now_Section].append( new QWidget());
                 listWidget_total[global.now_Section]->setItemWidget(item,widget_recomm[global.now_Section].at(k++));
@@ -5082,14 +5139,14 @@ void QueuePlayList::view_listWidget_setItemWidget_recomm(const int &p_id){//c220
                 QListWidgetItem *item = new QListWidgetItem();
 
                 if(i == this->list_dataTrackForDelegate_recomm[global.now_Section].count()-1){
-                    item->setSizeHint(QSize(90, 100));
+                    item->setSizeHint(QSize(90, 80));
                 }else{
-                    item->setSizeHint(QSize(90, 70));
+                    item->setSizeHint(QSize(90, 80));
                 }
 
                 listWidget_total[global.now_Section]->addItem(item);
                 lb_queueListImg_recomm[global.now_Section].append(new QLabel());
-                lb_queueListImg_recomm[global.now_Section].at(i)->setFixedSize(50,50);
+                lb_queueListImg_recomm[global.now_Section].at(i)->setFixedSize(60,60);
 
                 //listWidget_total[global.now_Section]->setStyleSheet("QListWidget::item {border-bottom: 1px solid #707070;background-color:#222222; }");//transperant
                 widget_recomm[global.now_Section].append( new QWidget());
@@ -5115,13 +5172,13 @@ void QueuePlayList::view_listWidget_setItemWidget_recomm(const int &p_id){//c220
                 QListWidgetItem *item = new QListWidgetItem();
 
                 if(i == this->list_dataTrackForDelegate_recomm[global.now_Section].count()-1){
-                    item->setSizeHint(QSize(90, 100));
+                    item->setSizeHint(QSize(90, 80));
                 }else{
-                    item->setSizeHint(QSize(90, 70));
+                    item->setSizeHint(QSize(90, 80));
                 }
                 listWidget_total[global.now_Section]->addItem(item);
                 lb_queueListImg_recomm[global.now_Section].append(new QLabel());
-                lb_queueListImg_recomm[global.now_Section].at(i)->setFixedSize(50,50);
+                lb_queueListImg_recomm[global.now_Section].at(i)->setFixedSize(60,60);
                 //listWidget_total[global.now_Section]->setStyleSheet("QListWidget::item {border-bottom: 1px solid #707070;background-color:#222222; }");//transperant
                 widget_recomm[global.now_Section].append( new QWidget());
                 listWidget_total[global.now_Section]->setItemWidget(item,widget_recomm[global.now_Section].at(k++));
@@ -5145,15 +5202,15 @@ void QueuePlayList::view_listWidget_setItemWidget_recomm(const int &p_id){//c220
 
 
                 if(i == this->list_dataTrackForDelegate_recomm[global.now_Section].count()-1){
-                    item->setSizeHint(QSize(90, 100));
+                    item->setSizeHint(QSize(90, 80));
                 }else{
-                    item->setSizeHint(QSize(90, 70));
+                    item->setSizeHint(QSize(90, 80));
                 }
 
 
                 listWidget_total[global.now_Section]->addItem(item);
                 lb_queueListImg_recomm[global.now_Section].append(new QLabel());
-                lb_queueListImg_recomm[global.now_Section].at(i)->setFixedSize(50,50);
+                lb_queueListImg_recomm[global.now_Section].at(i)->setFixedSize(60,60);
                 //listWidget_total[global.now_Section]->setStyleSheet("QListWidget::item {border-bottom: 1px solid #707070;background-color:#222222; }");//transperant
                 widget_recomm[global.now_Section].append( new QWidget());
                 listWidget_total[global.now_Section]->setItemWidget(item,widget_recomm[global.now_Section].at(k++));
@@ -5175,13 +5232,13 @@ void QueuePlayList::view_listWidget_setItemWidget_recomm(const int &p_id){//c220
                 QListWidgetItem *item = new QListWidgetItem();
 
                 if(i == this->list_dataTrackForDelegate_recomm[global.now_Section].count()-1){
-                    item->setSizeHint(QSize(90, 100));
+                    item->setSizeHint(QSize(90, 80));
                 }else{
-                    item->setSizeHint(QSize(90, 70));
+                    item->setSizeHint(QSize(90, 80));
                 }
                 listWidget_total[global.now_Section]->addItem(item);
                 lb_queueListImg_recomm[global.now_Section].append(new QLabel());
-                lb_queueListImg_recomm[global.now_Section].at(i)->setFixedSize(50,50);
+                lb_queueListImg_recomm[global.now_Section].at(i)->setFixedSize(60,60);
                 //listWidget_total[global.now_Section]->setStyleSheet("QListWidget::item {border-bottom: 1px solid #707070;background-color:#222222; }");//transperant
                 widget_recomm[global.now_Section].append( new QWidget());
                 listWidget_total[global.now_Section]->setItemWidget(item,widget_recomm[global.now_Section].at(k++));
@@ -5268,14 +5325,14 @@ void QueuePlayList::view_listWidget_setItemWidget_recomm_only(const int &p_id){/
             //qDebug() << i;
             QListWidgetItem *item = new QListWidgetItem();
 #if defined(Q_OS_WINDOWS)
-            item->setSizeHint(QSize(90, 70));
+            item->setSizeHint(QSize(90, 80));
 #endif
 #if defined(Q_OS_MAC)
-            item->setSizeHint(QSize(90, 70));
+            item->setSizeHint(QSize(90, 80));
 #endif
             listWidget_total[global.now_Section]->addItem(item);
             lb_queueListImg_recomm[global.now_Section].append(new QLabel());
-            lb_queueListImg_recomm[global.now_Section].at(i)->setFixedSize(50,50);
+            lb_queueListImg_recomm[global.now_Section].at(i)->setFixedSize(60,60);
             widget_recomm[global.now_Section].append( new QWidget());
             listWidget_total[global.now_Section]->setItemWidget(item,widget_recomm[global.now_Section].at(i));
         }
@@ -5296,12 +5353,12 @@ void QueuePlayList::view_listWidget_setItemWidget_recomm_only(const int &p_id){/
                 if(i == this->list_dataTrackForDelegate_recomm[global.now_Section].count()-1){
                     item->setSizeHint(QSize(90, 100));
                 }else{
-                    item->setSizeHint(QSize(90, 70));
+                    item->setSizeHint(QSize(90, 80));
                 }
                 listWidget_total[global.now_Section]->addItem(item);
                 lb_queueListImg_recomm[global.now_Section].append(new QLabel());
-                lb_queueListImg_recomm[global.now_Section].at(i)->setFixedSize(50,50);
-                //listWidget_total[global.now_Section]->setStyleSheet("QListWidget::item {border-bottom: 1px solid #707070;background-color:#222222; }");//transperant
+                lb_queueListImg_recomm[global.now_Section].at(i)->setFixedSize(60,60);
+                //listWidget_total[global.now_Section]->setStyleSheet("QListWidget::item {border-bottom: 1px solid #;background-color:#222222; }");//transperant
                 widget_recomm[global.now_Section].append( new QWidget());
                 listWidget_total[global.now_Section]->setItemWidget(item,widget_recomm[global.now_Section].at(k++));
             }
@@ -5328,12 +5385,12 @@ void QueuePlayList::view_listWidget_setItemWidget_recomm_only(const int &p_id){/
                 if(i == this->list_dataTrackForDelegate_recomm[global.now_Section].count()-1){
                     item->setSizeHint(QSize(90, 100));
                 }else{
-                    item->setSizeHint(QSize(90, 70));
+                    item->setSizeHint(QSize(90, 80));
                 }
                 listWidget_total[global.now_Section]->addItem(item);
                 lb_queueListImg_recomm[global.now_Section].append(new QLabel());
-                lb_queueListImg_recomm[global.now_Section].at(i)->setFixedSize(50,50);
-                //listWidget_total[global.now_Section]->setStyleSheet("QListWidget::item {border-bottom: 1px solid #707070;background-color:#222222; }");//transperant
+                lb_queueListImg_recomm[global.now_Section].at(i)->setFixedSize(60,60);
+                //listWidget_total[global.now_Section]->setStyleSheet("QListWidget::item {border-bottom: 1px solid #;background-color:#222222; }");//transperant
                 widget_recomm[global.now_Section].append( new QWidget());
                 listWidget_total[global.now_Section]->setItemWidget(item,widget_recomm[global.now_Section].at(k++));
             }
@@ -5361,14 +5418,14 @@ void QueuePlayList::view_listWidget_setItemWidget_recomm_only(const int &p_id){/
                 if(i == this->list_dataTrackForDelegate_recomm[global.now_Section].count()-1){
                     item->setSizeHint(QSize(90, 100));
                 }else{
-                    item->setSizeHint(QSize(90, 70));
+                    item->setSizeHint(QSize(90, 80));
                 }
 
                 listWidget_total[global.now_Section]->addItem(item);
                 lb_queueListImg_recomm[global.now_Section].append(new QLabel());
-                lb_queueListImg_recomm[global.now_Section].at(i)->setFixedSize(50,50);
+                lb_queueListImg_recomm[global.now_Section].at(i)->setFixedSize(60,60);
 
-                //listWidget_total[global.now_Section]->setStyleSheet("QListWidget::item {border-bottom: 1px solid #707070;background-color:#222222; }");//transperant
+                //listWidget_total[global.now_Section]->setStyleSheet("QListWidget::item {border-bottom: 1px solid #;background-color:#222222; }");//transperant
                 widget_recomm[global.now_Section].append( new QWidget());
 
                 listWidget_total[global.now_Section]->setItemWidget(item,widget_recomm[global.now_Section].at(k++));
@@ -5398,12 +5455,12 @@ void QueuePlayList::view_listWidget_setItemWidget_recomm_only(const int &p_id){/
                 if(i == this->list_dataTrackForDelegate_recomm[global.now_Section].count()-1){
                     item->setSizeHint(QSize(90, 100));
                 }else{
-                    item->setSizeHint(QSize(90, 70));
+                    item->setSizeHint(QSize(90, 80));
                 }
                 listWidget_total[global.now_Section]->addItem(item);
                 lb_queueListImg_recomm[global.now_Section].append(new QLabel());
-                lb_queueListImg_recomm[global.now_Section].at(i)->setFixedSize(50,50);
-                //listWidget_total[global.now_Section]->setStyleSheet("QListWidget::item {border-bottom: 1px solid #707070;background-color:#222222; }");//transperant
+                lb_queueListImg_recomm[global.now_Section].at(i)->setFixedSize(60,60);
+                //listWidget_total[global.now_Section]->setStyleSheet("QListWidget::item {border-bottom: 1px solid #;background-color:#222222; }");//transperant
                 widget_recomm[global.now_Section].append( new QWidget());
                 listWidget_total[global.now_Section]->setItemWidget(item,widget_recomm[global.now_Section].at(k++));
             }
@@ -5432,14 +5489,14 @@ void QueuePlayList::view_listWidget_setItemWidget_recomm_only(const int &p_id){/
                 if(i == this->list_dataTrackForDelegate_recomm[global.now_Section].count()-1){
                     item->setSizeHint(QSize(90, 100));
                 }else{
-                    item->setSizeHint(QSize(90, 70));
+                    item->setSizeHint(QSize(90, 80));
                 }
 
 
                 listWidget_total[global.now_Section]->addItem(item);
                 lb_queueListImg_recomm[global.now_Section].append(new QLabel());
-                lb_queueListImg_recomm[global.now_Section].at(i)->setFixedSize(50,50);
-                //listWidget_total[global.now_Section]->setStyleSheet("QListWidget::item {border-bottom: 1px solid #707070;background-color:#222222; }");//transperant
+                lb_queueListImg_recomm[global.now_Section].at(i)->setFixedSize(60,60);
+                //listWidget_total[global.now_Section]->setStyleSheet("QListWidget::item {border-bottom: 1px solid #;background-color:#222222; }");//transperant
                 widget_recomm[global.now_Section].append( new QWidget());
                 listWidget_total[global.now_Section]->setItemWidget(item,widget_recomm[global.now_Section].at(k++));
             }
@@ -5466,12 +5523,12 @@ void QueuePlayList::view_listWidget_setItemWidget_recomm_only(const int &p_id){/
                 if(i == this->list_dataTrackForDelegate_recomm[global.now_Section].count()-1){
                     item->setSizeHint(QSize(90, 100));
                 }else{
-                    item->setSizeHint(QSize(90, 70));
+                    item->setSizeHint(QSize(90, 80));
                 }
                 listWidget_total[global.now_Section]->addItem(item);
                 lb_queueListImg_recomm[global.now_Section].append(new QLabel());
-                lb_queueListImg_recomm[global.now_Section].at(i)->setFixedSize(50,50);
-                //listWidget_total[global.now_Section]->setStyleSheet("QListWidget::item {border-bottom: 1px solid #707070;background-color:#222222; }");//transperant
+                lb_queueListImg_recomm[global.now_Section].at(i)->setFixedSize(60,60);
+                //listWidget_total[global.now_Section]->setStyleSheet("QListWidget::item {border-bottom: 1px solid #;background-color:#222222; }");//transperant
                 widget_recomm[global.now_Section].append( new QWidget());
                 listWidget_total[global.now_Section]->setItemWidget(item,widget_recomm[global.now_Section].at(k++));
             }
@@ -5519,6 +5576,8 @@ void QueuePlayList::queue_setListWidget(int i){
 void QueuePlayList::view_listWidget_setItemWidget_forMenu(int queue_list_cnt){//c220826_2
     print_debug();
     qDebug() << "start-----########################################################################################################################################################################";
+    QTime queueTimer;
+    queueTimer.start();
 
 
     if(listWidget_total[global.now_Section]->count() != 3000){
@@ -5534,10 +5593,10 @@ void QueuePlayList::view_listWidget_setItemWidget_forMenu(int queue_list_cnt){//
             item->setFlags(Qt::ItemIsEnabled| Qt::ItemIsSelectable| Qt::ItemIsDragEnabled);
 #if defined(Q_OS_WINDOWS)
             //item->setSizeHint(QSize(item->sizeHint().width(), 70));
-            item->setSizeHint(QSize(90, 70));
+            item->setSizeHint(QSize(90, 80));
 #endif
 #if defined(Q_OS_MAC)
-            item->setSizeHint(QSize(90, 70));
+            item->setSizeHint(QSize(90, 80));
 #endif
 
             listWidget_total[global.now_Section]->addItem(item);
@@ -5546,18 +5605,24 @@ void QueuePlayList::view_listWidget_setItemWidget_forMenu(int queue_list_cnt){//
         }
     }
 
+    for(int i = 0 ;  i < queue_list_cnt ; i++){//c230428
+        widget[global.now_Section].insert(i, new QWidget());//
+        queue_setListWidget(i);//
+
+
+    }
     for(int i = 0 ;  i < queue_list_cnt ; i++){
 
 
         QObject::disconnect(disConSelectId[i]);
 
         //widget[global.now_Section].append(new QWidget());
-        widget[global.now_Section].insert(i, new QWidget());
+        //widget[global.now_Section].insert(i, new QWidget());//c234028
 
         //lb_queueListImg[global.now_Section].append(new QLabel());
         lb_queueListImg[global.now_Section].insert(i, new QLabel());
 
-        queue_setListWidget(i);
+        //queue_setListWidget(i);//c230428
 
         //checkbox_Selected[global.now_Section].append(new QCheckBox());
         checkbox_Selected[global.now_Section].insert(i, new QCheckBox());
@@ -5576,6 +5641,9 @@ void QueuePlayList::view_listWidget_setItemWidget_forMenu(int queue_list_cnt){//
     print_debug();
     qDebug() << "end-----########################################################################################################################################################################";
 
+
+    int nElaspsedTime = queueTimer.elapsed();
+    qDebug() <<"view_listWidget_setItemWidget_forMenu-경과된시간=" << nElaspsedTime;
 
 
 }
@@ -5708,7 +5776,10 @@ void QueuePlayList::for_view_std_listWidget_one_lineItemUI(const int &p_id){//c2
 inline void QueuePlayList::std_listWidget_one_lineItemUI(const int &p_index){
     //print_debug();
 
-    lb_queueListImg[global.now_Section].at(p_index)->setFixedSize(50,50);
+    if(this->list_dataTrackForDelegate[global.now_Section].count() <= 0 || this->list_dataTrackForDelegate[global.now_Section].count() < p_index ) return;//c221219
+    lb_queueListImg[global.now_Section].at(p_index)->setFixedSize(60,60);
+
+//    lb_queueListImg[global.now_Section].at(p_index)->setFixedSize(60,60);
 
     hl_listl3layout_lineItem = new QHBoxLayout();
 
@@ -5716,6 +5787,7 @@ inline void QueuePlayList::std_listWidget_one_lineItemUI(const int &p_index){
     widget_listl3layout_lineItem->setLayout(hl_listl3layout_lineItem);
 
     vl_list_titlelayout_lineItem = new QVBoxLayout();
+    //vl_list_titlelayout_lineItem->setContentsMargins(0,0,0,3);
 
     widget_title_lineItem = new QWidget();
     widget_title_lineItem->setLayout(vl_list_titlelayout_lineItem);
@@ -5725,11 +5797,13 @@ inline void QueuePlayList::std_listWidget_one_lineItemUI(const int &p_index){
     if(this->isEditMode == true){
         vl_list_titlelayout2_lineItem->setContentsMargins(0,0,0,0);
     }else{
-        vl_list_titlelayout2_lineItem->setContentsMargins(10,5,10,0);
+        vl_list_titlelayout2_lineItem->setContentsMargins(10,0,10,0);
     }
-
+    //print_debug();
     RemoveLayout(widget[global.now_Section].at(p_index));
+    //print_debug();
     QLayout* layout = widget[global.now_Section].at(p_index)->layout();
+    //print_debug();
 
     if (layout == 0){
         // print_debug();
@@ -5739,24 +5813,22 @@ inline void QueuePlayList::std_listWidget_one_lineItemUI(const int &p_index){
     QLabel *lb_Change_list = new QLabel();
     lb_Change_list->setPixmap(QPixmap(pixmapChange_list));
 
-
     QLabel *lb_listBox_title = new QLabel();
-
-    lb_listBox_title->setStyleSheet("font-weight:300;color:#FFFFFF;font-size:16px;");
+    lb_listBox_title->setStyleSheet("QLabel{font-weight:normal;color:#FFFFFF;font-size:16px;} QToolTip {background-color: #fff;color: #000; font-size:16px;}");
+//    lb_listBox_title->setFixedHeight(lb_listBox_title->sizeHint().height()-4);
     //lb_listBox_title->setStyleSheet("QWidget { background-color:#222222;  }"
     //                                                            "QLabel:hover {background-color: #505050; color: white;}"
     //                                                            "QLabel:pressed{background-color: #B18658;} QLabel:checked{background-color: #B18658;border:none;} QToolTip{ color: #404040; }");
 
     QLabel *lb_listBox_artist = new QLabel();
-    lb_listBox_artist->setStyleSheet("font-weight:300;color:#B18658;font-size:14px;");
-
+    lb_listBox_artist->setStyleSheet("QLabel{font-weight:normal;color:#B18658;font-size:16px;} QToolTip {background-color: #fff;color: #000; font-size:16px;}");
 
 
     //lb_listBox->setFixedHeight(70);
     QLabel *lb_listBox_type = new QLabel();
     lb_listBox_type->setStyleSheet("background-color:transparent;");
-
     lb_listBox_type->resize(5, 5);
+
 
     QLabel *lb_list_duration = new QLabel();
     lb_list_duration->setStyleSheet("color:#999999;font-size:14px;");
@@ -5765,26 +5837,50 @@ inline void QueuePlayList::std_listWidget_one_lineItemUI(const int &p_index){
     lb_list_addtimeResult->setStyleSheet("color:#999999;font-size:14px;");
 
     QLabel *lb_queueListImgPlaying = new QLabel();
-    lb_queueListImgPlaying->setFixedSize(40,40);
+    lb_queueListImgPlaying->setFixedSize(60,60);
     lb_queueListImgPlaying->setStyleSheet("background-color:#070707;");
 
     QLabel *lb_queueListImgDefault = new QLabel();
-    lb_queueListImgDefault->setFixedSize(40,40);
+    lb_queueListImgDefault->setFixedSize(60,60);
     lb_queueListImgDefault->setStyleSheet("background-color:#070707;");
 
     //hl_listl3layout_lineItem = new QHBoxLayout();
     hl_listl3layout_lineItem->setContentsMargins(0,0,0,0);
-    hl_listl3layout_lineItem->setSpacing(10);
+    hl_listl3layout_lineItem->setSpacing(3);
     hl_listl3layout_lineItem->setAlignment(Qt::AlignVCenter|Qt::AlignLeft);
     hl_listl3layout_lineItem->addWidget(lb_listBox_type);
     hl_listl3layout_lineItem->addWidget(lb_list_duration);
     hl_listl3layout_lineItem->addWidget(lb_list_addtimeResult);
 
+    QString osName = QSysInfo::prettyProductName();
+    if (osName.contains("Windows")) {
+        lb_listBox_title->setText(GSCommon::getTextCutFromLabelWidth(this->list_dataTrackForDelegate[global.now_Section].at(p_index).title, 394, lb_listBox_title->font()));
+        lb_listBox_artist->setText(GSCommon::getTextCutFromLabelWidth(this->list_dataTrackForDelegate[global.now_Section].at(p_index).artist, 394, lb_listBox_title->font()));
+    } else if (osName.contains("macOS")) {
+        lb_listBox_title->setText(GSCommon::getTextCutFromLabelWidth(this->list_dataTrackForDelegate[global.now_Section].at(p_index).title, 242, lb_listBox_title->font()));
+        lb_listBox_artist->setText(GSCommon::getTextCutFromLabelWidth(this->list_dataTrackForDelegate[global.now_Section].at(p_index).artist, 242, lb_listBox_title->font()));
+    }
+
+//    lb_listBox_title->setText(this->list_dataTrackForDelegate[global.now_Section].at(p_index).title);
+    if(lb_listBox_title->text().contains("…")){
+        lb_listBox_title->setToolTip(this->list_dataTrackForDelegate[global.now_Section].at(p_index).title);
+        lb_listBox_title->setToolTipDuration(2000);
+    }
+//    lb_listBox_artist->setText(this->list_dataTrackForDelegate[global.now_Section].at(p_index).artist);
+    if(lb_listBox_artist->text().contains("…")){
+        lb_listBox_artist->setToolTip(this->list_dataTrackForDelegate[global.now_Section].at(p_index).artist);
+        lb_listBox_artist->setToolTipDuration(2000);
+    }
+
     vl_list_titlelayout_lineItem->setContentsMargins(10,0,0,0);
-    vl_list_titlelayout_lineItem->setSpacing(3);
+    vl_list_titlelayout_lineItem->setSpacing(2);
     vl_list_titlelayout_lineItem->addWidget(lb_listBox_title);
-    vl_list_titlelayout_lineItem->addWidget(lb_listBox_artist);
-    //if(this->isPlayMode == true){
+    if(lb_listBox_artist->text() != ""){
+        vl_list_titlelayout_lineItem->addWidget(lb_listBox_artist);
+    }else{
+        vl_list_titlelayout_lineItem->addSpacing(7);
+    }
+//    //if(this->isPlayMode == true){
     vl_list_titlelayout_lineItem->addWidget(widget_listl3layout_lineItem);
     //}
     //print_debug();
@@ -5792,8 +5888,6 @@ inline void QueuePlayList::std_listWidget_one_lineItemUI(const int &p_index){
     //print_debug();
     //listWidget_total[global.now_Section]->item(p_index)->setText("   "+ QString::number(p_index)+ " " + this->list_dataTrackForDelegate[global.now_Section].at(p_index).title);
 
-    lb_listBox_title->setText(this->list_dataTrackForDelegate[global.now_Section].at(p_index).title);
-    lb_listBox_artist->setText(this->list_dataTrackForDelegate[global.now_Section].at(p_index).artist);
     //lb_listBox->setFixedHeight(70);
     //qDebug() << "list_dataTrackForDelegate[global.now_Section].at(p_index).type=" << list_dataTrackForDelegate[global.now_Section].at(p_index).type;
     if(list_dataTrackForDelegate[global.now_Section].at(p_index).type == DataTrackforDelegate::Types_Data::Music){
@@ -5896,20 +5990,20 @@ inline void QueuePlayList::std_listWidget_one_lineItemUI(const int &p_index){
 
     QString addtimeResult = "";
     quint64 tt2 = this->list_dataTrackForDelegate[global.now_Section].at(p_index).addtimeResult;
-    print_debug();
-    qDebug() << "tt2=" << tt2;
+    //print_debug();//c221216
+    //qDebug() << "tt2=" << tt2;//c221216
     if(quint64(tt2/86400) > 0){
         addtimeResult = QString(tr("Added %1 days ago")).arg(tt2/86400);
-        print_debug();
+        //print_debug();//c221216
     }else if(quint64(tt2/3600) > 0){
         addtimeResult = QString(tr("Added %1 hours ago")).arg(tt2/3600);
-        print_debug();
+        //print_debug();//c221216
     }else if(quint64(tt2/60) > 0){
         addtimeResult = QString(tr("Added %1 minutes ago")).arg(tt2/60);
-        print_debug();
+        //print_debug();//c221216
     }else if(quint64(tt2%60) >= 0){
         addtimeResult = QString(tr("Added %1 seconds ago")).arg(tt2%60);
-        print_debug();
+        //print_debug();//c221216
     }
     if(tt2==0){
         addtimeResult = QString(tr("Added %1 seconds ago")).arg(0);
@@ -5919,7 +6013,7 @@ inline void QueuePlayList::std_listWidget_one_lineItemUI(const int &p_index){
 
     lb_list_duration->setText(QString("%1").arg(duration));
 
-    lb_list_addtimeResult->setText(QString("%1").arg(addtimeResult));
+    lb_list_addtimeResult->setText(QString("· %1").arg(addtimeResult));
 
     QLabel *lb_list_audioQuality = new QLabel();
     //lb_list_audioQuality->setFixedSize(70,40);
@@ -5934,13 +6028,13 @@ inline void QueuePlayList::std_listWidget_one_lineItemUI(const int &p_index){
     else if(!list_dataTrackForDelegate[global.now_Section].at(p_index).audioQuality.isEmpty() ){
         QString resolution = list_dataTrackForDelegate[global.now_Section].at(p_index).audioQuality;
         QLabel *tmplabel = new QLabel();
-        tmplabel->setStyleSheet("background-color:transparent;color:#888888;font-size:16px;font-weight:normal;");
+        tmplabel->setStyleSheet("background-color:transparent;color:#888888;font-size:14px;font-weight:normal;");
         tmplabel->setText(resolution);
 
-        int width = tmplabel->sizeHint().width() + 20;
+//        int width = tmplabel->sizeHint().width() + 20;
 
-        lb_list_audioQuality->setFixedSize(width, 30);
-        lb_list_audioQuality->setStyleSheet("background-color:transparent; color:#888888; font-size:14px; font-weight:normal; border:1px solid #888888; border-radius:15px;");
+        lb_list_audioQuality->setFixedSize(54, 18);
+        lb_list_audioQuality->setStyleSheet("background-color:transparent; color:#ffffff; font-size:14px; font-weight:normal; border:1px solid #ffffff; border-radius:9px;");
         lb_list_audioQuality->setAlignment(Qt::AlignCenter);
         lb_list_audioQuality->setText(resolution);
     }
@@ -5967,12 +6061,16 @@ inline void QueuePlayList::std_listWidget_one_lineItemUI(const int &p_index){
 
     //print_debug();
 
+    QWidget *line_bottom_end = new QWidget();
+    line_bottom_end->setFixedHeight(3);
+    line_bottom_end->setStyleSheet("background-color:transparent;");
+
     if(this->isEditMode == true){
         hl_listBoxlayout_lineItem->addWidget(checkbox_Selected[global.now_Section].at(p_index));//c0114
     }
     hl_listBoxlayout_lineItem->setSpacing(10);
     hl_listBoxlayout_lineItem->addWidget(lb_queueListImg[global.now_Section].at(p_index));
-    hl_listBoxlayout_lineItem->addWidget(widget_title_lineItem);
+    hl_listBoxlayout_lineItem->addWidget(widget_title_lineItem,0,Qt::AlignTop);
     if(this->isPlayMode == true){
         hl_listBoxlayout_lineItem->addWidget(lb_list_audioQuality, 0, Qt::AlignVCenter|Qt::AlignRight);
     }
@@ -5980,21 +6078,40 @@ inline void QueuePlayList::std_listWidget_one_lineItemUI(const int &p_index){
         hl_listBoxlayout_lineItem->addWidget(lb_Change_list, 0, Qt::AlignVCenter|Qt::AlignRight);
     }
 
-    QWidget *widget_title333 = new QWidget();
-    //widget_title333->setFixedHeight(60);
-    widget_title333->setLayout(hl_listBoxlayout_lineItem);
+
+//    QWidget *widget_title333 = new QWidget();
+//    //widget_title333->setFixedHeight(60);
+//    widget_title333->setLayout(hl_listBoxlayout_lineItem);
+
 
 
     QWidget *line_bottom_1 = new QWidget();
+    line_bottom_1->setContentsMargins(0,0,0,0);
     line_bottom_1->setFixedHeight(1);
     line_bottom_1->setStyleSheet("background-color:#707070;");
 
-    vl_list_titlelayout2_lineItem->addWidget(line_bottom_1);
-    vl_list_titlelayout2_lineItem->addWidget(widget_title333);
 
 
 
-    this->widget[global.now_Section].at(p_index)->setStyleSheet("background-color:#222222;");
+    if(p_index == 0){
+        vl_list_titlelayout2_lineItem->addSpacing(5);
+        vl_list_titlelayout2_lineItem->addLayout(hl_listBoxlayout_lineItem);
+        vl_list_titlelayout2_lineItem->addSpacing(5);
+    }
+    else if(p_index < this->list_dataTrackForDelegate_recomm[global.now_Section].count()){//ppppp
+        vl_list_titlelayout2_lineItem->addWidget(line_bottom_1);
+        vl_list_titlelayout2_lineItem->addLayout(hl_listBoxlayout_lineItem);
+        vl_list_titlelayout2_lineItem->addSpacing(5);
+    }else {
+        vl_list_titlelayout2_lineItem->addWidget(line_bottom_1);
+        vl_list_titlelayout2_lineItem->addLayout(hl_listBoxlayout_lineItem);
+        vl_list_titlelayout2_lineItem->addSpacing(5);
+
+    }
+
+
+
+    this->widget[global.now_Section].at(p_index)->setStyleSheet("background-color:#333333;");
 
     //this->widget[global.now_Section].at(p_index)->setStyleSheet("QWidget { background-color:#222222;  }"
     //                                                            "QWidget:hover {background-color: #505050; color: white;}"
@@ -6011,7 +6128,7 @@ inline void QueuePlayList::std_listWidget_one_lineItemUI(const int &p_index){
 
             //this->widget[global.now_Section].at(p_index)->setStyleSheet("QWidget { background-color:#222222;  border-radius:15px;} QWidget:hover {background-color: #505050; color: white;} QWidget:pressed{background-color: #B18658;} QWidget:checked{background-color: #B18658;border:none;} QToolTip{ color: #404040; }");
 
-            this->widget[global.now_Section].at(p_index)->setStyleSheet("background-color:#222222;");
+            this->widget[global.now_Section].at(p_index)->setStyleSheet("background-color:#333333;");
         }
         print_debug();
 
@@ -6051,15 +6168,31 @@ void QueuePlayList::std_listWidget_one_line_replace_only(const int &p_index){
         DataTrackforDelegate tmp_dataTrack = this->list_dataTrackForDelegate[global.now_Section].at(p_index);
 
         QLabel *lb_listBox_title = new QLabel();
-        lb_listBox_title->setText(this->list_dataTrackForDelegate[global.now_Section].at(p_index).title);
-        //lb_listBox_title->setStyleSheet(lb_listBox_title->styleSheet().replace("#FFFFFF", "#B18658"));
+        lb_listBox_title->setStyleSheet("QLabel{font-weight:normal;color:#FFFFFF;font-size:16px;} QToolTip {background-color: #fff;color: #000; font-size:16px;}");
 
-        lb_listBox_title->setStyleSheet("font-weight:300;color:#FFFFFF;font-size:16px;");
         QLabel *lb_listBox_artist = new QLabel();
-        lb_listBox_artist->setText(this->list_dataTrackForDelegate[global.now_Section].at(p_index).artist);
+        lb_listBox_artist->setStyleSheet("QLabel{font-weight:normal;color:#B18658;font-size:16px;} QToolTip {background-color: #fff;color: #000; font-size:16px;}");
+
+        QString osName = QSysInfo::prettyProductName();
+        if (osName.contains("Windows")) {
+            lb_listBox_title->setText(GSCommon::getTextCutFromLabelWidth(this->list_dataTrackForDelegate[global.now_Section].at(p_index).title, 394, lb_listBox_title->font()));
+            lb_listBox_artist->setText(GSCommon::getTextCutFromLabelWidth(this->list_dataTrackForDelegate[global.now_Section].at(p_index).artist, 394, lb_listBox_title->font()));
+        } else if (osName.contains("macOS")) {
+            lb_listBox_title->setText(GSCommon::getTextCutFromLabelWidth(this->list_dataTrackForDelegate[global.now_Section].at(p_index).title, 242, lb_listBox_title->font()));
+            lb_listBox_artist->setText(GSCommon::getTextCutFromLabelWidth(this->list_dataTrackForDelegate[global.now_Section].at(p_index).artist, 242, lb_listBox_title->font()));
+        }
+
+        if(lb_listBox_title->text().contains("…")){
+            lb_listBox_title->setToolTip(this->list_dataTrackForDelegate[global.now_Section].at(p_index).title);
+            lb_listBox_title->setToolTipDuration(2000);
+        }
+
+        if(lb_listBox_artist->text().contains("…")){
+            lb_listBox_artist->setToolTip(this->list_dataTrackForDelegate[global.now_Section].at(p_index).artist);
+            lb_listBox_artist->setToolTipDuration(2000);
+        }
 
 
-        lb_listBox_artist->setStyleSheet("font-weight:300;color:#B18658;font-size:14px;");
 
         QLabel *lb_listBox_type = new QLabel();
         lb_listBox_type->setStyleSheet("background-color:transparent;");
@@ -6084,10 +6217,10 @@ void QueuePlayList::std_listWidget_one_line_replace_only(const int &p_index){
         }//c220603
 
         lb_list_duration = new QLabel();
-        lb_list_duration->setStyleSheet("color:#777777;font-size:13px;");
+        lb_list_duration->setStyleSheet("color:#999999;font-size:14px;");
 
         lb_list_addtimeResult = new QLabel();
-        lb_list_addtimeResult->setStyleSheet("color:#777777;font-size:13px;");
+        lb_list_addtimeResult->setStyleSheet("color:#999999;font-size:14px;");
 
         QString duration = "";
         int tt;
@@ -6192,7 +6325,7 @@ void QueuePlayList::std_listWidget_one_line_replace_only(const int &p_index){
         }
         lb_list_duration->setText(QString("%1").arg(duration));
 
-        lb_list_addtimeResult->setText(QString("%1").arg(addtimeResult));
+        lb_list_addtimeResult->setText(QString("· %1").arg(addtimeResult));
         qDebug() << "p_index = " << p_index;
 
         QLabel *lb_list_audioQuality = new QLabel();
@@ -6211,10 +6344,10 @@ void QueuePlayList::std_listWidget_one_line_replace_only(const int &p_index){
             tmplabel->setStyleSheet("background-color:transparent;color:#888888;font-size:16px;font-weight:normal;");
             tmplabel->setText(resolution);
 
-            int width = tmplabel->sizeHint().width() + 20;
+//            int width = tmplabel->sizeHint().width() + 20;
 
-            lb_list_audioQuality->setFixedSize(width, 30);
-            lb_list_audioQuality->setStyleSheet("background-color:transparent; color:#888888; font-size:14px; font-weight:normal; border:1px solid #888888; border-radius:15px;");
+            lb_list_audioQuality->setFixedSize(51, 18);
+            lb_list_audioQuality->setStyleSheet("background-color:transparent; color:#ffffff; font-size:14px; font-weight:normal; border:1px solid #ffffff; border-radius:9px;");
             lb_list_audioQuality->setAlignment(Qt::AlignCenter);
             lb_list_audioQuality->setText(resolution);
         }
@@ -6230,7 +6363,7 @@ void QueuePlayList::std_listWidget_one_line_replace_only(const int &p_index){
         //lb_list_audioQuality->setStyleSheet("color:#777777;font-size:16px;");
         QHBoxLayout *hl_listl3layout = new QHBoxLayout();
         hl_listl3layout->setContentsMargins(0,0,0,0);
-        hl_listl3layout->setSpacing(10);
+        hl_listl3layout->setSpacing(3);
         hl_listl3layout->setAlignment(Qt::AlignVCenter|Qt::AlignLeft);
         hl_listl3layout->addWidget(lb_listBox_type);
         hl_listl3layout->addWidget(lb_list_duration);
@@ -6239,29 +6372,32 @@ void QueuePlayList::std_listWidget_one_line_replace_only(const int &p_index){
 
 
         QLabel *lb_queueListImgPlaying = new QLabel();
-        lb_queueListImgPlaying->setFixedSize(50,50);
-        //pixmapPlaying = pixmapPlaying.scaled(50,50, Qt::IgnoreAspectRatio, Qt::SmoothTransformation);
+        lb_queueListImgPlaying->setFixedSize(60,60);
+        pixmapPlaying = pixmapPlaying.scaled(60,60, Qt::IgnoreAspectRatio, Qt::SmoothTransformation);
         lb_queueListImgPlaying->setPixmap(QPixmap(pixmapPlaying));//pixmapDefault
         lb_queueListImgPlaying->setStyleSheet("background-color:#070707;");
 
         QLabel *lb_queueListImgDefault = new QLabel();
-        lb_queueListImgDefault->setFixedSize(50,50);
-        //pixmapDefault = pixmapDefault.scaled(50,50, Qt::IgnoreAspectRatio, Qt::SmoothTransformation);
+        lb_queueListImgDefault->setFixedSize(60,60);
+        pixmapDefault = pixmapDefault.scaled(60,60, Qt::IgnoreAspectRatio, Qt::SmoothTransformation);
         lb_queueListImgDefault->setPixmap(QPixmap(pixmapDefault));//pixmapDefault
         lb_queueListImgDefault->setStyleSheet("background-color:#070707;");
 
         if(tmp_dataTrack.isPlay == false){
 
             QListWidgetItem *item = this->listWidget_total[global.now_Section]->item(p_index);
-            item->setSizeHint(QSize(90, 70));
+            item->setSizeHint(QSize(90, 80));
 
             QVBoxLayout *vl_list_titlelayout = new QVBoxLayout();
-            vl_list_titlelayout->setContentsMargins(10,5,0,0);
-            vl_list_titlelayout->setSpacing(3);
+            vl_list_titlelayout->setContentsMargins(10,0,0,0);
+            vl_list_titlelayout->setSpacing(2);
             vl_list_titlelayout->addWidget(lb_listBox_title);
-            vl_list_titlelayout->addWidget(lb_listBox_artist);
+            if(lb_listBox_artist->text() != ""){
+                vl_list_titlelayout->addWidget(lb_listBox_artist);
+            }else{
+                vl_list_titlelayout->addSpacing(7);
+            }
             vl_list_titlelayout->addLayout(hl_listl3layout);
-            vl_list_titlelayout->setSpacing(3);
             QWidget *widget_title = new QWidget();
             widget_title->setFixedHeight(60);
             widget_title->setLayout(vl_list_titlelayout);
@@ -6275,7 +6411,7 @@ void QueuePlayList::std_listWidget_one_line_replace_only(const int &p_index){
             hl_listBoxlayout->addWidget(widget_title, 0, Qt::AlignVCenter|Qt::AlignLeft);
             hl_listBoxlayout->addWidget(lb_list_audioQuality, 0, Qt::AlignVCenter|Qt::AlignRight);
 
-            widget[global.now_Section].at(p_index)->setStyleSheet("background-color:#222222;");
+            widget[global.now_Section].at(p_index)->setStyleSheet("background-color:#333333;");
 
             QWidget *line_bottom_1 = new QWidget();
             line_bottom_1->setFixedSize(300,1);
@@ -6318,12 +6454,12 @@ void QueuePlayList::std_listWidget_one_line_replace_only(const int &p_index){
             //hl_listBoxlayout->addWidget(lb_queueListImgPlaying);
 
             QListWidgetItem *item = this->listWidget_total[global.now_Section]->item(p_index);
-            item->setSizeHint(QSize(90, 125));
+            item->setSizeHint(QSize(90, 130));
             /*
         this->listWidget_total[global.now_Section]->takeItem(p_index);
         QListWidgetItem *item = new QListWidgetItem;
         item->setText("   "+ QString::number(p_index));
-        item->setSizeHint(QSize(90, 70));
+        item->setSizeHint(QSize(90, 80));
         widget[global.now_Section].removeAt(p_index);
         widget[global.now_Section].insert(p_index, new QWidget());
 
@@ -6335,17 +6471,22 @@ void QueuePlayList::std_listWidget_one_line_replace_only(const int &p_index){
             line_bottom_1->setFixedSize(300,1);
             line_bottom_1->setStyleSheet("background-color:#707070;");
             QWidget *line_bottom_2 = new QWidget();
-            line_bottom_2->setFixedHeight(1);
-            line_bottom_2->setStyleSheet("background-color:#b0b0b0;");
+            if(global.lang == 0){
+                line_bottom_2->setFixedSize(320,1);
+            }
+            else if(global.lang == 1){
+                line_bottom_2->setFixedSize(375,1);
+            }
+            line_bottom_2->setStyleSheet("background-color:#707070;");
             //QFrame* hFrame = new QFrame;
             //hFrame->setFrameShape(QFrame::HLine);
             QLabel *lb_listBox_title_tmp = new QLabel();
             lb_listBox_title_tmp->setFixedHeight(30);
             lb_listBox_title_tmp->setText(tr("  Currently playing"));
-            lb_listBox_title_tmp->setStyleSheet("color:#FFFFFF;font-size:22px;font:bold;");
+            lb_listBox_title_tmp->setStyleSheet("color:#FFFFFF;font-size:16px;font-weight: normal;");
 
             QHBoxLayout *hl_title_current_playing = new QHBoxLayout();
-            hl_title_current_playing->setContentsMargins(0,0,0,0);
+            hl_title_current_playing->setContentsMargins(3,0,0,0);
             hl_title_current_playing->setSpacing(0);
             //hl_title_current_playing->setAlignment(Qt::AlignLeft);
             hl_title_current_playing->addWidget(lb_listBox_title_tmp);
@@ -6353,21 +6494,25 @@ void QueuePlayList::std_listWidget_one_line_replace_only(const int &p_index){
 
             QWidget *widget_title_current_playing = new QWidget();
             widget_title_current_playing->setLayout(hl_title_current_playing);
-            widget_title_current_playing->setStyleSheet("background-color:#222222;");
+            widget_title_current_playing->setFixedHeight(50);
+            widget_title_current_playing->setStyleSheet("background-color:#333333;");
 
             QVBoxLayout *vl_list_titlelayout = new QVBoxLayout();
-            vl_list_titlelayout->setContentsMargins(10,5,0,0);
+            vl_list_titlelayout->setContentsMargins(10,0,0,0);
             vl_list_titlelayout->setSpacing(3);
             vl_list_titlelayout->addWidget(lb_listBox_title);
-            vl_list_titlelayout->addWidget(lb_listBox_artist);
+            if(lb_listBox_artist->text() != ""){
+                vl_list_titlelayout->addWidget(lb_listBox_artist);
+            }else{
+                vl_list_titlelayout->addSpacing(7);
+            }
             vl_list_titlelayout->addLayout(hl_listl3layout);
-            vl_list_titlelayout->setSpacing(3);
             QWidget *widget_title = new QWidget();
             widget_title->setFixedHeight(60);
             widget_title->setLayout(vl_list_titlelayout);
 
             QHBoxLayout *hl_listBoxlayout = new QHBoxLayout();
-            hl_listBoxlayout->setContentsMargins(10,0,10,0);//setContentsMargins(0,0,10,0);
+            hl_listBoxlayout->setContentsMargins(10,0,20,0);//setContentsMargins(0,0,10,0);
             hl_listBoxlayout->setSpacing(10);
             //qDebug() << "lb_queueListImg[global.now_Section].count() = " << lb_queueListImg[global.now_Section].count();
             //qDebug() << "p_index = " << p_index;
@@ -6379,13 +6524,13 @@ void QueuePlayList::std_listWidget_one_line_replace_only(const int &p_index){
             hl_listBoxlayout->addWidget(widget_title, 0, Qt::AlignVCenter|Qt::AlignLeft);
             //hl_listBoxlayout->addSpacing(10);
             hl_listBoxlayout->addWidget(lb_list_audioQuality, 0, Qt::AlignVCenter|Qt::AlignRight);
-            lb_queueListImg[global.now_Section].at(p_index)->setPixmap(QPixmap(pixmapPlaying));
+            //lb_queueListImg[global.now_Section].at(p_index)->setPixmap(QPixmap(pixmapPlaying));
 
 
             vl_list_titlelayout2_lineItem = new QVBoxLayout();
             //GSCommon::clearLayout(vl_list_titlelayout2);
             //vl_list_titlelayout2 = new QVBoxLayout();
-            vl_list_titlelayout2_lineItem->setContentsMargins(0,0,10,0);
+            vl_list_titlelayout2_lineItem->setContentsMargins(0,0,0,0);
             vl_list_titlelayout2_lineItem->setSpacing(0);
             QVBoxLayout *vl_list_titlelayout2 = new QVBoxLayout();
             vl_list_titlelayout2->setContentsMargins(0,0,0,0);
@@ -6437,16 +6582,33 @@ void QueuePlayList::std_listWidget_one_line_replace_only(const int &section, con
         print_debug();
         DataTrackforDelegate tmp_dataTrack = this->list_dataTrackForDelegate[section].at(p_index);
         print_debug();
+
+
         QLabel *lb_listBox_title = new QLabel();
-        lb_listBox_title->setText(this->list_dataTrackForDelegate[section].at(p_index).title);
-        //lb_listBox_title->setStyleSheet(lb_listBox_title->styleSheet().replace("#FFFFFF", "#B18658"));
+        lb_listBox_title->setStyleSheet("QLabel{font-weight:normal;color:#FFFFFF;font-size:16px;} QToolTip {background-color: #fff;color: #000; font-size:16px;}");
 
-        lb_listBox_title->setStyleSheet("font-weight:300;color:#FFFFFF;font-size:16px;");
         QLabel *lb_listBox_artist = new QLabel();
-        lb_listBox_artist->setText(this->list_dataTrackForDelegate[section].at(p_index).artist);
+        lb_listBox_artist->setStyleSheet("QLabel{font-weight:normal;color:#B18658;font-size:16px;} QToolTip {background-color: #fff;color: #000; font-size:16px;}");
 
+        QString osName = QSysInfo::prettyProductName();
+        if (osName.contains("Windows")) {
+            lb_listBox_title->setText(GSCommon::getTextCutFromLabelWidth(this->list_dataTrackForDelegate[section].at(p_index).title, 394, lb_listBox_title->font()));
+            lb_listBox_artist->setText(GSCommon::getTextCutFromLabelWidth(this->list_dataTrackForDelegate[section].at(p_index).artist, 394, lb_listBox_title->font()));
+        } else if (osName.contains("macOS")) {
+            lb_listBox_title->setText(GSCommon::getTextCutFromLabelWidth(this->list_dataTrackForDelegate[section].at(p_index).title, 242, lb_listBox_title->font()));
+            lb_listBox_artist->setText(GSCommon::getTextCutFromLabelWidth(this->list_dataTrackForDelegate[section].at(p_index).artist, 242, lb_listBox_title->font()));
+        }
 
-        lb_listBox_artist->setStyleSheet("font-weight:300;color:#B18658;font-size:14px;");
+        if(lb_listBox_title->text().contains("…")){
+            lb_listBox_title->setToolTip(this->list_dataTrackForDelegate[section].at(p_index).title);
+            lb_listBox_title->setToolTipDuration(2000);
+        }
+
+        if(lb_listBox_artist->text().contains("…")){
+            lb_listBox_artist->setToolTip(this->list_dataTrackForDelegate[section].at(p_index).artist);
+            lb_listBox_artist->setToolTipDuration(2000);
+        }
+
 
         QLabel *lb_listBox_type = new QLabel();
         lb_listBox_type->setStyleSheet("background-color:transparent;");
@@ -6598,10 +6760,10 @@ void QueuePlayList::std_listWidget_one_line_replace_only(const int &section, con
             tmplabel->setStyleSheet("background-color:transparent;color:#888888;font-size:16px;font-weight:normal;");
             tmplabel->setText(resolution);
 
-            int width = tmplabel->sizeHint().width() + 20;
+//            int width = tmplabel->sizeHint().width() + 20;
 
-            lb_list_audioQuality->setFixedSize(width, 30);
-            lb_list_audioQuality->setStyleSheet("background-color:transparent; color:#888888; font-size:14px; font-weight:normal; border:1px solid #888888; border-radius:15px;");
+            lb_list_audioQuality->setFixedSize(54, 18);
+            lb_list_audioQuality->setStyleSheet("background-color:transparent; color:#888888; font-size:14px; font-weight:normal; border:1px solid #888888; border-radius:9px;");
             lb_list_audioQuality->setAlignment(Qt::AlignCenter);
             lb_list_audioQuality->setText(resolution);
         }
@@ -6625,13 +6787,13 @@ void QueuePlayList::std_listWidget_one_line_replace_only(const int &section, con
 
 
         QLabel *lb_queueListImgPlaying = new QLabel();
-        lb_queueListImgPlaying->setFixedSize(50,50);
+        lb_queueListImgPlaying->setFixedSize(60,60);
         //pixmapPlaying = pixmapPlaying.scaled(50,50, Qt::IgnoreAspectRatio, Qt::SmoothTransformation);
         lb_queueListImgPlaying->setPixmap(QPixmap(pixmapPlaying));//pixmapDefault
         lb_queueListImgPlaying->setStyleSheet("background-color:#070707;");
 
         QLabel *lb_queueListImgDefault = new QLabel();
-        lb_queueListImgDefault->setFixedSize(50,50);
+        lb_queueListImgDefault->setFixedSize(60,60);
         //pixmapDefault = pixmapDefault.scaled(50,50, Qt::IgnoreAspectRatio, Qt::SmoothTransformation);
         lb_queueListImgDefault->setPixmap(QPixmap(pixmapDefault));//pixmapDefault
         lb_queueListImgDefault->setStyleSheet("background-color:#070707;");
@@ -6639,17 +6801,21 @@ void QueuePlayList::std_listWidget_one_line_replace_only(const int &section, con
         if(tmp_dataTrack.isPlay == false){
 
             QListWidgetItem *item = this->listWidget_total[section]->item(p_index);
-            item->setSizeHint(QSize(90, 70));
+            item->setSizeHint(QSize(90, 80));
 
             QVBoxLayout *vl_list_titlelayout = new QVBoxLayout();
-            vl_list_titlelayout->setContentsMargins(10,5,0,0);
-            vl_list_titlelayout->setSpacing(3);
+            vl_list_titlelayout->setContentsMargins(10,0,0,0);
+            vl_list_titlelayout->setSpacing(2);
             vl_list_titlelayout->addWidget(lb_listBox_title);
-            vl_list_titlelayout->addWidget(lb_listBox_artist);
+            //vl_list_titlelayout->addWidget(lb_listBox_artist);
+            if(lb_listBox_artist->text() != ""){
+                vl_list_titlelayout->addWidget(lb_listBox_artist);
+            }else{
+                vl_list_titlelayout->addSpacing(7);
+            }
             vl_list_titlelayout->addLayout(hl_listl3layout);
-            vl_list_titlelayout->setSpacing(3);
             QWidget *widget_title = new QWidget();
-            widget_title->setFixedHeight(60);
+            widget_title->setFixedHeight(64);
             widget_title->setLayout(vl_list_titlelayout);
 
             QHBoxLayout *hl_listBoxlayout = new QHBoxLayout();
@@ -6661,7 +6827,7 @@ void QueuePlayList::std_listWidget_one_line_replace_only(const int &section, con
             hl_listBoxlayout->addWidget(widget_title, 0, Qt::AlignVCenter|Qt::AlignLeft);
             hl_listBoxlayout->addWidget(lb_list_audioQuality, 0, Qt::AlignVCenter|Qt::AlignRight);
 
-            widget[section].at(p_index)->setStyleSheet("background-color:#222222;");
+            widget[section].at(p_index)->setStyleSheet("background-color:#333333;");
 
             QWidget *line_bottom_1 = new QWidget();
             line_bottom_1->setFixedSize(300,1);
@@ -6703,7 +6869,7 @@ void QueuePlayList::std_listWidget_one_line_replace_only(const int &section, con
             //hl_listBoxlayout->addWidget(lb_queueListImgPlaying);
 
             QListWidgetItem *item = this->listWidget_total[section]->item(p_index);
-            item->setSizeHint(QSize(90, 125));
+            item->setSizeHint(QSize(90, 130));
 
             QWidget *line_bottom_1 = new QWidget();
             line_bottom_1->setFixedSize(300,1);
@@ -6716,7 +6882,7 @@ void QueuePlayList::std_listWidget_one_line_replace_only(const int &section, con
             QLabel *lb_listBox_title_tmp = new QLabel();
             lb_listBox_title_tmp->setFixedHeight(30);
             lb_listBox_title_tmp->setText(tr("  Currently playing"));
-            lb_listBox_title_tmp->setStyleSheet("color:#FFFFFF;font-size:22px;font:bold;");
+            lb_listBox_title_tmp->setStyleSheet("color:#FFFFFF;font-size:16px;font:normal;");
 
             QHBoxLayout *hl_title_current_playing = new QHBoxLayout();
             hl_title_current_playing->setContentsMargins(0,0,0,0);
@@ -6727,15 +6893,20 @@ void QueuePlayList::std_listWidget_one_line_replace_only(const int &section, con
 
             QWidget *widget_title_current_playing = new QWidget();
             widget_title_current_playing->setLayout(hl_title_current_playing);
-            widget_title_current_playing->setStyleSheet("background-color:#222222;");
+            widget_title_current_playing->setFixedHeight(50);
+            widget_title_current_playing->setStyleSheet("background-color:#333333;");
 
             QVBoxLayout *vl_list_titlelayout = new QVBoxLayout();
-            vl_list_titlelayout->setContentsMargins(10,5,0,0);
-            vl_list_titlelayout->setSpacing(3);
+            vl_list_titlelayout->setContentsMargins(10,0,0,0);
+            vl_list_titlelayout->setSpacing(2);
             vl_list_titlelayout->addWidget(lb_listBox_title);
-            vl_list_titlelayout->addWidget(lb_listBox_artist);
+            //vl_list_titlelayout->addWidget(lb_listBox_artist);
+            if(lb_listBox_artist->text() != ""){
+                vl_list_titlelayout->addWidget(lb_listBox_artist);
+            }else{
+                vl_list_titlelayout->addSpacing(7);
+            }
             vl_list_titlelayout->addLayout(hl_listl3layout);
-            vl_list_titlelayout->setSpacing(3);
             QWidget *widget_title = new QWidget();
             widget_title->setFixedHeight(60);
             widget_title->setLayout(vl_list_titlelayout);
@@ -6810,12 +6981,30 @@ void QueuePlayList::std_listWidget_one_line_recomm(const int &p_index){
     DataTrackforDelegate tmp_dataTrack = this->list_dataTrackForDelegate_recomm[global.now_Section].at(p_index);
 
     QLabel *lb_listBox_title = new QLabel();
-    lb_listBox_title->setText(this->list_dataTrackForDelegate_recomm[global.now_Section].at(p_index).title);
-    lb_listBox_title->setStyleSheet("font-weight:300;color:#FFFFFF;font-size:16px;");
-    QLabel *lb_listBox_artist = new QLabel();
-    lb_listBox_artist->setText(this->list_dataTrackForDelegate_recomm[global.now_Section].at(p_index).artist);
+    lb_listBox_title->setStyleSheet("QLabel{font-weight:normal;color:#FFFFFF;font-size:16px;} QToolTip {background-color: #fff;color: #000; font-size:16px;}");
 
-    lb_listBox_artist->setStyleSheet("font-weight:300;color:rgb(177,134,88);font-size:14px;");
+
+    QLabel *lb_listBox_artist = new QLabel();
+    lb_listBox_artist->setStyleSheet("QLabel{font-weight:normal;color:#B18658;font-size:16px;} QToolTip {background-color: #fff;color: #000; font-size:16px;}");
+
+    QString osName = QSysInfo::prettyProductName();
+    if (osName.contains("Windows")) {
+        lb_listBox_title->setText(GSCommon::getTextCutFromLabelWidth(this->list_dataTrackForDelegate_recomm[global.now_Section].at(p_index).title, 394, lb_listBox_title->font()));
+        lb_listBox_artist->setText(GSCommon::getTextCutFromLabelWidth(this->list_dataTrackForDelegate_recomm[global.now_Section].at(p_index).artist, 394, lb_listBox_title->font()));
+    } else if (osName.contains("macOS")) {
+        lb_listBox_title->setText(GSCommon::getTextCutFromLabelWidth(this->list_dataTrackForDelegate_recomm[global.now_Section].at(p_index).title, 242, lb_listBox_title->font()));
+        lb_listBox_artist->setText(GSCommon::getTextCutFromLabelWidth(this->list_dataTrackForDelegate_recomm[global.now_Section].at(p_index).artist, 242, lb_listBox_title->font()));
+    }
+
+    if(lb_listBox_title->text().contains("…")){
+        lb_listBox_title->setToolTip(list_dataTrackForDelegate_recomm[global.now_Section].at(p_index).title);
+        lb_listBox_title->setToolTipDuration(2000);
+    }
+
+    if(lb_listBox_artist->text().contains("…")){
+        lb_listBox_artist->setToolTip(this->list_dataTrackForDelegate_recomm[global.now_Section].at(p_index).artist);
+        lb_listBox_artist->setToolTipDuration(2000);
+    }
 
     //lb_listBox->setFixedHeight(70);
     //print_debug();qDebug() << p_index;
@@ -6928,7 +7117,7 @@ void QueuePlayList::std_listWidget_one_line_recomm(const int &p_index){
     //print_debug();
     QLabel *lb_list_duration = new QLabel();
     lb_list_duration->setText(QString("%1").arg(duration));
-    lb_list_duration->setStyleSheet("color:#777777;font-size:13px;");
+    lb_list_duration->setStyleSheet("color:#999999;font-size:14px;");
 
 
     QLabel *lb_list_audioQuality = new QLabel();
@@ -6946,10 +7135,10 @@ void QueuePlayList::std_listWidget_one_line_recomm(const int &p_index){
         tmplabel->setStyleSheet("background-color:transparent;color:#888888;font-size:16px;font-weight:normal;");
         tmplabel->setText(resolution);
 
-        int width = tmplabel->sizeHint().width() + 20;
+//        int width = tmplabel->sizeHint().width() + 20;
 
-        lb_list_audioQuality->setFixedSize(width, 30);
-        lb_list_audioQuality->setStyleSheet("background-color:transparent; color:#888888; font-size:14px; font-weight:normal; border:1px solid #888888; border-radius:15px;");
+        lb_list_audioQuality->setFixedSize(54, 18);
+        lb_list_audioQuality->setStyleSheet("background-color:transparent; color:#ffffff; font-size:14px; font-weight:normal; border:1px solid #ffffff; border-radius:9px;");
         lb_list_audioQuality->setAlignment(Qt::AlignCenter);
         lb_list_audioQuality->setText(resolution);
     }
@@ -6970,8 +7159,8 @@ void QueuePlayList::std_listWidget_one_line_recomm(const int &p_index){
     hl_listl3layout->addWidget(lb_list_duration);
 
     QVBoxLayout *vl_list_titlelayout = new QVBoxLayout();
-    vl_list_titlelayout->setContentsMargins(10,4,0,0);
-    vl_list_titlelayout->setSpacing(5);
+    vl_list_titlelayout->setContentsMargins(10,0,0,0);
+    vl_list_titlelayout->setSpacing(2);
     vl_list_titlelayout->addWidget(lb_listBox_title);
     vl_list_titlelayout->addWidget(lb_listBox_artist);
     vl_list_titlelayout->addLayout(hl_listl3layout);
@@ -6983,17 +7172,17 @@ void QueuePlayList::std_listWidget_one_line_recomm(const int &p_index){
     //lb_queueListImg_recomm[global.now_Section].at(p_index)->setFixedSize(40,40);
 
     QHBoxLayout *hl_listBoxlayout = new QHBoxLayout();
-    hl_listBoxlayout->setContentsMargins(10,0,10,0);
+    hl_listBoxlayout->setContentsMargins(0,0,10,0);
     hl_listBoxlayout->setSpacing(10);
     QLabel *lb_queueListImgPlaying = new QLabel();
-    lb_queueListImgPlaying->setFixedSize(50,50);
-    pixmapPlaying = pixmapPlaying.scaled(40,40, Qt::IgnoreAspectRatio, Qt::SmoothTransformation);
+    lb_queueListImgPlaying->setFixedSize(60,60);
+    pixmapPlaying = pixmapPlaying.scaled(60,60, Qt::IgnoreAspectRatio, Qt::SmoothTransformation);
     lb_queueListImgPlaying->setPixmap(QPixmap(pixmapPlaying));//pixmapDefault
     lb_queueListImgPlaying->setStyleSheet("background-color:#070707;");
 
     QLabel *lb_queueListImgDefault = new QLabel();
-    lb_queueListImgDefault->setFixedSize(50,50);
-    pixmapDefault = pixmapDefault.scaled(50,50, Qt::IgnoreAspectRatio, Qt::SmoothTransformation);
+    lb_queueListImgDefault->setFixedSize(60,60);
+    pixmapDefault = pixmapDefault.scaled(60,60, Qt::IgnoreAspectRatio, Qt::SmoothTransformation);
     lb_queueListImgDefault->setPixmap(QPixmap(pixmapDefault));//pixmapDefault
     lb_queueListImgDefault->setStyleSheet("background-color:#070707;");
     //lb_queueListImg_recomm[global.now_Section].at(p_index)->setPixmap(pixmapDefault);
@@ -7021,7 +7210,7 @@ void QueuePlayList::std_listWidget_one_line_recomm(const int &p_index){
     line_bottom_1->setStyleSheet("background-color:#707070;");
 
     QWidget *line_bottom_end = new QWidget();
-    line_bottom_end->setFixedHeight(5);
+    line_bottom_end->setFixedHeight(1);
     line_bottom_end->setStyleSheet("background-color:#707070;");
 
 
@@ -7041,21 +7230,31 @@ void QueuePlayList::std_listWidget_one_line_recomm(const int &p_index){
 
     QVBoxLayout *vl_list_titlelayout2 = new QVBoxLayout();
 
-    if(p_index < this->list_dataTrackForDelegate_recomm[global.now_Section].count()-1){
-        widget_recomm[global.now_Section].at(p_index)->setFixedHeight(70);
+    if(p_index == 0){
+        widget_recomm[global.now_Section].at(p_index)->setFixedHeight(80);
+        vl_list_titlelayout2->addSpacing(5);
+        vl_list_titlelayout2->setContentsMargins(10,0,10,0);
+        vl_list_titlelayout2->addLayout(hl_listBoxlayout);
+        vl_list_titlelayout2->addSpacing(5);
+    }
+    else if(p_index < this->list_dataTrackForDelegate_recomm[global.now_Section].count()-1){
+        widget_recomm[global.now_Section].at(p_index)->setFixedHeight(80);
         vl_list_titlelayout2->setContentsMargins(10,0,10,0);
         vl_list_titlelayout2->addWidget(line_bottom_1);
         vl_list_titlelayout2->addLayout(hl_listBoxlayout);
+        vl_list_titlelayout2->addSpacing(5);
     }else{
-        widget_recomm[global.now_Section].at(p_index)->setFixedHeight(100);
+        widget_recomm[global.now_Section].at(p_index)->setFixedHeight(80);
         vl_list_titlelayout2->setContentsMargins(10,0,10,0);
         vl_list_titlelayout2->addWidget(line_bottom_1);
         vl_list_titlelayout2->addLayout(hl_listBoxlayout);
-        vl_list_titlelayout2->addWidget(line_bottom_end);
-        //vl_list_titlelayout->addSpacing(20);
-        vl_list_titlelayout2->addWidget(lb_listBox_end);
+
+        //vl_list_titlelayout2->addSpacing(5);
+        //vl_list_titlelayout2->addWidget(lb_listBox_end);
+        //vl_list_titlelayout2->addWidget(line_bottom_1);
     }
     RemoveLayout(widget_recomm[global.now_Section].at(p_index));
+
     QLayout* layout = widget_recomm[global.now_Section].at(p_index)->layout();
 
     if (layout == 0){
@@ -7063,7 +7262,7 @@ void QueuePlayList::std_listWidget_one_line_recomm(const int &p_index){
         this->widget_recomm[global.now_Section].at(p_index)->setLayout(vl_list_titlelayout2);
     }
     // widget_recomm[global.now_Section].at(p_index)->setLayout(vl_list_titlelayout2);
-    widget_recomm[global.now_Section].at(p_index)->setStyleSheet("background-color:#222222;");
+    widget_recomm[global.now_Section].at(p_index)->setStyleSheet("background-color:#333333;");
     // print_debug();
 
 }
@@ -7081,7 +7280,7 @@ void QueuePlayList::slot_responseHttp_play(const int& p_id, const QJsonObject& p
     //print_debug();
     Q_UNUSED(p_id);
 
-    // test debug 28.01.2021 Added Jeon
+    // test debug 28.01.2021 Added diskept
     //print_tidal_func();
     //QJsonDocument doc(p_jsonObj);//cheon211114-01
     //QString strJson(doc.toJson(QJsonDocument::Compact));//cheon211114-01
@@ -7268,7 +7467,7 @@ void QueuePlayList::playCurr_recomm(int p_index){//1126
             }else if(tmp_dataTrack.type == DataTrackforDelegate::Types_Data::Qobuz){//cheon210916-total
                 print_debug();
                 //connect(network, SIGNAL(response(int,QJsonObject)), SLOT(slot_responseHttp(int,QJsonObject)));//cheon211107-01
-                // Qobuz - Queue에서 해당 index의 Track 재생 (Qobuz-Track---Play)  // Added Jeon 15/12/2020
+                // Qobuz - Queue에서 해당 index의 Track 재생 (Qobuz-Track---Play)  // Added diskept 15/12/2020
                 //print_debug();
                 //qDebug() << "this->jsonArray_backup_qobuz.count()=" << this->jsonArray_backup_qobuz.count();
                 QJsonDocument doc(this->jsonArray_backup_total_recomm[global.now_Section].at(p_index).toObject());  QString strJson(doc.toJson(QJsonDocument::Compact));
@@ -7290,7 +7489,7 @@ void QueuePlayList::playCurr_recomm(int p_index){//1126
             }else if(tmp_dataTrack.type == DataTrackforDelegate::Types_Data::AppleMusic){//cheon210916-total
                 print_debug();
                 //connect(network, SIGNAL(response(int,QJsonObject)), SLOT(slot_responseHttp(int,QJsonObject)));//cheon211107-01
-                // Qobuz - Queue에서 해당 index의 Track 재생 (Qobuz-Track---Play)  // Added Jeon 15/12/2020
+                // Qobuz - Queue에서 해당 index의 Track 재생 (Qobuz-Track---Play)  // Added diskept 15/12/2020
                 //print_debug();
                 //qDebug() << "this->jsonArray_backup_qobuz.count()=" << this->jsonArray_backup_qobuz.count();
                 QJsonDocument doc(this->jsonArray_backup_total_recomm[global.now_Section].at(p_index).toObject());  QString strJson(doc.toJson(QJsonDocument::Compact));
@@ -7329,6 +7528,7 @@ void QueuePlayList::slot_playCurr_recomm(){//1126
         print_debug();
 
         if(global.device.getDeviceIP()!=""){
+            ToastMsg::delay(this,"", tr("delay"), 2000);//c230319
             this->recomCurr_selIndex = p_index;
 
             //widget_recomm[global.now_Section].at(p_index)->setStyleSheet("background-color:#9c9c9c;");
@@ -7477,7 +7677,7 @@ void QueuePlayList::slot_playCurr_recomm(){//1126
             }else if(tmp_dataTrack.type == DataTrackforDelegate::Types_Data::Qobuz){//cheon210916-total
                 print_debug();
                 //connect(network, SIGNAL(response(int,QJsonObject)), SLOT(slot_responseHttp(int,QJsonObject)));//cheon211107-01
-                // Qobuz - Queue에서 해당 index의 Track 재생 (Qobuz-Track---Play)  // Added Jeon 15/12/2020
+                // Qobuz - Queue에서 해당 index의 Track 재생 (Qobuz-Track---Play)  // Added diskept 15/12/2020
                 //print_debug();
                 //qDebug() << "this->jsonArray_backup_qobuz.count()=" << this->jsonArray_backup_qobuz.count();
                 QJsonDocument doc(this->jsonArray_backup_total_recomm[global.now_Section].at(p_index).toObject());  QString strJson(doc.toJson(QJsonDocument::Compact));
@@ -7537,6 +7737,7 @@ void QueuePlayList::playCurr(int p_index){//1126
             //emit signal_music_start();
             //slot_queuelistPositionGet_check();
             print_debug();
+            ToastMsg::delay(this,"", tr("delay"), 2000);//c230319
             //emit linker->signal_checkQueue(17, "");
             // 네트워크 API 호출
             //this->indexCurrPlay[global.now_Section] = p_index;
@@ -7695,7 +7896,7 @@ void QueuePlayList::playCurr(int p_index){//1126
                     return;
                 }
                 //connect(network, SIGNAL(response(int,QJsonObject)), SLOT(slot_responseHttp(int,QJsonObject)));//cheon211107-01
-                // Qobuz - Queue에서 해당 index의 Track 재생 (Qobuz-Track---Play)  // Added Jeon 15/12/2020
+                // Qobuz - Queue에서 해당 index의 Track 재생 (Qobuz-Track---Play)  // Added diskept 15/12/2020
                 //print_debug();
                 //qDebug() << "this->jsonArray_backup_qobuz.count()=" << this->jsonArray_backup_qobuz.count();
                 QJsonDocument doc(this->jsonArray_backup_total[global.now_Section].at(p_index).toObject());  QString strJson(doc.toJson(QJsonDocument::Compact));
@@ -7727,7 +7928,7 @@ void QueuePlayList::playCurr(int p_index){//1126
                     return;
                 }
                 //connect(network, SIGNAL(response(int,QJsonObject)), SLOT(slot_responseHttp(int,QJsonObject)));//cheon211107-01
-                // Qobuz - Queue에서 해당 index의 Track 재생 (Qobuz-Track---Play)  // Added Jeon 15/12/2020
+                // Qobuz - Queue에서 해당 index의 Track 재생 (Qobuz-Track---Play)  // Added diskept 15/12/2020
                 //print_debug();
                 //qDebug() << "this->jsonArray_backup_qobuz.count()=" << this->jsonArray_backup_qobuz.count();
                 QJsonDocument doc(this->jsonArray_backup_total[global.now_Section].at(p_index).toObject());  QString strJson(doc.toJson(QJsonDocument::Compact));
@@ -7766,7 +7967,7 @@ void QueuePlayList::slot_responseHttp_music(const int& p_id, const QJsonObject& 
     //print_debug();
     Q_UNUSED(p_id);
 
-    // test debug 28.01.2021 Added Jeon
+    // test debug 28.01.2021 Added diskept
     //print_tidal_func();
     QJsonDocument doc(p_jsonObj);//cheon211114-01
     QString strJson(doc.toJson(QJsonDocument::Compact));//cheon211114-01
@@ -7783,6 +7984,8 @@ void QueuePlayList::slot_responseHttp_music(const int& p_id, const QJsonObject& 
             if(global.queuelist_mouse_trigger_flag){//c220503
                 print_debug();
 
+                emit this->linker->signal_queuelist_musicStart();//c230502
+                //slot_queuelistPositionGet();//
                 //queuelist_change_replace(false, current_queue_cnt);
                 //slot_queuelistScrollbarMotify(0);
                 //emit signal_music_start();//c220411
@@ -7810,7 +8013,7 @@ void QueuePlayList::slot_responseHttp_music(const int& p_id, const QJsonObject& 
 void QueuePlayList::slot_responseHttp_motify(const int& p_id, const QJsonObject& p_jsonObj){//cheon210916-total
     //print_debug();
     Q_UNUSED(p_id);
-    // test debug 28.01.2021 Added Jeon
+    // test debug 28.01.2021 Added diskept
     //print_tidal_func();
     print_debug();
     QJsonDocument doc(p_jsonObj);//cheon211114-01
@@ -7905,6 +8108,7 @@ int QueuePlayList::currMenutoPid(){
  */
 void QueuePlayList::slot_clickedEdit(){
     print_debug();
+    ToastMsg::delay(this,"", tr("delay"), 500);//c230311
     if(global.power_sleepMode_flag) {
         print_debug();
         emit linker->signal_checkQueue(24, "");
@@ -7940,6 +8144,7 @@ void QueuePlayList::slot_clickedEdit(){
 
 void QueuePlayList::slot_clickedMove(){
     print_debug();
+    ToastMsg::delay(this,"", tr("delay"), 500);//c230311
     if(global.power_sleepMode_flag) {
         print_debug();
         emit linker->signal_checkQueue(24, "");
@@ -8110,6 +8315,8 @@ void QueuePlayList::slot_clickedDeleteOk(){//1126
 
     print_debug();
 
+    global.queue_recent_track_addFlag = true;//c230502_1
+
     if(isEditMode && !isPlayMode && !isMoveMode){
 
         this->changeEditMode(true, false, false);
@@ -8127,6 +8334,7 @@ void QueuePlayList::slot_clickedDeleteOk(){//1126
  */
 void QueuePlayList::slot_clickedDelete(){//1126
     print_debug();
+    ToastMsg::delay(this,"", tr("delay"), 500);//c230311
     if(this->mouse_trigger_menu_flag == false){
         emit linker->signal_checkQueue(7, "");
         print_debug();
@@ -8332,7 +8540,7 @@ void QueuePlayList::request_totalPlay_current_playlist_delete(const int totalCnt
 void QueuePlayList::slot_responseHttp_delete(const int& p_id, const QJsonObject& p_jsonObj){
     print_debug();
     //Q_UNUSED(p_id);
-    // test debug 28.01.2021 Added Jeon
+    // test debug 28.01.2021 Added diskept
     //print_tidal_func();
     QJsonDocument doc(p_jsonObj);
     QString strJson(doc.toJson(QJsonDocument::Compact));
@@ -8597,8 +8805,9 @@ void QueuePlayList::queuelist_change_replace_recovery(int section){
 
 
     DataTrackforDelegate tmp_dataTrack;//"background-color:#735639;"
-    if(tmp_indexCurrPlay < 0 && listWidget_total[section]->count() > 0 ){
-        for(int i= 0 ; i < this->list_dataTrackForDelegate[section].count(); i++){
+    if(tmp_indexCurrPlay < 0 && listWidget_total[section]->count() > 0 && widget[section].count() > 0 && this->list_dataTrackForDelegate[section].count() > 0){//c221219
+        //for(int i= 0 ; i < this->list_dataTrackForDelegate[section].count(); i++){//c221219
+        for(int i= 0 ; i < this->widget[section].count(); i++){//c221219
             QListWidgetItem *tmp_item = listWidget_total[section]->item(i);
             QWidget* ww = listWidget_total[section]->itemWidget(tmp_item);
 
@@ -8633,7 +8842,7 @@ void QueuePlayList::queuelist_change_replace_recovery(int section){
 
 }
 
-void QueuePlayList::queuelist_change_replace(bool flag, int menu_count){
+void QueuePlayList::queuelist_change_replace(bool flag, int menu_count){//ppppp
 
     print_debug();
     int preIndex = -1 ;//c1217
@@ -8708,6 +8917,7 @@ void QueuePlayList::queuelist_change_replace(bool flag, int menu_count){
             qDebug() << "indexCurrPlay[global.now_Section] - tmp_dataTrack.title = " << tmp_dataTrack.title;
             tmp_dataTrack.isPlay = false;
             this->list_dataTrackForDelegate[global.now_Section].replace(this->indexPrePlay[global.now_Section], tmp_dataTrack);
+            std_listWidget_one_line_replace_only(this->indexPrePlay[global.now_Section]);//
 
 
         }
@@ -8724,15 +8934,27 @@ void QueuePlayList::queuelist_change_replace(bool flag, int menu_count){
             qDebug() << "indexCurrPlay[global.now_Section] - tmp_dataTrack.title = " << tmp_dataTrack.title;
             tmp_dataTrack.isPlay = true;
             this->list_dataTrackForDelegate[global.now_Section].replace(this->indexCurrPlay[global.now_Section], tmp_dataTrack);
+            std_listWidget_one_line_replace_only(this->indexCurrPlay[global.now_Section]);//
 
         }
+        //view_listWidget_setItemWidget_replace(this->indexCurrPlay[global.now_Section],preIndex);//
     }
-    //
-    if(preIndex >=0 && this->indexCurrPlay[global.now_Section] >=0 && this->indexCurrPlay[global.now_Section] != preIndex){
+    //if(preIndex >=0 && this->indexCurrPlay[global.now_Section] >=0 && this->indexCurrPlay[global.now_Section] != preIndex){//
+    if(preIndex >=0 && this->indexCurrPlay[global.now_Section] >=0 && this->indexCurrPlay[global.now_Section] == preIndex){//
         print_debug();
+        DataTrackforDelegate tmp_dataTrack;
         //view_listWidget_setItemWidget_replace(this->indexCurrPlay[global.now_Section],preIndex);
 
-        view_listWidget_setItemWidget_replace_only(this->indexCurrPlay[global.now_Section],preIndex);
+        tmp_dataTrack = this->list_dataTrackForDelegate[global.now_Section].at(this->indexPrePlay[global.now_Section]);
+        qDebug() << "indexCurrPlay[global.now_Section] - tmp_dataTrack.title = " << tmp_dataTrack.title;
+        tmp_dataTrack.isPlay = false;
+        this->list_dataTrackForDelegate[global.now_Section].replace(this->indexPrePlay[global.now_Section], tmp_dataTrack);
+        std_listWidget_one_line_replace_only(this->indexPrePlay[global.now_Section]);//
+        tmp_dataTrack = this->list_dataTrackForDelegate[global.now_Section].at(this->indexCurrPlay[global.now_Section]);
+        qDebug() << "indexCurrPlay[global.now_Section] - tmp_dataTrack.title = " << tmp_dataTrack.title;
+        tmp_dataTrack.isPlay = true;
+        this->list_dataTrackForDelegate[global.now_Section].replace(this->indexCurrPlay[global.now_Section], tmp_dataTrack);
+        std_listWidget_one_line_replace_only(this->indexCurrPlay[global.now_Section]);//
 
 
 
@@ -8855,8 +9077,14 @@ void QueuePlayList::force_reflashexceptRecomm(int p_id){
         qDebug() << "--this->indexCurrPlay[global.now_Section] =" << this->indexCurrPlay[global.now_Section];
         qDebug() << "--listWidget_total[global.now_Section]->currentRow() =" << listWidget_total[global.now_Section]->verticalScrollBar()->sliderPosition();
         //listWidget_total[global.now_Section]->setCurrentRow(this->indexCurrPlay[global.now_Section]);
+#if defined(Q_OS_MAC)
+        slot_listwidgetcurrentRowChanged_start(listWidget_total[global.now_Section]->verticalScrollBar()->sliderPosition()/80);
+#endif
+#if defined(Q_OS_WIN)
         slot_listwidgetcurrentRowChanged_start(listWidget_total[global.now_Section]->verticalScrollBar()->sliderPosition());
-
+#endif
+        //slot_listwidgetcurrentRowChanged_start(this->indexCurrPlay[global.now_Section]);
+        //
         emit linker->signal_checkQueue(6, "");
         print_debug();
         mouse_all_clear();
@@ -9199,7 +9427,7 @@ void QueuePlayList::slot_responseHttp_get(const int &p_id, const QJsonObject &p_
                     qDebug() << "QueuePlayList::slot_responseHttp_get--this->nextPlayNo-" << this->nextPlayNo;
                     qDebug() << "this->indexCurrPlay[global.now_Section] = " << this->indexCurrPlay[global.now_Section];
 
-                    reloadList();
+                    reloadList();//c230502
 
 
                 }
@@ -9397,7 +9625,8 @@ void QueuePlayList::slot_changedQueueMenu(){
         emit linker->signal_checkQueue(24, "");
         return;
     }
-    if(this->mouse_trigger_menu_flag == false){
+    if(this->mouse_trigger_menu_flag == false){//c221219
+        //if(this->mouse_trigger_flag == false){//c221219
         emit linker->signal_checkQueue(7, "");
         print_debug();
         return;
@@ -9487,6 +9716,8 @@ void QueuePlayList::slot_changedQueueMenu(){
     showEvent_after_reGet_checkSum();
 
 
+    global.queue_recent_track_addFlag = true;//c230503
+
     //this->preMenu = this->currMenu;
 
 }
@@ -9514,6 +9745,13 @@ void QueuePlayList::showEvent(QShowEvent *event){
     qDebug() << "******************global.queuelist_mouse_trigger_menu_flag = " << global.queuelist_mouse_trigger_menu_flag;
 
     qDebug() << "global.signal_selectedDevice_flag = " << global.signal_selectedDevice_flag;
+   // this->show();
+
+    if(!global.queue_recent_track_addFlag) {//c230502_1
+        emit linker->signal_checkQueue(6, "");
+        return;//
+    }
+    global.queue_recent_track_addFlag = false;//c230429
 
     qDebug() << "this->islistOpen = " << this->islistOpen;
     emit linker->signal_checkQueue(17, "");
@@ -9583,9 +9821,14 @@ void QueuePlayList::showEvent(QShowEvent *event){
         global.queuelist_mouse_trigger_menu_flag = false;//c221004_2
         QJsonObject tmp_json;//cheon211114-01
         NetworkHttp *network_get = new NetworkHttp;//cheon211114-01
-        connect(network_get, SIGNAL(response(int,QJsonObject)), SLOT(slot_responseHttp_get(int, QJsonObject)));//cheon211114-01
+        connect(network_get, SIGNAL(response(int,QJsonObject)), SLOT(slot_responseHttp_get(int, QJsonObject)));
+
+                                                                     //cheon211114-01
         network_get->request(HTTP_CURR_TOTAL_QUEUE_GET, QString("http://%1:%2/%3")//cheon211104-01
                              .arg(global.device.getDeviceIP()).arg(global.port).arg(REMOTE_TOTAL_QUEUE_GET), tmp_json, false, true);//cheon211114-01
+
+        //reloadList();//c230502
+
 
     }else if(listWidget_total[global.now_Section]->count() != 0 && equelRecieveJsonFlag[global.now_Section]){
         print_debug();
@@ -9735,7 +9978,10 @@ void QueuePlayList::wheelEvent(QWheelEvent *event){//c221004_1
 }
 
 void QueuePlayList::slot_queuelistPositionGet_http_signal_singhot(){
+    print_debug();
     qDebug() << "mouse_trigger_menu_flag = " << mouse_trigger_menu_flag;
+    qDebug() << "isPlayMode = " << isPlayMode;
+    qDebug() << "global.queueTimerFlag = " << global.queueTimerFlag;
 
     this->http_signal_flag = true;
     if(mouse_trigger_menu_flag && isPlayMode && global.queueTimerFlag ){
@@ -9773,7 +10019,8 @@ void QueuePlayList::slot_queuelistPositionGet_http_signal_singhot(){
 
 void QueuePlayList::slot_queuelistPositionGet_http_signal(){//1126//music start call
     print_debug();
-    QTimer::singleShot(1000, this, SLOT(slot_queuelistPositionGet_http_signal_singhot()));
+    //QTimer::singleShot(1000, this, SLOT(slot_queuelistPositionGet_http_signal_singhot()));
+    QTimer::singleShot(100, this, SLOT(slot_queuelistPositionGet_http_signal_singhot()));
 }
 
 void QueuePlayList::slot_queuelistPositionGet_check(){//1126//music start call
@@ -9784,7 +10031,11 @@ void QueuePlayList::slot_queuelistPositionGet_check(){//1126//music start call
 
 void QueuePlayList::slot_queuelistPositionGet(){//1126//music start call
     print_debug();
-    if(mouse_trigger_flag && isPlayMode && global.queueTimerFlag ){
+    qDebug() << "mouse_trigger_flag=" << mouse_trigger_flag;
+    qDebug() << "isPlayMode=" << isPlayMode;
+    qDebug() << "global.queueTimerFlag=" << global.queueTimerFlag;
+
+    if(mouse_trigger_flag && isPlayMode && global.queueTimerFlag ){//
         if(!global.device.getDeviceIP().isEmpty()){
 
             print_debug();
@@ -9807,6 +10058,7 @@ void QueuePlayList::slot_queuelistPositionGet(){//1126//music start call
 
 void QueuePlayList::slot_queuelistCurrPlayIndexGet(){//c220629
     print_debug();//if(global.queueTimerFlag
+    ToastMsg::delay(this,"", tr("delay"), 500);//c230311
     if(!global.power_sleepMode_flag && isPlayMode && global.queueTimerFlag){
         emit linker->signal_checkQueue(6, "");
         emit linker->signal_checkQueue(17, "");
@@ -9839,7 +10091,7 @@ void QueuePlayList::slot_queuelistMotify(){//1126
             connect(network_get, SIGNAL(response(int,QJsonObject)), SLOT(slot_responseHttp_get(int, QJsonObject)));//cheon211114-01
             network_get->request(HTTP_CURR_TOTAL_QUEUE_GET, QString("http://%1:%2/%3")//cheon211104-01
                                  .arg(global.device.getDeviceIP()).arg(global.port).arg(REMOTE_TOTAL_QUEUE_GET), tmp_json, false, true);//cheon211114-01
-
+            //reloadList();//c230429
 
         }
     }else{

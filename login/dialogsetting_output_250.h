@@ -59,6 +59,11 @@ private slots:
     // void slot_clickedOutputpassGain();
 private:
 
+    QDialog *loding_ani_dialog = nullptr;
+    void loding_ani_init();
+    void loding_ani_show();
+    void loding_ani_hide();
+
     QComboBox *comboBoxOutputPreoutLevel;
     QComboBox *comboBoxOutputPCMResampling, *comboBoxOutputPCMMaxSampling;
     QComboBox *comboBoxDSD;

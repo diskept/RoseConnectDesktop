@@ -1402,7 +1402,7 @@ void OptionPopup::slot_clickedPlay(){
         break;
     case GSCommon::MainMenuCode::RoseTube :
         httpCode = "youtubePlay";
-        for(int i=0; i<this->list_audioInfo.count(); i++){
+        for(int i = 0; i < this->list_audioInfo.count(); i++){
             QJsonObject tmp = this->list_audioInfo.at(i)->getJsonData();
             tmp_array.append(tmp);
         }
@@ -1419,12 +1419,27 @@ void OptionPopup::slot_clickedPlay(){
     case GSCommon::MainMenuCode::RoseTubeList :
         httpCode = "youtubePlay.playlist.add";
         tmp_json.insert("youtubePlayType", 15);
-        for(int i=0; i<this->list_audioInfo.count(); i++){
-            QJsonObject tmp = this->list_audioInfo.at(i)->getJsonData();
-            tmp_array.append(tmp);
+        for(int i = 0; i < this->list_audioInfo.count(); i++){
+            QJsonObject jsonTracks;
+            jsonTracks.insert("id", this->list_audioInfo.at(i)->getId());
+            jsonTracks.insert("channelId", this->list_audioInfo.at(i)->getChannelId());
+            jsonTracks.insert("channelName", this->list_audioInfo.at(i)->getChannelName());
+            jsonTracks.insert("thumbnailUrl", this->list_audioInfo.at(i)->getThumbnailUrl());
+            jsonTracks.insert("title", this->list_audioInfo.at(i)->getTitle());
+            jsonTracks.insert("duration", this->list_audioInfo.at(i)->getstrDuration());
+            tmp_array.append(jsonTracks);
+
+            //QJsonObject tmp = this->list_audioInfo.at(i)->getJsonData();
+            //tmp_array.append(tmp);
         }
         tmp_json.insert("youtube", tmp_array);
 
+        if(global.Queue_track_count != 0) {
+            print_debug();emit linker->signal_checkQueue(27, "");
+
+            return;
+        }
+        print_debug(); emit linker->signal_queuelist_mouse_trigger_menu_flag();
         global.Queue_track_count += tmp_array.count();     // 220419 queue count
         break;
     case GSCommon::MainMenuCode::PodCast :
@@ -1442,12 +1457,25 @@ void OptionPopup::slot_clickedPlay(){
 
     if(httpCode==""){
         ToastMsg::show(this, "", "OptionPopup 의 [바로 듣기] 미구현... ");
-    }else if(httpCode=="music_network"){
+    }
+    else if(httpCode == "music_network"){
 
         NetworkHttp *network = new NetworkHttp;
         connect(network, SIGNAL(response(int,QJsonObject)), SLOT(slot_responseHttp(int,QJsonObject)));
         network->request(HTTP_PLAY_DIRECT_NETWORK, QString("http://%1:%2/%3").arg(global.device.getDeviceIP()).arg(global.port).arg("music_network_play"), tmp_json, true, true);
-    }else{
+    }
+    else if(httpCode == "youtubePlay.playlist.add"){
+
+        tmp_json.insert("shuffle", 0);
+        tmp_json.insert("roseToken", global.device.getDeviceRoseToken());
+
+        NetworkHttp *network = new NetworkHttp;
+        connect(network, SIGNAL(response(int, QJsonObject)), SLOT(slot_responseHttp(int, QJsonObject)));
+        network->request(HTTP_PLAY_DIRECT, QString("http://%1:%2/%3")
+                         .arg(global.device.getDeviceIP())
+                         .arg(global.port).arg(httpCode), tmp_json, true);
+    }
+    else{
 
         // 공통
         tmp_json.insert("currentPosition", 0);
@@ -1602,7 +1630,7 @@ void OptionPopup::slot_clicked_subAddLast(){
             break;
         case GSCommon::MainMenuCode::RoseTube :
             httpCode = "youtubePlay.playlist.add";
-            for(int i=0; i<this->list_audioInfo.count(); i++){
+            for(int i = 0; i < this->list_audioInfo.count(); i++){
                 QJsonObject tmp = this->list_audioInfo.at(i)->getJsonData();
                 tmp_array.append(tmp);
             }
@@ -1619,9 +1647,18 @@ void OptionPopup::slot_clicked_subAddLast(){
             break;
         case GSCommon::MainMenuCode::RoseTubeList :
             httpCode = "youtubePlay.playlist.add";
-            for(int i=0; i<this->list_audioInfo.count(); i++){
-                QJsonObject tmp = this->list_audioInfo.at(i)->getJsonData();
-                tmp_array.append(tmp);
+            for(int i = 0; i < this->list_audioInfo.count(); i++){
+                QJsonObject jsonTracks;
+                jsonTracks.insert("id", this->list_audioInfo.at(i)->getId());
+                jsonTracks.insert("channelId", this->list_audioInfo.at(i)->getChannelId());
+                jsonTracks.insert("channelName", this->list_audioInfo.at(i)->getChannelName());
+                jsonTracks.insert("thumbnailUrl", this->list_audioInfo.at(i)->getThumbnailUrl());
+                jsonTracks.insert("title", this->list_audioInfo.at(i)->getTitle());
+                jsonTracks.insert("duration", this->list_audioInfo.at(i)->getstrDuration());
+                tmp_array.append(jsonTracks);
+
+                //QJsonObject tmp = this->list_audioInfo.at(i)->getJsonData();
+                //tmp_array.append(tmp);
             }
             tmp_json.insert("youtubePlayType",13);
             tmp_json.insert("youtube", tmp_array);
@@ -1733,8 +1770,17 @@ void OptionPopup::slot_clicked_subAddEmpty(){
     case GSCommon::MainMenuCode::RoseTubeList :
         httpCode = "youtubePlay.playlist.add";
         for(int i=0; i<this->list_audioInfo.count(); i++){
-            QJsonObject tmp = this->list_audioInfo.at(i)->getJsonData();
-            tmp_array.append(tmp);
+            QJsonObject jsonTracks;
+            jsonTracks.insert("id", this->list_audioInfo.at(i)->getId());
+            jsonTracks.insert("channelId", this->list_audioInfo.at(i)->getChannelId());
+            jsonTracks.insert("channelName", this->list_audioInfo.at(i)->getChannelName());
+            jsonTracks.insert("thumbnailUrl", this->list_audioInfo.at(i)->getThumbnailUrl());
+            jsonTracks.insert("title", this->list_audioInfo.at(i)->getTitle());
+            jsonTracks.insert("duration", this->list_audioInfo.at(i)->getstrDuration());
+            tmp_array.append(jsonTracks);
+
+            //QJsonObject tmp = this->list_audioInfo.at(i)->getJsonData();
+            //tmp_array.append(tmp);
         }
         tmp_json.insert("youtubePlayType",12);
         tmp_json.insert("youtube", tmp_array);
@@ -1854,8 +1900,17 @@ void OptionPopup::slot_clicked_subAddCurrNext(){
     case GSCommon::MainMenuCode::RoseTubeList :
         httpCode = "youtubePlay.playlist.add";
         for(int i=0; i<this->list_audioInfo.count(); i++){
-            QJsonObject tmp = this->list_audioInfo.at(i)->getJsonData();
-            tmp_array.append(tmp);
+            QJsonObject jsonTracks;
+            jsonTracks.insert("id", this->list_audioInfo.at(i)->getId());
+            jsonTracks.insert("channelId", this->list_audioInfo.at(i)->getChannelId());
+            jsonTracks.insert("channelName", this->list_audioInfo.at(i)->getChannelName());
+            jsonTracks.insert("thumbnailUrl", this->list_audioInfo.at(i)->getThumbnailUrl());
+            jsonTracks.insert("title", this->list_audioInfo.at(i)->getTitle());
+            jsonTracks.insert("duration", this->list_audioInfo.at(i)->getstrDuration());
+            tmp_array.append(jsonTracks);
+
+            //QJsonObject tmp = this->list_audioInfo.at(i)->getJsonData();
+            //tmp_array.append(tmp);
         }
         tmp_json.insert("youtubePlayType",16);
         tmp_json.insert("youtube", tmp_array);

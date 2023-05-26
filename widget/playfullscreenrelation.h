@@ -72,6 +72,7 @@ signals:
 
 public slots:
     void setDataPlayFullScreen(const QJsonObject &p_jsonData);
+    void setDataHDMIStateChange(const bool flag);
 
 private slots:
     void slot_loadImage();
@@ -137,6 +138,8 @@ private:
     QPushButton *btn_play_sub;          ///< 구독 버튼
     QPushButton *btn_list_fav_icon;     ///< 하트 버튼
     QPushButton *btn_icon_menu;         ///< 더보기 버튼
+
+    QImage image_buf;
 
     QLabel *lb_fileInfo;
     //QLabel *lb_title;

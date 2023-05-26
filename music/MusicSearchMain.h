@@ -78,7 +78,7 @@ namespace music {
         QLabel *lb_subTitle[5];
         QPushButton *btnView_all[5];
 
-        roseHome::ItemArtist_roseHome *search_artist[15];
+        roseHome::ItemArtist_rosehome *search_artist[15];
         roseHome::ItemAlbum_rosehome *search_album[15];
 
         PlaylistTrackDetailInfo_RHV *search_track[5];

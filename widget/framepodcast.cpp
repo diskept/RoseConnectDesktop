@@ -44,13 +44,13 @@ void FramePodcast::setUIControl(){
     this->lb_title = new QLabel(label_base);
     this->lb_title->setWordWrap(true);
     this->lb_title->setTextInteractionFlags(Qt::TextSelectableByMouse);//cheon210714-mousecopy
-    this->lb_title->setStyleSheet("font-size:16px;color:#FFFFFF;");
+    this->lb_title->setStyleSheet("font-size:16px;  font-weight: normal;font-style: normal;line-height: 2.1;text-align: left;color:#FFFFFF;");
     this->lb_title->setFixedWidth(IMG_WIDTH);
     this->lb_title->setGeometry(0, (this->SPACE_LABELS * 2), img_width, this->LABEL_HEIGHT);
 
     this->lb_artist = new QLabel(label_base);
     this->lb_artist->setTextInteractionFlags(Qt::TextSelectableByMouse);//cheon210714-mousecopy
-    this->lb_artist->setStyleSheet("font-size:16px;color:#999999;");
+    this->lb_artist->setStyleSheet("font-size:16px;  font-weight: normal;font-style: normal;line-height: 1.88;text-align: left;color:#999999;");
     this->lb_artist->setFixedWidth(IMG_WIDTH);
     this->lb_artist->setGeometry(0, this->LABEL_HEIGHT + (this->SPACE_LABELS * 3), img_width, this->LABEL_HEIGHT);
 
@@ -59,6 +59,7 @@ void FramePodcast::setUIControl(){
     boxLayout->setContentsMargins(0,0,0,0);
     boxLayout->setSpacing(0);
     boxLayout->addWidget(lb_img);
+    boxLayout->addSpacing(10);
     //boxLayout->addWidget(lb_title);
     //boxLayout->addWidget(lb_artist);
     boxLayout->addWidget(label_base);
@@ -143,46 +144,80 @@ void FramePodcast::paintEvent(QPaintEvent *event){
             this->lb_img->setImageUrl(data->getArtworkUrl600());
         }
 
-        int all_width = this->lb_img->sizeHint().width();
+        int all_width = 0;
+        all_width = this->lb_img->sizeHint().width();
+
+        QString title = data->getCollectionName();
+
         QLabel *tmp_wordwrap = new QLabel();
-        tmp_wordwrap->setText(data->getCollectionName());
-        //qDebug() << tmp_wordwrap->sizeHint().width();
+        tmp_wordwrap->setStyleSheet("font-size:16px; color:#FFFFFF;");
+        tmp_wordwrap->setText(title);
 
-        if(tmp_wordwrap->sizeHint().width() > all_width){
-            if(data->getCollectionName().contains(" ")){
-                this->lb_title->setGeometry(0, (SPACE_LABELS * 2), all_width, (LABEL_HEIGHT *2));
-                this->lb_artist->setGeometry(0, (SPACE_LABELS * 3) + (LABEL_HEIGHT *2), all_width, LABEL_HEIGHT);
+        int title_width = tmp_wordwrap->sizeHint().width();
 
-                tmp_wordwrap->clear();
-                tmp_wordwrap->setStyleSheet("font-size:16px; color:#FFFFFF;");
-                tmp_wordwrap->setWordWrap(true);
-                tmp_wordwrap->setText(GSCommon::getTextCutFromLabelWidth(data->getCollectionName(), (all_width * 2)-30, this->lb_title->font()));
+        if(title_width > all_width){
 
-                if(tmp_wordwrap->sizeHint().height() > this->LABEL_HEIGHT * 2){
-                    this->lb_title->setText(GSCommon::getTextCutFromLabelWidth(data->getCollectionName(), (all_width * 2)-80, this->lb_title->font()));
-                }
-                else{
-                    this->lb_title->setText(GSCommon::getTextCutFromLabelWidth(data->getCollectionName(), (all_width * 2)-30, this->lb_title->font()));
+            QString tmp_split = "";
+            QStringList splitToken;
+            QString tmp_title_line1 = "";
+
+            tmp_split = title;
+            splitToken = tmp_split.split(" ");
+
+            qDebug() << "splitToken : "<< splitToken;
+
+            tmp_wordwrap->setText("");
+            int i = 0;
+            if(splitToken.size() > 1){
+
+                for(i = 0; i < splitToken.count(); i++){
+                    if(i == 0){
+                        tmp_title_line1 = splitToken.at(i);
+                    }
+                    else{
+                        tmp_title_line1 += " " + splitToken.at(i);
+                    }
+                    tmp_wordwrap->setText(tmp_title_line1);
+
+                    qDebug() << "tmp_wordwrap->text() : " << tmp_wordwrap->text();
+                    if(tmp_wordwrap->sizeHint().width() > all_width){
+                        tmp_wordwrap->setText("");
+                        tmp_title_line1.replace(splitToken.at(i), "");
+                        break;
+                    }
                 }
             }
-            else{
-                this->lb_title->setGeometry(0, (SPACE_LABELS * 2), lb_img->sizeHint().width(), LABEL_HEIGHT);
-                this->lb_artist->setGeometry(0, (SPACE_LABELS * 3) + LABEL_HEIGHT, lb_img->sizeHint().width(), LABEL_HEIGHT);
-                this->lb_title->setText(GSCommon::getTextCutFromLabelWidth(data->getCollectionName(), lb_img->sizeHint().width(), lb_title->font()));//cheon-210708-album
+            tmp_wordwrap->setText("");
+            tmp_wordwrap->setText(tmp_title_line1);
+
+            title_width = tmp_wordwrap->sizeHint().width() + all_width;
+
+            this->lb_title->setGeometry(0, 0, all_width, this->LABEL_HEIGHT * 2);
+            this->lb_title->setFixedWidth(all_width);
+            this->lb_title->setText(GSCommon::getTextCutFromLabelWidth(title, title_width, this->lb_title->font()));
+            if(this->lb_title->text().contains("…")){
+                this->lb_title->setToolTip(title);//c230321
+                this->lb_title->setToolTipDuration(2000);//c230321
             }
+
+            this->lb_artist->setGeometry(0, (this->LABEL_HEIGHT * 2) + this->SPACE_LABELS, all_width, this->LABEL_HEIGHT);
         }
-        else if(tmp_wordwrap->sizeHint().width() == this->lb_img->sizeHint().width() - 5){
-            this->lb_title->setGeometry(0, (this->SPACE_LABELS * 2), IMG_WIDTH, this->LABEL_HEIGHT);
-            this->lb_artist->setGeometry(0, (SPACE_LABELS * 3) + LABEL_HEIGHT, lb_img->sizeHint().width(), LABEL_HEIGHT);
-            this->lb_title->setText(data->getCollectionName());
-        }
-        else {
-            this->lb_title->setGeometry(0, (this->SPACE_LABELS * 2), IMG_WIDTH, this->LABEL_HEIGHT);
-            this->lb_artist->setGeometry(0, (SPACE_LABELS * 3) + LABEL_HEIGHT, lb_img->sizeHint().width(), LABEL_HEIGHT);
-            this->lb_title->setText(GSCommon::getTextCutFromLabelWidth(data->getCollectionName(), IMG_WIDTH, lb_title->font()));//cheon-210708-album
+        else{
+            this->lb_title->setGeometry(0, 0, all_width, this->LABEL_HEIGHT);
+            this->lb_title->setText(title);
+
+            this->lb_artist->setGeometry(0, this->LABEL_HEIGHT + this->SPACE_LABELS, all_width, this->LABEL_HEIGHT);
         }
 
-        lb_artist->setText(GSCommon::getTextCutFromLabelWidth(data->getArtistName(), IMG_WIDTH, lb_artist->font()));
+        if(data->getArtistName() != ""){
+            this->lb_artist->setText(GSCommon::getTextCutFromLabelWidth(data->getArtistName(), all_width, this->lb_artist->font()));
+            this->lb_artist->show();
+            if(this->lb_artist->text().contains("…")){
+                this->lb_artist->setToolTip(data->getArtistName());//c230321
+                this->lb_artist->setToolTipDuration(2000);//c230321
+            }
+        }
+
     }
 }
 

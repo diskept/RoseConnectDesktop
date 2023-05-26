@@ -50,6 +50,9 @@ namespace tidal {
             this->flagNeedReload = true;
             this->data_search = common::ConvertData_common::convertData_searchData(jsonObj);
         }
+        else{
+            print_debug();ContentLoadingwaitingMsgHide();   //j230328
+        }
     }
 
 
@@ -87,7 +90,7 @@ namespace tidal {
 
             this->flag_playlist_draw = false;
 
-            ContentLoadingwaitingMsgShow(tr("Content is being loaded. Please wait."));
+            print_debug();ContentLoadingwaitingMsgShow(tr("Content is being loaded. Please wait."));
 
             this->request_more_playlistData();
         }
@@ -106,7 +109,7 @@ namespace tidal {
 
             this->flag_playlist_draw = true;
 
-            ContentLoadingwaitingMsgShow(tr("Content is being loaded. Please wait."));
+            print_debug();ContentLoadingwaitingMsgShow(tr("Content is being loaded. Please wait."));
 
             this->request_more_playlistDraw();
         }
@@ -161,7 +164,12 @@ namespace tidal {
     void TidalSearchPlaylistAll::request_more_playlistDraw(){
 
         // j220913 list count check
-        int width_cnt = global.LmtCnt / 220;
+        int width_cnt;//c230223
+        if(flowLayout_playlists->sizeHint().width() < 0) {//c230223
+            width_cnt = global.LmtCnt / 217;
+        }else{
+            width_cnt = global.LmtCnt / flowLayout_playlists->sizeHint().width();//
+        }
         int mod = this->playlist_draw_cnt % width_cnt;
         int height_cnt = 0;
 
@@ -250,12 +258,44 @@ namespace tidal {
                     QCoreApplication::processEvents();
                 }
 
+                //c230306_1-start
+                int w = flowLayout_playlists->sizeHint().width();
+                int l = 80, r = 60, scrollbarW = 10, mod = 0;
+
+                int mod_nn = (global.LmtCnt-l-r-scrollbarW)%(w + mod);
+                int nn = (global.LmtCnt-l-r-scrollbarW)/(w + mod);
+                //qDebug() << "global.LmtCnt=" << global.LmtCnt;
+                //qDebug() << "this->width()=" << this->width();
+                //qDebug() << "nn=" << nn;
+                //qDebug() << "mod_nn=" << mod_nn;
+
+                int i = 0;
+                while(1){
+
+                    mod_nn = (global.LmtCnt-l-r-scrollbarW)%(w + mod + i);
+                    if(mod_nn > 20){
+
+                        mod_nn = (global.LmtCnt-l-r-scrollbarW)%(w + ( mod +(i++)));
+                    }else{
+                        break;
+                    }
+                }
+                //print_debug();
+                //qDebug() << "w=" << w;
+                //qDebug() << "i=" << i;
+                //qDebug() << "this->width()=" << this->width();
+                //this->resize(this->width()+1, this->height());
+                flowLayout_playlists->setSpacingHV(mod+i,20);
+                //c230306_1-end
+                ContentLoadingwaitingMsgHide();
+
                 this->flag_flow_draw = true;
                 this->flag_playlist_draw = false;
             }
 
-            ContentLoadingwaitingMsgHide();
-            this->request_more_playlistData();
+            if(this->flag_lastPage_playlist == false){
+                this->request_more_playlistData();
+            }
         }
         else{
             ContentLoadingwaitingMsgHide();
@@ -270,6 +310,32 @@ namespace tidal {
     }
 
 
+    void TidalSearchPlaylistAll::resizeEvent(QResizeEvent *event){//c230223
+
+        AbstractTidalSubWidget::resizeEvent(event);
+        print_debug();
+        //qDebug() << flowLayout_playlists->sizeHint();
+        //qDebug() << this->box_contents->sizeHint();
+
+        //int w = flowLayout_playlists->sizeHint().width();
+        int w = 217, l = 80, r = 60, scrollbarW = 0;
+
+        int mod_nn = (global.LmtCnt-l-r-scrollbarW)%(w+0);
+        //qDebug() << "mod_nn=" << mod_nn;
+        int i = 0;
+        while(1){
+
+            mod_nn = (global.LmtCnt-l-r-scrollbarW)%(w+0+i);
+            if(mod_nn > 20){
+
+                mod_nn = (global.LmtCnt-l-r-scrollbarW)%(w+(0+(i++)));
+            }else{
+                break;
+            }
+        }
+
+        flowLayout_playlists->setSpacingHV(0+i,20);
+    }
 
     /**
      * @brief [slot] override - ItemPlaylist 위짓의 clicked 이벤트를 처리하는 슬롯함수 재정의

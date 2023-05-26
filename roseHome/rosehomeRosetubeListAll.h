@@ -33,8 +33,15 @@ namespace roseHome {
     protected:
         void proc_wheelEvent_to_getMoreData() override;
 
+        void resizeEvent(QResizeEvent *event) override;
+
     private slots:
-        void slot_applyResult_myPlaylist_rose(const QJsonArray&, const int&, const bool);
+        void slot_applyResult_rosetube(const QJsonArray&, const int&, const bool);
+        void slot_applyResult_rosetubelistCheck(const QJsonArray&, const int&, const bool);
+
+        void slot_btnClicked_Delete();
+
+        void slot_applyResult_getRating_track(const QJsonArray&);
 
     private:
         // 초기 UI화면 구성
@@ -43,18 +50,28 @@ namespace roseHome {
         void request_more_rosetubeData();
         void request_more_rosetubeDraw();
 
+        void initAll();
+
     private:
         // 관리 필요한 Layout UI
+        QWidget *widget_mainTitle;
+
         QLabel *label_mainTitle;
+        QPushButton *btn_mainTitle;
+        QLabel *label_delete_icon;
+        QLabel *label_delete;
+
         FlowLayout *flowLayout_rosetube;    ///< rosetube's items
 
         // Data
-        rosetube::ItemTrack_rosetube *recently_rosetube[999999];
+        rosetube::ItemTrack_rosetube *recently_rosetube[1100];
 
         QJsonArray playlist_Arr;
 
-        QString curr_api_subPath;
-        QString curr_api_mainTitle;
+        PageInfo_PlaylistAllView current_pageInfo;
+
+        int playlist_widget_width = 0;
+        int playlist_widget_margin = 0;
 
         int playlist_widget_cnt = 0;
 
@@ -68,6 +85,10 @@ namespace roseHome {
 
         bool flag_flow_draw = false;
         bool flag_playlist_draw = false;
+
+        int flag_fav_idx = 0;
+        int flag_fav_star = 0;
+        int flag_fav_type = 0;
     };
 };
 

@@ -16,6 +16,7 @@ namespace roseHome {
     const int HTTP_NEW_PLAYLIST = 6;
     const int HTTP_POP_PLAYLIST = 7;
     const int HTTP_USERPICK_PLAYLIST = 8;//cheon211015
+    const int HTTP_DUDUO_PLAYLIST = 9;
 
     /**
      * @brief
@@ -28,6 +29,13 @@ namespace roseHome {
         this->flag_btnPlay = flagPlay;
         this->setUIControl();
     }
+
+
+    ItemPlaylist_rosehome::~ItemPlaylist_rosehome(){
+
+        this->deleteLater();
+    }
+
 
     /**
      * @brief [override] UI 세팅
@@ -47,7 +55,7 @@ namespace roseHome {
         else if(this->playlist_type == HTTP_MY_PLAYLIST || this->playlist_type == HTTP_USERPICK_PLAYLIST){
             base_height = this->LABEL_HEIGHT * 2 + this->ICON_HEIGHT + this->SPACE_LABELS;
         }
-        else if(this->playlist_type == HTTP_RECOMMENDS || this->playlist_type == HTTP_NEW_PLAYLIST || this->playlist_type == HTTP_POP_PLAYLIST){
+        else if(this->playlist_type == HTTP_RECOMMENDS || this->playlist_type == HTTP_NEW_PLAYLIST || this->playlist_type == HTTP_POP_PLAYLIST || this->playlist_type == HTTP_DUDUO_PLAYLIST){
             base_height = this->LABEL_HEIGHT * 3 + this->ICON_HEIGHT + this->SPACE_LABELS;
         }else if(this->playlist_type >= 1000){
             base_height = this->LABEL_HEIGHT * 2 + this->ICON_HEIGHT + this->SPACE_LABELS;
@@ -57,7 +65,7 @@ namespace roseHome {
         label_base->setFixedSize(img_width, base_height);
 
         this->label_title = new QLabel(label_base);
-        this->label_title->setStyleSheet("font-size:16px; color:#FFFFFF;");
+        this->label_title->setStyleSheet("font-size:16px;  font-weight: normal;font-style: normal;line-height: 1.25;text-align: left; color:#FFFFFF;");
         this->label_title->setWordWrap(true);
         this->label_title->setGeometry(0, 0, img_width, (this->LABEL_HEIGHT * 2));
 
@@ -99,7 +107,7 @@ namespace roseHome {
             this->label_thumb = new QLabel(label_base);
             this->label_thumb->setGeometry(40, (this->LABEL_HEIGHT * 3) + (this->SPACE_LABELS * 2) + 7, img_width - 40, this->LABEL_HEIGHT);
         }
-        else if(this->playlist_type == HTTP_RECOMMENDS || this->playlist_type == HTTP_NEW_PLAYLIST || this->playlist_type == HTTP_POP_PLAYLIST){
+        else if(this->playlist_type == HTTP_RECOMMENDS || this->playlist_type == HTTP_NEW_PLAYLIST || this->playlist_type == HTTP_POP_PLAYLIST || this->playlist_type == HTTP_DUDUO_PLAYLIST){
             this->label_owner = new QLabel(label_base);
             this->label_owner->setGeometry(0, (this->LABEL_HEIGHT * 2) + this->SPACE_LABELS, img_width, this->LABEL_HEIGHT);
 
@@ -156,13 +164,27 @@ namespace roseHome {
         else if(this->playlist_type == HTTP_MY_PLAYLIST || this->playlist_type == HTTP_USERPICK_PLAYLIST){//cheon211015
             height += this->LABEL_HEIGHT * 2 + this->ICON_HEIGHT + this->SPACE_LABELS;
         }
-        else if(this->playlist_type == HTTP_RECOMMENDS || this->playlist_type == HTTP_NEW_PLAYLIST || this->playlist_type == HTTP_POP_PLAYLIST){
+        else if(this->playlist_type == HTTP_RECOMMENDS || this->playlist_type == HTTP_NEW_PLAYLIST || this->playlist_type == HTTP_POP_PLAYLIST || this->playlist_type == HTTP_DUDUO_PLAYLIST){
             height += this->LABEL_HEIGHT * 3 + this->ICON_HEIGHT + this->SPACE_LABELS * 2;
-        }else if(this->playlist_type >= 1000){
+        }
+        else if(this->playlist_type >= 1000){
             height += this->LABEL_HEIGHT * 2 + this->ICON_HEIGHT + this->SPACE_LABELS;
         }
 
         return height;
+    }
+
+    int ItemPlaylist_rosehome::get_fixedWidth(){
+
+        int width = this->get_imageWidth(this->m_imageSizeMode);
+
+        return width;
+    }
+
+
+    int ItemPlaylist_rosehome::get_rightMargin(){
+
+        return ITEM_BETWEEN_MARGIN_RIGHT;
     }
 
 
@@ -172,9 +194,7 @@ namespace roseHome {
      */
     void ItemPlaylist_rosehome::paintEvent(QPaintEvent *event){
         AbstractItem::paintEvent(event);
-        //print_debug();
-        //qDebug() << "title = "<< this->data_playlist.title;
-        //qDebug() << "ownerName = "<< this->data_playlist.ownerName;
+
         if(this->flagInitDraw == false){
             this->flagInitDraw = true;
 
@@ -300,7 +320,7 @@ namespace roseHome {
                     this->image_thumb->setGeometry(0, (this->LABEL_HEIGHT * 2) + this->SPACE_LABELS, 0, 0);
                     this->label_thumb->setGeometry(35, (this->LABEL_HEIGHT * 2) + this->SPACE_LABELS + 7, all_width - 40, this->LABEL_HEIGHT);
                 }
-                else if(this->playlist_type == HTTP_RECOMMENDS || this->playlist_type == HTTP_NEW_PLAYLIST || this->playlist_type == HTTP_POP_PLAYLIST){
+                else if(this->playlist_type == HTTP_RECOMMENDS || this->playlist_type == HTTP_NEW_PLAYLIST || this->playlist_type == HTTP_POP_PLAYLIST || this->playlist_type == HTTP_DUDUO_PLAYLIST){
                     this->label_owner->setGeometry(0, (this->LABEL_HEIGHT * 2) + this->SPACE_LABELS, all_width, this->LABEL_HEIGHT);
                     this->image_thumb->setGeometry(0, (this->LABEL_HEIGHT * 3) + (this->SPACE_LABELS * 2), 0, 0);
                     this->label_thumb->setGeometry(35, (this->LABEL_HEIGHT * 3) + (this->SPACE_LABELS * 2) + 7, all_width - 40, this->LABEL_HEIGHT);
@@ -347,6 +367,10 @@ namespace roseHome {
                 this->label_title->setAlignment(Qt::AlignVCenter);
                 this->label_title->setWordWrap(true);
                 this->label_title->setText(GSCommon::getTextCutFromLabelWidth(title, title_width, this->label_title->font()));
+                if(this->label_title->text().contains("…")){
+                    this->label_title->setToolTip(title);//c230321
+                    this->label_title->setToolTipDuration(2000);//c230321
+                }
             }
             else{
 
@@ -388,7 +412,7 @@ namespace roseHome {
                     this->label_thumb->setGeometry(35, this->LABEL_HEIGHT + this->SPACE_LABELS + 7, all_width - 40, this->LABEL_HEIGHT);
 
                 }
-                else if(this->playlist_type == HTTP_RECOMMENDS || this->playlist_type == HTTP_NEW_PLAYLIST || this->playlist_type == HTTP_POP_PLAYLIST){
+                else if(this->playlist_type == HTTP_RECOMMENDS || this->playlist_type == HTTP_NEW_PLAYLIST || this->playlist_type == HTTP_POP_PLAYLIST || this->playlist_type == HTTP_DUDUO_PLAYLIST){
                     this->label_owner->setGeometry(0, this->LABEL_HEIGHT + this->SPACE_LABELS, all_width, this->LABEL_HEIGHT);
                     this->image_thumb->setGeometry(0, (this->LABEL_HEIGHT * 2) + (this->SPACE_LABELS * 2), 0, 0);
                     this->label_thumb->setGeometry(35, (this->LABEL_HEIGHT * 2) + (this->SPACE_LABELS * 2) + 7, all_width - 40, this->LABEL_HEIGHT);
@@ -486,7 +510,7 @@ namespace roseHome {
                 this->label_thumb->setText(setHTML_thumb);
 
             }
-            else if(this->playlist_type == HTTP_RECOMMENDS || this->playlist_type == HTTP_NEW_PLAYLIST || this->playlist_type == HTTP_POP_PLAYLIST){
+            else if(this->playlist_type == HTTP_RECOMMENDS || this->playlist_type == HTTP_NEW_PLAYLIST || this->playlist_type == HTTP_POP_PLAYLIST || this->playlist_type == HTTP_DUDUO_PLAYLIST){
                 this->label_owner->setTextFormat(Qt::RichText);
                 this->label_owner->setAlignment(Qt::AlignVCenter);
                 this->label_owner->setText(setHTML_owner);

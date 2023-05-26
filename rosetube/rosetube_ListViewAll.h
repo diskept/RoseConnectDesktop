@@ -21,6 +21,8 @@ namespace rosetube {
         void setJsonObject_forData(const QJsonObject& jsonObj) override;
         void setActivePage() override;
 
+        void resizeEvent(QResizeEvent *event) override;
+
     signals:
         void signal_clickedViewAll(const QJsonObject &p_jsonObject);
 
@@ -40,10 +42,13 @@ namespace rosetube {
         void slot_applyResult_getShareLink(const QString &link);//c220818 share link
         void slot_applyResult_subCategories(const QJsonObject&);
 
+        void slot_applyResult_getRating_track(const QJsonArray&);
+
     private:
         void setUIControl_RoseTube();
 
         void request_more_rosetubeData();
+        void request_more_rosetubeDraw();
 
     private:
         // 관리 필요한 Layout UI
@@ -61,6 +66,13 @@ namespace rosetube {
         QString listtype = "";
         int subCategoryId = 0;
 
+        QString list_type = "";
+
+        int rosetube_widget_width = 0;
+        int rosetube_widget_margin = 0;
+
+        int rosetube_widget_cnt = 0;
+
         int next_offset = 0;
         int rosetube_total_cnt = 0;
         int rosetube_draw_cnt = 0;
@@ -70,6 +82,10 @@ namespace rosetube {
 
         bool flag_flow_draw = false;
         bool flag_rosetube_draw = false;
+
+        int flag_fav_idx = 0;
+        int flag_fav_star = 0;
+        int flag_fav_type = 0;
     };
 };
 #endif // ROSETUBE_LISTVIEWALL_H

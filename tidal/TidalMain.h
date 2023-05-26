@@ -2,51 +2,54 @@
 #define TIDALMAIN_H
 
 
-#include "TidalHome.h"              // 홈
-#include "TidalVideo.h"             // 비디오
-#include "TidalMaster.h"            // Master
-#include "TidalSettings.h"          // 설정
+#include "tidal/TidalHome.h"              // 홈
+#include "tidal/TidalVideo.h"             // 비디오
+#include "tidal/TidalMaster.h"            // Master
+#include "tidal/TidalSettings.h"          // 설정
 
 // 탐색
-#include "TidalExplore.h"
-#include "TidalGenresMain.h"
-#include "TidalGenresChoose.h"
-#include "TidalMoodsMain.h"
-#include "TidalNewMain.h"
-#include "TidalTop20Main.h"
-#include "TidalRisingMain.h"
+#include "tidal/TidalExplore.h"
+#include "tidal/TidalGenresMain.h"
+#include "tidal/TidalGenresChoose.h"
+#include "tidal/TidalMoodsMain.h"
+#include "tidal/TidalNewMain.h"
+#include "tidal/TidalTop20Main.h"
+#include "tidal/TidalRisingMain.h"
 
 // 공통
-#include "TidalPlaylistAll.h"
-#include "TidalPlaylistDetail.h"
-#include "TidalAlbumListAll.h"
-#include "TidalTracksListAll.h"
-#include "TidalTrackListAll_Share.h"
-#include "TidalAlbumDetail.h"
-#include "TidalMyTrackAll.h"
-#include "TidalArtistListAll.h"
-#include "TidalArtistDetail.h"
-#include "TidalVideoListAll.h"
-#include "TidalAddPlaylist.h"
+#include "tidal/TidalPlaylistAll.h"
+#include "tidal/TidalPlaylistDetail.h"
+#include "tidal/TidalAlbumListAll.h"
+#include "tidal/TidalTracksListAll.h"
+#include "tidal/TidalTrackListAll_Share.h"
+#include "tidal/TidalAlbumDetail.h"
+#include "tidal/TidalMyTrackAll.h"
+#include "tidal/TidalArtistListAll.h"
+#include "tidal/TidalArtistDetail.h"
+#include "tidal/TidalVideoListAll.h"
+#include "tidal/TidalAddPlaylist.h"
+#include "tidal/TidalHistoryListAll.h"
+#include "tidal/TidalHistoryDetail.h"
+#include "tidal/TidalRecentlyListDelete.h"
 
 // My Collection
-#include "TidalMyCollection.h"
-#include "TidalMyPlaylistAll.h"
-#include "TidalMyTidalPlaylistAll.h"
-#include "TidalMyPlaylistDetail.h"
-#include "TidalMyPlaylistEdit.h"
-#include "TidalMixesDetail.h"
-#include "TidalMyAlbumAll.h"
-#include "TidalMyArtistAll.h"
-#include "TidalMyVideoAll.h"
+#include "tidal/TidalMyCollection.h"
+#include "tidal/TidalMyPlaylistAll.h"
+#include "tidal/TidalMyTidalPlaylistAll.h"
+#include "tidal/TidalMyPlaylistDetail.h"
+#include "tidal/TidalMyPlaylistEdit.h"
+#include "tidal/TidalMixesDetail.h"
+#include "tidal/TidalMyAlbumAll.h"
+#include "tidal/TidalMyArtistAll.h"
+#include "tidal/TidalMyVideoAll.h"
 
 // Search
-#include "TidalSearchMain.h"
-#include "TidalSearchTrackAll.h"
-#include "TidalSearchArtistAll.h"
-#include "TidalSearchAlbumAll.h"
-#include "TidalSearchPlaylistAll.h"
-#include "TidalSearchVidelAll.h"
+#include "tidal/TidalSearchMain.h"
+#include "tidal/TidalSearchTrackAll.h"
+#include "tidal/TidalSearchArtistAll.h"
+#include "tidal/TidalSearchAlbumAll.h"
+#include "tidal/TidalSearchPlaylistAll.h"
+#include "tidal/TidalSearchVidelAll.h"
 
 
 #include <QJsonObject>
@@ -79,14 +82,11 @@ namespace tidal {
         void slot_dragEnterEvent_hide_show(bool show);//c220730
 
     private slots:
+        void slot_loginAcount();//c230426
         void slot_dragEnterEvent_restore();//c220826_1
         void slot_responseHttp(const int &p_id, const QJsonObject &p_jsonObject) override;//cheon211015
 
         void slot_clickedMoveSubPage(const QJsonObject &p_jsonData);
-        void slot_completeReq_get_session_info(const tidal::RoseSessionInfo_forTidal& sessionInfo);
-
-        void slot_failedLogin(const QString& errorMsg);//cheon210617-login
-        void slot_successLogin();//cheon210617-login
 
         void slot_search(const QString&);
 
@@ -98,9 +98,6 @@ namespace tidal {
     private :
         // UI 세팅
         void setUIControl();
-
-        void setUIControl1();//cheon210617-login
-        void setUIControl2();//cheon210617-login
 
         // 데이터 반환
         QJsonObject getJsonObject_forMainTitle();
@@ -141,6 +138,13 @@ namespace tidal {
         TidalArtistDetail *sub_artistDetail = nullptr;                  ///< 타이달 전용 Artist 상세 화면
         TidalVideoListAll *sub_videoAll = nullptr;                      ///< 타이달 Video 전체 (flowLayout 기반)
         TidalAddPlaylist *sub_addPlaylist = nullptr;                    ///< 타이달 Playlist 추가/삭제/변경 화면
+        TidalHistoryListAll *sub_historyListAll = nullptr;
+        TidalHistoryDetail *sub_historyDetail = nullptr;
+        TidalPlaylistHistoryAll *sub_historyPlaylistAll = nullptr;
+        TidalAlbumHistoryAll *sub_historyAlbumAll = nullptr;
+        TidalTrackHistoryAll *sub_historyTrackAll = nullptr;
+        TidalArtistHistoryAll *sub_historyArtistAll = nullptr;
+        TidalRecentlyListDelete *sub_recentlyListDelete = nullptr;
 
         // My Collection
         TidalMycollection *sub_myCollection = nullptr;                  ///< 타이달 > My Collection
@@ -157,7 +161,8 @@ namespace tidal {
         TidalMyPlaylistDetail_ROSE *sub_myRosePlaylistDetail = nullptr; ///< 타이달 > 홈 > My Playlists > 상세
         TidalRecentlyAlbumAll *sub_recentlyAlbumAll = nullptr;          ///< 타이달 > 홈 > my Recently Albums
         TidalRecentlyPlaylistAll *sub_recentlyPlaylistAll = nullptr;    ///< 타이달 > 홈 > My Recently Playlists
-        TidalRecentlyTrackAll *sub_recentlyTrackAll = nullptr;          ///< 타이달 > 홈 > My Recently Playlists
+        TidalRecentlyTrackAll *sub_recentlyTrackAll = nullptr;          ///< 타이달 > 홈 > My Recently Tracks
+        TidalRecenltyArtistAll *sub_recentlyArtistAll = nullptr;        ///< 타이달 > 홈 > My Recently Artists
 
         // Search
         TidalSearchMain *sub_searchMain = nullptr;                      ///< 타이달 > 검색 메인

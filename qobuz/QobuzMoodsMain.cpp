@@ -49,6 +49,9 @@ namespace qobuz{
             this->flagNeedReload = true;
             this->label_mainTitle->setText(ProcJsonEasy::getString(jsonObj, "name", "Noname genre"));
         }
+        else{
+            print_debug();ContentLoadingwaitingMsgHide();   //j230328
+        }
     }
 
 

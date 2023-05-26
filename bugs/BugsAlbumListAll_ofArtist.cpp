@@ -20,7 +20,7 @@ namespace bugs {
      * @brief TidalMoodsMain::TidalMoodsMain
      * @param parent
      */
-    BugsAlbumListAll_ofArtist::BugsAlbumListAll_ofArtist(QWidget *parent) : AbstractBugsSubWidget(MainUIType::VerticalScroll, parent) {
+    BugsAlbumListAll_ofArtist::BugsAlbumListAll_ofArtist(QWidget *parent) : AbstractBugsSubWidget(MainUIType::VerticalScroll_viewAll, parent) {
 
         // Data
         this->list_album = new QList<bugs::AlbumItemData>();
@@ -52,7 +52,7 @@ namespace bugs {
         bugs::PageInfo_AlbumAllView_ofArtist tmp_pageInfo = ConvertData_forBugs::convertData_pageInfo_albumAllView_ofArtist(jsonObj);
         this->flagNeedReload = false;
 
-        if(tmp_pageInfo.mainTitle != this->data_pageInfo.mainTitle){
+        if(tmp_pageInfo.artist_id != this->data_pageInfo.artist_id){
             this->flagNeedReload = true;
 
             this->data_pageInfo = tmp_pageInfo;
@@ -72,10 +72,13 @@ namespace bugs {
 
             this->flag_album_draw = false;
 
-            ContentLoadingwaitingMsgShow(tr("Content is being loaded. Please wait."));
+            print_debug();ContentLoadingwaitingMsgShow(tr("Content is being loaded. Please wait."));
 
             // request HTTP API
             this->request_more_albumData();
+        }
+        else{
+            print_debug();ContentLoadingwaitingMsgHide();   //j230328
         }
     }
 
@@ -183,7 +186,7 @@ namespace bugs {
 
             this->flag_album_draw = true;
 
-            ContentLoadingwaitingMsgShow(tr("Content is being loaded. Please wait."));
+            print_debug();ContentLoadingwaitingMsgShow(tr("Content is being loaded. Please wait."));
 
             this->request_more_albumDraw();
         }
@@ -316,11 +319,13 @@ namespace bugs {
                     //QCoreApplication::processEvents();
                 }
 
+                ContentLoadingwaitingMsgHide();      //cheon Tidal
+
                 this->flag_flow_draw = true;
                 this->flag_album_draw = false;
             }
 
-            ContentLoadingwaitingMsgHide();      //cheon Tidal
+
             this->request_more_albumData();
         }
         else{

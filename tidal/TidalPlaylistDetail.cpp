@@ -147,10 +147,11 @@ print_debug();
                     print_debug();
                 }
 
-                ContentLoadingwaitingMsgShow(tr("Content is being loaded. Please wait."));
+                print_debug();ContentLoadingwaitingMsgShow(tr("Content is being loaded. Please wait."));
             }
             else{
-                print_debug();
+                print_debug();ContentLoadingwaitingMsgHide();   //j230328
+
                 // 리로드 하지 않는 경우에는, favorite 정보만 다시 요청한다. (playlist_id 가 변경되지 않고, 페이지가 다시 요청된 경우임)
                 // request HTTP API - get favorite for Rose Server
                 roseHome::ProcCommon *proc_fav_playlist = new roseHome::ProcCommon(this);
@@ -177,6 +178,10 @@ print_debug();
                 GSCommon::clearLayout(this->box_main_contents);
                 this->box_contents->removeWidget(this->widget_main_contents);
             }
+
+            GSCommon::clearLayout(this->box_contents);
+            this->box_contents->setAlignment(Qt::AlignTop);
+            this->scrollArea_main->setVerticalScrollBarPolicy(Qt::ScrollBarAsNeeded);
 
             this->box_main_contents = new QVBoxLayout();
             this->box_main_contents->setSpacing(0);
@@ -342,7 +347,7 @@ print_debug();
 
             this->flag_draw = true;
 
-            ContentLoadingwaitingMsgShow(tr("Content is being loaded. Please wait."));
+            print_debug();ContentLoadingwaitingMsgShow(tr("Content is being loaded. Please wait."));
             this->request_more_trackDraw();
         }
     }

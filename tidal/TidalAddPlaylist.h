@@ -24,6 +24,7 @@ namespace tidal {
     private:
         AbstractAddPlaylist_RHV *abstractAddPlaylist_RHV;
 
+        QString streamType = "";
         QString clientKey = "";
         int playlistID = 0;
     };

@@ -60,6 +60,9 @@ namespace qobuz {
             this->label_mainTitle->setText(data_param.pathTitle);
             this->api_subPath = data_param.api_subPath;
         }
+        else{
+            print_debug();ContentLoadingwaitingMsgHide();   //j230328
+        }
     }
 
 
@@ -84,7 +87,6 @@ namespace qobuz {
             this->flag_lastPage_track = false;
             this->request_more_trackData();
         }
-
     }
 
 
@@ -244,8 +246,11 @@ namespace qobuz {
             this->flagReqMore_track = false;
             this->flag_lastPage_track = false;
 
-            ContentLoadingwaitingMsgShow(tr("Content is being loaded. Please wait."));
+            print_debug();ContentLoadingwaitingMsgShow(tr("Content is being loaded. Please wait."));
             this->request_more_trackData();
+        }
+        else{
+            print_debug();ContentLoadingwaitingMsgHide();   //j230328
         }
     }
 
@@ -335,7 +340,7 @@ namespace qobuz {
 
             this->flag_draw = true;
 
-            ContentLoadingwaitingMsgShow(tr("Content is being loaded. Please wait."));
+            print_debug();ContentLoadingwaitingMsgShow(tr("Content is being loaded. Please wait."));
             this->request_more_trackDraw();
         }
     }
@@ -477,20 +482,20 @@ namespace qobuz {
 
     void QobuzAppearsonListAll::slot_qobuz_completeReq_listAll_myFavoritesIds(const QJsonObject& p_jsonObj){
         // Favorite 정보를 전달해줌. 알아서 처리하라고. => OptMorePopup 에서 하라고, 가려줌
-        if(p_jsonObj.contains("flagOk") && ProcJsonEasy::get_flagOk(p_jsonObj)){
-            bool status  = ProcJsonEasy::getBool(p_jsonObj, "status");
+//        if(p_jsonObj.contains("flagOk") && ProcJsonEasy::get_flagOk(p_jsonObj)){
+//            bool status  = ProcJsonEasy::getBool(p_jsonObj, "status");
 
-            // Qobuz favorite toggle check
-            if(this->flag_send_track == true){
-                if((status == true && this->flag_track_fav == false) || (status == false && this->flag_track_fav == true)){
-                    // Qobuz Favorite toggle
-                    ProcCommon *proc = new ProcCommon(this);
-                    connect(proc, &qobuz::ProcCommon::completeReq_listAll_myFavoritesIds, this, &QobuzAppearsonListAll::slot_qobuz_completeReq_listAll_myFavoritesIds);
-                    proc->request_qobuz_set_favorite("track", QString("%1").arg(this->track_id_fav), this->flag_track_fav);
-                }
-                this->flag_send_track = false;
-            }
-        }
+//            // Qobuz favorite toggle check
+//            if(this->flag_send_track == true){
+//                if((status == true && this->flag_track_fav == false) || (status == false && this->flag_track_fav == true)){
+//                    // Qobuz Favorite toggle
+//                    ProcCommon *proc = new ProcCommon(this);
+//                    connect(proc, &qobuz::ProcCommon::completeReq_listAll_myFavoritesIds, this, &QobuzAppearsonListAll::slot_qobuz_completeReq_listAll_myFavoritesIds);
+//                    proc->request_qobuz_set_favorite("track", QString("%1").arg(this->track_id_fav), this->flag_track_fav);
+//                }
+//                this->flag_send_track = false;
+//            }
+//        }
     }
 
 
@@ -728,7 +733,7 @@ namespace qobuz {
         if(clickMode == PlaylistTrackDetailInfo_RHV::ClickMode::FavBtn){
 
             if(this->flag_check_track == false){
-                //this->track_star_fav = this->track_listAll[idx].getFavoritesStars();
+                this->track_star_fav = this->track_listAll[idx]->getFavoritesStars();
                 this->flag_track_fav = false;
 
                 if(this->track_star_fav == 3){
@@ -759,6 +764,8 @@ namespace qobuz {
                 connect(proc_favCheck_track, &roseHome::ProcCommon::completeCheck_rating_track, this, &QobuzAppearsonListAll::slot_applyResult_checkRating_track);
                 proc_favCheck_track->request_rose_checkRating_Track("QOBUZ", QString("%1").arg(ProcJsonEasy::getInt(jsonObj, "id")));
                 this->flag_check_track = true;
+
+                this->track_listAll[idx]->setFavoritesIds(this->flag_track_fav, this->track_star_fav);
             }
         }
         else{

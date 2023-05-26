@@ -92,21 +92,21 @@ void SegmentTabWidget::applyBtnStyle(){
     const QString STYLE_radius_right = "border-top-right-radius:20px;border-bottom-right-radius:20px;";
     const QString STYLE_radius_left = "border-top-left-radius:20px;border-bottom-left-radius:20px;";
 
-    for(int i=0 ; i<=this->max_index ; i++){
+    for(int i = 0; i <= this->max_index; i++){
         QString tmp_style = "";
-        if(i==0){
+        if(i == 0){
             // first
-            tmp_style = i==this->selected_index ? STYLE_selected : STYLE_normal;
+            tmp_style = i == this->selected_index ? STYLE_selected : STYLE_normal;
             tmp_style += STYLE_radius_left;
         }
-        else if(i==this->max_index){
+        else if(i == this->max_index){
             // end
-            tmp_style = i==this->selected_index ? STYLE_selected : STYLE_normal;
+            tmp_style = i == this->selected_index ? STYLE_selected : STYLE_normal;
             tmp_style += STYLE_radius_right;
         }
         else{
             // middle
-            tmp_style = i==this->selected_index ? STYLE_selected : STYLE_normal;
+            tmp_style = i == this->selected_index ? STYLE_selected : STYLE_normal;
         }
 
         this->list_btn->at(i)->setStyleSheet(QString(".QPushButton{%1} .QPushButton:hover{%2}").arg(tmp_style).arg(STYLE_hover));
@@ -122,7 +122,7 @@ void SegmentTabWidget::applyBtnStyle(){
  */
 void SegmentTabWidget::set_selectedIndex(int index){
 
-    if(index<0 || index>this->max_index){
+    if(index < 0 || index > this->max_index){
         index = 0;
     }
 
@@ -139,7 +139,8 @@ void SegmentTabWidget::set_selectedIndex(int index){
  * @param size
  */
 void SegmentTabWidget::set_fixedTabBtnSize(const QSize& size){
-    for(int i=0 ; i<this->list_btn->count() ; i++){
+
+    for(int i = 0; i < this->list_btn->count(); i++){
         this->list_btn->at(i)->setFixedSize(size);
     }
 }

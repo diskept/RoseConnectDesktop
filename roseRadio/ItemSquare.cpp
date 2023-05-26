@@ -68,7 +68,7 @@ namespace roseRadio {
 
         this->label_title = new QLabel(label_base);
         this->label_title->setWordWrap(true);
-        this->label_title->setStyleSheet("font-size:20px; line-height:1.25; color:#FFFFFF;");
+        this->label_title->setStyleSheet("font-size:20px;  font-weight: normal;font-style: normal;line-height: 1.25;text-align: left; color:#FFFFFF;");
         this->label_title->setGeometry(0, 15, img_width - 60, ITEM_TITLE_HEIGHT * 2);
 
         this->label_name = new QLabel(label_base);
@@ -77,7 +77,7 @@ namespace roseRadio {
         this->label_name->hide();
 
         this->label_resolution = new QLabel(label_base);
-        this->label_resolution->setStyleSheet("font-size:16px; font-weight:300; line-height:1.56; color: #999999;");
+        this->label_resolution->setStyleSheet("font-size:16px;   font-weight: 300;font-style: normal;line-height: 1.56;text-align: left; color: #999999;");
         this->label_resolution->setGeometry(0, ITEM_TITLE_HEIGHT * 2 + ITEM_SPACE_LABEL, img_width - 60, ITEM_RESOLUTIION_HEIGHT);
         this->label_resolution->hide();
 
@@ -195,6 +195,10 @@ namespace roseRadio {
 
             this->label_title->setGeometry(0, 15, all_width, ITEM_TITLE_HEIGHT * 2);
             this->label_title->setText(GSCommon::getTextCutFromLabelWidth(title, title_width, this->label_title->font()));
+            if(this->label_title->text().contains("…")){
+                this->label_title->setToolTip(title);//c230321
+                this->label_title->setToolTipDuration(2000);//c230321
+            }
 
             //this->label_name->setGeometry(0, (ITEM_TITLE_HEIGHT * 2) + ITEM_SPACE_LABEL, all_width, ITEM_RESOLUTIION_HEIGHT);
             //this->label_name->setText(GSCommon::getTextCutFromLabelWidth(name, all_width, this->label_name->font()));
@@ -207,6 +211,10 @@ namespace roseRadio {
         else{
             this->label_title->setGeometry(0, 15, all_width, ITEM_TITLE_HEIGHT);
             this->label_title->setText(GSCommon::getTextCutFromLabelWidth(title, all_width, this->label_title->font()));
+            if(this->label_title->text().contains("…")){
+                this->label_title->setToolTip(title);//c230321
+                this->label_title->setToolTipDuration(2000);//c230321
+            }
 
             //this->label_name->setGeometry(0, ITEM_TITLE_HEIGHT + ITEM_SPACE_LABEL, all_width, ITEM_RESOLUTIION_HEIGHT);
             //this->label_name->setText(GSCommon::getTextCutFromLabelWidth(name, all_width, this->label_name->font()));

@@ -81,7 +81,7 @@ namespace apple {
      */
     void AbstractAppleSubWidget::slot_clickBtnLogin_toShowDialog(){
 
-        // TODO::Apple Login system pendin... change source code Added 07.01.2022 by Jeon
+        // TODO::Apple Login system pendin... change source code Added 07.01.2022 by diskept
         /*this->dlbLogin = new DialogLogin_forQobuz(this);
         connect(this->dlbLogin, &DialogLogin_forQobuz::successLogin, this, &AbstractAppleSubWidget::slot_acceptedDialogLogin);
         this->dlbLogin->exec();*/

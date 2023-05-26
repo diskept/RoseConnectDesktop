@@ -28,8 +28,9 @@ MusicFolder::MusicFolder(QWidget *parent, bool p_flagIsMusic)
 {
 
     setInit();
+    setUIFarovite(parent);//c221213
     setUIControl();
-    setUIFarovite(parent);
+    //setUIFarovite(parent);//c221213
 }
 
 
@@ -73,6 +74,8 @@ void MusicFolder::setUIControl(){
     this->vl_total->setContentsMargins(0,0,0,0);
     this->vl_total->setSpacing(0);
     this->vl_total->setAlignment(Qt::AlignTop);
+
+    this->vl_total->addWidget(this->widget_favoriteGroup);//c221213
     this->vl_total->addWidget(this->stackedwidget);
 
     setLayout(this->vl_total);
@@ -90,6 +93,9 @@ void MusicFolder::setUIFarovite(QWidget *parent){
     this->hl_btnFavorite = new QHBoxLayout();
     this->hl_btnFavorite->setSpacing(0);
     this->hl_btnFavorite->setContentsMargins(0,0,0,0);
+    this->hl_btnFavorite->setAlignment(Qt::AlignLeft);
+
+
 
     QWidget *widget_btnFavorite = new QWidget;
     widget_btnFavorite->setObjectName("widget_btnFavorite");
@@ -114,7 +120,7 @@ void MusicFolder::setUIFarovite(QWidget *parent){
     QWidget *widget_scroll = new QWidget;
     widget_scroll->setContentsMargins(20,0,20,0);
     widget_scroll->setLayout(layt);
-    widget_scroll->setStyleSheet("border:1px solid #707070;border-radius:20px;");
+    //widget_scroll->setStyleSheet("border:1px solid #707070;border-radius:20px;");//c221213
 
 
 
@@ -190,6 +196,13 @@ void MusicFolder::setResultOfFavoriteList(QJsonObject p_jsonObject){
     // clear layout
     GSCommon::clearLayout(this->hl_btnFavorite);
 
+    QLabel *lb_favor_title = new QLabel;//c221213
+    lb_favor_title->setContentsMargins(20,0,20,0);
+    lb_favor_title->setFixedWidth(130);
+    lb_favor_title->setText("Favorite : ");
+    lb_favor_title->setStyleSheet("color:#CCCCCC;font-size:18px;");
+    this->hl_btnFavorite->addWidget(lb_favor_title);//c221213
+
     //set data
     if(p_jsonObject.contains("data")){
         jsonArrFavor = p_jsonObject["data"].toArray();
@@ -208,19 +221,27 @@ void MusicFolder::setResultOfFavoriteList(QJsonObject p_jsonObject){
 
             QPushButton *btn_fav = new QPushButton();
             btn_fav->setText(GSCommon::getTextCutFromLabelWidth(tmp_albumName, BTN_FAV_W-10, btn_fav->font()));
+            if(btn_fav->text().contains("…")){
+                btn_fav->setToolTip(tmp_albumName);
+                btn_fav->setToolTipDuration(2000);
+            }
             btn_fav->setFixedSize(BTN_FAV_W, BTN_FAV_H-2);
             btn_fav->setProperty(KEY_CONTENT_STEP.toStdString().c_str(), QString("fav_%1_%2").arg(tmp_albumFavPath.startsWith("smb:",Qt::CaseInsensitive) ? "network" : "usb").arg(i));
             btn_fav->setProperty("albumFavName", tmp_albumName);
             btn_fav->setProperty("albumFavPath", tmp_albumFavPath);
             btn_fav->setCursor(Qt::PointingHandCursor);
-
+print_debug();
+qDebug() << "jsonArrFavor.size()=" << jsonArrFavor.size();
             if(i < (jsonArrFavor.size()-1)){
-               btn_fav->setStyleSheet("color:#CCCCCC;font-size:18px;border:none;border-right:1px solid #707070;");
+               //btn_fav->setStyleSheet("color:#CCCCCC;font-size:18px;border:none;border-right:1px solid #707070;");//c221213
+               btn_fav->setStyleSheet("color:#CCCCCC;font-size:18px;border:1px solid #707070;border-radius:17px;");//c221213
             }else{
-               btn_fav->setStyleSheet("color:#CCCCCC;font-size:18px;");
+               //btn_fav->setStyleSheet("color:#CCCCCC;font-size:18px;");//c221213
+               btn_fav->setStyleSheet("color:#CCCCCC;font-size:18px;;border:1px solid #707070;border-radius:17px;");//c221213
             }
 
-            this->hl_btnFavorite->addWidget(btn_fav);
+            this->hl_btnFavorite->addSpacing(5);
+            this->hl_btnFavorite->addWidget(btn_fav, 0, Qt::AlignLeft);
             connect(btn_fav, SIGNAL(clicked()), this, SLOT(slot_changedSubTab_favorite()));
         }
 
@@ -230,6 +251,8 @@ void MusicFolder::setResultOfFavoriteList(QJsonObject p_jsonObject){
         // 즐겨찾기 항목 있는 경우 Show
         if(hl_btnFavorite->count() > 0){
             this->widget_favoriteGroup->show();
+        }else{//c221213
+            this->widget_favoriteGroup->hide();
         }
     }
 }
@@ -383,7 +406,7 @@ void MusicFolder::slot_clickedBtnEditFavorite(){
  * @brief MusicFolder::slot_changedSubTab_favorite [SLOT] 즐겨찾기 버튼 클릭시 페이지 변경
  */
 void MusicFolder::slot_changedSubTab_favorite(){
-
+print_debug();
     // 1) 페이지 변경 및 데이터 세팅
     QString tmp_contentStep = this->sender()->property(KEY_CONTENT_STEP.toStdString().c_str()).toString();
     QString tmp_favName = this->sender()->property("albumFavName").toString();
@@ -431,7 +454,7 @@ void MusicFolder::slot_changedSubTabUI(const QJsonObject &p_data){
  */
 void MusicFolder::slot_goToInitiPageFolder(QString p_subMenuCode){
 
-    if(p_subMenuCode==PAGECODE_M_FOLDER){
+    if(p_subMenuCode==PAGECODE_M_FOLDER || p_subMenuCode==PAGECODE_V_FOLDER){
         this->music_usb->goInitPage();
         this->stackedwidget->setCurrentWidget(this->music_usb);
     }
@@ -456,7 +479,8 @@ void MusicFolder::setDataABSPage(QJsonObject p_data){
     if(this->contentStep==""){
         // USB 탐색 StackWidget
         this->setUIControl_USB();
-    }else if(contentStep.startsWith("netfolder") || contentStep.startsWith("fav_network")){
+    }
+    else if(contentStep.startsWith("netfolder") || contentStep.startsWith("fav_network")){
         // netforlder_x : 네트워크 폴더, favx : 즐겨찾기 폴더
         QString tmp_favName;
         QString tmp_ablumFavPath;
@@ -468,7 +492,8 @@ void MusicFolder::setDataABSPage(QJsonObject p_data){
         }
         // 즐겨찾기 StackWidget
         this->setUIControl_favorite(this->contentStep,tmp_favName,tmp_ablumFavPath);
-    }else if(contentStep.startsWith("usb") || contentStep.startsWith("fav_usb")){
+    }
+    else if(contentStep.startsWith("usb") || contentStep.startsWith("fav_usb")){
         // usb_x : 유에스비 드라이브
         QJsonObject jsonUsb = p_data[KEY_DATA].toObject();
 
@@ -493,6 +518,7 @@ QJsonObject MusicFolder::getDataJson(){
  * @brief MusicFolder::setGeometryFavoriteUI : 즐겨찾기 UI 위치 설정
  */
 void MusicFolder::setGeometryFavoriteUI(){
+
     int tmp_cntFavor = hl_btnFavorite->count();
     int tmp_favorGroup_w = tmp_cntFavor*BTN_FAV_W+120;
 
@@ -500,7 +526,9 @@ void MusicFolder::setGeometryFavoriteUI(){
         tmp_favorGroup_w = this->width()-MENU_BAR_LEFT_W;
     }
 
-    this->widget_favoriteGroup->setGeometry(width()-tmp_favorGroup_w, 0, tmp_favorGroup_w, MENU_BAR_HEIGHT);
+
+    //this->widget_favoriteGroup->setGeometry(width()-tmp_favorGroup_w, 0, tmp_favorGroup_w, MENU_BAR_HEIGHT);//c221213
+    //this->widget_favoriteGroup->setGeometry(width()-tmp_favorGroup_w, 0, tmp_favorGroup_w, MENU_BAR_HEIGHT);//c221213
 }
 
 

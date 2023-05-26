@@ -12,6 +12,7 @@
 #include <QRadioButton>
 #include <QDebug>
 #include <QMessageBox>
+#include <QMovie>
 
 #define print_debug() qDebug() << "\n" << "file_name: " << __FILE__ << "function_name: " << __FUNCTION__ << "line: " << __LINE__ << "\n";
 
@@ -39,7 +40,7 @@ void dialogsetting_usbsetting::setInit(){
     this->setModal(true);
     this->setWindowFlags(Qt::Dialog | Qt::FramelessWindowHint);
     this->setAttribute(Qt::WA_TranslucentBackground);
-    this->setFixedSize(DLG_WIDTH, DLG_HEIGHT+100);
+    this->setFixedSize(DLG_WIDTH, DLG_HEIGHT);
     this->setStyleSheet("background-color:transparent;");
    // HdmiDetailData = new QJsonObject();
 }
@@ -48,6 +49,8 @@ void dialogsetting_usbsetting::setInit(){
  * @brief DialogSelect_Cloud::setUIControl : UI 세팅
  */
 void dialogsetting_usbsetting::setUIControl(){
+
+    this->loding_ani_init();
 
     QJsonObject tmp_hdmisettingval = get_settingOfHdmiDetail();
     dlgConfirmHdmi = new DialogConfirm(this);
@@ -58,7 +61,7 @@ void dialogsetting_usbsetting::setUIControl(){
     lb_title->setAlignment(Qt::AlignCenter);
     lb_title->setFixedHeight(70);
 
-    QPushButton *btn_close = GSCommon::getUIBtnImg("btn_close", ":images/icon_close_gray.png");
+    QPushButton *btn_close = GSCommon::getUIBtnImg("btn_close", ":/images/icon_close_gray.png");
     btn_close->setCursor(Qt::PointingHandCursor);
     btn_close->setFixedSize(QSize(70,70));
     btn_close->setParent(lb_title);
@@ -135,11 +138,13 @@ void dialogsetting_usbsetting::setUIControl(){
     comboBoxHdmiPCM->addItem(tr(" 96 kHz"), 4);//cheon01_src
     comboBoxHdmiPCM->addItem(tr(" 176.4 kHz"), 5);//cheon01_src
     comboBoxHdmiPCM->addItem(tr(" 192 kHz"), 6);//cheon01_src
+    comboBoxHdmiPCM->addItem(tr(" 352.8 kHz"), 6);//cheon01_src
+    comboBoxHdmiPCM->addItem(tr(" 384 kHz"), 6);//cheon01_src
 
-    QLabel *lb_PCM = new QLabel(tr("PCM Resampling Frequency"));
+    QLabel *lb_PCM = new QLabel("PCM Resampling Frequency");
     lb_PCM->setStyleSheet("color:#E5E5E4");
     lb_PCM->setFixedSize(250,120);//c220511
-    lb_PCM->setText((tr("PCM Resampling Frequency")));
+    lb_PCM->setText("PCM Resampling Frequency");
     lb_PCM->setStyleSheet("Text-align:left; font-size:18px;color:#E5E5E4; ");
 
    // this->list_keyValue.append(0);
@@ -162,12 +167,13 @@ void dialogsetting_usbsetting::setUIControl(){
     comboBoxHdmiPCM_Max->addItem(tr(" 48 kHz"), 1);//cheon01_src
     comboBoxHdmiPCM_Max->addItem(tr(" 96 kHz"), 2);//cheon01_src
     comboBoxHdmiPCM_Max->addItem(tr(" 192 kHz"), 3);//cheon01_src
+    comboBoxHdmiPCM_Max->addItem(tr(" 384 kHz"), 3);//cheon01_src
 
 
-    QLabel *lb_PCM_Max = new QLabel(tr("PCM Resampling Frequency"));
+    QLabel *lb_PCM_Max = new QLabel("PCM Resampling Frequency");
     lb_PCM_Max->setStyleSheet("color:#E5E5E4");
     lb_PCM_Max->setFixedSize(250,70);//c220511
-    lb_PCM_Max->setText((tr("PCM Resampling Frequency")));
+    lb_PCM_Max->setText("PCM Resampling Frequency");
     lb_PCM_Max->setStyleSheet("Text-align:left; font-size:18px;color:#E5E5E4; ");
 
 
@@ -186,12 +192,12 @@ void dialogsetting_usbsetting::setUIControl(){
 
 
     QPushButton *btn_questionMQA;
-    btn_questionMQA =  GSCommon::getUIBtnImg("question", ":images/setting/201/tip_icon.png");
+    btn_questionMQA =  GSCommon::getUIBtnImg("question", ":/images/setting/201/tip_icon.png");
     btn_questionMQA->setCursor(Qt::PointingHandCursor);
     btn_questionMQA->setFixedSize(QSize(30,30));
 
     QPushButton *btn_questionPCM;
-    btn_questionPCM =  GSCommon::getUIBtnImg("question", ":images/setting/201/tip_icon.png");
+    btn_questionPCM =  GSCommon::getUIBtnImg("question", ":/images/setting/201/tip_icon.png");
     btn_questionPCM->setCursor(Qt::PointingHandCursor);
     btn_questionPCM->setFixedSize(QSize(30,30));
 
@@ -266,14 +272,14 @@ void dialogsetting_usbsetting::setUIControl(){
         comboBoxHdmiDSD->addItem(tr("DSD to PCM(upto DSD128)"), 2);//c220511
 
     }else{
-        comboBoxHdmiDSD->addItem(tr("Native DSD(Not suported)"), 0);//c220511
-        comboBoxHdmiDSD->addItem(tr("DSD over PCM(Not suported)"), 1);//c220511
-        comboBoxHdmiDSD->addItem(tr("DSD to PCM(upto DSD128)"), 2);//c220511
+        comboBoxHdmiDSD->addItem(tr("Native DSD"), 0);//c220511
+        comboBoxHdmiDSD->addItem(tr("DSD over PCM"), 1);//c220511
+        comboBoxHdmiDSD->addItem(tr("DSD to PCM(upto DSD512)"), 2);//c220511
 
     }
 
     QPushButton *btn_questionDSD;
-    btn_questionDSD =  GSCommon::getUIBtnImg("question", ":images/setting/201/tip_icon.png");
+    btn_questionDSD =  GSCommon::getUIBtnImg("question", ":/images/setting/201/tip_icon.png");
     btn_questionDSD->setCursor(Qt::PointingHandCursor);
     btn_questionDSD->setFixedSize(QSize(30,30));
 
@@ -326,10 +332,10 @@ void dialogsetting_usbsetting::setUIControl(){
     comboBoxHdmiRoon->addItem(tr("Off"), 0);
     comboBoxHdmiRoon->addItem(tr("On"), 1);
 
-    QLabel *lb_Roon = new QLabel(tr("Software Volume Control"));//c220511
+    QLabel *lb_Roon = new QLabel("Software Volume Control");//c220511
     lb_Roon->setStyleSheet("color:#E5E5E4");
     lb_Roon->setFixedSize(230,70);
-    lb_Roon->setText((tr("Software Volume Control")));
+    lb_Roon->setText("Software Volume Control");
     lb_Roon->setStyleSheet("Text-align:left; font-size:18px;color:#E5E5E4; ");
 
    // this->list_keyValue.append(0);
@@ -507,7 +513,8 @@ void dialogsetting_usbsetting::slot_clickedMQAquestion(){//c220511
     dlgConfirmHdmi->setTitle(tr("MQA Type"));
     dlgConfirmHdmi->setText(tr("Set the MQA playback mode.\nYou can select either Authenticator or Decoder mode.\nOnly the original sound or decoded audio data can be exported as digital output, not fully decoded audio data."));
 
-    dlgConfirmHdmi->setGeometry((DLG_WIDTH + 80), (150 + 100), 350, 500);
+    dlgConfirmHdmi->setTextHeight(170);
+    dlgConfirmHdmi->setGeometry((this->geometry().left() + (DLG_WIDTH - 660) / 2), this->geometry().top() + (DLG_HEIGHT - dlgConfirmHdmi->sizeHint().height()) / 2, 0, 0);
     dlgConfirmHdmi->setAlertMode();
     dlgConfirmHdmi->setProperty("flagShown",false);
 
@@ -525,14 +532,14 @@ void dialogsetting_usbsetting::slot_clickedDSDquestion(){//c220511
     print_debug();
     dlgConfirmHdmi->setTitle(tr("DSD Mode"));
     if(global.device.getDeviceType()== "RS520"){
-        dlgConfirmHdmi->setText(tr("Determines the transmission format (Native, DOP, PCM) of audio samples to be delivered to the DAC when playing DSD sound sources. \n In the case of USB DAC, ypu can play DSD sound source only after selecting Navie, DSD, DSD to PCM depending on whether the connected DAC is supported."));
-
+        dlgConfirmHdmi->setText(tr("Determines the transmission format (Native, DOP, PCM) of audio samples to be delivered to the DAC when playing DSD sound sources."
+                                   "\nIn the case of USB DAC, you can play DSD sound source only after selecting Native, DOP, DSD to PCM depending on whether the connected DAC is supported."));
     }else{
-        dlgConfirmHdmi->setText(tr("Determines the transmission format (Native, DOP, PCM) of audio samples to be transmitted to the DAC when playing DSD sound sources. \n For HDMI output, only DSD to PCM is available."));
-
+        dlgConfirmHdmi->setText(tr("Determines the transmission format (Native, DOP, PCM) of audio samples to be delivered to the DAC when playing DSD sound sources."
+                                   "\nIn the case of USB DAC, you can play DSD sound source only after selecting Native, DOP, DSD to PCM depending on whether the connected DAC is supported."));
     }
-dlgConfirmHdmi->setTextHeight(220);
-    dlgConfirmHdmi->setGeometry((DLG_WIDTH + 80), (150 + 100), 350, 500);
+    dlgConfirmHdmi->setTextHeight(220);
+    dlgConfirmHdmi->setGeometry((this->geometry().left() + (DLG_WIDTH - 660) / 2), this->geometry().top() + (DLG_HEIGHT - dlgConfirmHdmi->sizeHint().height()) / 2, 0, 0);
     dlgConfirmHdmi->setAlertMode();
     dlgConfirmHdmi->setProperty("flagShown",false);
 
@@ -548,10 +555,11 @@ dlgConfirmHdmi->setTextHeight(220);
 }
 void dialogsetting_usbsetting::slot_clickedPCMquestion(){//c220511
     print_debug();
-    dlgConfirmHdmi->setTitle(tr("PCM Resampling Frequency"));
+    dlgConfirmHdmi->setTitle("PCM Resampling Frequency");
     dlgConfirmHdmi->setText(tr("This is the menu to set sampling frequecy. if you want to output the original sound as it is, select the Original Sampling Rate, and if want to use the resampling function, select the desired sampling rate (48kHz, 96Khz, 192Khz, etc), MQA, Native DSD, DOP, Video, Bluetooth and Airplay, Roon Ready are not supported."));
 
-    dlgConfirmHdmi->setGeometry((DLG_WIDTH + 80), (150 + 100), 350, 500);
+    dlgConfirmHdmi->setTextHeight(200);
+    dlgConfirmHdmi->setGeometry((this->geometry().left() + (DLG_WIDTH - 660) / 2), this->geometry().top() + (DLG_HEIGHT - dlgConfirmHdmi->sizeHint().height()) / 2, 0, 0);
     dlgConfirmHdmi->setAlertMode();
     dlgConfirmHdmi->setProperty("flagShown",false);
 
@@ -570,7 +578,8 @@ void dialogsetting_usbsetting::slot_clickedPassquestion(){//c220511
     dlgConfirmHdmi->setTitle(tr("HDMI Passthough"));
     dlgConfirmHdmi->setText(tr("it bypasses HD audio formats such as surround sound sources to the audio reciever though HDMI without decording."));
 
-    dlgConfirmHdmi->setGeometry((DLG_WIDTH + 80), (150 + 100), 350, 500);
+    dlgConfirmHdmi->setTextHeight(220);
+    dlgConfirmHdmi->setGeometry((this->geometry().left() + (DLG_WIDTH - 660) / 2), this->geometry().top() + (DLG_HEIGHT - dlgConfirmHdmi->sizeHint().height()) / 2, 0, 0);
     dlgConfirmHdmi->setAlertMode();
     dlgConfirmHdmi->setProperty("flagShown",false);
 
@@ -589,12 +598,13 @@ void dialogsetting_usbsetting::slot_clickedbit32question(){//c220511
     print_debug();
     dlgConfirmHdmi->setAlignment(Qt::AlignLeft);
     //dlgConfirmHdmi->setTitle(tr("Headphone Output Impedance"));
-    //dlgConfirmHdmi->setText(tr("This is a menu to set the Headphone Output Impedace.\nIf you select the output (16 Ohm, 32 Ohm, 50 Ohm, 100 Ohm) that matches your headphone specifications, you can enjoy better sound."));
+    //dlgConfirmHdmi->setText(tr("This is a menu to set the Headphone Output Impedace.\nIf you select the output (16 Ohm, 32 Ohm, 50 Ohm, 100 Ohm) that fits your headphone specifications, you can hear better sound quality."));
     dlgConfirmHdmi->setAlignment(Qt::AlignLeft);
     dlgConfirmHdmi->setTitle(tr("The low 8bits of a 32 bit sound sources\n will have correct"));
     dlgConfirmHdmi->setText(tr("Some DACs may generate noise when playing a 32-bit sound source with a high sampling rate.\nIn this case, it is used to reduce noise by correcting the lower 8 bits."));
 
-    dlgConfirmHdmi->setGeometry((DLG_WIDTH + 80), (150 + 100), 350, 500);
+     dlgConfirmHdmi->setTextHeight(120);
+    dlgConfirmHdmi->setGeometry((this->geometry().left() + (DLG_WIDTH - 660) / 2), this->geometry().top() + (DLG_HEIGHT - dlgConfirmHdmi->sizeHint().height()) / 2, 0, 0);
     dlgConfirmHdmi->setAlertMode();
     dlgConfirmHdmi->setProperty("flagShown",false);
 
@@ -611,10 +621,10 @@ void dialogsetting_usbsetting::slot_clickedbit32question(){//c220511
 void dialogsetting_usbsetting::slot_clickedRoonquestion(){//c220511
     print_debug();
     dlgConfirmHdmi->setTitle(tr("Software Volume Control"));
-    dlgConfirmHdmi->setText(tr("Adjust the playback volume of digital audio data using the Rose volume control software.\nCaution 1. It cannot be used in Native DSD or DSD over PCM mode. It is applied after changing to DSD to PCM(upto DSD128) mode.\nCaution 2. For digital output. MQA Stream is supported only when the volume is MAX. If it is less than MAX. MQA Stream is not supported."));
-    dlgConfirmHdmi->setTextHeight(250);
+    dlgConfirmHdmi->setText(tr("Adjust the playback volume of digital audio data using the Rose volume control software.\n\nCaution 1. It cannot be used in Native DSD or DSD over PCM mode. It is applied after changing to DSD to PCM(upto DSD128) mode.\nCaution 2. For digital output. MQA Stream is supported only when the volume is MAX. If it is less than MAX. MQA Stream is not supported."));
     dlgConfirmHdmi->setAlignment(Qt::AlignLeft);
-    dlgConfirmHdmi->setGeometry((DLG_WIDTH + 80), (350 + 100), 350, 500);
+    dlgConfirmHdmi->setTextHeight(270);
+    dlgConfirmHdmi->setGeometry((this->geometry().left() + (DLG_WIDTH - 660) / 2), this->geometry().top() + (DLG_HEIGHT - dlgConfirmHdmi->sizeHint().height()) / 2, 0, 0);
     dlgConfirmHdmi->setAlertMode();
     dlgConfirmHdmi->setProperty("flagShown",false);
 
@@ -892,7 +902,7 @@ QWidget* dialogsetting_usbsetting::getUIControlOption_bit32(QString p_title){
     onOff_32->setCursor(Qt::PointingHandCursor);//print_debug();
 
     QPushButton *btn_question;
-    btn_question =  GSCommon::getUIBtnImg("question", ":images/setting/201/tip_icon.png");
+    btn_question =  GSCommon::getUIBtnImg("question", ":/images/setting/201/tip_icon.png");
     btn_question->setCursor(Qt::PointingHandCursor);
     btn_question->setFixedSize(QSize(30,30));
     //btn_question->addLayout(btn_question);
@@ -1216,7 +1226,7 @@ void dialogsetting_usbsetting::slot_modeOnOff_32(){
 
        }
 
-       QTimer::singleShot(500, this, SLOT(slot_clickedbit32question()));
+//       QTimer::singleShot(500, this, SLOT(slot_clickedbit32question()));
 
        QJsonDocument doc(HdmiDetailData);  QString strJson(doc.toJson(QJsonDocument::Compact));  qDebug() << "slot_modeOnOff()-slot_modeOnOff_32 =: " << strJson;
 
@@ -1255,6 +1265,7 @@ void dialogsetting_usbsetting::getHdmiInOutSettingOfsetting(){
 }
 void dialogsetting_usbsetting::slot_clickedUsbChangeSet(){
     print_debug();
+    this->loding_ani_show();
 
    NetworkHttp *network = new NetworkHttp;
    QJsonObject tmp_json = get_settingOfHdmiDetail();
@@ -1277,6 +1288,8 @@ void dialogsetting_usbsetting::setDialogHdmi_show(){
 
     print_debug();
    QJsonDocument doc(HdmiDetailData);  QString strJson(doc.toJson(QJsonDocument::Compact));  qDebug() <<"*setDialogHdmi_show()-HdmiDetailData :"<< strJson;//cheon09_io
+
+    comboBoxHdmiMQA->setCurrentIndex((HdmiDetailData["mqaType"].toInt()));
 
     comboBoxHdmiPCM_Max->setCurrentIndex( HdmiDetailData["maxSamplingRate"].toInt() );
     comboBoxHdmiPCM->setCurrentIndex( HdmiDetailData["samplingRate"].toInt() );
@@ -1426,6 +1439,8 @@ void dialogsetting_usbsetting::slot_responseHttp(const int &p_id, const QJsonObj
         }else if( deviceType == "RS350"){
 
         }
+
+        this->loding_ani_hide();
         break;
     }
     sender()->deleteLater();
@@ -1444,4 +1459,69 @@ void dialogsetting_usbsetting::setTextName(QString usbstr){
 
 void dialogsetting_usbsetting::setPropertyName(QString usbstr){
     radio_UsbName->setProperty(PROPERTY_NAME_READABLE, usbstr);
+}
+
+void dialogsetting_usbsetting::loding_ani_init(){
+
+    int left = 0;
+    int top = 0;
+
+    this->loding_ani_dialog = new QDialog();
+
+    QMovie *abs_ani_mov = new QMovie(":/images/Spinner-4.2s-200px.gif");
+    abs_ani_mov->setScaledSize(QSize(120, 120));
+    abs_ani_mov->setBackgroundColor("transparent");
+
+    QLabel *lb_Movie = new QLabel();
+    lb_Movie->setStyleSheet("background-color:transparent;");
+    lb_Movie->setMovie(abs_ani_mov);
+
+    QHBoxLayout *hl_msgBox = new QHBoxLayout();
+    hl_msgBox->setContentsMargins(0, 0, 0, 0);
+    hl_msgBox->setSpacing(0);
+    hl_msgBox->addWidget(lb_Movie);
+
+    this->loding_ani_dialog->setLayout(hl_msgBox);
+    this->loding_ani_dialog->setModal(true);
+    this->loding_ani_dialog->setWindowFlags(Qt::Dialog | Qt::FramelessWindowHint);
+    this->loding_ani_dialog->setAttribute(Qt::WA_TranslucentBackground);
+
+    left = global.left_mainwindow + ((global.width_mainwindow - 120) / 2);
+    top = global.top_mainwindow + ((global.height_mainwindow - 120) / 2);
+
+    this->loding_ani_dialog->move(left, top);
+
+    abs_ani_mov->start();
+    this->loding_ani_dialog->hide();
+}
+
+
+void dialogsetting_usbsetting::loding_ani_show(){
+
+    if(this->loding_ani_dialog->isHidden() != true){
+        return;
+    }
+
+    //if(!global.window_activate_flag) return;
+
+    if(global.powerDialogShowFlag) return;
+
+    int left = 0;
+    int top = 0;
+
+    left = global.left_mainwindow + ((global.width_mainwindow - 120) / 2);
+    top = global.top_mainwindow + ((global.height_mainwindow - 120) / 2);
+
+    this->loding_ani_dialog->move(left, top);
+
+    this->loding_ani_dialog->show();
+    this->loding_ani_dialog->raise();
+}
+
+
+void dialogsetting_usbsetting::loding_ani_hide(){
+
+    if(this->loding_ani_dialog->isHidden() != true){
+        this->loding_ani_dialog->hide();
+    }
 }

@@ -68,6 +68,9 @@ namespace roseHome {
 
             this->setUIControl_basic();
         }
+        else{
+            print_debug();ContentLoadingwaitingMsgHide();   //j230328
+        }
     }
 
     /**

@@ -75,7 +75,7 @@ namespace qobuz {
             this->flag_album[1] = false;
             this->flag_track[1] = false;
 
-            ContentLoadingwaitingMsgShow(tr("Content is being loaded. Please wait."));
+            print_debug();ContentLoadingwaitingMsgShow(tr("Content is being loaded. Please wait."));
 
             ProcCommon::DataOrderOption sortOpt = ProcCommon::DataOrderOption::DATE;      // 기본값
             ProcCommon::DataOrderDirection orderDirection = ProcCommon::DataOrderDirection::DESC;      // 기본값
@@ -88,6 +88,9 @@ namespace qobuz {
             qobuz::ProcCommon *proc_t = new qobuz::ProcCommon(this);
             connect(proc_t, &ProcCommon::completeReq_list_myPurchasesTracks, this, &QobuzMyPurchases::slot_applyResult_myFavoriteTracks);
             proc_t->request_qobuz_getList_myPurchasesTracks(sortOpt, orderDirection, 5, 0);
+        }
+        else{
+            print_debug();ContentLoadingwaitingMsgHide();   //j230328
         }
     }
 
@@ -188,7 +191,7 @@ namespace qobuz {
                 this->vBox_album->addSpacing(10);
 
                 NoData_Widget *noData_widget = new NoData_Widget(NoData_Widget::NoData_Message::Album_NoData);
-                noData_widget->setFixedHeight(275);
+                noData_widget->setFixedHeight(285);
                 this->vBox_album->addWidget(noData_widget, 0, Qt::AlignCenter);
 
                 this->box_main_contents->addLayout(this->vBox_album);
@@ -298,7 +301,7 @@ namespace qobuz {
         tmp_scrollArea->setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
         tmp_scrollArea->setStyleSheet("background-color:transparent; border:0px;");
         tmp_scrollArea->setContentsMargins(0,0,0,0);
-        tmp_scrollArea->setFixedHeight(275);
+        tmp_scrollArea->setFixedHeight(285);
 
         QScroller::grabGesture(tmp_scrollArea, QScroller::LeftMouseButtonGesture);
         //----------------------------------------------------------------------------------------------------  BODY : END

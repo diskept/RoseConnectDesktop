@@ -37,8 +37,13 @@ namespace rosetube {
     protected:
         void proc_wheelEvent_to_getMoreData() override;
 
+        void resizeEvent(QResizeEvent *event) override;
+
     private slots:
         void slot_hide_msg();
+
+        void slot_change_cache_state();
+        void slot_change_cache_list();
 
     private:
         void setUIControl_RoseTube();
@@ -53,6 +58,8 @@ namespace rosetube {
         QJsonArray reorderJsonArray(const QJsonArray &p_jsonArr, const int startIndex);
 
     private:
+        Linker *linker;
+
         // 관리 필요한 Layout UI
         QVBoxLayout *box_rt_contents;
         QWidget *widget_rt_contents;
@@ -66,6 +73,7 @@ namespace rosetube {
         rosetube::ItemTrack_rosetube *viewAll_rosetube_track[999999];
 
         QJsonArray jsonArr_rosetubeTrack;
+        QJsonArray jsonArr_cacheLock;
         QJsonObject jsonObj_CacheLock;
 
         int cache_lock_index = 0;
@@ -73,6 +81,11 @@ namespace rosetube {
         bool flag_cache_lock_send = false;
 
         bool flag_cache_delete_send = false;
+
+        int rosetube_widget_width = 0;
+        int rosetube_widget_margin = 0;
+
+        int rosetube_widget_cnt = 0;
 
         int next_offset = 0;
         int rosetube_total_cnt = 0;

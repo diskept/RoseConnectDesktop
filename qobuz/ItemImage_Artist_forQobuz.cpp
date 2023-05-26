@@ -18,6 +18,7 @@ namespace qobuz {
         this->setUseBtn_favorite(false);
         this->setUseBtn_play(false);
         this->setUseBtn_more(true);
+        this->setUseArtist(true);
 
         // hover 만 사용
         this->setUseHover(true);

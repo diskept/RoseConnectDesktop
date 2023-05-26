@@ -38,6 +38,7 @@ namespace bugs {
     protected slots:
 
         void slot_btnClicked_playAll() override;
+        void slot_btnClicked_playShuffle() override;
 
         // about 서브 타이틀의 버튼
         void slot_applyResult_tracks(const QList<bugs::TrackItemData>&, const QJsonArray&, const bool) override;
@@ -46,6 +47,7 @@ namespace bugs {
         void slot_applyResult_pd_albums(const QList<bugs::PD_AlbumItemData>&, const bool) override;
 
         void slot_clickedItemTrack_inList(const int, const tidal::AbstractTidalTrackDelegate::ClickMode) override;
+        void slot_clickedItemTrack_inList2(const int idx, const PlaylistTrackDetailInfo_RHV::ClickMode clickMode);
         void slot_thumbnailDownloaded_fotListWidget_delegate() override;
 
         void slot_clickedItemAlbum(const tidal::AbstractItem::ClickMode) override;
@@ -60,6 +62,12 @@ namespace bugs {
         void slot_chooseFilterOption(QVariant selected_filterCode, QString selected_filterName);
         void slot_segmentTag_clicked(int clickedIndex);
 
+        void slot_applyResult_checkRating_track(const QJsonObject&);
+        void slot_applyResult_getRating_track(const QJsonArray&);
+        void slot_applyResult_addRating_track(const QJsonObject&);
+
+        void slot_bugs_completeReq_listAll_myFavoritesIds(const QJsonObject&);
+
 
     private:
         // function
@@ -72,6 +80,7 @@ namespace bugs {
         void setUIControl_body_Artist();
         void setUIControl_body_PD_Album();
 
+        QWidget *widget_playBtn;
 
         QStackedWidget *stackedWidget_content;
 
@@ -90,6 +99,7 @@ namespace bugs {
         bool flagReqMore_track = false;             ///< 현재 get more data 처리중 상태인지의 여부 (중복 요청 방지용) : track
         bool flag_lastPage_track = false;
         void request_more_trackData();              ///< function - get more data : track
+        void request_more_trackDraw();
 
         bool flagReqMore_album = false;             ///< 현재 get more data 처리중 상태인지의 여부 (중복 요청 방지용) : album
         bool flag_lastPage_album = false;
@@ -105,9 +115,9 @@ namespace bugs {
 
 
         // 좋아한 음악 > Track
-        BugsTrackDelegate *delegate_track;
-        QListWidget *listWidget_track;
+        PlaylistTrackDetailInfo_RHV *track_listAll[999999];
         QList<bugs::TrackItemData> *list_track;
+        QVBoxLayout *Vbox_track;
         QJsonArray jsonArr_tracks_toPlay;
         VerticalScrollArea *scrollArea_track;
         QWidget *widget_inScroll_track;
@@ -131,6 +141,19 @@ namespace bugs {
         VerticalScrollArea *scrollArea_pd_album;
         QWidget *widget_inScroll_pd_album;
 
+        bool flag_draw = false;
+        int next_offset = 0;
+        int track_totalCount = 0;
+        int track_drawCount = 0;
+        int track_favoriteOffset = 0;
+
+        bool flag_check_track = false;
+        bool flag_track_fav = false;
+        bool flag_send_track = false;
+
+        int track_id_fav = 0;
+        int track_idx_fav = 0;
+        int track_star_fav = 0;
     };
 
 };

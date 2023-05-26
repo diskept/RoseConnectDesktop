@@ -9,13 +9,18 @@
 
 #include "roseHome/rosehomeAlbumDetail.h"
 #include "roseHome/rosehomeAlbumListAll.h"
+#include "roseHome/rosehomeArtistDetail.h"
+#include "roseHome/rosehomeArtistListAll.h"
 #include "roseHome/rosehomePlaylistDetail.h"
 #include "roseHome/rosehomePlaylistDetail_Rose.h"
+#include "roseHome/rosehomeHistoryDetail.h"
 #include "roseHome/rosehomePlaylistListAll.h"
 #include "roseHome/rosehomeTrackListAll.h"
 #include "roseHome/rosehomeTrackListAll_Share.h"
 #include "roseHome/rosehomeRosetubeListAll.h"
+#include "roseHome/rosehomeHistoryListAll.h"
 #include "roseHome/rosehomeAddPlaylist.h"
+#include "roseHome/rosehomeRecentlyListDelete.h"
 
 #include "home/abstractmaincontent.h"
 #include "widget/myqwidget.h"//c220730
@@ -44,12 +49,13 @@ namespace roseHome {
 
         void slot_responseHttp(const int &p_id, const QJsonObject &p_jsonObject) override;//cheon211015
 
+    protected:
+        void movePageOnly(QString p_pageCode, const QJsonObject &p_data) override;
+
     private slots:
         void slot_dragEnterEvent_restore();//c220826_1
         void slot_clickedMoveSubPage(const QJsonObject &p_jsonData);
 
-    protected:
-        void movePageOnly(QString p_pageCode, const QJsonObject &p_data) override;
 
     private:
         void requestGetRoseHome_forUserpickInfo();//cheon211015
@@ -78,14 +84,23 @@ namespace roseHome {
 
         // 공통
         RoseHomeAlbumDetail *sub_albumDetail = nullptr;                     ///< 로즈홈 앨범 상세 화면 (ListWidget 기반)
-        RoseHomeAlbumListAll *sub_albumAll = nullptr;                       ///< 로즈홈 앨범 목록 전채 (flowLayout 기반)
+        RoseHomeAlbumListAll *sub_albumAll = nullptr;                       ///< 로즈홈 앨범 목록 전체 (flowLayout 기반)
+        RoseHomeArtistDetail *sub_artistDetail = nullptr;                   ///< 로즈홈 아티스트 상세 화면 (ListWidget 기반)
+        RoseHomeArtistListAll *sub_artistAll = nullptr;                     ///< 로즈홈 아티스트 목록 전체 (flowLayout 기반)
         RoseHomePlaylistDetail *sub_playlistDetail = nullptr;               ///< 로즈홈 플레이리스트 상세 화면 (ListWidget 기반)
         RoseHomePlaylistDetail_Rose *sub_playlistDetail_rose = nullptr;     ///< 로즈홈 로즈 플레이리스트 상세 화면 (ListWidget 기반)
-        RoseHomePlaylistListAll *sub_playlistAll = nullptr;                 ///< 로즈홈 플레이리스트 목록 전채 (flowLayout 기반)
+        RoseHomeHisotryDetail *sub_historyDetail = nullptr;                 ///< 로즈홈 히스토리 상세 화면 (ListWidget 기반)
+        RoseHomePlaylistListAll *sub_playlistAll = nullptr;                 ///< 로즈홈 플레이리스트 목록 전체 (flowLayout 기반)
         RoseHomeTrackListAll *sub_tracklistAll = nullptr;                   ///< 로즈홈 트렉 목록 전채 (ListWidget 기반)
         RoseHomeTrackListAll_Share *sub_tracklistAll_share = nullptr;       ///< 로즈홈 공유 트렉 목록 전채
         RoseHomeRosetubeListAll *sub_rosetubeAll = nullptr;                 ///< 로즈홈 로즈튜브 목록 전채 (flowLayout 기반)
+        RoseHomePlaylistHistoryAll *sub_playlistHistoryAll = nullptr;       ///< 로즈홈 히스토리 플레이리스트 목록 전체
+        RoseHomeAlbumHistoryAll *sub_albumHistoryAll = nullptr;             ///< 로즈홈 히스토리 앨범 목록 전체
+        RoseHomeTrackHistoryAll *sub_trackHistroyAll = nullptr;             ///< 로즈홈 히스토리 트렉 목록 전체
+        RoseHomeArtistHistoryAll *sub_artistHistroyAll = nullptr;           ///< 로즈홈 히스토리 아티스트 목록 전체
+        RoseHomeHisotryListAll *sub_historyAll = nullptr;                   ///< 로즈홈 히스토리 목록 전체 (flowLayout 기반)
         RoseHomeAddPlaylist *sub_roseAddPlaylist = nullptr;                 ///< 로즈홈 플레이리스트 추가/삭제/변경 화면
+        RoseHomeRecentlyListDelete *sub_roseRecentlyDelete = nullptr;       ///< 로즈홈 Recently 목록 삭제
 
         // 메뉴 관련 페이지  ---------------------- END
     };

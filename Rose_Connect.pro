@@ -1,9 +1,10 @@
+
 QT       += core gui network sql multimedia
 
 greaterThan(QT_MAJOR_VERSION, 4): QT += widgets webview webengine webenginewidgets
 
-CONFIG += c++17
-
+#CONFIG += c++17
+CONFIG += c++17 resources_big
 
 
 #QT_TOOLS += " qtwebkit "
@@ -23,6 +24,7 @@ SOURCES += \
     apple/AbstractAppleSubWidget.cpp \
     apple/AppleAlbumDetail.cpp \
     apple/AppleAlbumListAll_Rose.cpp \
+    apple/AppleArtistDetail.cpp \
     apple/AppleHome.cpp \
     apple/AppleMain.cpp \
     apple/AppleMyPlaylistListAll_Rose.cpp \
@@ -34,20 +36,27 @@ SOURCES += \
     apple/AppleUserPlaylistListAll_Rose.cpp \
     apple/ConvertData_forApple.cpp \
     apple/ItemAlbum_forApple.cpp \
+    apple/ItemArtist_forApple.cpp \
+    apple/ItemImage_Album_forApple.cpp \
+    apple/ItemImage_Artist_forApple.cpp \
     apple/ProcCommon_forApple.cpp \
     apple/ProcRosePlay_withApple.cpp \
     bugs/AbstractBugsSubWidget.cpp \
+    bugs/BugsAddPlaylist.cpp \
     bugs/BugsAlbumDetail.cpp \
     bugs/BugsAlbumListAll_ofArtist.cpp \
     bugs/BugsArtistDetail.cpp \
     bugs/BugsChooseFilterOpt.cpp \
     bugs/BugsExplore.cpp \
+    bugs/BugsHistoryDetail.cpp \
+    bugs/BugsHistoryListAll.cpp \
     bugs/BugsHome.cpp \
     bugs/BugsMain.cpp \
     bugs/BugsMusicChart.cpp \
     bugs/BugsMusicRecently.cpp \
     bugs/BugsMyAlbumAll.cpp \
     bugs/BugsMyAlbumDetail.cpp \
+    bugs/BugsMyArtistAll.cpp \
     bugs/BugsMyCollection.cpp \
     bugs/BugsMyLikeMusic.cpp \
     bugs/BugsMyPlaylistAll.cpp \
@@ -56,6 +65,7 @@ SOURCES += \
     bugs/BugsMyVideoAll.cpp \
     bugs/BugsPDAlbumDetail.cpp \
     bugs/BugsPDAlbumListAll.cpp \
+    bugs/BugsRecentlyListDelete.cpp \
     bugs/BugsSearchAlbumAll.cpp \
     bugs/BugsSearchArtistAll.cpp \
     bugs/BugsSearchMain.cpp \
@@ -143,6 +153,7 @@ SOURCES += \
     delegate/QobuzEditTrackDelegate.cpp \
     delegate/QobuzTrackDelegate.cpp \
     delegate/cdfiledelegate.cpp \
+    delegate/cloudListDelegate.cpp \
     delegate/filedelegate.cpp \
     delegate/musiccollectiontrackdelegate.cpp \
     delegate/musicdelegate.cpp \
@@ -215,24 +226,31 @@ SOURCES += \
     main.cpp \
     mainwindow.cpp \
     model/networkfilesystemmodel.cpp \
+    music/MusicAddPlaylist.cpp \
+    music/MusicAlbum.cpp \
     music/MusicAlbumAll.cpp \
     music/MusicAlbumDetail.cpp \
     music/MusicAlbumDetail_rose.cpp \
     music/MusicArtistAll.cpp \
     music/MusicArtistDetail.cpp \
+    music/MusicCategory.cpp \
+    music/MusicHistoryDetail.cpp \
+    music/MusicHistoryListAll.cpp \
     music/MusicMyCollection.cpp \
     music/MusicMyFavorite.cpp \
     music/MusicPlaylistAll.cpp \
     music/MusicPlaylistDetail_rose.cpp \
+    music/MusicRecentlyListDelete.cpp \
+    music/MusicRecommendation.cpp \
     music/MusicSearchMain.cpp \
     music/MusicTrackListAll_rose.cpp \
+    music/Musiclist_group.cpp \
+    music/Musiclist_one.cpp \
     music/albumdetail.cpp \
     music/artistinfo.cpp \
     music/composerinfo.cpp \
     music/genreinfo.cpp \
     music/metainfo.cpp \
-    music/musicalbum.cpp \
-    music/musiccategory.cpp \
     music/musiccollection.cpp \
     music/musice_playlist.cpp \
     music/musicfolder.cpp \
@@ -247,8 +265,6 @@ SOURCES += \
     music/musiclist_artistTrack.cpp \
     music/musiclist_collectiontrack.cpp \
     music/musiclist_genreAlbum.cpp \
-    music/musiclist_group.cpp \
-    music/musiclist_one.cpp \
     music/musicmain.cpp \
     music/musicsearch.cpp \
     music/proc_addtackinplaylist.cpp \
@@ -266,8 +282,11 @@ SOURCES += \
     podcast/podcastmain.cpp \
     qobuz/ProcRosePlay_withQobuz.cpp \
     qobuz/QobuzAddPlaylist.cpp \
+    qobuz/QobuzHistoryDetail.cpp \
+    qobuz/QobuzHistoryListAll.cpp \
     qobuz/QobuzMyFavorites.cpp \
     qobuz/QobuzMyPurchases.cpp \
+    qobuz/QobuzRecentlyListDelete.cpp \
     qobuz/QobuzTrackListAll_Share.cpp \
     radio/dialogeditradio.cpp \
     radio/radiocountry.cpp \
@@ -280,6 +299,7 @@ SOURCES += \
     roseHome/ConvertData_rosehome.cpp \
     roseHome/ItemAlbum_rosehome.cpp \
     roseHome/ItemArtist_rosehome.cpp \
+    roseHome/ItemHistory_rosehome.cpp \
     roseHome/ItemImage_Album_rosehome.cpp \
     roseHome/ItemImage_Artist_rosehome.cpp \
     roseHome/ItemImage_Playlist_rosehome.cpp \
@@ -293,13 +313,19 @@ SOURCES += \
     roseHome/rosehomeAlbumDetail.cpp \
     roseHome/rosehomeAlbumDetail_Rose.cpp \
     roseHome/rosehomeAlbumListAll.cpp \
+    roseHome/rosehomeArtistDetail.cpp \
+    roseHome/rosehomeArtistListAll.cpp \
+    roseHome/rosehomeEditPlaylist.cpp \
     roseHome/rosehomeFavorite.cpp \
     roseHome/rosehomeFriend.cpp \
+    roseHome/rosehomeHistoryDetail.cpp \
+    roseHome/rosehomeHistoryListAll.cpp \
     roseHome/rosehomeHome.cpp \
     roseHome/rosehomeMain.cpp \
     roseHome/rosehomePlaylistDetail.cpp \
     roseHome/rosehomePlaylistDetail_Rose.cpp \
     roseHome/rosehomePlaylistListAll.cpp \
+    roseHome/rosehomeRecentlyListDelete.cpp \
     roseHome/rosehomeRosetubeListAll.cpp \
     roseHome/rosehomeTrackListAll.cpp \
     roseHome/rosehomeTrackListAll_Share.cpp \
@@ -329,17 +355,21 @@ SOURCES += \
     rosetube/ItemTrack_rosetube.cpp \
     rosetube/proc_addrosetubeinplaylist.cpp \
     rosetube/rosetubeTrackListAll_Share.cpp \
+    rosetube/rosetube_ADDPlaylist.cpp \
     rosetube/rosetube_CacheViewAll.cpp \
     rosetube/rosetube_Channel.cpp \
     rosetube/rosetube_Collection.cpp \
     rosetube/rosetube_Explore.cpp \
     rosetube/rosetube_ExploreGenre.cpp \
+    rosetube/rosetube_HistoryDetail.cpp \
+    rosetube/rosetube_HistoryListAll.cpp \
     rosetube/rosetube_Home.cpp \
     rosetube/rosetube_ListViewAll.cpp \
     rosetube/rosetube_MyFavorite.cpp \
     rosetube/rosetube_MyPlaylistAll.cpp \
     rosetube/rosetube_MyPlaylistDetail.cpp \
     rosetube/rosetube_Playlist.cpp \
+    rosetube/rosetube_RecentlyListDelete.cpp \
     rosetube/rosetube_Search.cpp \
     rosetube/rosetube_Subscription.cpp \
     rosetube/rosetube_category.cpp \
@@ -348,6 +378,11 @@ SOURCES += \
     rosetube/rosetubemain.cpp \
     setting/friendprofileitem.cpp \
     setting/leftmenubar.cpp \
+    setting/settingInputConfig.cpp \
+    setting/settingOutputConfig.cpp \
+    setting/settingOutputHDMI.cpp \
+    setting/settingOutputUSB.cpp \
+    setting/settingOutputUSBDAC.cpp \
     setting/settingappinfo.cpp \
     setting/settingappmenu.cpp \
     setting/settingcountry.cpp \
@@ -359,6 +394,7 @@ SOURCES += \
     setting/settinglanguage.cpp \
     setting/settinglib.cpp \
     setting/settingmain.cpp \
+    setting/settingmenu.cpp \
     setting/settingmypage.cpp \
     setting/settingrosemenu.cpp \
     setting/settingrosetube.cpp \
@@ -387,6 +423,8 @@ SOURCES += \
     tidal/TidalAlbumListAll.cpp \
     tidal/TidalArtistDetail.cpp \
     tidal/TidalArtistListAll.cpp \
+    tidal/TidalHistoryDetail.cpp \
+    tidal/TidalHistoryListAll.cpp \
     tidal/TidalMixesDetail.cpp \
     tidal/TidalMyAlbumAll.cpp \
     tidal/TidalMyArtistAll.cpp \
@@ -399,6 +437,7 @@ SOURCES += \
     tidal/TidalNewMain.cpp \
     tidal/TidalPlaylistAll.cpp \
     tidal/TidalPlaylistDetail.cpp \
+    tidal/TidalRecentlyListDelete.cpp \
     tidal/TidalRisingMain.cpp \
     tidal/TidalSearchAlbumAll.cpp \
     tidal/TidalSearchArtistAll.cpp \
@@ -560,6 +599,7 @@ HEADERS += \
     apple/AbstractAppleSubWidget.h \
     apple/AppleAlbumDetail.h \
     apple/AppleAlbumListAll_Rose.h \
+    apple/AppleArtistDetail.h \
     apple/AppleHome.h \
     apple/AppleMain.h \
     apple/AppleMyPlaylistListAll_Rose.h \
@@ -572,20 +612,27 @@ HEADERS += \
     apple/Apple_struct.h \
     apple/ConvertData_forApple.h \
     apple/ItemAlbum_forApple.h \
+    apple/ItemArtist_forApple.h \
+    apple/ItemImage_Album_forApple.h \
+    apple/ItemImage_Artist_forApple.h \
     apple/ProcCommon_forApple.h \
     apple/ProcRosePlay_withApple.h \
     bugs/AbstractBugsSubWidget.h \
+    bugs/BugsAddPlaylist.h \
     bugs/BugsAlbumDetail.h \
     bugs/BugsAlbumListAll_ofArtist.h \
     bugs/BugsArtistDetail.h \
     bugs/BugsChooseFilterOpt.h \
     bugs/BugsExplore.h \
+    bugs/BugsHistoryDetail.h \
+    bugs/BugsHistoryListAll.h \
     bugs/BugsHome.h \
     bugs/BugsMain.h \
     bugs/BugsMusicChart.h \
     bugs/BugsMusicRecently.h \
     bugs/BugsMyAlbumAll.h \
     bugs/BugsMyAlbumDetail.h \
+    bugs/BugsMyArtistAll.h \
     bugs/BugsMyCollection.h \
     bugs/BugsMyLikeMusic.h \
     bugs/BugsMyPlaylistAll.h \
@@ -594,6 +641,7 @@ HEADERS += \
     bugs/BugsMyVideoAll.h \
     bugs/BugsPDAlbumDetail.h \
     bugs/BugsPDAlbumListAll.h \
+    bugs/BugsRecentlyListDelete.h \
     bugs/BugsSearchAlbumAll.h \
     bugs/BugsSearchArtistAll.h \
     bugs/BugsSearchMain.h \
@@ -687,6 +735,7 @@ HEADERS += \
     delegate/QobuzEditTrackDelegate.h \
     delegate/QobuzTrackDelegate.h \
     delegate/cdfiledelegate.h \
+    delegate/cloudListDelegate.h \
     delegate/filedelegate.h \
     delegate/musiccollectiontrackdelegate.h \
     delegate/musicdelegate.h \
@@ -759,24 +808,31 @@ HEADERS += \
     login/dialogsetting_usbsetting.h \
     mainwindow.h \
     model/networkfilesystemmodel.h \
+    music/MusicAddPlaylist.h \
+    music/MusicAlbum.h \
     music/MusicAlbumAll.h \
     music/MusicAlbumDetail.h \
     music/MusicAlbumDetail_rose.h \
     music/MusicArtistAll.h \
     music/MusicArtistDetail.h \
+    music/MusicCategory.h \
+    music/MusicHistoryDetail.h \
+    music/MusicHistoryListAll.h \
     music/MusicMyCollection.h \
     music/MusicMyFavorite.h \
     music/MusicPlaylistAll.h \
     music/MusicPlaylistDetail_rose.h \
+    music/MusicRecentlyListDelete.h \
+    music/MusicRecommendation.h \
     music/MusicSearchMain.h \
     music/MusicTrackListAll_rose.h \
+    music/Musiclist_group.h \
+    music/Musiclist_one.h \
     music/albumdetail.h \
     music/artistinfo.h \
     music/composerinfo.h \
     music/genreinfo.h \
     music/metainfo.h \
-    music/musicalbum.h \
-    music/musiccategory.h \
     music/musiccollection.h \
     music/musice_playlist.h \
     music/musicfolder.h \
@@ -791,8 +847,6 @@ HEADERS += \
     music/musiclist_artistTrack.h \
     music/musiclist_collectiontrack.h \
     music/musiclist_genreAlbum.h \
-    music/musiclist_group.h \
-    music/musiclist_one.h \
     music/musicmain.h \
     music/musicsearch.h \
     music/proc_addtackinplaylist.h \
@@ -810,8 +864,11 @@ HEADERS += \
     podcast/podcastmain.h \
     qobuz/ProcRosePlay_withQobuz.h \
     qobuz/QobuzAddPlaylist.h \
+    qobuz/QobuzHistoryDetail.h \
+    qobuz/QobuzHistoryListAll.h \
     qobuz/QobuzMyFavorites.h \
     qobuz/QobuzMyPurchases.h \
+    qobuz/QobuzRecentlyListDelete.h \
     qobuz/QobuzTrackListAll_Share.h \
     radio/dialogeditradio.h \
     radio/radiocountry.h \
@@ -824,6 +881,7 @@ HEADERS += \
     roseHome/ConvertData_rosehome.h \
     roseHome/ItemAlbum_rosehome.h \
     roseHome/ItemArtist_rosehome.h \
+    roseHome/ItemHistory_rosehome.h \
     roseHome/ItemImage_Album_rosehome.h \
     roseHome/ItemImage_Artist_rosehome.h \
     roseHome/ItemImage_Playlist_rosehome.h \
@@ -837,13 +895,19 @@ HEADERS += \
     roseHome/rosehomeAlbumDetail.h \
     roseHome/rosehomeAlbumDetail_Rose.h \
     roseHome/rosehomeAlbumListAll.h \
+    roseHome/rosehomeArtistDetail.h \
+    roseHome/rosehomeArtistListAll.h \
+    roseHome/rosehomeEditPlaylist.h \
     roseHome/rosehomeFavorite.h \
     roseHome/rosehomeFriend.h \
+    roseHome/rosehomeHistoryDetail.h \
+    roseHome/rosehomeHistoryListAll.h \
     roseHome/rosehomeHome.h \
     roseHome/rosehomeMain.h \
     roseHome/rosehomePlaylistDetail.h \
     roseHome/rosehomePlaylistDetail_Rose.h \
     roseHome/rosehomePlaylistListAll.h \
+    roseHome/rosehomeRecentlyListDelete.h \
     roseHome/rosehomeRosetubeListAll.h \
     roseHome/rosehomeTrackListAll.h \
     roseHome/rosehomeTrackListAll_Share.h \
@@ -876,17 +940,21 @@ HEADERS += \
     rosetube/ItemTrack_rosetube.h \
     rosetube/proc_addrosetubeinplaylist.h \
     rosetube/rosetubeTrackListAll_Share.h \
+    rosetube/rosetube_ADDPlaylist.h \
     rosetube/rosetube_CacheViewAll.h \
     rosetube/rosetube_Channel.h \
     rosetube/rosetube_Collection.h \
     rosetube/rosetube_Explore.h \
     rosetube/rosetube_ExploreGenre.h \
+    rosetube/rosetube_HistoryDetail.h \
+    rosetube/rosetube_HistoryListAll.h \
     rosetube/rosetube_Home.h \
     rosetube/rosetube_ListViewAll.h \
     rosetube/rosetube_MyFavorite.h \
     rosetube/rosetube_MyPlaylistAll.h \
     rosetube/rosetube_MyPlaylistDetail.h \
     rosetube/rosetube_Playlist.h \
+    rosetube/rosetube_RecentlyListDelete.h \
     rosetube/rosetube_Search.h \
     rosetube/rosetube_Subscription.h \
     rosetube/rosetube_category.h \
@@ -895,6 +963,11 @@ HEADERS += \
     rosetube/rosetubemain.h \
     setting/friendprofileitem.h \
     setting/leftmenubar.h \
+    setting/settingInputConfig.h \
+    setting/settingOutputConfig.h \
+    setting/settingOutputHDMI.h \
+    setting/settingOutputUSB.h \
+    setting/settingOutputUSBDAC.h \
     setting/setting_struct.h \
     setting/settingappinfo.h \
     setting/settingappmenu.h \
@@ -907,6 +980,7 @@ HEADERS += \
     setting/settinglanguage.h \
     setting/settinglib.h \
     setting/settingmain.h \
+    setting/settingmenu.h \
     setting/settingmypage.h \
     setting/settingrosemenu.h \
     setting/settingrosetube.h \
@@ -935,6 +1009,8 @@ HEADERS += \
     tidal/TidalAlbumListAll.h \
     tidal/TidalArtistDetail.h \
     tidal/TidalArtistListAll.h \
+    tidal/TidalHistoryDetail.h \
+    tidal/TidalHistoryListAll.h \
     tidal/TidalMixesDetail.h \
     tidal/TidalMyAlbumAll.h \
     tidal/TidalMyArtistAll.h \
@@ -947,6 +1023,7 @@ HEADERS += \
     tidal/TidalNewMain.h \
     tidal/TidalPlaylistAll.h \
     tidal/TidalPlaylistDetail.h \
+    tidal/TidalRecentlyListDelete.h \
     tidal/TidalRisingMain.h \
     tidal/TidalSearchAlbumAll.h \
     tidal/TidalSearchArtistAll.h \
@@ -1120,6 +1197,7 @@ else: unix:!android: target.path = /opt/$${TARGET}/bin
 TRANSLATIONS += lang/myapp_ko.ts \
 
 RESOURCES += \
+    font.qrc \
     images.qrc \
    # qsimpleupdater.qrc \
 

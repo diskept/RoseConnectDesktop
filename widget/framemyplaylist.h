@@ -43,7 +43,7 @@ private:
     const int IMG_WIDTH_S = 186;
     const int MARGIN = 0;
 
-    const int LABEL_HEIGHT = 18;
+    const int LABEL_HEIGHT = 22;
     const int SPACE_LABELS = 5;
 
     Data_M_PlayList *dataPlayList;

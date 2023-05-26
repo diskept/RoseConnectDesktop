@@ -58,6 +58,10 @@ private slots:
     void slot_setVolumnBalance(int p_value);
 
 private:
+    QDialog *loding_ani_dialog = nullptr;
+    void loding_ani_init();
+    void loding_ani_show();
+    void loding_ani_hide();
 
     QComboBox *comboBoxHdmiDSD;
     QComboBox *comboBoxOutputPreoutLevel;

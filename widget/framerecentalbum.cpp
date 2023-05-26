@@ -242,8 +242,8 @@ QJsonArray FrameRecentAlbum::getDataForPlayMusic(){
     QSqlError err = sqlite->addConnectionRose();
     if(err.type() == QSqlError::NoError){
         QString strQuery = "";
-        strQuery = "SELECT A.album, A.album_key, A.artist_key, A.artist_id, A.album_id, A._id AS id, A._data AS data, A.title, A.artist, A.duration, ART._data AS album_art ";
-        strQuery += " FROM audio AS A LEFT JOIN album_art AS ART ON A.album_id=ART.album_id WHERE A.album_id=%1 ORDER BY A.track ";
+        strQuery = "SELECT A.album, A.album_key, A.artist_key, A.artist_id, A.album_id, A._id AS id, A._display_name AS orderName, A._data AS data, A.bookmark, A.track, A.title, A.artist, A.duration, ART._data AS album_art ";
+        strQuery += " FROM audio AS A LEFT JOIN album_art AS ART ON A.album_id=ART.album_id WHERE A.album_id=%1 ORDER BY A.bookmark ASC, A.track ASC, orderName ASC ";
 
         QVariantList dataDB;
         sqlite->exec(strQuery.arg(data->getAlbum_id()), dataDB);
@@ -499,18 +499,35 @@ void FrameRecentAlbum::paintEvent(QPaintEvent *event){
                 tmp_wordwrap->setStyleSheet("font-size:16px; color:#FFFFFF;");
                 tmp_wordwrap->setWordWrap(true);
                 tmp_wordwrap->setText(GSCommon::getTextCutFromLabelWidth(data->getAlbum(), (all_width * 2)-30, this->lb_title->font()));
+                if(tmp_wordwrap->text().contains("…")){
+                    tmp_wordwrap->setToolTip(data->getAlbum());
+                    tmp_wordwrap->setToolTipDuration(2000);
+                }
 
                 if(tmp_wordwrap->sizeHint().height() > this->LABEL_HEIGHT * 2){
                     this->lb_title->setText(GSCommon::getTextCutFromLabelWidth(data->getAlbum(), (all_width * 2)-80, this->lb_title->font()));
+                    if(this->lb_title->text().contains("…")){
+                        this->lb_title->setToolTip(data->getAlbum());//c230321
+                        this->lb_title->setToolTipDuration(2000);//c230321
+                    }
+
                 }
                 else{
                     this->lb_title->setText(GSCommon::getTextCutFromLabelWidth(data->getAlbum(), (all_width * 2)-30, this->lb_title->font()));
+                    if(this->lb_title->text().contains("…")){
+                        this->lb_title->setToolTip(data->getAlbum());//c230321
+                        this->lb_title->setToolTipDuration(2000);//c230321
+                    }
                 }
             }
             else{
                 this->lb_title->setGeometry(0, (this->SPACE_LABELS * 2), all_width, this->LABEL_HEIGHT);
                 this->lb_artist->setGeometry(0, (this->LABEL_HEIGHT * 2) + (this->SPACE_LABELS * 3), all_width, this->LABEL_HEIGHT);
                 this->lb_title->setText(GSCommon::getTextCutFromLabelWidth(data->getAlbum(), all_width, lb_title->font()));//cheon-210708-album
+                if(this->lb_title->text().contains("…")){
+                    this->lb_title->setToolTip(data->getAlbum());//c230321
+                    this->lb_title->setToolTipDuration(2000);//c230321
+                }
             }
         }
         else if(tmp_wordwrap->sizeHint().width() == (all_width)){
@@ -522,9 +539,17 @@ void FrameRecentAlbum::paintEvent(QPaintEvent *event){
             this->lb_title->setGeometry(0, (this->SPACE_LABELS * 2), all_width, this->LABEL_HEIGHT);
             this->lb_artist->setGeometry(0, this->LABEL_HEIGHT + (this->SPACE_LABELS * 3), all_width, this->LABEL_HEIGHT);
             this->lb_title->setText(GSCommon::getTextCutFromLabelWidth(data->getAlbum(), all_width, lb_title->font()));//cheon-210708-album
+            if(this->lb_title->text().contains("…")){
+                this->lb_title->setToolTip(data->getAlbum());//c230321
+                this->lb_title->setToolTipDuration(2000);//c230321
+            }
         }
 
         this->lb_artist->setText(GSCommon::getTextCutFromLabelWidth(data->getArtist(), all_width, lb_artist->font()));
+        if(this->lb_artist->text().contains("…")){
+            this->lb_artist->setToolTip(data->getArtist());//c230321
+            this->lb_artist->setToolTipDuration(2000);//c230321
+        }
     }
 }
 

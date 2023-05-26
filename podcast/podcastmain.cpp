@@ -11,6 +11,12 @@ namespace podcast {
 
     PodCastMain::PodCastMain(QWidget *parent) : AbstractMainContentForPodcast(parent)
     {
+        this->linker = Linker::getInstance();
+        connect(this->linker, &Linker::signal_clicked_movePage, this, &PodCastMain::goToMoveNewOrderPage);
+        connect(this->linker, SIGNAL(signal_dragEnterEvent_hide_show(bool)), SLOT(slot_dragEnterEvent_hide_show(bool)));//c220730
+        connect(this->linker, SIGNAL(signal_dropEvent_hide_show(bool)), SLOT(slot_dropEvent_hide_show(bool)));//c220730
+
+        this->make_CustomLineEdit();//c220730
 
         this->setInit();
         this->setUIControl();
@@ -20,6 +26,55 @@ namespace podcast {
     PodCastMain::~PodCastMain(){
 
         this->deleteLater();
+    }
+
+
+    void PodCastMain::slot_overrideSigalSearch(bool b){//c220728
+        print_debug();
+        if(b){
+            emit linker->signal_clickedMovePageRoseTubeSearch();
+        }else{
+            slot_dragEnterEvent_hide_show(false);
+            emit linker->signal_checkQueue(30, "");//c220729
+        }
+    }
+
+
+    void PodCastMain::slot_dragEnterEvent_hide_show(bool show){//c220826_1
+        print_debug();
+        qDebug()<<"##########################################################################################################";
+        if(show){
+            if(global.width_mainwindow==0){
+                this->le_search_back->setFixedSize(800,500);
+            }else{
+                this->le_search_back->setFixedSize(global.width_mainwindow-200,global.height_mainwindow);
+            }
+            this->curr_widget = this->stackedWidget_content->currentWidget();
+            this->curr_widget->hide();
+            this->le_search_back->show();
+            QTimer::singleShot(3000, this, SLOT(slot_dragEnterEvent_restore()));
+
+        }else{
+            print_debug();
+            this->curr_widget = this->stackedWidget_content->currentWidget();//c220824_4
+            this->le_search_back->clear();
+            emit linker->signal_searchBarFocusChanged(false);
+            this->le_search_back->clearFocus();
+            this->curr_widget->show();
+            this->le_search_back->hide();
+        }
+
+    }
+
+
+    void PodCastMain::slot_dragEnterEvent_restore(){//c220826_1
+        print_debug();
+        this->curr_widget = this->stackedWidget_content->currentWidget();//c220824_4
+        this->le_search_back->clear();
+        emit linker->signal_searchBarFocusChanged(false);
+        this->le_search_back->clearFocus();
+        this->curr_widget->show();
+        this->le_search_back->hide();
     }
 
 
@@ -40,8 +95,8 @@ namespace podcast {
 
         podcastHome = new Podcast_Home();
 
-        stackedWidget_content->addWidget(podcastHome);
-
+        this->stackedWidget_content->addWidget(podcastHome);
+        this->stackedWidget_content->addWidget(le_search_back);//c220730
 
         QJsonObject tmp_data;
         tmp_data[KEY_PAGE_CODE] = PAGECODE_PC_HOME;
@@ -115,12 +170,12 @@ namespace podcast {
         this->topMenuBar->setDataTopMenuBar(p_jsonObject_titleMain, p_jsonArray_titlSub);
         if(p_pageCode==PAGECODE_PC_HOME){
 
-            if(podcastHome==nullptr){
-                podcastHome = new Podcast_Home();
-                stackedWidget_content->addWidget(podcastHome);
+            if(this->podcastHome==nullptr){
+                this->podcastHome = new Podcast_Home();
+                this->stackedWidget_content->addWidget(podcastHome);
             }
-            podcastHome->requestData();
-            stackedWidget_content->setCurrentWidget(this->podcastHome);
+            this->podcastHome->requestData();
+            this->stackedWidget_content->setCurrentWidget(this->podcastHome);
         }
         else if(p_pageCode==PAGECODE_PC_CATEGORY){
             if(podcastCategory==nullptr){
@@ -195,9 +250,9 @@ namespace podcast {
     }
 
 
-    void PodCastMain::mousePressEvent(QMouseEvent *event){
+    /*void PodCastMain::mousePressEvent(QMouseEvent *event){
         Q_UNUSED(event);
 
 
-    }
+    }*/
 }

@@ -1,5 +1,5 @@
-#include "rosehomeAlbumDetail.h"
-#include "ConvertData_rosehome.h"
+#include "rosehome/rosehomeAlbumDetail.h"
+#include "rosehome/ConvertData_rosehome.h"
 
 #include "common/gscommon.h"
 

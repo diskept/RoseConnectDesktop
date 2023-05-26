@@ -6,6 +6,8 @@
 #include "roseHome/ItemAlbum_rosehome.h"
 #include "roseHome/ItemPlaylist_rosehome.h"
 
+#include "home/topmenubar.h"
+
 #include "widget/AbstractPlaylistTrackDetailInfo_RHV.h"
 
 
@@ -38,6 +40,7 @@ namespace apple {
     private slots:
         void slot_time_out();
         void slot_hide_msg();
+        void slot_gotoRoseHome();//c230322_3
 
         void slot_change_device_state(const QString&);
 
@@ -58,7 +61,7 @@ namespace apple {
     private :
         // 초기 UI화면 구성
         void setUIControl_requestRose();
-        //void setUIControl_requestApple();
+        void setUIControl_requestApple();
 
         void setUIControl_appendWidget_rose();
         //void setUIControl_appendWidget();

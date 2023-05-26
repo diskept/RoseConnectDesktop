@@ -41,6 +41,24 @@ namespace apple {
     }
 
 
+    void ProcCommon::request_apple_get_recommendations(){
+
+        NetworkHttp *network = new NetworkHttp;
+        connect(network, SIGNAL(response(int,QJsonObject)), SLOT(slot_responseHttp(int,QJsonObject)));
+
+        //https://api.music.apple.com/v1/me/recommendations
+        QString Url = global.user_forApple.appleAPI_url + "/v1/me/recommendations";
+
+        QUrlQuery params;
+
+        network->request_forApple(GetRecommendations
+                         , Url
+                         , NetworkHttp::HeaderOption_forApple::Apple_UserToken
+                         , params
+                         , NetworkHttp::RequestMethod::Get);
+    }
+
+
     void ProcCommon::request_apple_get_album(const int album_id){
 
         NetworkHttp *network = new NetworkHttp;
@@ -121,6 +139,8 @@ namespace apple {
 
             case HttpRequestType::GetList_Genres:           this->setResult_listGenres(jsonObj);                break;
 
+            case HttpRequestType::GetRecommendations:       this->setResult_recommendations(jsonObj);           break;
+
             case HttpRequestType::GetAlbumInfo:             this->setResult_album(jsonObj);                     break;
             case HttpRequestType::GetPlaylistinfo:          this->setResult_playlist(jsonObj);                  break;
 
@@ -175,6 +195,14 @@ namespace apple {
         }
 
         emit signal_completeReq_getListGenre(flagOk, errMsg);
+    }
+
+
+    void ProcCommon::setResult_recommendations(const QJsonObject &jsonObj){
+
+        if(jsonObj.contains("flagOk") && jsonObj.value("flagOk").toBool()){
+
+        }
     }
 
 

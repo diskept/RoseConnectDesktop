@@ -79,6 +79,9 @@ namespace music {
 
             this->page = pageCode;
         }
+        else{
+            print_debug();ContentLoadingwaitingMsgHide();   //j230328
+        }
     }
 
 
@@ -723,7 +726,7 @@ namespace music {
                 connect(proc, &roseHome::ProcCommon::completeReq_list_tracks, this, &MusicFavorite::slot_applyResult_favoriteTracks);
                 proc->request_rose_getList_favoriteTracks(orderType, "MUSIC", this->track_next_offset, 20);
 
-                ContentLoadingwaitingMsgShow(tr("Content is being loaded. Please wait."));
+                print_debug();ContentLoadingwaitingMsgShow(tr("Content is being loaded. Please wait."));
             }
         }
         else if(type == STEP_ALBUM){
@@ -759,7 +762,7 @@ namespace music {
                 connect(proc, &roseHome::ProcCommon::completeReq_list_albums, this, &MusicFavorite::slot_applyResult_favoriteAlbums);
                 proc->request_rose_getList_favoriteAlbums(orderType, "MUSIC", this->track_next_offset, 20);
 
-                ContentLoadingwaitingMsgShow(tr("Content is being loaded. Please wait."));
+                print_debug();ContentLoadingwaitingMsgShow(tr("Content is being loaded. Please wait."));
             }
         }
         else if(type == STEP_PLAYLIST){
@@ -795,7 +798,7 @@ namespace music {
                 connect(proc, &roseHome::ProcCommon::completeReq_list_playlists, this, &MusicFavorite::slot_applyResult_favoritePlaylists);
                 proc->request_rose_getList_favoritePlaylists(orderType, "MUSIC", this->track_next_offset, 20);
 
-                ContentLoadingwaitingMsgShow(tr("Content is being loaded. Please wait."));
+                print_debug();ContentLoadingwaitingMsgShow(tr("Content is being loaded. Please wait."));
             }
         }
     }

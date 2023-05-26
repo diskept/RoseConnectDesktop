@@ -94,6 +94,9 @@ namespace qobuz {
             this->genre_cnt = tmp_gerne_cnt;
             this->genre_ids = tmp_genre_id;
         }
+        else{
+            print_debug();ContentLoadingwaitingMsgHide();   //j230328
+        }
     }
 
 

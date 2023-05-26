@@ -1,6 +1,8 @@
 #ifndef PROFILEPLAYLISTWIDGET_H
 #define PROFILEPLAYLISTWIDGET_H
 
+#include "roseHome/rosehome_struct.h"
+
 #include <QWidget>
 #include <QPushButton>
 #include <QLabel>
@@ -40,6 +42,10 @@ private:
     void setUIControl();
 };
 
+
+
+
+
 /** ===================================================================================================
  *              class PlayListRowBtn
  * ===================================================================================================
@@ -74,6 +80,11 @@ private:
     void setUIControl();
 
 };
+
+
+
+
+
 /** ===================================================================================================
  *              class ProfilePlayListWidget
  * ===================================================================================================
@@ -107,21 +118,27 @@ private slots:
     void slot_clickedPlayListRowBtn();
     void slot_clickedMore();
 
+    void slot_applyResult_MyPlaylist(const QList<roseHome::PlaylistItemData>&, const QJsonArray&, const bool);
+
+private:
+    void setUIControl();
+    void setAddPlayListRowBtn(QJsonObject p_jsonObject);
+
+    //void resizeEvent(QResizeEvent *event) override;
+
 private:
     ProfileWhoType type_profileWho;     ///< 마이 플레이냐 친구 플레이냐 유형값
+
     int pkNo;                           ///< 플레이리스트 PK 값
     int totalCount = 0;                 ///< 플레이리스트 총 개수 (더보기 때문에 필요함)
-    int cntMoreClicked = 0;                    ///< 더보기 버튼 클릭 횟수
+    int cntMoreClicked = 0;             ///< 더보기 버튼 클릭 횟수
+
+    bool flag_lastPage = false;
 
     ProfileRowBtn *profileRowBtn;
     QVBoxLayout *vl_playList;
     QPushButton *btn_list_open_ico;
     QList<PlayListRowBtn*> list_playListRowBtn;
-
-    void setUIControl();
-    void setAddPlayListRowBtn(QJsonObject p_jsonObject);
-
-    //void resizeEvent(QResizeEvent *event) override;
 };
 
 #endif // PROFILEPLAYLISTWIDGET_H

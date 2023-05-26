@@ -131,6 +131,7 @@ namespace roseHome {
         this->vbox_member_contents = new QVBoxLayout();//cheon211115-01
         this->vbox_member_contents->setSpacing(30);//cheon211115-01
         this->vbox_member_contents->setContentsMargins(0, 0, 0, 0);//cheon211115-01
+        this->vbox_member_contents->setAlignment(Qt::AlignTop);
         //-------------------------------------
         //this->vbox_member_contents->addWidget(lb_email);
         //----------------------------------------
@@ -150,6 +151,8 @@ namespace roseHome {
         //this->box_contents->addLayout(vbox_last_contents);//cheon211115-01
 
         this->box_contents->addLayout(vl_userPage);
+        this->box_contents->setAlignment(Qt::AlignTop);
+        this->scrollArea_main->setVerticalScrollBarPolicy(Qt::ScrollBarAsNeeded);
     }
 
 
@@ -171,6 +174,9 @@ namespace roseHome {
      */
     void userpickUserpage::setJsonObject_forData(const QJsonObject &jsonObj){
 //print_debug();
+
+        print_debug();ContentLoadingwaitingMsgShow(tr("Content is being loaded. Please wait."));
+
         PageInfo_UserPage data_pageInfo = ConvertData::getObjectJson_pageInfo_UserPage(jsonObj);
 
 
@@ -229,6 +235,9 @@ namespace roseHome {
         page = 0;
         QJsonObject json;
         QUrlQuery params;
+
+        print_debug();ContentLoadingwaitingMsgShow(tr("Content is being loaded. Please wait."));
+
         NetworkHttp *net_userPage = new NetworkHttp(this);
         connect(net_userPage, SIGNAL(response(int,QJsonObject)), SLOT(slot_responseHttp_friendInfo(int, QJsonObject)));
         net_userPage->request(HTTP_GET_USERINFO, QString("%1/%2?page=%3&size=100").arg(this->curr_api_subPath).arg(this->member_id).arg(page), json, false, true);
@@ -261,8 +270,9 @@ namespace roseHome {
 
             this->setUIControl_Member_subTitle_withSideBtn(userpickName, 0, ProcJsonEasy::getInt(p_jsonObject, "totalCount"));
 
-            this->FlowLayout_userPick = this->setUIControl_hBoxLayout_forAlbum_member(296, HTTP_USERPICK_PLAYLIST_FRIEND, 0, item_cnt);
+//            this->FlowLayout_userPick = this->setUIControl_hBoxLayout_forAlbum_member(311, HTTP_USERPICK_PLAYLIST_FRIEND, 0, item_cnt);
             this->FlowLayout_userPick = new FlowLayout(0, 20, 0);
+            this->FlowLayout_userPick->setAlignment(Qt::AlignTop);
 
             this->list_MemberPlaylist = new QList<roseHome::PlaylistItemData>();
 
@@ -271,9 +281,10 @@ namespace roseHome {
             QWidget *widget_background = new QWidget();
             widget_background->setLayout(this->FlowLayout_userPick);
             widget_background->setContentsMargins(0,0,0,0);
-            widget_background->setStyleSheet("background-color:#212121; border:0px;");
+            widget_background->setStyleSheet("background-color: #212121; border:0px;");
 
             this->vbox_member_contents->addWidget(widget_background, 1, Qt::AlignTop);
+
 
             //GSCommon::clearLayout(this->FlowLayout_userPick);
 
@@ -290,6 +301,7 @@ namespace roseHome {
             if(page > ProcJsonEasy::getInt(p_jsonObject, "totalCount")/20+1) {
 
                 this->createList_itemPlaylsit_applyingWithData(*this->list_MemberPlaylist, tidal::AbstractItem::ImageSizeMode::Square_200x200, this->FlowLayout_userPick, 0, 1004);
+                ContentLoadingwaitingMsgHide();
                 return;
             }
             page++;
@@ -304,23 +316,6 @@ namespace roseHome {
 
     }
 
-
-
-    FlowLayout* userpickUserpage::setUIControl_hBoxLayout_forAlbum_member(const int hbox_height, const int btnId, const int i, const int item_cnt){//cheon211115-01
-        //----------------------------------------------------------------------------------------------------  BODY : START
-
-        FlowLayout *flowLayout = new FlowLayout(this,0,18,20);
-
-        QWidget *widget_background = new QWidget();
-        //widget_background->setLayout(vl_total);
-        widget_background->setLayout(flowLayout);
-        widget_background->setContentsMargins(0,0,0,0);
-        widget_background->setStyleSheet("background-color:#212121; border:0px;");
-
-        this->vbox_member_contents->addWidget(widget_background, 1, Qt::AlignTop);
-
-        return flowLayout;
-    }
 
 
     void userpickUserpage::setResponseProfile(QJsonObject p_jsonObject){
@@ -599,7 +594,7 @@ print_debug();
 
         widget_box_subTitle->setLayout(tmp_hBox);
 
-        this->vbox_member_contents->addWidget(widget_box_subTitle, 1, Qt::AlignTop);
+        this->vbox_member_contents->addWidget(widget_box_subTitle, 0, Qt::AlignTop);
 
     }
 

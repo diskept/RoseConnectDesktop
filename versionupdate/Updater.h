@@ -28,6 +28,7 @@
 #include <QDialog>
 #include <QNetworkReply>
 #include <QNetworkAccessManager>
+#include <QMessageBox>//c230315_3
 
 #include "QSimpleUpdater.h"
 #include "common/linker.h"
@@ -89,11 +90,16 @@ private slots:
     void slot_DescriptionShow();
     void onReply(QNetworkReply *reply);
     void setUpdateAvailable(const bool available);
+    void slot_downloadFinished(QString url, QString filename);//c230410
 
 private:
     bool compare(const QString &x, const QString &y);
 
 private:
+
+    bool finishFlag = false;//c230410
+
+    QMessageBox box;//c230315_3
     //MainWindow rose_window;
     //QDialog *dialog_wait;
     Linker *linker;

@@ -13,7 +13,9 @@ class MenuItem : public QWidget
     Q_OBJECT
 public:
     explicit MenuItem(const QString p_menuName,const QString p_menuCode, const QString p_iconPath, QWidget *parent = nullptr);
+    ~MenuItem();
 
+    void setLoginedSelectedMenu();//c230223_2
     void setSelectedMenu();
     void setUnSelectedMenu();
     void hideMenuName();
@@ -23,10 +25,15 @@ public:
     QString getMenuName(){ return this->menuName; };
 
 protected:
-    void mousePressEvent(QMouseEvent *event);
+    //void mousePressEvent(QMouseEvent *event);
+    void mouseReleaseEvent(QMouseEvent *event) override;//c230518
+    void enterEvent(QEvent *event) override;//c230518
+
+    void leaveEvent(QEvent *event) override;//c230518
 
 signals:
     //void clicked(MenuItem *menuItem);
+    void signal_ttt();//c230518
     void clicked(QString p_menuCode);
 
 private:

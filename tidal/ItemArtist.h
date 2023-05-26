@@ -22,6 +22,8 @@ namespace tidal {
 
         void setData(const tidal::ArtistItemData &p_data_album);        ///< 실제 사용함. 타이달에서만. struct 사용.
         int get_fixedHeight() override;
+        int get_fixedWidth();
+        int get_rightMargin();
 
     private:
         void setUIControl();

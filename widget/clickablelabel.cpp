@@ -1,7 +1,11 @@
-#include "clickablelabel.h"
+#include "widget/clickablelabel.h"
+
+#include "widget/toastmsg.h"
+
 #include <QEvent>
 #include <QMouseEvent>
 #include <common/gscommon.h>
+
 
 /**
  * @brief ClickableLabel::ClickableLabel : Clickable 라벨
@@ -12,16 +16,21 @@ ClickableLabel::ClickableLabel(QWidget *parent) : QLabel(parent)
 {
     this->setCursor(Qt::PointingHandCursor);
 }
+
+
 ClickableLabel::ClickableLabel(const QString &text, QWidget *parent) : QLabel(parent)
 {
     this->setCursor(Qt::PointingHandCursor);
     this->setText(text);
 }
 
+
 /**
  * @brief ClickableLabel::~ClickableLabel
  */
 ClickableLabel::~ClickableLabel() {
+
+    this->deleteLater();
 }
 
 
@@ -67,6 +76,7 @@ bool ClickableLabel::event(QEvent *event){
         else if(event->type() == QEvent::MouseButtonRelease){
             if(this->flagMousePressed && rect_this.contains(point_mouse)){
                 this->flagMousePressed = false;     // init
+                ToastMsg::delay(this,"", tr("delay"), 500);//c230311
                 emit this->signal_clicked();               // emit signal
             }
         }

@@ -63,7 +63,6 @@ namespace roseHome {
         void setResultOfMemberPlaylist(const QJsonObject &p_jsonObject);
         void setUIControl_Append_MemberContents(const int type, const bool flag, const QString userpickName, const int item_cnt);
         void setUIControl_Member_subTitle_withSideBtn(const QString subTitle, const int i, const int item_cnt);
-        FlowLayout *setUIControl_hBoxLayout_forAlbum_member(const int hbox_height, const int btnId, const int i, const int item_cnt);
 
         FlowLayout *FlowLayout_userPick;
         QString curr_api_subPath;

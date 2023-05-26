@@ -12,6 +12,7 @@
 #include <QRadioButton>
 #include <QDebug>
 #include <QMessageBox>
+#include <QMovie>
 
 #define print_debug() qDebug() << "\n" << "file_name: " << __FILE__ << "function_name: " << __FUNCTION__ << "line: " << __LINE__ << "\n";
 
@@ -48,6 +49,8 @@ void dialogsetting_opt::setInit(){
  * @brief DialogSelect_Cloud::setUIControl : UI 세팅
  */
 void dialogsetting_opt::setUIControl(){
+
+    this->loding_ani_init();
 
     QJsonObject tmp_optsettingval = get_settingOfOptDetail();
     dlgConfirmOpt = new DialogConfirm(this);
@@ -130,7 +133,7 @@ void dialogsetting_opt::setUIControl(){
 
     QWidget *widget_total_MQA = new QWidget();
     widget_total_MQA->setObjectName("widget_total");
-    widget_total_MQA->setStyleSheet("#widget_total { border_top:1px solid #707070;border-bottom:1px solid #707070; } ");
+    widget_total_MQA->setStyleSheet("#widget_total { border-top:1px solid #707070;border-bottom:1px solid #707070; } ");
     widget_total_MQA->setLayout(hl_lb_MQA);
 
     print_debug();
@@ -174,7 +177,7 @@ void dialogsetting_opt::setUIControl(){
 
     QWidget *widget_total_PCM = new QWidget();
     widget_total_PCM->setObjectName("widget_total");
-    widget_total_PCM->setStyleSheet("#widget_total { border_top:1px solid #707070;border-bottom:1px solid #707070; } ");
+    widget_total_PCM->setStyleSheet("#widget_total { border-top:1px solid #707070;border-bottom:1px solid #707070; } ");
     widget_total_PCM->setLayout(hl_lb_PCM);
 
 
@@ -385,6 +388,8 @@ void dialogsetting_opt::getOptInOutSettingOfsetting(){
 void dialogsetting_opt::slot_clickedOptChangeSet(){
     print_debug();
 
+    this->loding_ani_show();
+
    NetworkHttp *network = new NetworkHttp;
    QJsonObject tmp_json = get_settingOfOptDetail();
    QJsonObject tmp_json_set;
@@ -555,6 +560,7 @@ print_debug();
         }else if( deviceType == "RS350"){
 
         }
+        this->loding_ani_hide();
         break;
     }
     sender()->deleteLater();
@@ -573,4 +579,69 @@ void dialogsetting_opt::setTextName(QString usbstr){
 
 void dialogsetting_opt::setPropertyName(QString usbstr){
     radio_UsbName->setProperty(PROPERTY_NAME_READABLE, usbstr);
+}
+
+void dialogsetting_opt::loding_ani_init(){
+
+    int left = 0;
+    int top = 0;
+
+    this->loding_ani_dialog = new QDialog();
+
+    QMovie *abs_ani_mov = new QMovie(":/images/Spinner-4.2s-200px.gif");
+    abs_ani_mov->setScaledSize(QSize(120, 120));
+    abs_ani_mov->setBackgroundColor("transparent");
+
+    QLabel *lb_Movie = new QLabel();
+    lb_Movie->setStyleSheet("background-color:transparent;");
+    lb_Movie->setMovie(abs_ani_mov);
+
+    QHBoxLayout *hl_msgBox = new QHBoxLayout();
+    hl_msgBox->setContentsMargins(0, 0, 0, 0);
+    hl_msgBox->setSpacing(0);
+    hl_msgBox->addWidget(lb_Movie);
+
+    this->loding_ani_dialog->setLayout(hl_msgBox);
+    this->loding_ani_dialog->setModal(true);
+    this->loding_ani_dialog->setWindowFlags(Qt::Dialog | Qt::FramelessWindowHint);
+    this->loding_ani_dialog->setAttribute(Qt::WA_TranslucentBackground);
+
+    left = global.left_mainwindow + ((global.width_mainwindow - 120) / 2);
+    top = global.top_mainwindow + ((global.height_mainwindow - 120) / 2);
+
+    this->loding_ani_dialog->move(left, top);
+
+    abs_ani_mov->start();
+    this->loding_ani_dialog->hide();
+}
+
+
+void dialogsetting_opt::loding_ani_show(){
+
+    if(this->loding_ani_dialog->isHidden() != true){
+        return;
+    }
+
+    //if(!global.window_activate_flag) return;
+
+    if(global.powerDialogShowFlag) return;
+
+    int left = 0;
+    int top = 0;
+
+    left = global.left_mainwindow + ((global.width_mainwindow - 120) / 2);
+    top = global.top_mainwindow + ((global.height_mainwindow - 120) / 2);
+
+    this->loding_ani_dialog->move(left, top);
+
+    this->loding_ani_dialog->show();
+    this->loding_ani_dialog->raise();
+}
+
+
+void dialogsetting_opt::loding_ani_hide(){
+
+    if(this->loding_ani_dialog->isHidden() != true){
+        this->loding_ani_dialog->hide();
+    }
 }

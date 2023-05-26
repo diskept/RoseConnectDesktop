@@ -43,12 +43,12 @@ namespace tidal {
         this->label_title = new QLabel(label_base);
         this->label_title->setWordWrap(true);
         this->label_title->setTextInteractionFlags(Qt::TextSelectableByMouse);
-        this->label_title->setStyleSheet("font-size:16px; color:#FFFFFF;");
+        this->label_title->setStyleSheet("font-size:16px;font-weight: normal;font-style: normal;line-height: 2.1;text-align: left; color:#FFFFFF;");
         this->label_title->setFixedWidth(this->itemImage->sizeHint().width());
         this->label_title->setGeometry(0, 0, img_width, this->LABEL_HEIGHT * 2);
 
         this->label_creator = new QLabel(label_base);
-        this->label_creator->setStyleSheet("font-size:16px; color: #999999;");
+        this->label_creator->setStyleSheet("font-size:16px;  font-weight: normal;font-style: normal;line-height: 2.1;text-align: left; color: #999999;");
         this->label_creator->setFixedWidth(this->itemImage->sizeHint().width());
         this->label_creator->setGeometry(0, (this->LABEL_HEIGHT * 2) + this->SPACE_LABELS, img_width, this->LABEL_HEIGHT);
 
@@ -92,6 +92,19 @@ namespace tidal {
         height += (this->LABEL_HEIGHT * 3) + this->SPACE_LABELS;
 
         return height;
+    }
+
+    int ItemVideo::get_fixedWidth(){
+
+        int width = this->get_imageWidth(this->m_imageSizeMode);
+
+        return width;
+    }
+
+
+    int ItemVideo::get_rightMargin(){
+
+        return ITEM_BETWEEN_MARGIN_RIGHT;
     }
 
 
@@ -156,6 +169,10 @@ namespace tidal {
 
                 this->label_title->setGeometry(0, 0, all_width, this->LABEL_HEIGHT * 2);
                 this->label_title->setText(GSCommon::getTextCutFromLabelWidth(title, title_width, this->label_title->font()));
+                if(this->label_title->text().contains("…")){
+                    this->label_title->setToolTip(title);//c230321
+                    this->label_title->setToolTipDuration(2000);//c230321
+                }
 
                 this->label_creator->setGeometry(0, (this->LABEL_HEIGHT * 2) + this->SPACE_LABELS, all_width, this->LABEL_HEIGHT);
             }
@@ -167,6 +184,10 @@ namespace tidal {
             }
 
             this->label_creator->setText(GSCommon::getTextCutFromLabelWidth(data_video.list_artist_name.join(", "), all_width, this->label_creator->font()));
+            if(this->label_creator->text().contains("…")){
+                this->label_creator->setToolTip(data_video.list_artist_name.join(", "));//c230321
+                this->label_creator->setToolTipDuration(2000);//c230321
+            }
         }
     }
 }

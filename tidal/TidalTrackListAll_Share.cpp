@@ -80,11 +80,11 @@ namespace tidal {
 
         this->flagNeedReload = false;
 
-        if(this->type != tmpType || this->int_id != tmpIntID){
+        if(this->type != tmpType || this->revID != tmpIntID){
             this->flagNeedReload = true;
 
             this->type = tmpType;
-            this->int_id = tmpIntID;
+            this->revID = tmpIntID;
             this->subType = tmpsubTtype;
 
             //this->label_mainTitle->setText(this->title);
@@ -102,7 +102,7 @@ namespace tidal {
             this->flag_track_fav = false;
             this->flag_send_track = false;
 
-            ContentLoadingwaitingMsgShow(tr("Content is being loaded. Please wait."));
+            print_debug();ContentLoadingwaitingMsgShow(tr("Content is being loaded. Please wait."));
 
             // request HTTP API
             this->request_more_trackData();
@@ -227,19 +227,20 @@ namespace tidal {
             // request HTTP API
             /*roseHome::ProcCommon *proc_track = new roseHome::ProcCommon(this);
             connect(proc_track, &roseHome::ProcCommon::completeReq_list_tracks, this, &RoseHomeTrackListAll_Share::slot_applyResult_tracks);
-            proc_track->request_rose_get_track(this->int_id, 0, 20);*/
+            proc_track->request_rose_get_track(this->revID, 0, 20);*/
         }
         else if(this->type == "TIDAL"){
             // request HTTP API
             if(this->subType == "TRACK"){
-                QString url = "tracks/" + QString("%1").arg(this->int_id);
+                QString url = "tracks/" + QString("%1").arg(this->revID);
 
                 tidal::ProcCommon *proc_track = new tidal::ProcCommon(this);
                 connect(proc_track, &tidal::ProcCommon::completeReq_list_tracks, this, &TidalTrackListAll_Share::slot_applyResult_tracks);
                 proc_track->request_tidal_getList_tracks(url, 0, 0);
             }
             else if(this->subType == "VIDEO"){
-                QString url = "videos/" + QString("%1").arg(this->int_id);
+                // https://api.tidal.com/v1/videos/270857838?countryCode=CA
+                QString url = "videos/" + QString("%1").arg(this->revID);
 
                 tidal::ProcCommon *proc_track = new tidal::ProcCommon(this);
                 connect(proc_track, &tidal::ProcCommon::completeReq_list_videos, this, &TidalTrackListAll_Share::slot_applyResult_videos);
@@ -249,7 +250,7 @@ namespace tidal {
         }
         else if(this->type == "BUGS"){
             // request HTTP API
-            /*QString url = "track/" + QString("%1").arg(this->int_id);
+            /*QString url = "track/" + QString("%1").arg(this->revID);
 
             ProcBugsAPI *proc_track = new ProcBugsAPI(this);
             connect(proc_track, &ProcBugsAPI::completeReq_list_tracks, this, &BugsTrackListAll_Share::slot_applyResult_tracks);

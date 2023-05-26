@@ -218,7 +218,7 @@ void DesktopMediaPlayerThread::slot_playMusic_desktop(QJsonArray jsonArrMusic, b
     global.music_playlist->setCurrentIndex(index.toInt());
     //global.music_player->setMedia(QUrl::fromLocalFile(p_fileInfo_filePath));
 
-    global.music_player->setVolume(global.setTextVolumn);
+    global.music_player->setVolumn(global.setTextVolumn);
 
     //global.music_player->play();//아래의 커넥트 선언으로 한곡 반복 플레이
 

@@ -87,7 +87,7 @@ void DialogAdd_Network::setUIControl(){//c220913_1
     lineEdit_http->setMaxLength(200);
     //lineEdit_http->setPlaceholderText(tr("Network share folder Url path"));//c220918_1
     lineEdit_http->setFixedHeight(50);
-    lineEdit_http->setTextMargins(23,14,23,14);
+    lineEdit_http->setTextMargins(23,10,23,10);
     lineEdit_http->setStyleSheet("font-size:18px;color:#ffffff;background-color:#212121;border-radius:2px;border:1px solid #4d4d4d;");
 
     QLabel *lb_commentHttp = new QLabel();
@@ -99,7 +99,7 @@ void DialogAdd_Network::setUIControl(){//c220913_1
     lineEdit_id->setMaxLength(30);
     //lineEdit_id->setPlaceholderText(tr("ID"));
     lineEdit_id->setFixedHeight(50);
-    lineEdit_id->setTextMargins(23,14,23,14);
+    lineEdit_id->setTextMargins(23,10,23,10);
     lineEdit_id->setStyleSheet("font-size:18px;color:#ffffff;background-color:#212121;border-radius:2px;border:1px solid #4d4d4d;");
 
     // 패스워드
@@ -107,7 +107,7 @@ void DialogAdd_Network::setUIControl(){//c220913_1
     lineEdit_pw->setMaxLength(30);
     //lineEdit_pw->setPlaceholderText(tr("password"));
     lineEdit_pw->setFixedHeight(50);
-    lineEdit_pw->setTextMargins(23,14,23,14);
+    lineEdit_pw->setTextMargins(23,10,23,10);
     lineEdit_pw->setEchoMode(QLineEdit::Password);
     lineEdit_pw->setStyleSheet("font-size:18px;color:#ffffff;background-color:#212121;border-radius:2px;border:1px solid #4d4d4d;");
 
@@ -115,7 +115,7 @@ void DialogAdd_Network::setUIControl(){//c220913_1
     lineEdit_path->setMaxLength(30);
     //lineEdit_path->setPlaceholderText(tr("Share Folder"));
     lineEdit_path->setFixedHeight(50);
-    lineEdit_path->setTextMargins(23,14,23,14);
+    lineEdit_path->setTextMargins(23,10,23,10);
     //lineEdit_path->setEchoMode(QLineEdit::Password);
     lineEdit_path->setStyleSheet("font-size:18px;color:#ffffff;background-color:#212121;border-radius:2px;border:1px solid #4d4d4d;");
 
@@ -123,7 +123,7 @@ void DialogAdd_Network::setUIControl(){//c220913_1
     lineEdit_sudopw->setMaxLength(30);
     //lineEdit_sudopw->setPlaceholderText(tr("desktop user password"));
     lineEdit_sudopw->setFixedHeight(50);
-    lineEdit_sudopw->setTextMargins(23,14,23,14);
+    lineEdit_sudopw->setTextMargins(23,10,23,10);
     lineEdit_sudopw->setEchoMode(QLineEdit::Password);
     lineEdit_sudopw->setStyleSheet("font-size:18px;color:#ffffff;background-color:#212121;border-radius:2px;border:1px solid #4d4d4d;");
 
@@ -131,7 +131,7 @@ void DialogAdd_Network::setUIControl(){//c220913_1
     lineEdit_username->setMaxLength(30);
     //lineEdit_username->setPlaceholderText(tr("user name"));
     lineEdit_username->setFixedHeight(55);
-    lineEdit_username->setTextMargins(23,14,23,14);
+    lineEdit_username->setTextMargins(23,10,23,10);
     //lineEdit_username->setEchoMode(QLineEdit::Password);
     lineEdit_username->setStyleSheet("font-size:18px;color:#ffffff;background-color:#212121;border-radius:2px;border:1px solid #4d4d4d;");
 
@@ -406,8 +406,14 @@ bool DialogAdd_Network::checkUserInput(){
     else if(httpList.size() == 3){
         print_debug();
         flagOk = false;
-        global.window_activate_flag = true;//c220907_2
-        ToastMsg::show(this,"",tr("The Share Path information is incorrect."), 4000);
+        if(!global.window_activate_flag){//c230127
+            global.window_activate_flag = true;
+            ToastMsg::show(this,"",tr("The Share Path information is incorrect."), 4000);
+            global.window_activate_flag = false;
+        }else{
+            ToastMsg::show(this,"",tr("The Share Path information is incorrect."), 4000);
+        }
+
     }
 #endif
 #if defined(Q_OS_WINDOWS)
@@ -519,16 +525,28 @@ void DialogAdd_Network::slot_ok(){//c220913_1
 
                     if(lineEdit_sudopw->text().isEmpty()){
                         qDebug() << "Enter your Mac user password.";
-                        global.window_activate_flag = true;//c220907_2
-                        ToastMsg::show(this,"",tr("Enter your Mac user password."), 4000);
+                        if(!global.window_activate_flag){//c230127
+                            global.window_activate_flag = true;
+                            ToastMsg::show(this,"",tr("Enter your Mac user password."), 4000);
+                            global.window_activate_flag = false;
+                        }else{
+                            ToastMsg::show(this,"",tr("Enter your Mac user password."), 4000);
+                        }
+
                     }else{
                         process->start(QString("sh -c \"echo %1 | sudo -S ls /\"").arg(lineEdit_sudopw->text()));//c220913_1
                         process->waitForFinished();
                         QString std_out = process->readAllStandardOutput();
                         if(std_out.isEmpty()){
                             qDebug() << "The password input is incorrect.";
-                            global.window_activate_flag = true;//c220907_2
-                            ToastMsg::show(this,"",tr("The password input is incorrect."), 4000);
+                            if(!global.window_activate_flag){//c230127
+                                global.window_activate_flag = true;
+                                ToastMsg::show(this,"",tr("The password input is incorrect."), 4000);
+                                global.window_activate_flag = false;
+                            }else{
+                                ToastMsg::show(this,"",tr("The password input is incorrect."), 4000);
+                            }
+
                             return;
                         }
 
@@ -552,8 +570,14 @@ void DialogAdd_Network::slot_ok(){//c220913_1
 
                 }else{
                     qDebug() << "The folder name already exists.";
-                    global.window_activate_flag = true;//c220907_2
-                    ToastMsg::show(this,"",tr("The folder name already exists."), 4000);
+                    if(!global.window_activate_flag){//c230127
+                        global.window_activate_flag = true;
+                        ToastMsg::show(this,"",tr("The folder name already exists."), 4000);
+                        global.window_activate_flag = false;
+                    }else{
+                        ToastMsg::show(this,"",tr("The folder name already exists."), 4000);
+                    }
+
                 }
 
 
@@ -577,8 +601,14 @@ void DialogAdd_Network::slot_ok(){//c220913_1
 #if defined(Q_OS_MAC)//c220909_1
         if(p_path.isEmpty()){
             print_debug();
-            global.window_activate_flag = true;//c220907_2
-            ToastMsg::show(this,"",tr("The Share Path information is incorrect."), 4000);
+            if(!global.window_activate_flag){//c230127
+                global.window_activate_flag = true;
+                ToastMsg::show(this,"",tr("The Share Path information is incorrect."), 4000);
+                global.window_activate_flag = false;
+            }else{
+                ToastMsg::show(this,"",tr("The Share Path information is incorrect."), 4000);
+            }
+
             return;
         }
 #endif
@@ -750,13 +780,22 @@ void DialogAdd_Network::setResultOfAddNetworkFolder(const QJsonObject &p_json){/
                     print_debug();
 #if defined(Q_OS_MAC)
                     //dialog_comfirmNetworkfolder_forFinder();//c220913_2
-                    global.window_activate_flag = true;//c220907_2
-                    if((p_json[jsonKey_message].toString().toLower() == "network error")){
-                        ToastMsg::show(this,"",tr("The IP address information is incorrect."), 4000);
+                    if(!global.window_activate_flag){//c230127
+                        global.window_activate_flag = true;
+                        if((p_json[jsonKey_message].toString().toLower() == "network error")){
+                            ToastMsg::show(this,"",tr("The IP address information is incorrect."), 4000);
+                        }else{
+                            ToastMsg::show(this,"",p_json[jsonKey_message].toString(), 4000);
+                        }
+                        global.window_activate_flag = false;
                     }else{
-                        ToastMsg::show(this,"",p_json[jsonKey_message].toString(), 4000);
+                        if((p_json[jsonKey_message].toString().toLower() == "network error")){
+                            ToastMsg::show(this,"",tr("The IP address information is incorrect."), 4000);
+                        }else{
+                            ToastMsg::show(this,"",p_json[jsonKey_message].toString(), 4000);
+                        }
                     }
-                    global.window_activate_flag = false;
+
 
                     // 실패
                     emit signal_process_smb(argument);//c220909_1
@@ -764,13 +803,22 @@ void DialogAdd_Network::setResultOfAddNetworkFolder(const QJsonObject &p_json){/
 
 #endif
 #if defined(Q_OS_WIN)//c220909_1
-                    global.window_activate_flag = true;//c220907_2
-                    if((p_json[jsonKey_message].toString().toLower()=="network error")){
-                        ToastMsg::show(this,"",tr("The IP address information is incorrect."), 4000);
+                    if(!global.window_activate_flag){//c230127
+                        global.window_activate_flag = true;
+                        if((p_json[jsonKey_message].toString().toLower()=="network error")){
+                            ToastMsg::show(this,"",tr("The IP address information is incorrect."), 4000);
+                        }else{
+                            ToastMsg::show(this,"",p_json[jsonKey_message].toString(), 4000);
+                        }
+                        global.window_activate_flag = false;
                     }else{
-                        ToastMsg::show(this,"",p_json[jsonKey_message].toString(), 4000);
+                        if((p_json[jsonKey_message].toString().toLower()=="network error")){
+                            ToastMsg::show(this,"",tr("The IP address information is incorrect."), 4000);
+                        }else{
+                            ToastMsg::show(this,"",p_json[jsonKey_message].toString(), 4000);
+                        }
                     }
-                    global.window_activate_flag = false;
+
 #endif
                     qDebug() << "global.smbParamPath_cmd = " << global.smbParamPath_cmd;//c220907_1
                     global.smbParamPath_cmd = "";
@@ -781,20 +829,44 @@ void DialogAdd_Network::setResultOfAddNetworkFolder(const QJsonObject &p_json){/
                     print_debug();
                     // 네트워크 추가 시그널 호출 ==> 폴더 화면 갱신
                     emit linker->signal_networkFolderAdded();//c220909_3
-                    global.window_activate_flag = true;//c220907_2
-                    ToastMsg::show(this,"",tr("A network folder has been added."));
+                    if(!global.window_activate_flag){//c230127
+                        global.window_activate_flag = true;
+                        ToastMsg::show(this,"",tr("A network folder has been added."));
+
+                        global.window_activate_flag = false;
+                    }else{
+                        ToastMsg::show(this,"",tr("A network folder has been added."));
+
+                    }
+
 
                     setResult(QDialog::Accepted);
                     this->hide();
                 }
 
             }else if(p_json.contains(jsonKey_message)){
-                global.window_activate_flag = true;//c220907_2
-                ToastMsg::show(this,"",p_json[jsonKey_message].toString());
+                if(!global.window_activate_flag){//c230127
+                    global.window_activate_flag = true;
+                    ToastMsg::show(this,"",p_json[jsonKey_message].toString());
+
+                    global.window_activate_flag = false;
+                }else{
+                    ToastMsg::show(this,"",p_json[jsonKey_message].toString());
+
+                }
+
             }
         }
     }else{
-        global.window_activate_flag = true;//c220907_2
-        ToastMsg::show(this,"",tr("Please check the network staus."));
+        if(!global.window_activate_flag){//c230127
+            global.window_activate_flag = true;
+            ToastMsg::show(this,"",tr("Please check the network staus."));
+
+            global.window_activate_flag = false;
+        }else{
+            ToastMsg::show(this,"",tr("Please check the network staus."));
+
+        }
+
     }
 }

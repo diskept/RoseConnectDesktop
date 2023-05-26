@@ -68,9 +68,12 @@ namespace tidal {
 
             this->flag_album_draw = false;
 
-            ContentLoadingwaitingMsgShow(tr("Content is being loaded. Please wait."));
+            print_debug();ContentLoadingwaitingMsgShow(tr("Content is being loaded. Please wait."));
 
             this->request_more_albumData();
+        }
+        else{
+            print_debug();ContentLoadingwaitingMsgHide();   //j230328
         }
     }
 
@@ -122,13 +125,35 @@ namespace tidal {
 
             this->flag_album_draw = true;
 
-            ContentLoadingwaitingMsgShow(tr("Content is being loaded. Please wait."));
+            print_debug();ContentLoadingwaitingMsgShow(tr("Content is being loaded. Please wait."));
 
             this->request_more_albumDraw();
         }
     }
 
+    void TidalAlbumListAll::resizeEvent(QResizeEvent *event){//c230223
+        AbstractTidalSubWidget::resizeEvent(event);
+        int w = flowLayout_albums->sizeHint().width();
+        int l = 80, r = 60, scrollbarW = 0;
 
+        int mod_nn = (global.LmtCnt-l-r-scrollbarW)%(w+0);
+        //qDebug() << "mod_nn=" << mod_nn;
+        int i = 0;
+        while(1){
+
+            mod_nn = (global.LmtCnt-l-r-scrollbarW)%(w+0+i);
+            if(mod_nn > 20){
+
+                mod_nn = (global.LmtCnt-l-r-scrollbarW)%(w+(0+(i++)));
+            }else{
+                break;
+            }
+        }
+
+        flowLayout_albums->setSpacingHV(0+i,20);
+        // BugsChooseFilterOpt 위젯의 사이즈를 업데이트 해줘야함
+
+    }
 
 
     // MARK : Request HTTP API  ------------------------------------------------------------------------------------------
@@ -143,7 +168,12 @@ namespace tidal {
             this->flagReqMore_album = true;//cheon210704-list
 
             // j220913 list count check
-            int width_cnt = global.LmtCnt / 220;
+            int width_cnt;//c230223
+            if(flowLayout_albums->sizeHint().width() < 0) {//c230223
+                width_cnt = global.LmtCnt / 217;
+            }else{
+                width_cnt = global.LmtCnt / flowLayout_albums->sizeHint().width();//
+            }
             int mod = this->album_draw_cnt % width_cnt;
             int height_cnt = 0;
 
@@ -197,7 +227,12 @@ namespace tidal {
     void TidalAlbumListAll::request_more_albumDraw(){
 
         // j220913 list count check
-        int width_cnt = global.LmtCnt / 220;
+        int width_cnt;//c230223
+        if(flowLayout_albums->sizeHint().width() < 0) {//c230223
+            width_cnt = global.LmtCnt / 217;
+        }else{
+            width_cnt = global.LmtCnt / flowLayout_albums->sizeHint().width();//
+        }
         int mod = this->album_draw_cnt % width_cnt;
         int height_cnt = 0;
 
@@ -302,6 +337,39 @@ namespace tidal {
                     QCoreApplication::processEvents();
                 }
 
+                //c230306_1-start
+                int w = flowLayout_albums->sizeHint().width();
+                int l = 80, r = 60, scrollbarW = 10, mod = 0;
+
+                int mod_nn = (global.LmtCnt-l-r-scrollbarW)%(w + mod);
+                int nn = (global.LmtCnt-l-r-scrollbarW)/(w + mod);
+                //qDebug() << "global.LmtCnt=" << global.LmtCnt;
+                //qDebug() << "this->width()=" << this->width();
+                //qDebug() << "nn=" << nn;
+                //qDebug() << "mod_nn=" << mod_nn;
+
+
+                int i = 0;
+                while(1){
+
+                    mod_nn = (global.LmtCnt-l-r-scrollbarW)%(w + mod + i);
+                    if(mod_nn > 20){
+
+                        mod_nn = (global.LmtCnt-l-r-scrollbarW)%(w + ( mod +(i++)));
+                    }else{
+                        break;
+                    }
+                }
+                //print_debug();
+                //qDebug() << "w=" << w;
+                //qDebug() << "i=" << i;
+                //qDebug() << "this->width()=" << this->width();
+                //this->resize(this->width()+1, this->height());
+                flowLayout_albums->setSpacingHV(mod+i,20);
+                //c230306_1-end
+
+                ContentLoadingwaitingMsgHide();
+
                 this->flag_flow_draw = true;
                 this->flag_album_draw = false;
             }
@@ -324,12 +392,46 @@ namespace tidal {
                     QCoreApplication::processEvents();
                 }
 
+                //c230306_1-start
+                int w = flowLayout_albums->sizeHint().width();
+                int l = 80, r = 60, scrollbarW = 10, mod = 0;
+
+                int mod_nn = (global.LmtCnt-l-r-scrollbarW)%(w + mod);
+                int nn = (global.LmtCnt-l-r-scrollbarW)/(w + mod);
+                //qDebug() << "global.LmtCnt=" << global.LmtCnt;
+                //qDebug() << "this->width()=" << this->width();
+                //qDebug() << "nn=" << nn;
+                //qDebug() << "mod_nn=" << mod_nn;
+
+
+                int i = 0;
+                while(1){
+
+                    mod_nn = (global.LmtCnt-l-r-scrollbarW)%(w + mod + i);
+                    if(mod_nn > 20){
+
+                        mod_nn = (global.LmtCnt-l-r-scrollbarW)%(w + ( mod +(i++)));
+                    }else{
+                        break;
+                    }
+                }
+                //print_debug();
+                //qDebug() << "w=" << w;
+                //qDebug() << "i=" << i;
+                //qDebug() << "this->width()=" << this->width();
+                //this->resize(this->width()+1, this->height());
+                flowLayout_albums->setSpacingHV(mod+i,20);
+                //c230306_1-end
+
+                ContentLoadingwaitingMsgHide();
+
                 this->flag_flow_draw = true;
                 this->flag_album_draw = false;
             }
 
-            ContentLoadingwaitingMsgHide();
-            this->request_more_albumData();
+            if(this->flag_lastPage_album == false){
+                this->request_more_albumData();
+            }
         }
         else{
             ContentLoadingwaitingMsgHide();      //cheon Tidal

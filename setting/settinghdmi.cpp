@@ -207,9 +207,37 @@ void SettingHDMI::slot_responseHttp(const int &p_id, const QJsonObject &p_jsonOb
         if(p_jsonObject.contains("displayInfo")){
             QString tmp_hdmi = p_jsonObject["displayInfo"].toString();
             //print_debug();//cheon29_src
-            //qDebug() << " tmp_hdmi : " << tmp_hdmi ;//cheon29_src
+            qDebug() << " tmp_hdmi : " << tmp_hdmi ;//cheon29_src
             this->lb_hdmi_res->setText("       Current HDMI Resolution  :       " + tmp_hdmi);
 
+            comboBox_hdmi->blockSignals(true);
+
+            if(tmp_hdmi == "1280x720p50"){
+                this->comboBox_hdmi->setCurrentIndex(0);
+            }
+            else if(tmp_hdmi == "1280x720p60"){
+                this->comboBox_hdmi->setCurrentIndex(1);
+            }
+            else if(tmp_hdmi == "1920x1080i50"){
+                this->comboBox_hdmi->setCurrentIndex(2);
+            }
+            else if(tmp_hdmi == "1920x1080i60"){
+                this->comboBox_hdmi->setCurrentIndex(3);
+            }
+            else if(tmp_hdmi == "1920x1080p50"){
+                this->comboBox_hdmi->setCurrentIndex(4);
+            }
+            else if(tmp_hdmi == "1920x1080p60"){
+                this->comboBox_hdmi->setCurrentIndex(5);
+            }
+            else if(tmp_hdmi == "3840x2160p50"){
+                this->comboBox_hdmi->setCurrentIndex(6);
+            }
+            else if(tmp_hdmi == "3840x2160p60"){
+                this->comboBox_hdmi->setCurrentIndex(7);
+            }
+
+            comboBox_hdmi->blockSignals(false);
             //this->list_keyValue.at
             //this->vl_total->addWidget(this->getUIControlTitleSub(tr("Current HDMI Resolution : "),t6.getHdmi_resolution()) );//cheon29_src
             //this->lb_volumnNum->setText(QString("%1").arg(tmp_brightness));

@@ -44,6 +44,11 @@ private slots:
    // void slot_clickedOptpassGain();
 private:
 
+    QDialog *loding_ani_dialog = nullptr;
+    void loding_ani_init();
+    void loding_ani_show();
+    void loding_ani_hide();
+
     QComboBox *comboBoxOptopticalMsb;
     QComboBox *comboBoxOptopticalLsb;
 //    QComboBox *comboBoxOptDSD;

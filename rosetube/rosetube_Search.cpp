@@ -5,8 +5,12 @@
 #include "common/networkhttp.h"
 #include "common/ProcJsonEasy.h"
 
+#include "login/dialoglogin.h"
+#include "login/dialog_playlist_onRose.h"
+
 #include "widget/NoData_Widget.h"
 #include "widget/toastmsg.h"//c220727
+
 #include "roseHome/ProcCommon_forRosehome.h"//c220818
 
 #include <QScrollBar>
@@ -14,7 +18,7 @@
 
 namespace rosetube {
 
-    const QString tmp_btnStyle      = "padding:10px;border:1px solid #707070;color:#CCCCCC;font-size:18px;";//cheon211008
+    const QString tmp_btnStyle      = "padding:8px;border:1px solid #707070;color:#CCCCCC;font-size:16px;";//cheon211008
     //const QString tmp_btnStyleHover = "background-color:#B18658;color:#FFFFFF;";//cheon211115-01
     const QString tmp_btnStyleHover = "background-color:#CCCCCC;color:#FFFFFF;";//cheon211115-01
     const QString tmp_btnStyleHover_selected = "background-color:#B18658;color:#FFFFFF;";//cheon211115-01
@@ -41,7 +45,6 @@ namespace rosetube {
     RoseTube_Search::RoseTube_Search(QWidget *parent) : roseHome::AbstractRoseHomeSubWidget(VerticalScroll_viewAll, parent) {
 
         this->linker = Linker::getInstance();//c220727
-
 
         // 기본 UI 세팅
         this->setUIControl_basic();
@@ -73,7 +76,7 @@ namespace rosetube {
             this->jsonArr_tracks_toPlay = QJsonArray();
             this->jsonArr_tracks_toTemp = QJsonArray();
 
-            ContentLoadingwaitingMsgShow(tr("Content is being loaded. Please wait."));
+            print_debug();ContentLoadingwaitingMsgShow(tr("Content is being loaded. Please wait."));
 
             NetworkHttp *network = new NetworkHttp;
             connect(network, SIGNAL(response(int,QJsonObject)), SLOT(slot_responseHttp(int,QJsonObject)));
@@ -87,6 +90,9 @@ namespace rosetube {
                              , false
                              , true);
         }
+        else{
+            print_debug();ContentLoadingwaitingMsgHide();   //j230328
+        }
     }
 
 
@@ -96,6 +102,15 @@ namespace rosetube {
 
             // 항상 부모클래스의 함수 먼저 호출
             AbstractRoseHomeSubWidget::setActivePage();
+
+            // j230407 Removing ghosting effect start
+            if(this->widget_contents != nullptr){
+                this->widget_contents->hide();
+                this->box_contents->removeWidget(this->widget_contents);
+
+                delete this->widget_contents;
+            }
+            // j230407 Removing ghosting effect finish
 
             this->box_contents->removeWidget(this->widget_contents);
             GSCommon::clearLayout(this->box_contents);
@@ -122,8 +137,18 @@ namespace rosetube {
             this->widget_contents->setLayout(this->vbox_contents);
 
 
-            this->box_contents->addWidget(this->widget_contents);
+            this->box_contents->addWidget(this->widget_contents, 0, Qt::AlignTop);
             this->scrollArea_main->setVerticalScrollBarPolicy(Qt::ScrollBarAsNeeded);
+
+            rosetube::ItemTrack_rosetube *listAlbum = new rosetube::ItemTrack_rosetube(0, 0, tidal::AbstractItem::ImageSizeMode::Ractangle_284x157, false);
+
+            this->rosetube_widget_width = listAlbum->get_fixedWidth();
+            this->rosetube_widget_margin = listAlbum->get_rightMargin();
+
+            delete listAlbum;
+
+            // layout for items
+            this->flowLayout_search_track = this->get_addUIControl_flowLayout(0, 20);
         }
     }
 
@@ -191,7 +216,7 @@ namespace rosetube {
                 && (this->scrollArea_main->verticalScrollBar()->value() == this->scrollArea_main->verticalScrollBar()->maximum())){
             this->flagReqMore_search = true;
 
-            ContentLoadingwaitingMsgShow(tr("Content is being loaded. Please wait."));
+            print_debug();ContentLoadingwaitingMsgShow(tr("Content is being loaded. Please wait."));
 
             // 더 가져오기 요청
             this->setUIControl_requestGetSearchTrack();
@@ -282,7 +307,6 @@ namespace rosetube {
 
         for(int i = start_index; i < this->jsonArr_tracks_toTemp.size(); i++){
             this->search_track[i] = new rosetube::ItemTrack_rosetube(i, SECTION_FOR_MORE_POPUP___SEARCH, tidal::AbstractItem::ImageSizeMode::Ractangle_284x157, true);
-            connect(this->search_track[i], &rosetube::ItemTrack_rosetube::signal_clicked, this, &RoseTube_Search::slot_clickedItemPlaylist);
         }
 
         for(int i = start_index; i < this->jsonArr_tracks_toTemp.size(); i++){
@@ -329,11 +353,16 @@ namespace rosetube {
             jsonTrack.insert("channelTitle", channelName);
             jsonTrack.insert("thumbnailUrl", thumbnailUrl);
             jsonTrack.insert("viewCount", ProcJsonEasy::getInt(tmpTrack, "viewCount"));
+            jsonTrack.insert("favorite_view", false);
 
             this->search_track[i]->setData(jsonTrack);
-            this->flowLayout_search_track->addWidget(this->search_track[i]);
 
             QCoreApplication::processEvents();
+        }
+
+        for(int i = start_index; i < this->jsonArr_tracks_toTemp.size(); i++){
+            this->flowLayout_search_track->addWidget(this->search_track[i]);
+            connect(this->search_track[i], &rosetube::ItemTrack_rosetube::signal_clicked, this, &RoseTube_Search::slot_clickedItemPlaylist);
         }
 
         if(this->searchNextUrl.isEmpty()){
@@ -345,6 +374,24 @@ namespace rosetube {
         }
 
         ContentLoadingwaitingMsgHide();
+    }
+
+
+    void RoseTube_Search::slot_add_rosePlaylist_withRosetube(const int &idx, const QJsonObject &dataObj){
+
+        QString view_type = "";
+        if(idx < 0){
+            view_type = "create";
+        }
+        else{
+            view_type = "add";
+        }
+
+        QJsonObject jsonObj_move = dataObj;
+        jsonObj_move.insert("view_type", view_type);
+        jsonObj_move.insert(KEY_PAGE_CODE, PAGECODE_RT_ADDPLAYLIST);
+
+        emit this->signal_clickedPagemove(jsonObj_move);
     }
 
 
@@ -505,6 +552,22 @@ namespace rosetube {
                 network->request(HTTP_NETWORK_PLAY, QString("http://%1:%2/%3")
                                  .arg(global.device.getDeviceIP())
                                  .arg(global.port).arg(playlistType), jsonData, true);
+            }
+            else if(clickMode == OptMorePopup::ClickMode::Add_MyCollection){
+                QJsonArray tracks = QJsonArray();
+                tracks.append(this->jsonArr_tracks_toPlay.at(index).toObject());
+
+                QJsonObject json = QJsonObject();
+                json.insert("tracks", tracks);
+
+                Dialog::Dialog_Playlist_onRose *dialog_playlist = new Dialog::Dialog_Playlist_onRose(Dialog::Dialog_Playlist_onRose::ROSETUBE, json, this);
+                dialog_playlist->request_playlist_fetch();
+                connect(dialog_playlist, &Dialog::Dialog_Playlist_onRose::signal_clicked_playlist, this, &RoseTube_Search::slot_add_rosePlaylist_withRosetube);
+                int result = dialog_playlist->exec();
+
+                if(result == QDialog::Accepted){
+                    delete dialog_playlist;
+                }
             }
             else if(clickMode == OptMorePopup::ClickMode::SubscribInfo){
                 QJsonObject tmpObj = this->jsonArr_tracks_toPlay.at(index).toObject();
@@ -812,5 +875,17 @@ namespace rosetube {
             // 유효하지 않는 경우, 그대로 반환
             return p_jsonArr;
         }
+    }
+
+
+    /**
+     * @brief 스크롤링에 대해서, get more data 처리
+     * @param event
+     */
+    void RoseTube_Search::resizeEvent(QResizeEvent *event){
+
+        Q_UNUSED(event);
+
+        this->setFlowLayoutResize(this, this->flowLayout_search_track, this->rosetube_widget_width, this->rosetube_widget_margin);
     }
 }

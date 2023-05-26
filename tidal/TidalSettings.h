@@ -22,12 +22,13 @@ namespace tidal {
         explicit TidalSettings(QWidget *parent = nullptr);
         ~TidalSettings();
         void setActivePage() override;
+        void slot_clickBtnLogout();//c230329
 
     signals:
 
     private slots:
         void slot_acceptedDialogLogin() override;
-        void slot_clickBtnLogout();
+        //void slot_clickBtnLogout();//c230329
         void slot_successProcLogout();
         void slot_change_logout();
 

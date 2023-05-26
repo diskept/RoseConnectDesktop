@@ -23,6 +23,8 @@ namespace video {
 
         QJsonObject get_videoInfo();
         int get_fixedHeight() override;
+        int get_fixedWidth();
+        int get_rightMargin();
 
     protected slots:
         void slot_responseHttp(const int &p_id, const QJsonObject &p_jsonObject);

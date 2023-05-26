@@ -24,10 +24,10 @@ RoseTubeRelationDelegate::RoseTubeRelationDelegate(QObject *parent)
  * @brief RoseTubeRelationDelegate::setInit : 초기값 세팅
  */
 void RoseTubeRelationDelegate::setInit(){
-    pixmapHeartOn.load(":images/list_fav_icon_on.png");
-    pixmapHeartOff.load(":images/list_fav_icon.png");
-    pixmapMore.load(":images/icon_menu.png");
-    pixmapPlay.load(":images/album_play_icon.png");
+    pixmapHeartOn.load(":/images/list_fav_icon_on.png");
+    pixmapHeartOff.load(":/images/list_fav_icon.png");
+    pixmapMore.load(":/images/icon_menu.png");
+    pixmapPlay.load(":/images/album_play_icon.png");
 }
 
 /**

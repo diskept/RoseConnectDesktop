@@ -48,30 +48,48 @@ namespace tidal {
     }
 
 
+    void TidalMyPlaylistAll::setJsonObject_forData(const QJsonObject &jsonObj){
+
+        QString curr_api_subPath = ProcJsonEasy::getString(jsonObj, "pageCode");
+        this->flagNeedReload = false;
+
+        if(curr_api_subPath != this->api_subPath){
+            this->flagNeedReload = true;
+
+            this->api_subPath = curr_api_subPath;
+        }
+        else{
+            print_debug();ContentLoadingwaitingMsgHide();   //j230328
+        }
+    }
+
+
     /**
      * @brief 페이지 활성화를 처리하는 함수임.
      * HTTP API 호출한다.
      */
     void TidalMyPlaylistAll::setActivePage(){
 
-        // 항상 부모클래스의 함수 먼저 호출
-        AbstractTidalSubWidget::setActivePage();
+        if(this->flagNeedReload == true){
+            // 항상 부모클래스의 함수 먼저 호출
+            AbstractTidalSubWidget::setActivePage();
 
-        // init
-        this->initAll();
-        this->chooseFilterOpt->hideFilterBox();
+            // init
+            this->initAll();
+            this->chooseFilterOpt->hideFilterBox();
 
-        // init Data
-        this->selected_filterCode = this->list_filterOpt_sort.first().opt_code;         // default
+            // init Data
+            this->selected_filterCode = this->list_filterOpt_sort.first().opt_code;         // default
 
-        QString def_code = this->list_filterOpt_sort.first().opt_code.toString();
-        QString def_name = this->list_filterOpt_sort.first().opt_name;
-        this->filterWidget->clear_filter();
-        this->filterWidget->add_filter(def_code, def_name);
+            QString def_code = this->list_filterOpt_sort.first().opt_code.toString();
+            QString def_name = this->list_filterOpt_sort.first().opt_name;
+            this->filterWidget->clear_filter();
+            this->filterWidget->add_filter(def_code, def_name);
 
-        ContentLoadingwaitingMsgShow(tr("Content is being loaded. Please wait."));
+            print_debug();ContentLoadingwaitingMsgShow(tr("Content is being loaded. Please wait."));
 
-        this->request_more_playlistData();
+            this->request_more_playlistData();
+        }
     }
 
 
@@ -83,7 +101,7 @@ namespace tidal {
         this->addUIControl_mainTitle(tr("My Playlists"));
 
         // filtering
-        this->setUiControl_filter();
+        this->setUIControl_filter();
 
         // layout for items
         this->flowLayout_playlists = this->get_addUIControl_flowLayout(0, 20);
@@ -97,9 +115,9 @@ namespace tidal {
 
 
     /**
-     * @brief TidalMyPlaylistAll::setUiControl_filter
+     * @brief TidalMyPlaylistAll::setUIControl_filter
      */
-    void TidalMyPlaylistAll::setUiControl_filter(){
+    void TidalMyPlaylistAll::setUIControl_filter(){
 
         // 필터링 부분
         this->filterWidget = new FilterWidget();
@@ -163,7 +181,7 @@ namespace tidal {
 
             this->flag_playlist_draw = true;
 
-            ContentLoadingwaitingMsgShow(tr("Content is being loaded. Please wait."));
+            print_debug();ContentLoadingwaitingMsgShow(tr("Content is being loaded. Please wait."));
 
             this->request_more_playlistDraw();
         }
@@ -188,10 +206,31 @@ namespace tidal {
      * @brief 스크롤링에 대해서, get more data 처리
      * @param event
      */
-    void TidalMyPlaylistAll::resizeEvent(QResizeEvent *event){
+    void TidalMyPlaylistAll::resizeEvent(QResizeEvent *event){//c230223
 
         AbstractTidalSubWidget::resizeEvent(event);
+        print_debug();
+        //qDebug() << flowLayout_playlists->sizeHint();
+        //qDebug() << this->box_contents->sizeHint();
 
+        //int w = flowLayout_playlists->sizeHint().width();
+        int w = 217, l = 80, r = 60, scrollbarW = 0;
+
+        int mod_nn = (global.LmtCnt-l-r-scrollbarW)%(w+0);
+        //qDebug() << "mod_nn=" << mod_nn;
+        int i = 0;
+        while(1){
+
+            mod_nn = (global.LmtCnt-l-r-scrollbarW)%(w+0+i);
+            if(mod_nn > 20){
+
+                mod_nn = (global.LmtCnt-l-r-scrollbarW)%(w+(0+(i++)));
+            }else{
+                break;
+            }
+        }
+
+        flowLayout_playlists->setSpacingHV(0+i,20);
         // BugsChooseFilterOpt 위젯의 사이즈를 업데이트 해줘야함
         if(this->chooseFilterOpt != nullptr){
             this->chooseFilterOpt->setFixedSize(event->size());
@@ -254,7 +293,12 @@ namespace tidal {
             this->flagReqMore_playlist = true;
 
             // j220913 list count check
-            int width_cnt = global.LmtCnt / 220;
+            int width_cnt;//c230223
+            if(flowLayout_playlists->sizeHint().width() < 0) {//c230223
+                width_cnt = global.LmtCnt / 217;
+            }else{
+                width_cnt = global.LmtCnt / flowLayout_playlists->sizeHint().width();//
+            }
             int mod = this->playlist_draw_cnt % width_cnt;
             int height_cnt = 0;
 
@@ -301,7 +345,7 @@ namespace tidal {
     void TidalMyPlaylistAll::request_more_playlistDraw(){
 
         // j220913 list count check
-        int width_cnt = global.LmtCnt / 220;
+        int width_cnt = global.LmtCnt / flowLayout_playlists->sizeHint().width();
         int mod = this->playlist_draw_cnt % width_cnt;
         int height_cnt = 0;
 
@@ -400,6 +444,8 @@ namespace tidal {
                     QCoreApplication::processEvents();
                 }
 
+                ContentLoadingwaitingMsgHide();      // 20230314
+
                 this->flag_flow_draw = true;
                 this->flag_playlist_draw = false;
             }
@@ -460,7 +506,9 @@ namespace tidal {
      * @brief TidalRecentlyPlaylistAll::TidalRecentlyPlaylistAll
      * @param parent
      */
-    TidalRecentlyPlaylistAll::TidalRecentlyPlaylistAll(QWidget *parent) : AbstractTidalSubWidget(MainUIType::VerticalScroll_viewAll, parent) {
+    TidalRecentlyPlaylistAll::TidalRecentlyPlaylistAll(QWidget *parent) : AbstractTidalSubWidget(MainUIType::VerticalScroll_roseviewAll, parent) {
+
+        this->linker = Linker::getInstance();
 
         // 기본 UI 세팅
         this->setUIControl_playlist();
@@ -490,12 +538,14 @@ namespace tidal {
         QString mainTitle = ProcJsonEasy::getString(jsonObj, "title");
         this->flagNeedReload = false;
 
-        if(pageCode != this->page_reload_check){
+        if(pageCode != this->page || this->title != mainTitle){
             this->flagNeedReload = true;
 
-            this->page_reload_check = pageCode;
+            this->page = pageCode;
+            this->title = mainTitle;
 
             this->label_mainTitle->setText(mainTitle);
+            this->label_mainTitle->setGeometry(33, 15, this->label_mainTitle->sizeHint().width(), this->label_mainTitle->sizeHint().height());
 
             // init
             this->next_offset = 0;
@@ -511,9 +561,17 @@ namespace tidal {
 
             this->flag_playlist_draw = false;
 
-            ContentLoadingwaitingMsgShow(tr("Content is being loaded. Please wait."));
+            print_debug();ContentLoadingwaitingMsgShow(tr("Content is being loaded. Please wait."));
 
             this->request_more_playlistData();
+        }
+        else{
+            print_debug();ContentLoadingwaitingMsgShow(tr("Content is being loaded. Please wait."));
+
+            // request HTTP API
+            roseHome::ProcCommon *proc_recently = new roseHome::ProcCommon(this);
+            connect(proc_recently, &roseHome::ProcCommon::completeReq_list_playlists, this, &TidalRecentlyPlaylistAll::slot_applyResult_playlistsCheck);
+            proc_recently->request_rose_getList_recentlyPlaylists("member/playlist/recent", "TIDAL", 0, 10);
         }
     }
 
@@ -539,19 +597,63 @@ namespace tidal {
     }
 
 
-
     /**
      * @brief TidalRecentlyPlaylistAll::setUIControll_basic
      */
     void TidalRecentlyPlaylistAll::setUIControl_playlist(){
 
-        this->label_mainTitle = this->get_addUIControl_mainTitle("Playlists");
+        GSCommon::clearLayout(this->box_mainTitle);
+
+        this->widget_mainTitle = new QWidget();
+        this->widget_mainTitle->setStyleSheet("background-color:#171717;");
+        this->widget_mainTitle->setMinimumSize(800, 69);
+        this->widget_mainTitle->resize(global.LmtCnt, 69);
+
+        this->label_mainTitle = new QLabel(this->widget_mainTitle);
+        this->label_mainTitle->setStyleSheet("background-color:transparent; font-size:26px; color:#FFFFFF;");
+        this->label_mainTitle->setText("");
+        this->label_mainTitle->setGeometry(33, 15, this->label_mainTitle->sizeHint().width(), this->label_mainTitle->sizeHint().height());
+
+        this->btn_mainTitle = new QPushButton(this->widget_mainTitle);
+        this->btn_mainTitle->setObjectName("btn_mainTitle");
+        this->btn_mainTitle->setCursor(Qt::PointingHandCursor);
+        this->btn_mainTitle->setStyleSheet("background-color:transparent;");
+
+        connect(this->btn_mainTitle, &QPushButton::clicked, this, &TidalRecentlyPlaylistAll::slot_btnClicked_Delete);
+
+        this->label_delete_icon = GSCommon::getUILabelImg(":/images/q_del_ico.png", this->btn_mainTitle);
+        this->label_delete_icon->setGeometry(0, 10, 50, 50);
+
+        this->label_delete = new QLabel(this->btn_mainTitle);
+        this->label_delete->setText(tr("Delete"));
+        this->label_delete->setStyleSheet("background-color:transparent;font-size:20px;color:#FFFFFF;");
+        this->label_delete->setAlignment(Qt::AlignVCenter | Qt::AlignLeft);
+        this->label_delete->setGeometry(60, 23, this->label_delete->sizeHint().width(), this->label_delete->sizeHint().height());
+
+        this->btn_mainTitle->setGeometry(global.LmtCnt - (this->label_delete->sizeHint().width() + 60 + 53), 0, (this->label_delete->sizeHint().width() + 60), 50);
+
+        this->box_mainTitle->addWidget(this->widget_mainTitle);
+
+        // 하단에 구분 라인
+        this->addUIControl_dividedLine_onMain();
+
+        GSCommon::clearLayout(this->box_contents);
+        this->box_contents->setAlignment(Qt::AlignTop);
+        this->scrollArea_main->setVerticalScrollBarPolicy(Qt::ScrollBarAsNeeded);
+
+        roseHome::ItemPlaylist_rosehome *listAlbum = new roseHome::ItemPlaylist_rosehome(0, 0, tidal::AbstractItem::ImageSizeMode::Square_200x200, 8, true);
+
+        this->playlist_widget_width = listAlbum->get_fixedWidth();
+        this->playlist_widget_margin = listAlbum->get_rightMargin();
+
+        //qDebug() << "[Debug] RoseHomeAlbumListAll::setUIControl_albums " << listAlbum->get_fixedWidth() << listAlbum->get_rightMargin();
+
+        delete listAlbum;
+
+        this->flowLayout_playlists = this->get_addUIControl_flowLayout(0, 20);
 
         // filtering
-        //this->setUiControl_filter();
-
-        // layout for items
-        this->flowLayout_playlists = this->get_addUIControl_flowLayout(0, 20);
+        //this->setUIControl_filter();
 
         // filter option box
         this->chooseFilterOpt = new bugs::BugsChooseFilterOpt(this);
@@ -561,9 +663,9 @@ namespace tidal {
 
 
     /**
-     * @brief TidalRecentlyPlaylistAll::setUiControl_filter
+     * @brief TidalRecentlyPlaylistAll::setUIControl_filter
      */
-    void TidalRecentlyPlaylistAll::setUiControl_filter(){
+    void TidalRecentlyPlaylistAll::setUIControl_filter(){
 
         // 필터링 부분
         this->filterWidget = new FilterWidget();
@@ -594,13 +696,42 @@ namespace tidal {
 
 
     /**
+     * @brief 데이터 , UI 초기화
+     */
+    void TidalRecentlyPlaylistAll::initAll(){
+
+        // init
+        this->next_offset = 0;
+        this->playlist_total_cnt = 0;
+        this->playlist_draw_cnt = 0;
+
+        this->list_playlist->clear();
+
+        // request HTTP API
+        this->flagReqMore_playlist = false;
+        this->flag_lastPage_playlist = false;
+
+        this->flag_playlist_draw = false;
+
+        GSCommon::clearLayout(this->flowLayout_playlists);
+
+        print_debug();ContentLoadingwaitingMsgShow(tr("Content is being loaded. Please wait."));
+    }
+
+
+    /**
      * @brief 스크롤 Bottom에 대하여 Get more data 처리
      */
     void TidalRecentlyPlaylistAll::proc_wheelEvent_to_getMoreData(){
 
-        if((this->playlist_total_cnt > this->playlist_draw_cnt) && (this->list_playlist->size() > this->playlist_draw_cnt) && (this->flag_playlist_draw == false)){
+        if((!this->flagReqMore_playlist && !this->flag_lastPage_playlist) && (this->scrollArea_main->verticalScrollBar()->value() == this->scrollArea_main->verticalScrollBar()->maximum())){
+            this->flagReqMore_playlist = true;
 
-            this->flag_playlist_draw = true;
+            ContentLoadingwaitingMsgShow(tr("Content is being loaded. Please wait."));
+
+            this->request_more_playlistData();
+        }
+        else if((this->playlist_total_cnt > this->playlist_draw_cnt) && this->flag_playlist_draw == false && (this->scrollArea_main->verticalScrollBar()->value() == this->scrollArea_main->verticalScrollBar()->maximum())){
 
             ContentLoadingwaitingMsgShow(tr("Content is being loaded. Please wait."));
 
@@ -621,6 +752,9 @@ namespace tidal {
         if(this->chooseFilterOpt != nullptr){
             this->chooseFilterOpt->setFixedSize(event->size());
         }
+
+        this->setFlowLayoutResize(this, this->flowLayout_playlists, this->playlist_widget_width, this->playlist_widget_margin);
+
     }
 
 
@@ -676,65 +810,59 @@ namespace tidal {
      */
     void TidalRecentlyPlaylistAll::request_more_playlistData(){
 
-        if(!this->flagReqMore_playlist && !this->flag_lastPage_playlist){
-            this->flagReqMore_playlist = true;
-
-            // j220913 list count check
-            int width_cnt = global.LmtCnt / 220;
-            int mod = this->playlist_draw_cnt % width_cnt;
-
-            if(mod == 0){
-                this->playlist_widget_cnt = width_cnt * 10;
-            }
-            else{
-                this->playlist_widget_cnt = width_cnt * 10 + (width_cnt - mod);
-            }
-            // j220913 list count check
-
-            // next_offset
-            if(this->list_playlist->size() == 0){
-                this->next_offset = 0;
-            }
-            else{
-                this->next_offset++;
-            }
-
-
-            // filtering
-            QString selected_sortOpt = this->selected_filterCode.toString();
-            ProcCommon::DataOrderOption sortOpt = ProcCommon::DataOrderOption::NAME;      // 기본값
-            ProcCommon::DataOrderDirection orderDirection = ProcCommon::DataOrderDirection::ASC;      // 기본값
-
-            if(selected_sortOpt == QVariant::fromValue(ProcCommon::DataOrderOption::DATE).toString()){
-                sortOpt = ProcCommon::DataOrderOption::DATE;
-                orderDirection = ProcCommon::DataOrderDirection::DESC;
-            }
-
-            // request HTTP API
-            roseHome::ProcCommon *proc = new roseHome::ProcCommon(this);
-            connect(proc, &roseHome::ProcCommon::completeReq_list_playlists, this, &TidalRecentlyPlaylistAll::slot_applyResult_myPlaylist_rose);
-            proc->request_rose_getList_recentlyPlaylists("member/playlist/recent", "TIDAL", this->next_offset, this->playlist_widget_cnt);
-
-            if(this->next_offset == 0){
-                this->flag_playlist_draw = true;
-            }
+        // next_offset
+        if(this->list_playlist->size() == 0){
+            this->next_offset = 0;
         }
+        else{
+            this->next_offset++;
+        }
+
+
+        // filtering
+        /*QString selected_sortOpt = this->selected_filterCode.toString();
+        ProcCommon::DataOrderOption sortOpt = ProcCommon::DataOrderOption::NAME;      // 기본값
+        ProcCommon::DataOrderDirection orderDirection = ProcCommon::DataOrderDirection::ASC;      // 기본값
+
+        if(selected_sortOpt == QVariant::fromValue(ProcCommon::DataOrderOption::DATE).toString()){
+            sortOpt = ProcCommon::DataOrderOption::DATE;
+            orderDirection = ProcCommon::DataOrderDirection::DESC;
+        }*/
+
+        // request HTTP API
+        roseHome::ProcCommon *proc = new roseHome::ProcCommon(this);
+        connect(proc, &roseHome::ProcCommon::completeReq_list_playlists, this, &TidalRecentlyPlaylistAll::slot_applyResult_myPlaylist_rose);
+        proc->setProperty("idx", this->next_offset);
+        proc->request_rose_getList_recentlyPlaylists("member/playlist/recent", "TIDAL", this->next_offset, 200);
+
+        if(this->next_offset == 0){
+            this->flag_playlist_draw = true;
+        }
+
     }
 
 
     void TidalRecentlyPlaylistAll::request_more_playlistDraw(){
 
-        // j220913 list count check
-        int width_cnt = global.LmtCnt / 220;
-        int mod = this->playlist_draw_cnt % width_cnt;
+        this->flag_playlist_draw = true;
 
-        if(mod == 0){
-            this->playlist_widget_cnt = width_cnt * 10;
+        int f_width = this->flowLayout_playlists->geometry().width();
+
+        if(this->flowLayout_playlists->geometry().width() <= 0){
+            f_width = this->width() - (80 + 63) - 10;
+        }
+
+        int f_wg_cnt = f_width / (this->playlist_widget_width + this->playlist_widget_margin);
+        int f_mod = this->playlist_draw_cnt % f_wg_cnt;
+
+        if(f_mod == 0){
+            this->playlist_widget_cnt = f_wg_cnt * 10;
         }
         else{
-            this->playlist_widget_cnt = width_cnt * 10 + (width_cnt - mod);
+            this->playlist_widget_cnt = f_wg_cnt * 10 + (f_wg_cnt - f_mod);
         }
-        // j220913 list count check
+
+        //qDebug() << "[Debug] RoseHomeAlbumListAll::request_more_albumDraw " << f_width << f_wg_cnt << f_mod << this->album_widget_cnt;
 
         int start_index = this->playlist_draw_cnt;
         int max_cnt = ((this->playlist_total_cnt - this->playlist_draw_cnt) > this->playlist_widget_cnt ) ? this->playlist_widget_cnt : (this->playlist_total_cnt - this->playlist_draw_cnt);
@@ -742,17 +870,21 @@ namespace tidal {
 
         for(int i = start_index; i < this->playlist_draw_cnt; i++){
             this->listPlaylist_all[i] = new roseHome::ItemPlaylist_rosehome(i, SECTION_FOR_MORE_POPUP___playlists_created, tidal::AbstractItem::ImageSizeMode::Square_200x200, 2, true);
-            connect(this->listPlaylist_all[i], &roseHome::ItemPlaylist_rosehome::signal_clicked, this, &TidalRecentlyPlaylistAll::slot_clickedItemPlaylist);
+            QCoreApplication::processEvents();
         }
 
         for(int i = start_index; i < this->playlist_draw_cnt; i++){
             this->listPlaylist_all[i]->setData(this->list_playlist->at(i));
-            this->flowLayout_playlists->addWidget(this->listPlaylist_all[i]);
-
             QCoreApplication::processEvents();
         }
 
+        for(int i = start_index; i < this->playlist_draw_cnt; i++){
+            this->flowLayout_playlists->addWidget(this->listPlaylist_all[i]);
+            connect(this->listPlaylist_all[i], &roseHome::ItemPlaylist_rosehome::signal_clicked, this, &TidalRecentlyPlaylistAll::slot_clickedItemPlaylist);
+        }
+
         ContentLoadingwaitingMsgHide();
+
         this->flag_playlist_draw = false;
     }
 
@@ -772,6 +904,12 @@ namespace tidal {
 
         Q_UNUSED(jsonArr_dataToPlay);
 
+        int idx = sender()->property("idx").toInt();
+
+        if(idx != this->next_offset){
+            return;
+        }
+
         if(list_data.size() > 0){
             this->flagReqMore_playlist = false;
             this->flag_lastPage_playlist = flag_lastPage;
@@ -784,38 +922,145 @@ namespace tidal {
             this->list_playlist->append(list_data);
 
             if(start_index == 0){
-                int max_cnt = this->list_playlist->size();
-                this->playlist_draw_cnt = max_cnt;
+                int f_width = this->flowLayout_playlists->geometry().width();
+
+                if(this->flowLayout_playlists->geometry().width() <= 0){
+                    f_width = this->width() - (80 + 63) - 10;
+                }
+
+                int f_wg_cnt = f_width / (this->playlist_widget_width + this->playlist_widget_margin);
+                int f_mod = this->playlist_draw_cnt % f_wg_cnt;
+
+                if(f_mod == 0){
+                    this->playlist_widget_cnt = f_wg_cnt * 10;
+                }
+                else{
+                    this->playlist_widget_cnt = f_wg_cnt * 10 + (f_wg_cnt - f_mod);
+                }
+
+                //qDebug() << "[Debug] RoseHomeAlbumListAll::slot_applyResult_albums " << f_width << f_wg_cnt << f_mod << this->album_widget_cnt;
+
+                int start_index = this->playlist_draw_cnt;
+                int max_cnt = ((this->playlist_total_cnt - this->playlist_draw_cnt) > this->playlist_widget_cnt ) ? this->playlist_widget_cnt : (this->playlist_total_cnt - this->playlist_draw_cnt);
+                this->playlist_draw_cnt += max_cnt;
 
                 for(int i = start_index; i < this->playlist_draw_cnt; i++){
                     this->listPlaylist_all[i] = new roseHome::ItemPlaylist_rosehome(i, SECTION_FOR_MORE_POPUP___playlists_created, tidal::AbstractItem::ImageSizeMode::Square_200x200, 2, true);
-                    connect(this->listPlaylist_all[i], &roseHome::ItemPlaylist_rosehome::signal_clicked, this, &TidalRecentlyPlaylistAll::slot_clickedItemPlaylist);
+                    QCoreApplication::processEvents();
                 }
 
                 for(int i = start_index; i < this->playlist_draw_cnt; i++){
                     this->listPlaylist_all[i]->setData(this->list_playlist->at(i));
-                    this->flowLayout_playlists->addWidget(this->listPlaylist_all[i]);
-
                     QCoreApplication::processEvents();
                 }
+
+                for(int i = start_index; i < this->playlist_draw_cnt; i++){
+                    this->flowLayout_playlists->addWidget(this->listPlaylist_all[i]);
+                    connect(this->listPlaylist_all[i], &roseHome::ItemPlaylist_rosehome::signal_clicked, this, &TidalRecentlyPlaylistAll::slot_clickedItemPlaylist);
+                }
+
+                ContentLoadingwaitingMsgHide();      //cheon Tidal
 
                 this->flag_flow_draw = true;
                 this->flag_playlist_draw = false;
             }
-
-            ContentLoadingwaitingMsgHide();
-            this->request_more_playlistData();
+            else{
+                this->request_more_playlistDraw();
+            }
         }
         else{
             ContentLoadingwaitingMsgHide();      //cheon Tidal
 
-            if(this->list_playlist->size() <= 0){
-                NoData_Widget *noData_widget = new NoData_Widget(NoData_Widget::NoData_Message::Playlist_NoData);
-                noData_widget->setFixedSize(1500, 500);
+            if(this->playlist_draw_cnt <= 0){
+                // noData widget change - by diskept j230317 start
+                int f_width = this->flowLayout_playlists->geometry().width();
+
+                if(this->flowLayout_playlists->geometry().width() <= 0){
+                    f_width = this->width() - (80 + 63) - 10;
+                }
+
+                NoData_Widget *noData_widget = new NoData_Widget(NoData_Widget::NoData_Message::Album_NoData);
+                noData_widget->setFixedSize(f_width, 500);
+                // noData widget change - by diskept j230317 finish
 
                 this->flowLayout_playlists->addWidget(noData_widget);
             }
         }
+    }
+
+
+    void TidalRecentlyPlaylistAll::slot_applyResult_playlistsCheck(const QList<roseHome::PlaylistItemData> &list_data, const QJsonArray &jsonArr_dataToPlay, const bool flag_lastPage){
+
+        Q_UNUSED(jsonArr_dataToPlay);
+        Q_UNUSED(flag_lastPage);
+
+        int change_flag = 0;
+
+        if(list_data.size() > 0){
+            if(this->list_playlist->count() == 0){
+
+            }
+            else{
+                for(int i = 0; i < list_data.count(); i++){
+                    if(list_data.at(i).title != this->list_playlist->at(i).title){
+                        change_flag++;
+                    }
+                }
+
+                if((list_data.at(0).totalCount != this->list_playlist->at(0).totalCount) || (change_flag > 0)){
+
+                    QString tmpTitle = tr("Recently Played Playlists") + QString(" (%1)").arg(list_data.at(0).totalCount);
+                    this->label_mainTitle->setText(tmpTitle);
+                    this->label_mainTitle->setGeometry(33, 15, this->label_mainTitle->sizeHint().width(), this->label_mainTitle->sizeHint().height());
+
+                    this->initAll();
+
+                    ContentLoadingwaitingMsgHide();
+                    this->request_more_playlistData();
+
+                    this->flagNeedReload = true;
+                    this->setActivePage();
+                }
+                else{
+                    ContentLoadingwaitingMsgHide();
+                }
+            }
+        }
+        else if(list_data.size() == 0){
+
+            QString tmpTitle = tr("Recently Played Playlists (0)");
+            this->label_mainTitle->setText(tmpTitle);
+            this->label_mainTitle->setGeometry(33, 15, this->label_mainTitle->sizeHint().width(), this->label_mainTitle->sizeHint().height());
+
+            this->initAll();
+
+            ContentLoadingwaitingMsgHide();
+            this->request_more_playlistData();
+
+            this->flagNeedReload = true;
+            this->setActivePage();
+        }
+        else{
+            ContentLoadingwaitingMsgHide();
+        }
+    }
+
+
+    void TidalRecentlyPlaylistAll::slot_btnClicked_Delete(){
+
+        QStringList tmpTitle = this->title.split("(");
+
+        QJsonObject tmpObj;
+        tmpObj.insert("contents_type", tmpTitle.at(0));
+        tmpObj.insert("list_type", "PLAYLIST");
+        tmpObj.insert("api_subPath", "member/playlist/recent");
+        tmpObj.insert("filter_type", "TIDAL");
+
+        QJsonObject tmpObj_move;
+        tmpObj_move.insert(KEY_PAGE_CODE, PAGECODE_T_MY_RECENTLY_LIST_DELETE);
+        tmpObj_move.insert(KEY_DATA, tmpObj);
+
+        emit this->linker->signal_clickedMovePage(tmpObj_move);
     }
 
 
@@ -948,10 +1193,432 @@ namespace tidal {
 
 
     /**
+     * @brief RoseHomePlaylistListAll::RoseHomePlaylistListAll
+     * @param parent
+     */
+    TidalPlaylistHistoryAll::TidalPlaylistHistoryAll(QWidget *parent) : AbstractTidalSubWidget(MainUIType::VerticalScroll_roseviewAll, parent) {
+
+        // 기본 UI 세팅
+        this->setUIControl_playlist();
+
+        this->list_playlist = new QList<roseHome::PlaylistItemData>();
+    }
+
+    /**
+         * @brief 소멸자.
+         */
+    TidalPlaylistHistoryAll::~TidalPlaylistHistoryAll(){
+
+        this->deleteLater();
+    }
+
+
+    /**
+     * @brief 전달받은 JSON 데이터로, 기본 데이터를 세팅한다.
+     * @param jsonObj
+     */
+    void TidalPlaylistHistoryAll::setJsonObject_forData(const QJsonObject &jsonObj){
+
+        roseHome::PageInfo_PlaylistAllView tmp_pageInfo = roseHome::ConvertData::convertData_pageInfo_playlistAllView(jsonObj);
+        this->flagNeedReload = false;
+
+        if(tmp_pageInfo.api_subPath != this->data_pageInfo.api_subPath || tmp_pageInfo.pathTitle != this->data_pageInfo.pathTitle || tmp_pageInfo.filter_type != this->data_pageInfo.filter_type){
+            this->flagNeedReload = true;
+
+            this->data_pageInfo = tmp_pageInfo;
+
+            this->label_mainTitle->setText(this->data_pageInfo.pathTitle);
+        }
+        else{
+            print_debug();ContentLoadingwaitingMsgHide();   //j230328
+        }
+    }
+
+
+    /**
+     * @brief 페이지 활성화를 처리하는 함수임.
+     * HTTP API 호출한다.
+     */
+    void TidalPlaylistHistoryAll::setActivePage(){
+
+        if(this->flagNeedReload){
+
+            // 항상 부모클래스의 함수 먼저 호출
+            AbstractTidalSubWidget::setActivePage();
+
+            // init
+            this->list_playlist->clear();
+
+            GSCommon::clearLayout(this->box_contents);
+            this->box_contents->setAlignment(Qt::AlignTop);
+            this->scrollArea_main->setVerticalScrollBarPolicy(Qt::ScrollBarAsNeeded);
+
+            this->flowLayout_playlists = this->get_addUIControl_flowLayout(0, 20);
+            GSCommon::clearLayout(this->flowLayout_playlists);
+
+            this->flagReqMore_playlist = false;
+            this->flag_lastPage_playlist = false;
+
+            print_debug();ContentLoadingwaitingMsgShow(tr("Content is being loaded. Please wait."));
+            this->request_more_Data();
+        }
+    }
+
+
+    //-----------------------------------------------------------------------------------------------------------------------
+    //
+    // MARK : Create UI and Set
+    //
+    //-----------------------------------------------------------------------------------------------------------------------
+
+    /**
+     * @brief 기본 UI 구성함
+     */
+    void TidalPlaylistHistoryAll::setUIControl_playlist(){
+
+        this->label_mainTitle = this->get_addUIControl_mainTitle("");
+
+        // 하단에 구분 라인
+        this->addUIControl_dividedLine_onMain();
+
+        GSCommon::clearLayout(this->box_contents);
+        this->box_contents->setAlignment(Qt::AlignTop);
+        this->scrollArea_main->setVerticalScrollBarPolicy(Qt::ScrollBarAsNeeded);
+
+        roseHome::ItemPlaylist_rosehome *listAlbum = new roseHome::ItemPlaylist_rosehome(0, 0, tidal::AbstractItem::ImageSizeMode::Square_200x200, 5, true);
+
+        this->playlist_widget_width = listAlbum->get_fixedWidth();
+        this->playlist_widget_margin = listAlbum->get_rightMargin();
+
+        //qDebug() << "[Debug] RoseHomeAlbumListAll::setUIControl_albums " << listAlbum->get_fixedWidth() << listAlbum->get_rightMargin();
+
+        delete listAlbum;
+
+        this->flowLayout_playlists = this->get_addUIControl_flowLayout(0, 20);
+    }
+
+    /**
+     * @brief 스크롤 Bottom에 대하여 Get more data 처리
+     */
+    void TidalPlaylistHistoryAll::proc_wheelEvent_to_getMoreData(){
+
+        if((!this->flagReqMore_playlist && !this->flag_lastPage_playlist) && (this->scrollArea_main->verticalScrollBar()->value() == this->scrollArea_main->verticalScrollBar()->maximum())){
+            this->flagReqMore_playlist = true;
+
+            print_debug();ContentLoadingwaitingMsgShow(tr("Content is being loaded. Please wait."));
+
+            this->request_more_Data();
+        }
+        else if((this->playlist_totalCount > this->playlist_drawCount) && this->flag_playlist_draw == false && (this->scrollArea_main->verticalScrollBar()->value() == this->scrollArea_main->verticalScrollBar()->maximum())){
+
+            print_debug();ContentLoadingwaitingMsgShow(tr("Content is being loaded. Please wait."));
+
+            this->request_more_Draw();
+        }
+    }
+
+    /**
+     * @brief 스크롤링에 대해서, get more data 처리
+     * @param event
+     */
+    void TidalPlaylistHistoryAll::resizeEvent(QResizeEvent *event){//c230223
+
+        AbstractTidalSubWidget::resizeEvent(event);
+
+        this->setFlowLayoutResize(this, this->flowLayout_playlists, this->playlist_widget_width, this->playlist_widget_margin);
+
+    }
+
+    // MARK : Request HTTP API  ------------------------------------------------------------------------------------------
+
+    void TidalPlaylistHistoryAll::request_more_Data(){
+
+        // next_offset
+        if(this->list_playlist->size() == 0){
+            this->playlist_next_offset = 0;
+        }
+        else{
+            this->playlist_next_offset++;
+        }
+
+        roseHome::ProcCommon *proc_playlist = new roseHome::ProcCommon(this);
+        connect(proc_playlist, &roseHome::ProcCommon::completeReq_list_playlists, this, &TidalPlaylistHistoryAll::slot_applyResult_historyPlaylist);
+        proc_playlist->setProperty("idx", this->playlist_next_offset);
+        proc_playlist->request_rose_getList_historyPlaylists(this->data_pageInfo.api_subPath, this->data_pageInfo.filter_type, this->playlist_next_offset, 200);
+
+        if(this->playlist_next_offset == 0){
+            this->flag_playlist_draw = true;
+        }
+    }
+
+
+    void TidalPlaylistHistoryAll::request_more_Draw(){
+
+        this->flag_playlist_draw = true;
+
+        int f_width = this->flowLayout_playlists->geometry().width();
+
+        if(this->flowLayout_playlists->geometry().width() <= 0){
+            f_width = this->width() - (80 + 63) - 10;
+        }
+
+        int f_wg_cnt = f_width / (this->playlist_widget_width + this->playlist_widget_margin);
+        int f_mod = this->playlist_drawCount % f_wg_cnt;
+
+        if(f_mod == 0){
+            this->playlist_widget_cnt = f_wg_cnt * 10;
+        }
+        else{
+            this->playlist_widget_cnt = f_wg_cnt * 10 + (f_wg_cnt - f_mod);
+        }
+
+        //qDebug() << "[Debug] RoseHomeAlbumListAll::request_more_albumDraw " << f_width << f_wg_cnt << f_mod << this->album_widget_cnt;
+
+        int start_index = this->playlist_drawCount;
+        int max_cnt = ((this->playlist_totalCount - this->playlist_drawCount) > this->playlist_widget_cnt ) ? this->playlist_widget_cnt : (this->playlist_totalCount - this->playlist_drawCount);
+        this->playlist_drawCount += max_cnt;
+
+        for(int i = start_index; i < this->playlist_drawCount; i++){
+            this->widget_playlist[i] = new roseHome::ItemPlaylist_rosehome(i, SECTION_FOR_MORE_POPUP___playlists_created, tidal::AbstractItem::ImageSizeMode::Square_200x200, 5, true);
+            QCoreApplication::processEvents();
+        }
+
+        for(int i = start_index; i < this->playlist_drawCount; i++){
+            this->widget_playlist[i]->setData(this->list_playlist->at(i));
+            QCoreApplication::processEvents();
+        }
+
+        for(int i = start_index; i < this->playlist_drawCount; i++){
+            this->flowLayout_playlists->addWidget(this->widget_playlist[i]);
+            connect(this->widget_playlist[i], &roseHome::ItemPlaylist_rosehome::signal_clicked, this, &TidalPlaylistHistoryAll::slot_clickedItemPlaylist);
+        }
+
+        ContentLoadingwaitingMsgHide();
+        this->flag_playlist_draw = false;
+    }
+
+
+    // MARK : User Event Handler (slots) ---------------------------------------------------------------------------------
+
+    void TidalPlaylistHistoryAll::slot_applyResult_historyPlaylist(const QList<roseHome::PlaylistItemData> &list_data, const QJsonArray &jsonArr_dataToPlay, const bool flag_lastPage){
+
+        Q_UNUSED(jsonArr_dataToPlay);
+
+        int idx = sender()->property("idx").toInt();
+
+        if(idx != this->playlist_next_offset){
+            return;
+        }
+
+        if(list_data.size() > 0){
+            this->flag_lastPage_playlist = flag_lastPage;
+            this->flagReqMore_playlist = false;
+
+            if(this->list_playlist->count() == 0){
+                this->playlist_totalCount = list_data.at(0).totalCount;
+            }
+
+            int start_index = this->list_playlist->count();
+            this->list_playlist->append(list_data);
+
+            if(start_index == 0){
+                int f_width = this->flowLayout_playlists->geometry().width();
+
+                if(this->flowLayout_playlists->geometry().width() <= 0){
+                    f_width = this->width() - (80 + 63) - 10;
+                }
+
+                int f_wg_cnt = f_width / (this->playlist_widget_width + this->playlist_widget_margin);
+                int f_mod = this->playlist_drawCount % f_wg_cnt;
+
+                if(f_mod == 0){
+                    this->playlist_widget_cnt = f_wg_cnt * 10;
+                }
+                else{
+                    this->playlist_widget_cnt = f_wg_cnt * 10 + (f_wg_cnt - f_mod);
+                }
+
+                //qDebug() << "[Debug] RoseHomeAlbumListAll::slot_applyResult_albums " << f_width << f_wg_cnt << f_mod << this->album_widget_cnt;
+
+                int start_index = this->playlist_drawCount;
+                int max_cnt = ((this->playlist_totalCount - this->playlist_drawCount) > this->playlist_widget_cnt ) ? this->playlist_widget_cnt : (this->playlist_totalCount - this->playlist_drawCount);
+                this->playlist_drawCount += max_cnt;
+
+                for(int i = start_index; i < this->playlist_drawCount; i++){
+                    this->widget_playlist[i] = new roseHome::ItemPlaylist_rosehome(i, SECTION_FOR_MORE_POPUP___playlists_created, tidal::AbstractItem::ImageSizeMode::Square_200x200, 5, true);
+                    QCoreApplication::processEvents();
+                }
+
+                for(int i = start_index; i < this->playlist_drawCount; i++){
+                    this->widget_playlist[i]->setData(this->list_playlist->at(i));
+                    QCoreApplication::processEvents();
+                }
+
+                for(int i = start_index; i < this->playlist_drawCount; i++){
+                    this->flowLayout_playlists->addWidget(this->widget_playlist[i]);
+                    connect(this->widget_playlist[i], &roseHome::ItemPlaylist_rosehome::signal_clicked, this, &TidalPlaylistHistoryAll::slot_clickedItemPlaylist);
+                }
+
+                this->setFlowLayoutResize(this, this->flowLayout_playlists, this->playlist_widget_width, this->playlist_widget_margin);
+
+                ContentLoadingwaitingMsgHide();
+
+                this->flag_flow_draw = true;
+                this->flag_playlist_draw = false;
+            }
+            else{
+                this->request_more_Draw();
+            }
+        }
+        else{
+            ContentLoadingwaitingMsgHide();      //cheon Tidal
+
+            if(this->playlist_drawCount <= 0){
+                // noData widget change - by diskept j230317 start
+                int f_width = this->flowLayout_playlists->geometry().width();
+
+                if(this->flowLayout_playlists->geometry().width() <= 0){
+                    f_width = this->width() - (80 + 63) - 10;
+                }
+
+                NoData_Widget *noData_widget = new NoData_Widget(NoData_Widget::NoData_Message::Album_NoData);
+                noData_widget->setFixedSize(f_width, 500);
+                // noData widget change - by diskept j230317 finish
+
+                this->flowLayout_playlists->addWidget(noData_widget);
+            }
+        }
+    }
+
+
+    //-----------------------------------------------------------------------------------------------------------------------
+    //
+    // [Slot] Item 의 custom 클릭 siganl에 대한 처리  (AbstractItem 상속받은 자식 클래스들에 대해)
+    //
+    //-----------------------------------------------------------------------------------------------------------------------
+
+    /**
+     * @brief [slot] override - ItemAlbum 위짓의 clicked 이벤트를 처리하는 슬롯함수 재정의
+     * @param clickMode
+     */
+    void TidalPlaylistHistoryAll::slot_clickedItemPlaylist(const tidal::AbstractItem::ClickMode clickMode){
+
+        int index = ((tidal::AbstractItem*)sender())->index();
+        int section = ((tidal::AbstractItem*)sender())->section();
+
+        // ClickMode 별로 처리
+        if(section == SECTION_FOR_MORE_POPUP___playlists_created){
+            //this->proc_clicked_itemPlaylist(this->list_playlist, clickMode, index, section);
+            roseHome::PlaylistItemData data = this->list_playlist->at(index);
+
+            if(clickMode == tidal::AbstractItem::ClickMode::PlayBtn){
+                // Playlist 바로 재생
+                if(data.type == "TIDAL" && data.isRose == false){
+                    tidal::PlaylistItemData tmpPlaylist;
+                    tmpPlaylist.uuid = data.clientKey;
+
+                    if(data.title.contains("Mix")){
+                        tmpPlaylist.description = "mixes";
+                    }
+
+                    tidal::ProcRosePlay_withTidal *procRosePlay = new tidal::ProcRosePlay_withTidal(this);
+                    procRosePlay->requestPlayRose_byPlaylistUUID(tmpPlaylist, OptMorePopup::ClickMode::Play_RightNow);
+                }
+                else{
+                    roseHome::ProcRosePlay_withRosehome *procRosePlay = new roseHome::ProcRosePlay_withRosehome(this);
+                    procRosePlay->requestPlayRose_byPlaylistID(this->list_playlist->at(index).id, OptMorePopup::ClickMode::Play_RightNow);
+                }
+            }
+            else if(clickMode == tidal::AbstractItem::ClickMode::AllBox){
+                // Playlist Detail 페이지 진입
+                if(data.isRose == false){
+                    if(data.ownerName == "tidal" && data.title.contains("Mix")){
+                        QJsonObject jsonObj_move = QJsonObject();
+                        jsonObj_move.insert("uuid", data.clientKey);
+                        jsonObj_move.insert("title", data.title);
+                        jsonObj_move.insert("image", data.thumbnail);
+                        jsonObj_move.insert(KEY_PAGE_CODE, PAGECODE_T_MIXES_DETAIL);
+
+                        emit this->signal_clickedMovePage(jsonObj_move);            // 페이지 이동 signal
+                    }
+                    else{
+                        if(data.clientKey.isEmpty()){
+                            QJsonObject jsonObj_move = QJsonObject();
+                            jsonObj_move.insert("id", data.id);
+                            jsonObj_move.insert("ownerId", data.ownerId);
+                            jsonObj_move.insert(KEY_PAGE_CODE, PAGECODE_T_MY_ROSE_PLAYLIST_DETAIL);
+
+                            emit this->signal_clickedMovePage(jsonObj_move);            // 페이지 이동 signal
+                        }
+                        else{
+                            QJsonObject jsonObj_move = QJsonObject();
+                            jsonObj_move.insert("uuid", data.clientKey);
+                            jsonObj_move.insert(KEY_PAGE_CODE, PAGECODE_T_PLAYLIST_DETAIL);
+
+                            emit this->signal_clickedMovePage(jsonObj_move);            // 페이지 이동 signal
+                        }
+                    }
+                }
+                else{
+                    QJsonObject jsonObj_move = QJsonObject();
+                    jsonObj_move.insert("id", data.id);
+                    jsonObj_move.insert("ownerId", data.ownerId);
+                    jsonObj_move.insert(KEY_PAGE_CODE, PAGECODE_T_MY_ROSE_PLAYLIST_DETAIL);
+
+                    emit this->signal_clickedMovePage(jsonObj_move);            // 페이지 이동 signal
+                }
+            }
+            else if(clickMode == tidal::AbstractItem::ClickMode::MoreBtn){//c220826_2
+                // OptionPopup 띄우기 필요
+                this->makeObj_optMorePopup(OptMorePopup::Rosehome_Playlist, roseHome::ConvertData::getConvertOptHeaderData(data), index, section);
+            }
+        }
+    }
+
+
+    void TidalPlaylistHistoryAll::slot_optMorePopup_menuClicked(const OptMorePopup::ClickMode clickMode, const int index, const int section){
+
+        if(section == SECTION_FOR_MORE_POPUP___playlists_created){
+            if(clickMode == OptMorePopup::ClickMode::Share){//c220823
+                print_debug();
+                setUIShare();
+                qDebug() << "this->shareLink="<<this->shareLink;
+
+            }
+            else if(clickMode == OptMorePopup::ClickMode::Play_RightNow
+                    || clickMode == OptMorePopup::ClickMode::SubMenu_QueueAdd_Last
+                    || clickMode == OptMorePopup::ClickMode::SubMenu_QueueAdd_Empty
+                    || clickMode == OptMorePopup::ClickMode::SubMenu_QueueAdd_CurrNext
+                    )
+            {
+                if(this->list_playlist->at(index).type == "TIDAL" && this->list_playlist->at(index).isRose == false){
+                    tidal::PlaylistItemData tmpPlaylist;
+                    tmpPlaylist.uuid = this->list_playlist->at(index).clientKey;
+
+                    if(this->list_playlist->at(index).title.contains("Mix")){
+                        tmpPlaylist.description = "mixes";
+                    }
+
+                    tidal::ProcRosePlay_withTidal *procRosePlay = new tidal::ProcRosePlay_withTidal(this);
+                    procRosePlay->requestPlayRose_byPlaylistUUID(tmpPlaylist, clickMode);
+                }
+                else{
+                    roseHome::ProcRosePlay_withRosehome *procRosePlay = new roseHome::ProcRosePlay_withRosehome(this);
+                    procRosePlay->requestPlayRose_byPlaylistID(this->list_playlist->at(index).id, clickMode);
+                }
+            }
+        }
+    }
+
+
+
+
+
+    /**
      * @brief QobuzMoodsMain::QobuzMoodsMain
      * @param parent
      */
-    TidalMyRosePlaylistAll::TidalMyRosePlaylistAll(QWidget *parent) : AbstractTidalSubWidget(MainUIType::VerticalScroll_viewAll, parent) {
+    TidalMyRosePlaylistAll::TidalMyRosePlaylistAll(QWidget *parent) : AbstractTidalSubWidget(MainUIType::VerticalScroll_roseviewAll, parent) {
 
         // 기본 UI 세팅
         this->setUIControl_playlist();
@@ -1002,9 +1669,12 @@ namespace tidal {
 
             this->flag_playlist_draw = false;
 
-            ContentLoadingwaitingMsgShow(tr("Content is being loaded. Please wait."));
+            print_debug();ContentLoadingwaitingMsgShow(tr("Content is being loaded. Please wait."));
 
             this->request_more_playlistData();
+        }
+        else{
+            print_debug();ContentLoadingwaitingMsgHide();   //j230328
         }
     }
 
@@ -1039,11 +1709,25 @@ namespace tidal {
         this->label_mainTitle = this->get_addUIControl_mainTitle("Playlists");
 
         // filtering
-        //this->setUiControl_filter();
+        //this->setUIControl_filter();
+        // 하단에 구분 라인
+        this->addUIControl_dividedLine_onMain();
+
+        GSCommon::clearLayout(this->box_contents);
+        this->box_contents->setAlignment(Qt::AlignTop);
+        this->scrollArea_main->setVerticalScrollBarPolicy(Qt::ScrollBarAsNeeded);
+
+        roseHome::ItemPlaylist_rosehome *listAlbum = new roseHome::ItemPlaylist_rosehome(0, 0, tidal::AbstractItem::ImageSizeMode::Square_200x200, 5, true);
+
+        this->playlist_widget_width = listAlbum->get_fixedWidth();
+        this->playlist_widget_margin = listAlbum->get_rightMargin();
+
+        //qDebug() << "[Debug] RoseHomeAlbumListAll::setUIControl_albums " << listAlbum->get_fixedWidth() << listAlbum->get_rightMargin();
+
+        delete listAlbum;
 
         // layout for items
         this->flowLayout_playlists = this->get_addUIControl_flowLayout(0, 20);
-        this->scrollArea_main->setVerticalScrollBarPolicy(Qt::ScrollBarAsNeeded);
 
         // filter option box
         this->chooseFilterOpt = new bugs::BugsChooseFilterOpt(this);
@@ -1053,9 +1737,9 @@ namespace tidal {
 
 
     /**
-     * @brief QobuzMyPlaylistAll::setUiControl_filter
+     * @brief QobuzMyPlaylistAll::setUIControl_filter
      */
-    void TidalMyRosePlaylistAll::setUiControl_filter(){
+    void TidalMyRosePlaylistAll::setUIControl_filter(){
 
         // 필터링 부분
         this->filterWidget = new FilterWidget();
@@ -1079,9 +1763,6 @@ namespace tidal {
         tmp_widget_forFilter->setLayout(hBox_filter);
         tmp_widget_forFilter->setFixedHeight(70);
 
-        this->box_mainTitle->addWidget(tmp_widget_forFilter);
-        this->addUIControl_dividedLine_onMain();
-
     }
 
 
@@ -1090,10 +1771,14 @@ namespace tidal {
      */
     void TidalMyRosePlaylistAll::proc_wheelEvent_to_getMoreData(){
 
-        if((this->playlist_total_cnt > this->playlist_draw_cnt) && (this->list_playlist->size() > this->playlist_draw_cnt) && (this->flag_playlist_draw == false)
-                && (this->scrollArea_main->verticalScrollBar()->value() == this->scrollArea_main->verticalScrollBar()->maximum())){
+        if((!this->flagReqMore_playlist && !this->flag_lastPage_playlist) && (this->scrollArea_main->verticalScrollBar()->value() == this->scrollArea_main->verticalScrollBar()->maximum())){
+            this->flagReqMore_playlist = true;
 
-            this->flag_playlist_draw = true;
+            ContentLoadingwaitingMsgShow(tr("Content is being loaded. Please wait."));
+
+            this->request_more_playlistData();
+        }
+        else if((this->playlist_total_cnt > this->playlist_draw_cnt) && this->flag_playlist_draw == false && (this->scrollArea_main->verticalScrollBar()->value() == this->scrollArea_main->verticalScrollBar()->maximum())){
 
             ContentLoadingwaitingMsgShow(tr("Content is being loaded. Please wait."));
 
@@ -1114,6 +1799,8 @@ namespace tidal {
         if(this->chooseFilterOpt != nullptr){
             this->chooseFilterOpt->setFixedSize(event->size());
         }
+        this->setFlowLayoutResize(this, this->flowLayout_playlists, this->playlist_widget_width, this->playlist_widget_margin);
+
     }
 
 
@@ -1169,83 +1856,82 @@ namespace tidal {
      */
     void TidalMyRosePlaylistAll::request_more_playlistData(){
 
-        if(!this->flagReqMore_playlist && !this->flag_lastPage_playlist){
-            this->flagReqMore_playlist = true;
-
-            // j220913 list count check
-            int width_cnt = global.LmtCnt / 220;
-            int mod = this->playlist_draw_cnt % width_cnt;
-
-            if(mod == 0){
-                this->playlist_widget_cnt = width_cnt * 10;
-            }
-            else{
-                this->playlist_widget_cnt = width_cnt * 10 + (width_cnt - mod);
-            }
-            // j220913 list count check
-
-            // next_offset
-            if(this->list_playlist->size() == 0){
-                this->next_offset = 0;
-            }
-            else{
-                this->next_offset++;
-            }
-
-
-            // filtering
-            QString selected_sortOpt = this->selected_filterCode.toString();
-            ProcCommon::DataOrderOption sortOpt = ProcCommon::DataOrderOption::NAME;      // 기본값
-            ProcCommon::DataOrderDirection orderDirection = ProcCommon::DataOrderDirection::ASC;      // 기본값
-
-            if(selected_sortOpt == QVariant::fromValue(ProcCommon::DataOrderOption::DATE).toString()){
-                sortOpt = ProcCommon::DataOrderOption::DATE;
-                orderDirection = ProcCommon::DataOrderDirection::DESC;
-            }
-
-            // request HTTP API
-            roseHome::ProcCommon *proc = new roseHome::ProcCommon(this);
-            connect(proc, &roseHome::ProcCommon::completeReq_list_myplaylists, this, &TidalMyRosePlaylistAll::slot_applyResult_myPlaylist_rose);
-            proc->request_rose_getList_myPlaylists("member/playlist", "TIDAL", this->next_offset, this->playlist_widget_cnt);
-
-            if(this->next_offset == 0){
-                this->flag_playlist_draw = true;
-            }
+        // next_offset
+        if(this->list_playlist->size() == 0){
+            this->next_offset = 0;
         }
+        else{
+            this->next_offset++;
+        }
+
+
+        // filtering
+        /*QString selected_sortOpt = this->selected_filterCode.toString();
+        ProcCommon::DataOrderOption sortOpt = ProcCommon::DataOrderOption::NAME;      // 기본값
+        ProcCommon::DataOrderDirection orderDirection = ProcCommon::DataOrderDirection::ASC;      // 기본값
+
+        if(selected_sortOpt == QVariant::fromValue(ProcCommon::DataOrderOption::DATE).toString()){
+            sortOpt = ProcCommon::DataOrderOption::DATE;
+            orderDirection = ProcCommon::DataOrderDirection::DESC;
+        }*/
+
+        // request HTTP API
+        roseHome::ProcCommon *proc = new roseHome::ProcCommon(this);
+        connect(proc, &roseHome::ProcCommon::completeReq_list_myplaylists, this, &TidalMyRosePlaylistAll::slot_applyResult_myPlaylist_rose);
+        proc->setProperty("idx", this->next_offset);
+        proc->request_rose_getList_myPlaylists("member/playlist", "TIDAL", this->next_offset, 200);
+
+        if(this->next_offset == 0){
+            this->flag_playlist_draw = true;
+        }
+
     }
 
 
     void TidalMyRosePlaylistAll::request_more_playlistDraw(){
 
-        // j220913 list count check
-        int width_cnt = global.LmtCnt / 220;
-        int mod = this->playlist_draw_cnt % width_cnt;
+        this->flag_playlist_draw = true;
 
-        if(mod == 0){
-            this->playlist_widget_cnt = width_cnt * 10;
+        int f_width = this->flowLayout_playlists->geometry().width();
+
+        if(this->flowLayout_playlists->geometry().width() <= 0){
+            f_width = this->width() - (80 + 63) - 10;
+        }
+
+        int f_wg_cnt = f_width / (this->playlist_widget_width + this->playlist_widget_margin);
+        int f_mod = this->playlist_draw_cnt % f_wg_cnt;
+
+        if(f_mod == 0){
+            this->playlist_widget_cnt = f_wg_cnt * 10;
         }
         else{
-            this->playlist_widget_cnt = width_cnt * 10 + (width_cnt - mod);
+            this->playlist_widget_cnt = f_wg_cnt * 10 + (f_wg_cnt - f_mod);
         }
-        // j220913 list count check
+
+        //qDebug() << "[Debug] RoseHomeAlbumListAll::request_more_albumDraw " << f_width << f_wg_cnt << f_mod << this->album_widget_cnt;
 
         int start_index = this->playlist_draw_cnt;
         int max_cnt = ((this->playlist_total_cnt - this->playlist_draw_cnt) > this->playlist_widget_cnt ) ? this->playlist_widget_cnt : (this->playlist_total_cnt - this->playlist_draw_cnt);
         this->playlist_draw_cnt += max_cnt;
 
+
         for(int i = start_index; i < this->playlist_draw_cnt; i++){
             this->listPlaylist_all[i] = new roseHome::ItemPlaylist_rosehome(i, SECTION_FOR_MORE_POPUP___playlists_created, tidal::AbstractItem::ImageSizeMode::Square_200x200, 5, true);
-            connect(this->listPlaylist_all[i], &roseHome::ItemPlaylist_rosehome::signal_clicked, this, &TidalMyRosePlaylistAll::slot_clickedItemPlaylist);
+            QCoreApplication::processEvents();
         }
 
         for(int i = start_index; i < this->playlist_draw_cnt; i++){
             this->listPlaylist_all[i]->setData(this->list_playlist->at(i));
-            this->flowLayout_playlists->addWidget(this->listPlaylist_all[i]);
-
             QCoreApplication::processEvents();
         }
 
+        for(int i = start_index; i < this->playlist_draw_cnt; i++){
+            this->flowLayout_playlists->addWidget(this->listPlaylist_all[i]);
+            connect(this->listPlaylist_all[i], &roseHome::ItemPlaylist_rosehome::signal_clicked, this, &TidalMyRosePlaylistAll::slot_clickedItemPlaylist);
+        }
+
         ContentLoadingwaitingMsgHide();      //cheon Tidal
+
         this->flag_playlist_draw = false;
     }
 
@@ -1265,6 +1951,12 @@ namespace tidal {
 
         Q_UNUSED(jsonArr_dataToPlay);
 
+        int idx = sender()->property("idx").toInt();
+
+        if(idx != this->next_offset){
+            return;
+        }
+
         if(list_data.size() > 0){
             this->flagReqMore_playlist = false;
             this->flag_lastPage_playlist = flag_lastPage;
@@ -1277,35 +1969,67 @@ namespace tidal {
             this->list_playlist->append(list_data);
 
             if(start_index == 0){
-                int max_cnt = this->list_playlist->size();
-                this->playlist_draw_cnt = max_cnt;
+                int f_width = this->flowLayout_playlists->geometry().width();
+
+                if(this->flowLayout_playlists->geometry().width() <= 0){
+                    f_width = this->width() - (80 + 63) - 10;
+                }
+
+                int f_wg_cnt = f_width / (this->playlist_widget_width + this->playlist_widget_margin);
+                int f_mod = this->playlist_draw_cnt % f_wg_cnt;
+
+                if(f_mod == 0){
+                    this->playlist_widget_cnt = f_wg_cnt * 10;
+                }
+                else{
+                    this->playlist_widget_cnt = f_wg_cnt * 10 + (f_wg_cnt - f_mod);
+                }
+
+                int start_index = this->playlist_draw_cnt;
+                int max_cnt = ((this->playlist_total_cnt - this->playlist_draw_cnt) > this->playlist_widget_cnt ) ? this->playlist_widget_cnt : (this->playlist_total_cnt - this->playlist_draw_cnt);
+                this->playlist_draw_cnt += max_cnt;
 
                 for(int i = start_index; i < this->playlist_draw_cnt; i++){
                     this->listPlaylist_all[i] = new roseHome::ItemPlaylist_rosehome(i, SECTION_FOR_MORE_POPUP___playlists_created, tidal::AbstractItem::ImageSizeMode::Square_200x200, 5, true);
-                    connect(this->listPlaylist_all[i], &roseHome::ItemPlaylist_rosehome::signal_clicked, this, &TidalMyRosePlaylistAll::slot_clickedItemPlaylist);
+                    QCoreApplication::processEvents();
                 }
 
                 for(int i = start_index; i < this->playlist_draw_cnt; i++){
                     this->listPlaylist_all[i]->setData(this->list_playlist->at(i));
-                    this->flowLayout_playlists->addWidget(this->listPlaylist_all[i]);
-
                     QCoreApplication::processEvents();
                 }
+
+                for(int i = start_index; i < this->playlist_draw_cnt; i++){
+                    this->flowLayout_playlists->addWidget(this->listPlaylist_all[i]);
+                    connect(this->listPlaylist_all[i], &roseHome::ItemPlaylist_rosehome::signal_clicked, this, &TidalMyRosePlaylistAll::slot_clickedItemPlaylist);
+                }
+
+                ContentLoadingwaitingMsgHide();
 
                 this->flag_flow_draw = true;
                 this->flag_playlist_draw = false;
             }
-
-            ContentLoadingwaitingMsgHide();
-            this->request_more_playlistData();
+            else{
+                this->request_more_playlistDraw();
+            }
         }
         else{
             ContentLoadingwaitingMsgHide();
 
-            NoData_Widget *noData_widget = new NoData_Widget(NoData_Widget::NoData_Message::Playlist_NoData);
-            noData_widget->setFixedSize(1500, 300);
+            if(this->playlist_draw_cnt <= 0){
+                // noData widget change - by diskept j230317 start
+                int f_width = this->flowLayout_playlists->geometry().width();
 
-            this->flowLayout_playlists->addWidget(noData_widget);
+                if(this->flowLayout_playlists->geometry().width() <= 0){
+                    f_width = this->width() - (80 + 63) - 10;
+                }
+
+                NoData_Widget *noData_widget = new NoData_Widget(NoData_Widget::NoData_Message::Album_NoData);
+                noData_widget->setFixedSize(f_width, 500);
+                // noData widget change - by diskept j230317 finish
+
+                this->flowLayout_playlists->addWidget(noData_widget);
+            }
         }
     }
 
@@ -1368,7 +2092,7 @@ namespace tidal {
                 qDebug() << "this->shareLink="<<this->shareLink;
 
             }
-            if(clickMode == OptMorePopup::ClickMode::Play_RightNow
+            else if(clickMode == OptMorePopup::ClickMode::Play_RightNow
                     || clickMode == OptMorePopup::ClickMode::SubMenu_QueueAdd_Last
                     || clickMode == OptMorePopup::ClickMode::SubMenu_QueueAdd_Empty
                     || clickMode == OptMorePopup::ClickMode::SubMenu_QueueAdd_CurrNext
@@ -1376,6 +2100,21 @@ namespace tidal {
             {
                 roseHome::ProcRosePlay_withRosehome *procRosePlay = new roseHome::ProcRosePlay_withRosehome(this);
                 procRosePlay->requestPlayRose_byPlaylistID(this->list_playlist->at(index).id, clickMode);
+            }
+            else if(clickMode == OptMorePopup::ClickMode::Edit){
+                QString view_type = "edit";
+
+                QJsonObject data;
+                data.insert("view_type", view_type);
+                data.insert("playlist_id", this->list_playlist->at(index).id);
+                data.insert("type", "ROSE");
+
+                QJsonObject jsonObj_move;
+                jsonObj_move.insert("data", data);
+
+                jsonObj_move.insert(KEY_PAGE_CODE, PAGECODE_T_ADD_PLAYLIST);
+
+                emit this->signal_clickedMovePage(jsonObj_move);
             }
         }
     }
@@ -1388,7 +2127,7 @@ namespace tidal {
      * @brief TidalUserRosePlaylistAll::TidalUserRosePlaylistAll
      * @param parent
      */
-    TidalUserRosePlaylistAll::TidalUserRosePlaylistAll(QWidget *parent) : AbstractTidalSubWidget(MainUIType::VerticalScroll_viewAll, parent) {
+    TidalUserRosePlaylistAll::TidalUserRosePlaylistAll(QWidget *parent) : AbstractTidalSubWidget(MainUIType::VerticalScroll_roseviewAll, parent) {
 
         // 기본 UI 세팅
         this->setUIControl_playlist();
@@ -1439,9 +2178,12 @@ namespace tidal {
 
             this->flag_playlist_draw = false;
 
-            ContentLoadingwaitingMsgShow(tr("Content is being loaded. Please wait."));
+            print_debug();ContentLoadingwaitingMsgShow(tr("Content is being loaded. Please wait."));
 
             this->request_more_playlistData();
+        }
+        else{
+            print_debug();ContentLoadingwaitingMsgHide();   //j230328
         }
     }
 
@@ -1476,11 +2218,25 @@ namespace tidal {
         this->label_mainTitle = this->get_addUIControl_mainTitle("Playlists");
 
         // filtering
-        //this->setUiControl_filter();
+        //this->setUIControl_filter();
 
+        // 하단에 구분 라인
+        this->addUIControl_dividedLine_onMain();
+
+        GSCommon::clearLayout(this->box_contents);
+        this->box_contents->setAlignment(Qt::AlignTop);
+        this->scrollArea_main->setVerticalScrollBarPolicy(Qt::ScrollBarAsNeeded);
+
+        roseHome::ItemPlaylist_rosehome *listAlbum = new roseHome::ItemPlaylist_rosehome(0, 0, tidal::AbstractItem::ImageSizeMode::Square_200x200, 8, true);
+
+        this->playlist_widget_width = listAlbum->get_fixedWidth();
+        this->playlist_widget_margin = listAlbum->get_rightMargin();
+
+        //qDebug() << "[Debug] RoseHomeAlbumListAll::setUIControl_albums " << listAlbum->get_fixedWidth() << listAlbum->get_rightMargin();
+
+        delete listAlbum;
         // layout for items
         this->flowLayout_playlists = this->get_addUIControl_flowLayout(0, 20);
-        this->scrollArea_main->setVerticalScrollBarPolicy(Qt::ScrollBarAsNeeded);
 
         // filter option box
         this->chooseFilterOpt = new bugs::BugsChooseFilterOpt(this);
@@ -1490,9 +2246,9 @@ namespace tidal {
 
 
     /**
-     * @brief QobuzMyPlaylistAll::setUiControl_filter
+     * @brief QobuzMyPlaylistAll::setUIControl_filter
      */
-    void TidalUserRosePlaylistAll::setUiControl_filter(){
+    void TidalUserRosePlaylistAll::setUIControl_filter(){
 
         // 필터링 부분
         this->filterWidget = new FilterWidget();
@@ -1527,10 +2283,14 @@ namespace tidal {
      */
     void TidalUserRosePlaylistAll::proc_wheelEvent_to_getMoreData(){
 
-        if((this->playlist_total_cnt > this->playlist_draw_cnt) && (this->list_playlist->size() > this->playlist_draw_cnt) && (this->flag_playlist_draw == false)
-                && (this->scrollArea_main->verticalScrollBar()->value() == this->scrollArea_main->verticalScrollBar()->maximum())){
+        if((!this->flagReqMore_playlist && !this->flag_lastPage_playlist) && (this->scrollArea_main->verticalScrollBar()->value() == this->scrollArea_main->verticalScrollBar()->maximum())){
+            this->flagReqMore_playlist = true;
 
-            this->flag_playlist_draw = true;
+            ContentLoadingwaitingMsgShow(tr("Content is being loaded. Please wait."));
+
+            this->request_more_playlistData();
+        }
+        else if((this->playlist_total_cnt > this->playlist_draw_cnt) && this->flag_playlist_draw == false && (this->scrollArea_main->verticalScrollBar()->value() == this->scrollArea_main->verticalScrollBar()->maximum())){
 
             ContentLoadingwaitingMsgShow(tr("Content is being loaded. Please wait."));
 
@@ -1551,6 +2311,8 @@ namespace tidal {
         if(this->chooseFilterOpt != nullptr){
             this->chooseFilterOpt->setFixedSize(event->size());
         }
+
+        this->setFlowLayoutResize(this, this->flowLayout_playlists, this->playlist_widget_width, this->playlist_widget_margin);
     }
 
 
@@ -1571,6 +2333,7 @@ namespace tidal {
             //this->chooseFilterOpt->addFilterGroup(tr("정렬"), this->list_filterOpt_sort, this->selected_filterCode);
             this->chooseFilterOpt->showFilterBox(QPoint(30, 130), this->size());
         }
+
     }
 
     /**
@@ -1606,83 +2369,82 @@ namespace tidal {
      */
     void TidalUserRosePlaylistAll::request_more_playlistData(){
 
-        if(!this->flagReqMore_playlist && !this->flag_lastPage_playlist){
-            this->flagReqMore_playlist = true;
-
-            // j220913 list count check
-            int width_cnt = global.LmtCnt / 220;
-            int mod = this->playlist_draw_cnt % width_cnt;
-
-            if(mod == 0){
-                this->playlist_widget_cnt = width_cnt * 10;
-            }
-            else{
-                this->playlist_widget_cnt = width_cnt * 10 + (width_cnt - mod);
-            }
-            // j220913 list count check
-
-            // next_offset
-            if(this->list_playlist->size() == 0){
-                this->next_offset = 0;
-            }
-            else{
-                this->next_offset++;
-            }
-
-
-            // filtering
-            QString selected_sortOpt = this->selected_filterCode.toString();
-            ProcCommon::DataOrderOption sortOpt = ProcCommon::DataOrderOption::NAME;      // 기본값
-            ProcCommon::DataOrderDirection orderDirection = ProcCommon::DataOrderDirection::ASC;      // 기본값
-
-            if(selected_sortOpt == QVariant::fromValue(ProcCommon::DataOrderOption::DATE).toString()){
-                sortOpt = ProcCommon::DataOrderOption::DATE;
-                orderDirection = ProcCommon::DataOrderDirection::DESC;
-            }
-
-            // request HTTP API
-            roseHome::ProcCommon *proc = new roseHome::ProcCommon(this);
-            connect(proc, &roseHome::ProcCommon::completeReq_list_usersplaylists, this, &TidalUserRosePlaylistAll::slot_applyResult_userPlaylist_rose);
-            proc->request_rose_getList_usersPlaylists("member/playlist/all", "PLAYLIST_RECENT", "TIDAL", this->next_offset, this->playlist_widget_cnt);
-
-            if(this->next_offset == 0){
-                this->flag_playlist_draw = true;
-            }
+        // next_offset
+        if(this->list_playlist->size() == 0){
+            this->next_offset = 0;
         }
+        else{
+            this->next_offset++;
+        }
+
+
+        // filtering
+        /*QString selected_sortOpt = this->selected_filterCode.toString();
+        ProcCommon::DataOrderOption sortOpt = ProcCommon::DataOrderOption::NAME;      // 기본값
+        ProcCommon::DataOrderDirection orderDirection = ProcCommon::DataOrderDirection::ASC;      // 기본값
+
+        if(selected_sortOpt == QVariant::fromValue(ProcCommon::DataOrderOption::DATE).toString()){
+            sortOpt = ProcCommon::DataOrderOption::DATE;
+            orderDirection = ProcCommon::DataOrderDirection::DESC;
+        }*/
+
+        // request HTTP API
+        roseHome::ProcCommon *proc = new roseHome::ProcCommon(this);
+        connect(proc, &roseHome::ProcCommon::completeReq_list_usersplaylists, this, &TidalUserRosePlaylistAll::slot_applyResult_userPlaylist_rose);
+        proc->setProperty("idx", this->next_offset);
+        proc->request_rose_getList_usersPlaylists("member/playlist/all", "PLAYLIST_RECENT", "TIDAL", this->next_offset, 200);
+
+        if(this->next_offset == 0){
+            this->flag_playlist_draw = true;
+        }
+
     }
 
 
     void TidalUserRosePlaylistAll::request_more_playlistDraw(){
 
-        // j220913 list count check
-        int width_cnt = global.LmtCnt / 220;
-        int mod = this->playlist_draw_cnt % width_cnt;
+        this->flag_playlist_draw = true;
 
-        if(mod == 0){
-            this->playlist_widget_cnt = width_cnt * 10;
+        int f_width = this->flowLayout_playlists->geometry().width();
+
+        if(this->flowLayout_playlists->geometry().width() <= 0){
+            f_width = this->width() - (80 + 63) - 10;
+        }
+
+        int f_wg_cnt = f_width / (this->playlist_widget_width + this->playlist_widget_margin);
+        int f_mod = this->playlist_draw_cnt % f_wg_cnt;
+
+        if(f_mod == 0){
+            this->playlist_widget_cnt = f_wg_cnt * 10;
         }
         else{
-            this->playlist_widget_cnt = width_cnt * 10 + (width_cnt - mod);
+            this->playlist_widget_cnt = f_wg_cnt * 10 + (f_wg_cnt - f_mod);
         }
-        // j220913 list count check
+
+        //qDebug() << "[Debug] RoseHomeAlbumListAll::request_more_albumDraw " << f_width << f_wg_cnt << f_mod << this->album_widget_cnt;
 
         int start_index = this->playlist_draw_cnt;
         int max_cnt = ((this->playlist_total_cnt - this->playlist_draw_cnt) > this->playlist_widget_cnt ) ? this->playlist_widget_cnt : (this->playlist_total_cnt - this->playlist_draw_cnt);
         this->playlist_draw_cnt += max_cnt;
 
+
         for(int i = start_index; i < this->playlist_draw_cnt; i++){
             this->listPlaylist_all[i] = new roseHome::ItemPlaylist_rosehome(i, SECTION_FOR_MORE_POPUP___playlists_created, tidal::AbstractItem::ImageSizeMode::Square_200x200, 8, true);
-            connect(this->listPlaylist_all[i], &roseHome::ItemPlaylist_rosehome::signal_clicked, this, &TidalUserRosePlaylistAll::slot_clickedItemPlaylist);
+            QCoreApplication::processEvents();
         }
 
         for(int i = start_index; i < this->playlist_draw_cnt; i++){
             this->listPlaylist_all[i]->setData(this->list_playlist->at(i));
-            this->flowLayout_playlists->addWidget(this->listPlaylist_all[i]);
-
             QCoreApplication::processEvents();
         }
 
+        for(int i = start_index; i < this->playlist_draw_cnt; i++){
+            this->flowLayout_playlists->addWidget(this->listPlaylist_all[i]);
+            connect(this->listPlaylist_all[i], &roseHome::ItemPlaylist_rosehome::signal_clicked, this, &TidalUserRosePlaylistAll::slot_clickedItemPlaylist);
+        }
+
         ContentLoadingwaitingMsgHide();      //cheon Tidal
+
         this->flag_playlist_draw = false;
     }
 
@@ -1702,6 +2464,12 @@ namespace tidal {
 
         Q_UNUSED(jsonArr_dataToPlay);
 
+        int idx = sender()->property("idx").toInt();
+
+        if(idx != this->next_offset){
+            return;
+        }
+
         if(list_data.size() > 0){
             this->flagReqMore_playlist = false;
             this->flag_lastPage_playlist = flag_lastPage;
@@ -1714,38 +2482,70 @@ namespace tidal {
             this->list_playlist->append(list_data);
 
             if(start_index == 0){
-                int max_cnt = this->list_playlist->size();
-                this->playlist_draw_cnt = max_cnt;
+                int f_width = this->flowLayout_playlists->geometry().width();
+
+                if(this->flowLayout_playlists->geometry().width() <= 0){
+                    f_width = this->width() - (80 + 63) - 10;
+                }
+
+                int f_wg_cnt = f_width / (this->playlist_widget_width + this->playlist_widget_margin);
+                int f_mod = this->playlist_draw_cnt % f_wg_cnt;
+
+                if(f_mod == 0){
+                    this->playlist_widget_cnt = f_wg_cnt * 10;
+                }
+                else{
+                    this->playlist_widget_cnt = f_wg_cnt * 10 + (f_wg_cnt - f_mod);
+                }
+
+                //qDebug() << "[Debug] RoseHomeAlbumListAll::slot_applyResult_albums " << f_width << f_wg_cnt << f_mod << this->album_widget_cnt;
+
+                int start_index = this->playlist_draw_cnt;
+                int max_cnt = ((this->playlist_total_cnt - this->playlist_draw_cnt) > this->playlist_widget_cnt ) ? this->playlist_widget_cnt : (this->playlist_total_cnt - this->playlist_draw_cnt);
+                this->playlist_draw_cnt += max_cnt;
 
                 for(int i = start_index; i < this->playlist_draw_cnt; i++){
                     this->listPlaylist_all[i] = new roseHome::ItemPlaylist_rosehome(i, SECTION_FOR_MORE_POPUP___playlists_created, tidal::AbstractItem::ImageSizeMode::Square_200x200, 8, true);
-                    connect(this->listPlaylist_all[i], &roseHome::ItemPlaylist_rosehome::signal_clicked, this, &TidalUserRosePlaylistAll::slot_clickedItemPlaylist);
+                    QCoreApplication::processEvents();
                 }
 
                 for(int i = start_index; i < this->playlist_draw_cnt; i++){
                     this->listPlaylist_all[i]->setData(this->list_playlist->at(i));
-                    this->flowLayout_playlists->addWidget(this->listPlaylist_all[i]);
-
                     QCoreApplication::processEvents();
                 }
+
+                for(int i = start_index; i < this->playlist_draw_cnt; i++){
+                    this->flowLayout_playlists->addWidget(this->listPlaylist_all[i]);
+                    connect(this->listPlaylist_all[i], &roseHome::ItemPlaylist_rosehome::signal_clicked, this, &TidalUserRosePlaylistAll::slot_clickedItemPlaylist);
+                }
+
+                ContentLoadingwaitingMsgHide();
 
                 this->flag_flow_draw = true;
                 this->flag_playlist_draw = false;
             }
-
-            ContentLoadingwaitingMsgHide();
-
-            if(flag_lastPage == false){
-                this->request_more_playlistData();
+            else{
+                this->request_more_playlistDraw();
             }
         }
         else{
             ContentLoadingwaitingMsgHide();
 
-            NoData_Widget *noData_widget = new NoData_Widget(NoData_Widget::NoData_Message::Playlist_NoData);
-            noData_widget->setFixedSize(1500, 300);
 
-            this->flowLayout_playlists->addWidget(noData_widget);
+            if(this->playlist_draw_cnt <= 0){
+                // noData widget change - by diskept j230317 start
+                int f_width = this->flowLayout_playlists->geometry().width();
+
+                if(this->flowLayout_playlists->geometry().width() <= 0){
+                    f_width = this->width() - (80 + 63) - 10;
+                }
+
+                NoData_Widget *noData_widget = new NoData_Widget(NoData_Widget::NoData_Message::Album_NoData);
+                noData_widget->setFixedSize(f_width, 500);
+                // noData widget change - by diskept j230317 finish
+
+                this->flowLayout_playlists->addWidget(noData_widget);
+            }
         }
     }
 

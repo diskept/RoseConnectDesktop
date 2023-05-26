@@ -608,8 +608,7 @@ void AbstractImageDetailInfo_RHV::slot_fileDownload_loadImage()
 
         QPixmap tmp_pixmap;
         tmp_pixmap = tmp_pixmap.fromImage(image);
-        tmp_pixmap = tmp_pixmap.scaled(this->image_width, this->image_height, Qt::KeepAspectRatioByExpanding, Qt::SmoothTransformation);
-
+        tmp_pixmap = tmp_pixmap.scaled(this->image_width, this->image_height, Qt::KeepAspectRatio, Qt::SmoothTransformation);
 
         QPainter painter (&pixmapIMG);
         painter.setRenderHint(QPainter::Antialiasing, true);
@@ -617,16 +616,13 @@ void AbstractImageDetailInfo_RHV::slot_fileDownload_loadImage()
         painter.setRenderHint(QPainter::SmoothPixmapTransform, true);
 
         QPainterPath path = QPainterPath();
-        path.addRoundedRect(0, 0, this->image_width, this->image_height, 2, Qt::RelativeSize);
+        path.addRoundedRect(0, 0, this->image_width, this->image_height, 8, 8);
+
+        int leftValue = (this->image_width - tmp_pixmap.width()) / 2;
+        int topValue = (this->image_height - tmp_pixmap.height()) / 2;
 
         painter.setClipPath(path);
-        if(tmp_pixmap.width() > this->image_width){
-            int start_width = (tmp_pixmap.width() - this->image_width) / 2;
-            painter.drawPixmap((0 - start_width), 0, tmp_pixmap);
-        }
-        else{
-            painter.drawPixmap(0, 0, tmp_pixmap);
-        }
+        painter.drawPixmap(leftValue, topValue, tmp_pixmap);
         painter.end();
 
         this->label_imageBig->setPixmap(pixmapIMG);

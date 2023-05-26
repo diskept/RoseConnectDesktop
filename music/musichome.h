@@ -12,10 +12,13 @@
 #include "roseHome/ItemArtist_rosehome.h"
 #include "roseHome/ItemAlbum_rosehome.h"
 #include "roseHome/ItemPlaylist_rosehome.h"
+#include "roseHome/ItemHistory_rosehome.h"
 
 #include "widget/AbstractPlaylistTrackDetailInfo_RHV.h"
 
 #include "widget/myqwidget.h"//c220729
+
+#include <QCoreApplication>
 
 
 /**
@@ -73,8 +76,17 @@ namespace music {
         void slot_applyResult_recentlyAlbum(const QList<roseHome::AlbumItemData>&, const QJsonArray&, const bool);
         void slot_applyResult_recentlyPlaylist(const QList<roseHome::PlaylistItemData>&, const QJsonArray&, const bool);
         void slot_applyResult_recentlyTrack(const QList<roseHome::TrackItemData>&, const QJsonArray&, const bool);
+        void slot_applyResult_historylist(const QList<roseHome::HistoryItemData>&, const QJsonArray&);
         void slot_applyResult_myPlaylist(const QList<roseHome::PlaylistItemData>&, const QJsonArray&, const bool);
         void slot_applyResult_userPlaylist(const QList<roseHome::PlaylistItemData>&, const QJsonArray&, const bool);
+
+        void slot_applyResult_recentlyAlbumCheck(const QList<roseHome::AlbumItemData>&, const QJsonArray&, const bool);
+        void slot_applyResult_recentlyPlaylistCheck(const QList<roseHome::PlaylistItemData>&, const QJsonArray&, const bool);
+        void slot_applyResult_recentlyTrackCheck(const QList<roseHome::TrackItemData>&, const QJsonArray&, const bool);
+        //void slot_applyResult_recentlyArtistCheck(const QList<roseHome::ArtistItemData>&, const QJsonArray&, const bool);
+        void slot_applyResult_myPlaylistCheck(const QList<roseHome::PlaylistItemData>&, const QJsonArray&, const bool);
+
+        void slot_applyResult_myPlaylistDelete(const QJsonObject&);
 
         void slot_applyResult_getRating_track(const QJsonArray&);
 
@@ -91,6 +103,8 @@ namespace music {
         void setUIControl_requestMusic();
 
         void setUIControl_appendWidget_rose();
+        void setUIControl_checkWidget_rose();
+
         void setUIControl_appendWidget();
 
         QJsonArray getDataForPlayMusic(const int);
@@ -115,6 +129,8 @@ namespace music {
         QLabel *lb_subTitle[20];
         QPushButton *btnView_all[20];
 
+        QWidget *widget_parent;
+
         //===============================================================================
         TopMenuBar *menubar;
 
@@ -124,6 +140,7 @@ namespace music {
 
         roseHome::ItemAlbum_rosehome *home_recently_album[15];
         roseHome::ItemPlaylist_rosehome *home_recently_playlist[15];
+        roseHome::ItemHistory_rosehome *home_historylist[15];
         roseHome::ItemPlaylist_rosehome *home_myPlaylist[15];
         roseHome::ItemPlaylist_rosehome *home_userPlaylist[15];
 
@@ -142,25 +159,34 @@ namespace music {
         QStackedWidget *stackedWidget_Contents;
 
         QWidget *widget_recentPlay;
+        QWidget *widget_historylist;
         QWidget *widget_myPlaylist;
         QWidget *widget_userPlaylist;
         QWidget *widget_recentlyTrack;
 
         QVBoxLayout *vBox_recentlyPlay;
+        QVBoxLayout *vBox_historylist;
         QVBoxLayout *vBox_myPlaylist;
         QVBoxLayout *vBox_userPlaylist;
         QVBoxLayout *vBox_recentlyTrack;
 
         QHBoxLayout *hBox_recentlyAlbum;
         QHBoxLayout *hBox_recentlyPlaylist;
+        QHBoxLayout *hBox_historylist;
         QHBoxLayout *hBox_myPlaylist;
         QHBoxLayout *hBox_userPlaylist;
+
+        QVBoxLayout *vBox_recentlyTrack_info;
+
+        QScrollArea *album_scrollArea;
+        QScrollArea *playlist_scrollArea;
 
         QJsonArray jsonArr_tracks_toPlay;
 
         // data
         QList<roseHome::AlbumItemData> *list_recentlyAlbum;
         QList<roseHome::PlaylistItemData> *list_recentlyPlaylist;
+        QList<roseHome::HistoryItemData> *list_Historylist;
         QList<roseHome::PlaylistItemData> *list_myPlaylist;
         QList<roseHome::PlaylistItemData> *list_userPlaylist;
         QList<roseHome::TrackItemData> *list_recentlytrack;
@@ -168,8 +194,15 @@ namespace music {
         bool flag_album[2] = {false, false};
         bool flag_playlist[2] = {false, false};
         bool flag_track[2] = {false, false};
+        bool flag_historylist[2] = {false, false};
         bool flag_myPlaylist[2] = {false, false};
         bool flag_userPlaylist[2] = {false, false};
+
+        bool flag_recentAlbum_check[2] = {false, false};
+        bool flag_recentPlaylist_check[2] = {false, false};
+        bool flag_recentTrack_check[2] = {false, false};
+        bool flag_recentArtist_check[2] = {false, false};
+        bool flag_myPlaylist_check[2] = {false, false};
 
         int track_idx_fav = 0;
         int track_star_fav = 0;
@@ -180,7 +213,7 @@ namespace music {
 
         //===============================================================================
         roseHome::ItemAlbum_rosehome *home_recently_Add[15];
-        roseHome::ItemArtist_roseHome *home_recommand_Artist[15];
+        roseHome::ItemArtist_rosehome *home_recommand_Artist[15];
 
         QWidget *widget_recentlyAdds;
         QWidget *widget_recommandArtist;
@@ -197,13 +230,19 @@ namespace music {
         QJsonArray jsonArr_artists;
 
         //===============================================================================
+        QLabel *label_album;
+        QLabel *label_track;
+        QLabel *label_artist;
+
         QLabel *lb_album_cnt;
         QLabel *lb_track_cnt;
         QLabel *lb_artist_cnt;
 
-        QWidget *widget_album;
-        QWidget *widget_track;
-        QWidget *widget_artist;
+//        QWidget *widget_album;
+//        QWidget *widget_track;
+//        QWidget *widget_artist;
+
+        QWidget *widget_db_info;
 
         bool flag_topLabel = false;
     };

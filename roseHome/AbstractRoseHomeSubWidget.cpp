@@ -10,6 +10,7 @@
 #include "bugs/ProcRoseAPI_withBugs.h"
 #include "bugs/bugs_struct.h"
 #include "tidal/ProcRosePlay_withTidal.h"
+#include "tidal/ProcCommon.h"
 #include "tidal/tidal_struct.h"
 #include "qobuz/ProcRosePlay_withQobuz.h"
 #include "qobuz/qobuz_struct.h"
@@ -168,19 +169,52 @@ namespace roseHome {
      * @param section
      */
     void AbstractRoseHomeSubWidget::proc_clicked_itemAlbum(roseHome::AlbumItemData &data_album, const tidal::AbstractItem::ClickMode clickMode, const int index, const int section){
+
         if(index >= 0){
             if(clickMode == tidal::AbstractItem::ClickMode::PlayBtn){
 
                 // Album 바로 재생
                 if(data_album.type == "TIDAL"){
-                    tidal::ProcRosePlay_withTidal *procRosePlay = new tidal::ProcRosePlay_withTidal(this);
-                    procRosePlay->requestPlayRose_byAlbumID(data_album.clientKey.toInt(), OptMorePopup::ClickMode::Play_RightNow);
+                    if(global.user_forTidal.isLogined()){//c221116_1
+                        print_debug();
+                    }else{
+
+                        print_debug();
+                        ToastMsg::show(this,"", tr("Tidal type is currently logged out."), 3000, 0, 2);//c221118
+                        return;
+                    }
+
+                    if(data_album.title.contains("Visual Album")){
+                        tidal::ProcCommon *proc = new tidal::ProcCommon(this);
+                        connect(proc, &tidal::ProcCommon::completeReq_list_items_of_visual, this, &AbstractRoseHomeSubWidget::slot_applyResult_visualTracks);
+                        proc->request_tidal_getList_items_of_visual(data_album.clientKey.toInt(), 100);
+                    }
+                    else{
+                        tidal::ProcRosePlay_withTidal *procRosePlay = new tidal::ProcRosePlay_withTidal(this);
+                        procRosePlay->requestPlayRose_byAlbumID(data_album.clientKey.toInt(), OptMorePopup::ClickMode::Play_RightNow);
+                    }
                 }
                 else if(data_album.type == "BUGS"){
+                    if(global.user_forBugs.isLogined()){//c221116_1
+                        print_debug();
+                    }else{
+
+                        print_debug();
+                        ToastMsg::show(this,"", tr("Bugs type is currently logged out."), 3000, 0, 2);//c221118
+                        return;
+                    }
                     bugs::ProcRoseAPI_withBugs *procRosePlay = new bugs::ProcRoseAPI_withBugs(this);
                     procRosePlay->requestPlayRose_byAlbumID(data_album.clientKey.toInt(), OptMorePopup::ClickMode::Play_RightNow);
                 }
                 else if(data_album.type == "QOBUZ"){
+                    if(global.user_forQobuz.isLogined()){//c221116_1
+                        print_debug();
+                    }else{
+
+                        print_debug();
+                        ToastMsg::show(this,"", tr("Qobuz type is currently logged out."), 3000, 0, 2);//c221118
+                        return;
+                    }
                     qobuz::ProcRosePlay_withQobuz *procRosePlay = new qobuz::ProcRosePlay_withQobuz(this);
                     procRosePlay->requestPlayRose_byAlbumID(data_album.clientKey, OptMorePopup::ClickMode::Play_RightNow);
                 }
@@ -195,6 +229,36 @@ namespace roseHome {
             }
             else if(clickMode == tidal::AbstractItem::ClickMode::AllBox){
                 // Album Detail 페이지 진입
+                if(data_album.type == "TIDAL"){//c221116_1
+                    if(global.user_forTidal.isLogined()){
+                        print_debug();
+                    }else{
+
+                        print_debug();
+                        ToastMsg::show(this,"", tr("Tidal type is currently logged out."), 3000, 0, 2);//c221118
+                        return;
+                    }
+                }
+                else if(data_album.type == "BUGS"){//c221116_1
+                    if(global.user_forBugs.isLogined()){
+                        print_debug();
+                    }else{
+
+                        print_debug();
+                        ToastMsg::show(this,"", tr("Bugs type is currently logged out."), 3000, 0, 2);//c221118
+                        return;
+                    }
+                }
+                else if(data_album.type == "QOBUZ"){//c221116_1
+                    if(global.user_forQobuz.isLogined()){
+                        print_debug();
+                    }else{
+
+                        print_debug();
+                        ToastMsg::show(this,"", tr("Qobuz type is currently logged out."), 3000, 0, 2);//c221118
+                        return;
+                    }
+                }
                 QJsonObject jsonObj_move = ConvertData::getObjectJson_albumData(data_album);
                 jsonObj_move.insert(KEY_PAGE_CODE, PAGECODE_RH_ALBUM_DETAIL);
                 emit this->signal_clickedMovePage(jsonObj_move);            // 페이지 이동 signal
@@ -204,14 +268,6 @@ namespace roseHome {
                 this->makeObj_optMorePopup(OptMorePopup::Rosehome_Album, ConvertData::getConvertOptHeaderData(data_album), index, section);
             }
         }
-    }
-
-
-    void AbstractRoseHomeSubWidget::slot_applyResult_getShareLink(const QString &link){//c220825_2
-
-        this->shareLink = link;
-        print_debug();
-        qDebug() << "this->shareLink=" << this->shareLink;
     }
 
 
@@ -234,6 +290,129 @@ namespace roseHome {
     }
 
 
+    // Item 클릭 관련 처리 of Album ---------------------------------------------------------------------------------------------
+
+    /**
+     * @brief ItemHistroy에서 발생한 custom click 이벤트에 대한 실제 처리를 진행함  [overloading]
+     * @details 편의 제공을 위해 overloading.
+     * @param data_history
+     * @param clickMode
+     * @param index
+     * @param section
+     */
+    void AbstractRoseHomeSubWidget::proc_clicked_itemHistory(roseHome::HistoryItemData& data_history, const tidal::AbstractItem::ClickMode clickMode, const int index, const int section){
+
+        Q_UNUSED(section);
+
+        if(index >= 0){
+            if(clickMode == tidal::AbstractItem::ClickMode::AllBox){
+                // History 페이지 진입
+                QJsonObject jsonObj_move = ConvertData::getObjectJson_historyData(data_history);
+                jsonObj_move.insert(KEY_PAGE_CODE, PAGECODE_RH_HISTORY_DETAIL);
+                emit this->signal_clickedMovePage(jsonObj_move);            // 페이지 이동 signal
+            }
+            else if(clickMode == tidal::AbstractItem::ClickMode::MoreBtn){
+                // OptionPopup 띄우기 필요
+                //this->makeObj_optMorePopup(OptMorePopup::Rosehome_Album, ConvertData::getConvertOptHeaderData(data_history), index, section);
+            }
+        }
+    }
+
+
+    /**
+     * @brief ItemHistory에서 발생한 custom click 이벤트에 대한 실제 처리를 진행함  [overloading]
+     * @details 편의 제공을 위해 overloading.
+     * @param list_history
+     * @param clickMode
+     * @param index
+     * @param section
+     */
+    void AbstractRoseHomeSubWidget::proc_clicked_itemHistory(QList<roseHome::HistoryItemData>* list_history, const tidal::AbstractItem::ClickMode clickMode, const int index, const int section){
+
+        int real_index = this->checkValid_index(list_history->length(), index);
+
+        if(real_index >= 0){
+            roseHome::HistoryItemData data = list_history->at(real_index);
+            this->proc_clicked_itemHistory(data, clickMode, real_index, section);
+        }
+    }
+
+
+    // Item 클릭 관련 처리 of Artist ---------------------------------------------------------------------------------------------
+
+    /**
+     * @brief ItemArtist에서 발생한 custom click 이벤트에 대한 실제 처리를 진행함
+     * @param data_aritst
+     * @param clickMode
+     * @param index
+     * @param section
+     */
+    void AbstractRoseHomeSubWidget::proc_clicked_itemArtist(roseHome::ArtistItemData &data_artist, const tidal::AbstractItem::ClickMode clickMode, const int index, const int section){
+
+        if(index >= 0){
+            if(clickMode == tidal::AbstractItem::ClickMode::AllBox){
+                // Album Detail 페이지 진입
+                if(data_artist.type == "TIDAL"){//c221116_1
+                    if(global.user_forTidal.isLogined()){
+                        print_debug();
+                    }else{
+
+                        print_debug();
+                        ToastMsg::show(this,"", tr("Tidal type is currently logged out."), 3000, 0, 2);//c221118
+                        return;
+                    }
+                }
+                else if(data_artist.type == "BUGS"){//c221116_1
+                    if(global.user_forBugs.isLogined()){
+                        print_debug();
+                    }else{
+
+                        print_debug();
+                        ToastMsg::show(this,"", tr("Bugs type is currently logged out."), 3000, 0, 2);//c221118
+                        return;
+                    }
+                }
+                else if(data_artist.type == "QOBUZ"){//c221116_1
+                    if(global.user_forQobuz.isLogined()){
+                        print_debug();
+                    }else{
+
+                        print_debug();
+                        ToastMsg::show(this,"", tr("Qobuz type is currently logged out."), 3000, 0, 2);//c221118
+                        return;
+                    }
+                }
+                QJsonObject jsonObj_move = ConvertData::getObjectJson_artistData(data_artist);
+                jsonObj_move.insert(KEY_PAGE_CODE, PAGECODE_RH_ARTIST_DETAIL);
+                emit this->signal_clickedMovePage(jsonObj_move);            // 페이지 이동 signal
+            }
+            else if(clickMode == tidal::AbstractItem::ClickMode::MoreBtn){
+                // OptionPopup 띄우기 필요
+                this->makeObj_optMorePopup(OptMorePopup::Rosehome_Artist, ConvertData::getConvertOptHeaderData(data_artist), index, section);
+            }
+        }
+    }
+
+
+    /**
+     * @brief ItemArtist에서 발생한 custom click 이벤트에 대한 실제 처리를 진행함  [overloading]
+     * @details 편의 제공을 위해 overloading.
+     * @param list_album
+     * @param clickMode
+     * @param index
+     * @param section
+     */
+    void AbstractRoseHomeSubWidget::proc_clicked_itemArtist(QList<roseHome::ArtistItemData> *list_artist, const tidal::AbstractItem::ClickMode clickMode, const int index, const int section){
+
+        int real_index = this->checkValid_index(list_artist->length(), index);
+
+        if(real_index >= 0){
+            roseHome::ArtistItemData data = list_artist->at(real_index);
+            this->proc_clicked_itemArtist(data, clickMode, real_index, section);
+        }
+    }
+
+
     // Item 클릭 관련 처리 of Playlist ---------------------------------------------------------------------------------------------
 
     /**
@@ -247,10 +426,45 @@ namespace roseHome {
 
         if(index >= 0){
 
+            print_debug();
+            qDebug() << "data_playlist.type=" << data_playlist.type;
+
+            if(data_playlist.type == "TIDAL"){//c221116_1
+                if(global.user_forTidal.isLogined()){
+                    print_debug();
+                }else{
+
+                    print_debug();
+                    ToastMsg::show(this,"", tr("Tidal type is currently logged out."), 3000, 0, 2);//c221118
+                    return;
+                }
+            }
+            else if(data_playlist.type == "BUGS"){//c221116_1
+                if(global.user_forBugs.isLogined()){
+                    print_debug();
+                }else{
+
+                    print_debug();
+                    ToastMsg::show(this,"", tr("Bugs type is currently logged out."), 3000, 0, 2);//c221118
+                    return;
+                }
+            }
+            else if(data_playlist.type == "QOBUZ"){//c221116_1
+                if(global.user_forQobuz.isLogined()){
+                    print_debug();
+                }else{
+
+                    print_debug();
+                    ToastMsg::show(this,"", tr("Qobuz type is currently logged out."), 3000, 0, 2);//c221118
+                    return;
+                }
+            }
+
             if(clickMode == tidal::AbstractItem::ClickMode::PlayBtn){
 
                 // Playlist 바로 재생
                 if(data_playlist.type == "TIDAL" && data_playlist.isRose == false){
+
                     tidal::PlaylistItemData tmpPlaylist;
                     tmpPlaylist.uuid = data_playlist.clientKey;
 
@@ -573,25 +787,31 @@ namespace roseHome {
     void AbstractRoseHomeSubWidget::proc_clicked_optMorePopup_fromAlbum(roseHome::AlbumItemData& data_album, const OptMorePopup::ClickMode clickMode){
 
         if(clickMode == OptMorePopup::ClickMode::Share){//c220823
-                print_debug();
-                if(data_album.type != "MUSIC"){//c220903_2
-                    setUIShare();
-                }else{
-                    ToastMsg::show(this, "", tr("Music content does not provide a sharing service."), 2000);
-                }
-                qDebug() << "this->shareLink="<<this->shareLink;
-
+            print_debug();
+            if(data_album.type != "MUSIC"){//c220903_2
+                setUIShare();
+            }else{
+                ToastMsg::show(this, "", tr("Music content does not provide a sharing service."), 2000);
             }
-            if(clickMode == OptMorePopup::ClickMode::Play_RightNow
-                || clickMode == OptMorePopup::ClickMode::SubMenu_QueueAdd_Last
-                || clickMode == OptMorePopup::ClickMode::SubMenu_QueueAdd_Empty
-                || clickMode == OptMorePopup::ClickMode::SubMenu_QueueAdd_CurrNext
+            qDebug() << "this->shareLink="<<this->shareLink;
+        }
+        if(clickMode == OptMorePopup::ClickMode::Play_RightNow
+            || clickMode == OptMorePopup::ClickMode::SubMenu_QueueAdd_Last
+            || clickMode == OptMorePopup::ClickMode::SubMenu_QueueAdd_Empty
+            || clickMode == OptMorePopup::ClickMode::SubMenu_QueueAdd_CurrNext
         )
         {
             // Rose Play 요청
             if(data_album.type == "TIDAL"){
-                tidal::ProcRosePlay_withTidal *procRosePlay = new tidal::ProcRosePlay_withTidal(this);
-                procRosePlay->requestPlayRose_byAlbumID(data_album.clientKey.toInt(), clickMode);
+                if(data_album.title.contains("Visual Album")){
+                    tidal::ProcCommon *proc = new tidal::ProcCommon(this);
+                    connect(proc, &tidal::ProcCommon::completeReq_list_items_of_visual, this, &AbstractRoseHomeSubWidget::slot_applyResult_visualTracks);
+                    proc->request_tidal_getList_items_of_visual(data_album.clientKey.toInt(), 100);
+                }
+                else{
+                    tidal::ProcRosePlay_withTidal *procRosePlay = new tidal::ProcRosePlay_withTidal(this);
+                    procRosePlay->requestPlayRose_byAlbumID(data_album.clientKey.toInt(), clickMode);
+                }
             }
             else if(data_album.type == "BUGS"){
                 bugs::ProcRoseAPI_withBugs *procRosePlay = new bugs::ProcRoseAPI_withBugs(this);
@@ -694,7 +914,28 @@ namespace roseHome {
         }
         else if(clickMode == OptMorePopup::ClickMode::Edit){
             // 사용자가 만든 playlist에 한하여 동작하는 것임.  (OptMorePopup 생성을 구분해서 하고 있음)
-            //this->movePage_playlist_editOfMine(data_playlist);
+            QString view_type = "edit";
+
+            QJsonObject data;
+            data.insert("view_type", view_type);
+            data.insert("playlist_id", data_playlist.id);
+            data.insert("type", "ROSE");
+
+            QJsonObject jsonObj_move;
+            jsonObj_move.insert("data", data);
+
+            jsonObj_move.insert(KEY_PAGE_CODE, PAGECODE_RH_ADD_PLAYLIST);
+
+            emit linker->signal_clicked_movePage(jsonObj_move);
+
+            /*if(global.user_forQobuz.flag_rosehome == false){
+
+                QJsonObject jsonObj_move;
+                jsonObj_move.insert("view_type", view_type);
+                jsonObj_move.insert(KEY_PAGE_CODE, PAGECODE_Q_ADD_PLAYLIST);
+
+                emit this->signal_clickedMovePage(jsonObj_move);
+            }*/
         }
         else if(clickMode == OptMorePopup::ClickMode::Delete){
             // 사용자가 만든 playlist에 한하여 동작하는 것임.  (OptMorePopup 생성을 구분해서 하고 있음)
@@ -766,30 +1007,6 @@ namespace roseHome {
             // Rose Play 요청
             ProcRosePlay_withRosehome *procRosePlay = new ProcRosePlay_withRosehome(this);
             procRosePlay->requestPlayRose_byTracks(data_track, jsonArr_toPlayAll, index, clickMode);
-
-            /*if(clickMode == OptMorePopup::ClickMode::SubMenu_Play_FromHere
-                    || clickMode == OptMorePopup::ClickMode::SubMenu_Play_FromHere_procEmpty
-                    || clickMode == OptMorePopup::ClickMode::SubMenu_QueueAdd_FromHere_Last)
-            {
-                QJsonArray tmpJsonArr = QJsonArray();
-                for(int i = index; i < jsonArr_toPlayAll.size(); i++){
-                    QJsonObject tmpJsonObj = jsonArr_toPlayAll.at(i).toObject();
-                    tmpJsonArr.append(tmpJsonObj);
-                }
-
-                // Rose Play 요청
-                ProcRosePlay_withRosehome *procRosePlay = new ProcRosePlay_withRosehome(this);
-                procRosePlay->requestPlayRose_byTracks(data_track, tmpJsonArr, 0, clickMode);
-            }
-            else{
-                QJsonObject tmpJsonObj = jsonArr_toPlayAll.at(index).toObject();
-                QJsonArray tmpJsonArr = QJsonArray();
-                tmpJsonArr.append(tmpJsonObj);
-
-                // Rose Play 요청
-                ProcRosePlay_withRosehome *procRosePlay = new ProcRosePlay_withRosehome(this);
-                procRosePlay->requestPlayRose_byTracks(data_track, tmpJsonArr, 0, clickMode);
-            }*/
         }
         else if(clickMode == OptMorePopup::ClickMode::Add_Favorite){
             // 즐겨찾기 추가 - Track
@@ -885,6 +1102,87 @@ namespace roseHome {
     }
 
 
+    // OptMorePopup 관련 처리 of Artist ---------------------------------------------------------------------------------------------
+
+    /**
+     * @brief PlaylistItemData 를 활용하여 OptMorePopup 의 signal 을 처리한다.
+     * @param data_album
+     * @param clickMode
+     */
+    void AbstractRoseHomeSubWidget::proc_clicked_optMorePopup_fromArtist(roseHome::ArtistItemData& data_artist, const OptMorePopup::ClickMode clickMode){
+
+        if(clickMode == OptMorePopup::ClickMode::Share){//c220823
+            if(data_artist.type != "MUSIC"){
+                setUIShare();
+            }else{
+                ToastMsg::show(this, "", tr("Music content does not provide a sharing service."), 2000);
+            }
+        }
+        else if(clickMode == OptMorePopup::ClickMode::Add_Favorite){
+            // 즐겨찾기 추가 - Playlist
+        }
+        else if(clickMode == OptMorePopup::ClickMode::Delete_Favorite){
+            // 즐겨찾기 삭제 - Playlist
+        }
+    }
+
+
+    /**
+     * @brief AlbumItemData 를 활용하여 OptMorePopup 의 signal 을 처리한다.  [Overloading]
+     * @details 편의 제공을 위해 overloading.
+     * @param list_album
+     * @param index
+     * @param clickMode
+     */
+    void AbstractRoseHomeSubWidget::proc_clicked_optMorePopup_fromArtist(QList<roseHome::ArtistItemData>* list_artist, const int index, const OptMorePopup::ClickMode clickMode){
+
+        int real_index = this->checkValid_index(list_artist->length(), index);
+        if(real_index >= 0){
+            roseHome::ArtistItemData data = list_artist->at(real_index);
+            this->proc_clicked_optMorePopup_fromArtist(data, clickMode);
+        }
+    }
+
+
+    void AbstractRoseHomeSubWidget::slot_applyResult_visualTracks(const QList<tidal::TrackItemData>& list_data, const QJsonArray &jsonArr_dataToPlay, const bool flag_lastPage){
+        Q_UNUSED(flag_lastPage);
+        Q_UNUSED(list_data);
+
+        tidal::ProcRosePlay_withTidal *procRosePlay = new tidal::ProcRosePlay_withTidal(this);
+        procRosePlay->requestPlayRose_videolist(jsonArr_dataToPlay, OptMorePopup::ClickMode::Play_RightNow);
+    }
+
+
+    void AbstractRoseHomeSubWidget::slot_applyResult_getShareLink(const QString &link){//c220825_2
+
+        this->shareLink = link;
+        print_debug();
+        qDebug() << "this->shareLink=" << this->shareLink;
+    }
+
+
+    void AbstractRoseHomeSubWidget::slot_add_rosePlaylist_withRosetube(const int &idx, const QJsonObject &dataObj){
+
+        QString view_type = "";
+        if(idx < 0){
+            view_type = "create";
+        }
+        else{
+            view_type = "add";
+        }
+
+        QJsonObject data = dataObj;
+        data.insert("view_type", view_type);
+        data.insert("type", "ROSETUBE");
+
+        QJsonObject jsonObj_move;
+        jsonObj_move.insert("data", data);
+        jsonObj_move.insert(KEY_PAGE_CODE, PAGECODE_RH_ADD_PLAYLIST);
+
+        emit linker->signal_clicked_movePage(jsonObj_move);
+    }
+
+
     //-----------------------------------------------------------------------------------------------------------------------
     //
     // MARK : 자식 클래스에서 페이지 이동의 간편화. SubPage에 대해, PageInfo struct로 페이지 이동을 처리하기 위함.
@@ -898,7 +1196,15 @@ namespace roseHome {
     void AbstractRoseHomeSubWidget::movePage_album_allView(roseHome::PageInfo_AlbumAllView &data_pageInfo){
 
         QJsonObject jsonObj_move = ConvertData::getObjectJson_pageInfo_albumAllView(data_pageInfo);
-        jsonObj_move.insert(KEY_PAGE_CODE, PAGECODE_RH_ALBUM_LIST_ALL_VIEW);
+
+        if(data_pageInfo.type == "history"){
+            jsonObj_move.insert(KEY_PAGE_CODE, PAGECODE_RH_ALBUM_HISTORY_ALL_VIEW);
+        }
+        else{
+            jsonObj_move.insert(KEY_PAGE_CODE, PAGECODE_RH_ALBUM_LIST_ALL_VIEW);
+        }
+
+        print_debug();ContentLoadingwaitingMsgShow("BugsHome::setUIControl_appendWidget");
         emit this->signal_clickedMovePage(jsonObj_move);            // 페이지 이동 signal
     }
 
@@ -910,7 +1216,81 @@ namespace roseHome {
     void AbstractRoseHomeSubWidget::movePage_playlist_allView(roseHome::PageInfo_PlaylistAllView &data_pageInfo){
 
         QJsonObject jsonObj_move = ConvertData::getObjectJson_pageInfo_playlistAllView(data_pageInfo);
-        jsonObj_move.insert(KEY_PAGE_CODE, PAGECODE_RH_PLAYLIST_LIST_ALL_VIEW);
+
+        if(data_pageInfo.type == "history"){
+            jsonObj_move.insert(KEY_PAGE_CODE, PAGECODE_RH_PLAYLIST_HISTORY_ALL_VIEW);
+        }
+        else{
+            jsonObj_move.insert(KEY_PAGE_CODE, PAGECODE_RH_PLAYLIST_LIST_ALL_VIEW);
+        }
+
+        print_debug();ContentLoadingwaitingMsgShow("BugsHome::setUIControl_appendWidget");
+        emit this->signal_clickedMovePage(jsonObj_move);
+    }
+
+
+    /**
+     * @brief Rosetube All List 화면으로 이동
+     * @param data_pageInfo
+     */
+    void AbstractRoseHomeSubWidget::movePage_rosetube_allView(roseHome::PageInfo_PlaylistAllView &data_pageInfo){
+
+        QJsonObject jsonObj_move = ConvertData::getObjectJson_pageInfo_playlistAllView(data_pageInfo);
+        jsonObj_move.insert(KEY_PAGE_CODE, PAGECODE_RH_ROSETUBE_LIST_ALL_VIEW);
+        print_debug();ContentLoadingwaitingMsgShow("BugsHome::setUIControl_appendWidget");
+        emit this->signal_clickedMovePage(jsonObj_move);
+    }
+
+
+    /**
+     * @brief Track All List 화면으로 이동
+     * @param data_pageInfo
+     */
+    void AbstractRoseHomeSubWidget::movePage_track_allView(roseHome::PageInfo_TrackAllView &data_pageInfo){
+
+        QJsonObject jsonObj_move = ConvertData::getObjectJson_pageInfo_trackAllView(data_pageInfo);
+
+        if(data_pageInfo.type == "history"){
+            jsonObj_move.insert(KEY_PAGE_CODE, PAGECODE_RH_TRACK_HISTORY_ALL_VIEW);
+        }
+        else{
+            jsonObj_move.insert(KEY_PAGE_CODE, PAGECODE_RH_TRACK_LIST_ALL_VIEW);
+        }
+
+        print_debug();ContentLoadingwaitingMsgShow("BugsHome::setUIControl_appendWidget");
+        emit this->signal_clickedMovePage(jsonObj_move);
+    }
+
+
+    /**
+     * @brief artist All List 화면으로 이동
+     * @param data_pageInfo
+     */
+    void AbstractRoseHomeSubWidget::movePage_artist_allView(roseHome::PageInfo_ArtistAllView &data_pageInfo){
+
+        QJsonObject jsonObj_move = ConvertData::getObjectJson_pageInfo_artistAllView(data_pageInfo);
+
+        if(data_pageInfo.type == "history"){
+            jsonObj_move.insert(KEY_PAGE_CODE, PAGECODE_RH_ARTIST_HISTORY_ALL_VIEW);
+        }
+        else{
+            jsonObj_move.insert(KEY_PAGE_CODE, PAGECODE_RH_ARTIIST_LIST_ALL_VIEW);
+        }
+
+        print_debug();ContentLoadingwaitingMsgShow("BugsHome::setUIControl_appendWidget");
+        emit this->signal_clickedMovePage(jsonObj_move);
+    }
+
+
+    /**
+     * @brief History All List 화면으로 이동
+     * @param data_pageInfo
+     */
+    void AbstractRoseHomeSubWidget::movePage_history_allView(roseHome::PageInfo_HistoryAllView &data_pageInfo){
+
+        QJsonObject jsonObj_move = ConvertData::getObjectJson_pageInfo_historyAllView(data_pageInfo);
+        jsonObj_move.insert(KEY_PAGE_CODE, PAGECODE_RH_HISTORY_LIST_VIEW);
+        print_debug();ContentLoadingwaitingMsgShow("BugsHome::setUIControl_appendWidget");
         emit this->signal_clickedMovePage(jsonObj_move);
     }
 
@@ -919,6 +1299,7 @@ namespace roseHome {
 
         QJsonObject jsonObj_move = ConvertData::getObjectJson_pageInfo_UserPage(data_pageInfo);
         jsonObj_move.insert(KEY_PAGE_CODE, PAGECODE_RH_USERPAGE);
+        print_debug();ContentLoadingwaitingMsgShow("BugsHome::setUIControl_appendWidget");
         emit this->signal_clickedMovePage(jsonObj_move);
     }
 
@@ -944,29 +1325,7 @@ namespace roseHome {
         else{
             jsonObj_move.insert(KEY_PAGE_CODE, PAGECODE_RR_LISTVIEWALL);
         }
-        emit this->signal_clickedMovePage(jsonObj_move);
-    }
-
-
-    /**
-     * @brief Rosetube All List 화면으로 이동
-     * @param data_pageInfo
-     */
-    void AbstractRoseHomeSubWidget::movePage_rosetube_allView(roseHome::PageInfo_PlaylistAllView &data_pageInfo){
-
-        QJsonObject jsonObj_move = ConvertData::getObjectJson_pageInfo_playlistAllView(data_pageInfo);
-        jsonObj_move.insert(KEY_PAGE_CODE, PAGECODE_RH_ROSETUBE_LIST_ALL_VIEW);
-        emit this->signal_clickedMovePage(jsonObj_move);
-    }
-
-    /**
-     * @brief Track All List 화면으로 이동
-     * @param data_pageInfo
-     */
-    void AbstractRoseHomeSubWidget::movePage_track_allView(roseHome::PageInfo_TrackAllView &data_pageInfo){
-
-        QJsonObject jsonObj_move = ConvertData::getObjectJson_pageInfo_trackAllView(data_pageInfo);
-        jsonObj_move.insert(KEY_PAGE_CODE, PAGECODE_RH_TRACK_LIST_ALL_VIEW);
+        print_debug();ContentLoadingwaitingMsgShow("BugsHome::setUIControl_appendWidget");
         emit this->signal_clickedMovePage(jsonObj_move);
     }
 

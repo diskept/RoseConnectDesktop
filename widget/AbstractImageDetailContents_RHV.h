@@ -3,14 +3,7 @@
 
 #include "common/filedownloader.h"
 
-#include "tidal/tidal_struct.h"
-#include "bugs/bugs_struct.h"
-#include "qobuz/qobuz_struct.h"
-#include "roseHome/rosehome_struct.h"
-
-#include "home/topmenubar.h"
-
-#include "widget/ElidedLabel.h"
+#include "widget/flowlayout.h"
 #include "widget/textlonganimation.h"
 
 #include <QLabel>
@@ -53,7 +46,7 @@ public:
         , Tidal_video
         , Bugs_artist
         , Bugs_album
-        , Bugs_playlist
+        , Bugs_pdAlbum
         , Bugs_video
         , Qobuz_artist
         , Qobuz_album
@@ -118,9 +111,19 @@ public:
 signals :
     void signal_clicked(const AbstractImageDetailContents_RHV::BtnClickMode);
     void signal_clicked_artistMore();
+    void signal_clicked_tag(const int);
 
 protected:
-    LabelLongAnimation *label_titleUp;
+    void setImage(QString imagePath);
+    void setPlaylistImage(QString imagePath);
+    void setImageSizeAndCorner(int width, int height, int cornerRadius);
+
+    void setTextDescription_withAdaptedWidgh(QString text);
+    QString getNormalText(QString text);
+
+protected:
+    LabelLongAnimation *label_title;
+
     QLabel *label_imageHiRes;
     QLabel *label_creatorName;
     QLabel *label_artist;
@@ -129,6 +132,7 @@ protected:
     QLabel *label_biography;
     QLabel *label_open;
 
+    QPushButton *btn_Label_imageBig;//c230215
     QPushButton *btn_more_artist;
     QPushButton *btn_addCollect;
     QPushButton *btn_fav_toAdd;
@@ -143,19 +147,14 @@ protected:
     QPushButton *btn_open;
 
     QWidget *widget_info_main;
+    QWidget *widget_info_tag;
     QWidget *widget_Addbtn_Icon;
     QWidget *widget_Addbtn_Play;
     QWidget *widget_Addbtn_PlayCannot;
     QWidget *widget_Addbtn_Open;
 
-    QVBoxLayout *info_hbox;
-
-    void setImage(QString imagePath);
-    void setPlaylistImage(QString imagePath);
-    void setImageSizeAndCorner(int width, int height, int cornerRadius);
-
-    void setTextDescription_withAdaptedWidgh(QString text);
-    QString getNormalText(QString text);
+    FlowLayout *flowLayout_tag;
+    QVBoxLayout *vBox_info;
 
     bool flagMyData = false;            ///< My Data 상세인지의 여부
     bool flagBtnOpen = false;
@@ -177,9 +176,13 @@ private slots:
     void slot_btnClicked_mode();
     void slot_btnClicked_open();
     void slot_btnClicked_artistMore();
+    void slot_btnClicked_tag();
 
     void slot_redirectUrl(const QString url);                   //j220903 twitter
     void slot_applyResult_getShareLink(const QString&);         //j220905 share link
+
+    void slot_imageClick();                                     //c230215
+    void slot_downloadThumbImageBig();                          //c230215
 
 private:
     void setUIControl_basic();
@@ -191,6 +194,8 @@ private:
 
     void paint_imageBig(QPixmap &pixmap);
     void paint_imageractangle(QPixmap &pixmap);
+
+    void downloadThumbImageBig(QString pathImg);                //c230215
 
 private:
     ContentsUIType curr_contentsType;
@@ -210,6 +215,8 @@ private:
     QString btnStyle_play;
     QString btnStyle_shuffle;
 
+    QList<QString> list_tag_name;
+
     bool flagFavorite = false;          ///< 즐겨찾기 여부. true - 하트 ON 상태
     bool flagPlaylist = false;
 
@@ -219,6 +226,11 @@ private:
 
     bool flag_type_image = false;
     QString type_image_path = "";
+
+    QLabel *lb_BigImg;//c230215
+
+    int bigImgWidth = 800;//c230215
+    int bigImgHeight = 800;//c230215
 };
 
 #endif // ABSTRACTIMAGEDETAILCONTENTS_RHV_H

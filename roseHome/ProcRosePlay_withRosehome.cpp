@@ -348,7 +348,7 @@ namespace roseHome {
         }
         print_debug(); emit linker->signal_queuelist_mouse_trigger_menu_flag();
         global.Queue_track_count += jsonArr_tracks.count();     // 220419 queue count
-
+//
         NetworkHttp *network = new NetworkHttp;
         connect(network, SIGNAL(response(int,QJsonObject)), SLOT(slot_responseHttp(int,QJsonObject)));
 
@@ -383,6 +383,8 @@ namespace roseHome {
      * @param p_jsonObj
      */
     void ProcRosePlay_withRosehome::slot_responseHttp(const int& p_id, const QJsonObject& p_jsonObj){
+        //print_debug();
+        //QJsonDocument doc(p_jsonObj);    QString strJson(doc.toJson(QJsonDocument::Compact));    qDebug() << "ProcRosePlay_withRosehome::slot_responseHttp = " << strJson;
 
         // 나중에 실패요인에 따라서 처리 보강
         if(ProcJsonEasy::get_flagOk(p_jsonObj)){
@@ -396,6 +398,9 @@ namespace roseHome {
 
                     emit signal_completeReq_get_session_info();
                 }
+            }else if(p_id == Rose_total_set_queue){
+                print_debug();//
+
             }
         }
         else{

@@ -8,6 +8,7 @@
 #include "common/networkhttp.h"
 
 #include "widget/NoData_Widget.h"
+#include "widget/toastmsg.h"
 
 #include <QDebug>
 #include <QScroller>
@@ -19,14 +20,15 @@ namespace rosetube {
     const int HTTP_CACHING_LOCK = 0;
     const int HTTP_CACHING_CONTENTS = 1;
     const int HTTP_CACHING_LOCK_ITEM = 2;
-    const int HTTP_CACHING_DELETE_ITEM = 3;
+    const int HTTP_CACHING_LOCK_ROSE = 3;
+    const int HTTP_CACHING_DELETE_ITEM = 4;
 
     const int HTTP_SET_QUEUE = 99;
 
     const int SECTION_FOR_MORE_POPUP___CACHE = 0;
 
 
-    RoseTubeCacheViewAll::RoseTubeCacheViewAll(QWidget *parent) : roseHome::AbstractRoseHomeSubWidget(MainUIType::VerticalScroll_viewAll, parent){
+    RoseTubeCacheViewAll::RoseTubeCacheViewAll(QWidget *parent) : roseHome::AbstractRoseHomeSubWidget(MainUIType::VerticalScroll_roseviewAll, parent){
 
         this->setUIControl_RoseTube();
     }
@@ -41,61 +43,54 @@ namespace rosetube {
     void RoseTubeCacheViewAll::setJsonObject_forData(const QJsonObject& jsonObj){
 
         QString tmpPage = ProcJsonEasy::getString(jsonObj, "pageCode");
-        //this->flagNeedReload = false;
+        this->flagNeedReload = true;
 
-        //if(this->page != tmpPage){
-            this->flagNeedReload = true;
+        this->page = tmpPage;
 
-            this->page = tmpPage;
+        if(this->flag_flow_draw == true){
+            this->flag_flow_draw = false;
 
-            if(this->flag_flow_draw == true){
-                this->flag_flow_draw = false;
+            this->widget_rosetube->hide();
 
-                this->widget_rosetube->hide();
-
-                if(this->rosetube_draw_cnt > 0){
-                    for(int i = 0; i < this->rosetube_draw_cnt; i++){
-                        this->viewAll_rosetube_track[i]->disconnect();
-                        this->flowLayout_rosetube->removeWidget(this->viewAll_rosetube_track[i]);
-                    }
+            if(this->rosetube_draw_cnt > 0){
+                for(int i = 0; i < this->rosetube_draw_cnt; i++){
+                    this->viewAll_rosetube_track[i]->disconnect();
+                    this->flowLayout_rosetube->removeWidget(this->viewAll_rosetube_track[i]);
                 }
-                GSCommon::clearLayout(this->flowLayout_rosetube);
-
-                this->box_rt_contents->removeWidget(this->widget_rosetube);
-                GSCommon::clearLayout(this->box_rt_contents);
-
-                this->box_contents->removeWidget(this->widget_rt_contents);
-                GSCommon::clearLayout(this->box_contents);
-                this->box_contents->setAlignment(Qt::AlignTop);
             }
+            GSCommon::clearLayout(this->flowLayout_rosetube);
 
-            // init
-            this->next_offset = 0;
-            this->rosetube_total_cnt = 0;
-            this->rosetube_draw_cnt = 0;
+            this->box_rt_contents->removeWidget(this->widget_rosetube);
+            GSCommon::clearLayout(this->box_rt_contents);
+        }
 
-            this->jsonArr_rosetubeTrack = QJsonArray();
-            this->jsonObj_CacheLock = QJsonObject();
+        // init
+        this->next_offset = 0;
+        this->rosetube_total_cnt = 0;
+        this->rosetube_draw_cnt = 0;
 
-            // request HTTP API
-            this->flagReqMore_rosetube = false;
-            this->flag_lastPage_rosetube = false;
+        this->jsonArr_rosetubeTrack = QJsonArray();
+        this->jsonArr_cacheLock = QJsonArray();
+        this->jsonObj_CacheLock = QJsonObject();
 
-            this->flag_rosetube_draw = false;
+        // request HTTP API
+        this->flagReqMore_rosetube = false;
+        this->flag_lastPage_rosetube = false;
 
-            ContentLoadingwaitingMsgShow(tr("Content is being loaded. Please wait."));
+        this->flag_rosetube_draw = false;
 
-            QJsonObject json;
-            NetworkHttp *network = new NetworkHttp;
-            connect(network, SIGNAL(response(int,QJsonObject)), SLOT(slot_responseHttp(int,QJsonObject)));
+        print_debug();ContentLoadingwaitingMsgShow(tr("Content is being loaded. Please wait."));
 
-            QString Url = "http://" + global.device.getDeviceIP() + ":" + global.port + "/tube_cache_lock";
-            network->request(HTTP_CACHING_LOCK,
-                             Url,
-                             json,
-                             true,
-                             true);
-        //}
+        QJsonObject json;
+        NetworkHttp *network = new NetworkHttp;
+        connect(network, SIGNAL(response(int,QJsonObject)), SLOT(slot_responseHttp(int,QJsonObject)));
+
+        QString Url = "http://" + global.device.getDeviceIP() + ":" + global.port + "/tube_cache_lock";
+        network->request(HTTP_CACHING_LOCK,
+                         Url,
+                         json,
+                         true,
+                         true);
     }
 
 
@@ -105,6 +100,10 @@ namespace rosetube {
 
             // 항상 부모클래스의 함수 먼저 호출
             AbstractRoseHomeSubWidget::setActivePage();
+
+            GSCommon::clearLayout(this->box_contents);
+            this->box_contents->setAlignment(Qt::AlignTop);
+            this->scrollArea_main->setVerticalScrollBarPolicy(Qt::ScrollBarAsNeeded);
 
             // layout for items
             this->box_rt_contents = new QVBoxLayout();
@@ -131,14 +130,25 @@ namespace rosetube {
 
             this->box_rt_contents->addWidget(this->widget_rosetube);
             this->box_contents->addWidget(this->widget_rt_contents);
-            this->box_contents->setAlignment(Qt::AlignTop);
         }
     }
 
 
     void RoseTubeCacheViewAll::setUIControl_RoseTube(){
 
-        this->scrollArea_main->setVerticalScrollBarPolicy(Qt::ScrollBarAsNeeded);
+        this->linker = Linker::getInstance();
+        connect(this->linker, SIGNAL(signal_cacheState_change()), SLOT(slot_change_cache_state()));
+        connect(this->linker, SIGNAL(signal_cacheList_change()), SLOT(slot_change_cache_list()));
+
+        rosetube::ItemTrack_rosetube *listAlbum = new rosetube::ItemTrack_rosetube(0, 0, tidal::AbstractItem::ImageSizeMode::Ractangle_284x157, false);
+
+        this->rosetube_widget_width = listAlbum->get_fixedWidth();
+        this->rosetube_widget_margin = listAlbum->get_rightMargin();
+
+        delete listAlbum;
+
+        // layout for items
+        this->flowLayout_rosetube = this->get_addUIControl_flowLayout(0, 20);
     }
 
 
@@ -150,6 +160,7 @@ namespace rosetube {
             int maxCnt = this->flowLayout_rosetube->count();
             int i = 0;
             for(i = 0; i < maxCnt; i++){
+                this->viewAll_rosetube_track[i]->hide();
                 this->viewAll_rosetube_track[i]->disconnect();
                 this->flowLayout_rosetube->removeWidget(this->viewAll_rosetube_track[i]);
             }
@@ -184,40 +195,81 @@ namespace rosetube {
 
             this->box_rt_contents->addWidget(this->widget_rosetube);
             this->box_contents->addWidget(this->widget_rt_contents);
+
+            this->rosetube_draw_cnt = 0;
         }
 
         if(this->jsonArr_rosetubeTrack.size() > 0){
 
-            int startCount = this->rosetube_draw_cnt;
-            int maxCount = this->jsonArr_rosetubeTrack.size();
+            this->rosetube_total_cnt = this->jsonArr_rosetubeTrack.size();
+            //qDebug() << "[Debug]" << __FUNCTION__ << __LINE__ << this->rosetube_total_cnt;
 
-            for(int i = startCount; i < maxCount; i++){
-                this->viewAll_rosetube_track[i] = new rosetube::ItemTrack_rosetube(i, SECTION_FOR_MORE_POPUP___CACHE, tidal::AbstractItem::ImageSizeMode::Ractangle_284x157, true);
-                connect(this->viewAll_rosetube_track[i], &rosetube::ItemTrack_rosetube::signal_clicked, this, &RoseTubeCacheViewAll::slot_clickedItemPlaylist);
+            int f_width = this->flowLayout_rosetube->geometry().width();
+
+            if(this->flowLayout_rosetube->geometry().width() <= 0){
+                f_width = this->width() - (80 + 63) - 10;
             }
 
-            for(int i = startCount; i < maxCount; i++){
+            int f_wg_cnt = f_width / (this->rosetube_widget_width + this->rosetube_widget_margin);
+            int f_mod = this->rosetube_draw_cnt % f_wg_cnt;
+
+            if(f_mod == 0){
+                this->rosetube_widget_cnt = f_wg_cnt * 10;
+            }
+            else{
+                this->rosetube_widget_cnt = f_wg_cnt * 10 + (f_wg_cnt - f_mod);
+            }
+
+            int start_index = this->rosetube_draw_cnt;
+            int max_cnt = ((this->rosetube_total_cnt - this->rosetube_draw_cnt) > this->rosetube_widget_cnt ) ? this->rosetube_widget_cnt : (this->rosetube_total_cnt - this->rosetube_draw_cnt);
+            this->rosetube_draw_cnt += max_cnt;
+
+            for(int i = start_index; i < this->rosetube_draw_cnt; i++){
+                this->viewAll_rosetube_track[i] = new rosetube::ItemTrack_rosetube(i, SECTION_FOR_MORE_POPUP___CACHE, tidal::AbstractItem::ImageSizeMode::Ractangle_284x157, true);
+            }
+
+            for(int i = start_index; i < this->rosetube_draw_cnt; i++){
                 QJsonObject tmpCaching = this->jsonArr_rosetubeTrack.at(i).toObject();
+                tmpCaching.insert("favorite_view", false);
 
                 QString trackId = ProcJsonEasy::getString(tmpCaching, "id");
 
                 if(this->jsonObj_CacheLock.contains(trackId)){
                     tmpCaching.insert("flag_lock", true);
+
+                    this->jsonArr_cacheLock.append(true);
+                }
+                else{
+                    tmpCaching.insert("flag_lock", false);
+
+                    this->jsonArr_cacheLock.append(false);
                 }
 
                 this->viewAll_rosetube_track[i]->setData(tmpCaching);
-                this->flowLayout_rosetube->addWidget(this->viewAll_rosetube_track[i]);
-
                 QCoreApplication::processEvents();
             }
 
-            this->rosetube_draw_cnt = maxCount;
+            for(int i = start_index; i < this->rosetube_draw_cnt; i++){
+                connect(this->viewAll_rosetube_track[i], &rosetube::ItemTrack_rosetube::signal_clicked, this, &RoseTubeCacheViewAll::slot_clickedItemPlaylist);
+                this->flowLayout_rosetube->addWidget(this->viewAll_rosetube_track[i]);
+            }
+
+            ContentLoadingwaitingMsgHide();
+
             this->flagReqMore_rosetube = false;
         }
         else{
             if(this->rosetube_draw_cnt <= 0){
-                NoData_Widget *noData_widget = new NoData_Widget(NoData_Widget::NoData_Message::Rosetube_NoData);
-                noData_widget->setFixedSize(1500, 290);
+                // noData widget change - by diskept j230317 start
+                int f_width = this->flowLayout_rosetube->geometry().width();
+
+                if(this->flowLayout_rosetube->geometry().width() <= 0){
+                    f_width = this->width() - (80 + 63) - 10;
+                }
+
+                NoData_Widget *noData_widget = new NoData_Widget(NoData_Widget::NoData_Message::Album_NoData);
+                noData_widget->setFixedSize(f_width, 500);
+                // noData widget change - by diskept j230317 finish
 
                 this->flowLayout_rosetube->addWidget(noData_widget);
             }
@@ -234,10 +286,11 @@ namespace rosetube {
         if((!this->flagReqMore_rosetube && !this->flag_lastPage_rosetube)
                && (this->scrollArea_main->verticalScrollBar()->value() == this->scrollArea_main->verticalScrollBar()->maximum())){
 
-            ContentLoadingwaitingMsgShow(tr("Content is being loaded. Please wait."));
+            print_debug();ContentLoadingwaitingMsgShow(tr("Content is being loaded. Please wait."));
 
             this->request_more_rosetubeData();
         }
+
     }
 
 
@@ -250,6 +303,7 @@ namespace rosetube {
             // next_offset
             if(this->rosetube_draw_cnt == 0){
                 this->next_offset = 0;
+                this->rosetube_total_cnt = 0;
                 this->jsonArr_rosetubeTrack = QJsonArray();
             }
             else{
@@ -289,6 +343,8 @@ namespace rosetube {
             if(this->flag_cache_lock_send == true){
                 this->flag_cache_lock_send = false;
                 this->viewAll_rosetube_track[this->cache_lock_index]->setCacheImgShow(this->cache_lock_state);
+
+                this->jsonArr_cacheLock.replace(this->cache_lock_index, this->cache_lock_state);
             }
             else{
                 if(this->flag_cache_delete_send == true){
@@ -298,7 +354,7 @@ namespace rosetube {
                     this->rosetube_draw_cnt = 0;
                     this->next_offset = 0;
 
-                    ContentLoadingwaitingMsgShow(tr("Content is being loaded. Please wait."));
+                    print_debug();ContentLoadingwaitingMsgShow(tr("Content is being loaded. Please wait."));
                 }
 
                 // request HTTP API
@@ -340,10 +396,31 @@ namespace rosetube {
                                  true);
             }
         }
+        else if(p_id == HTTP_CACHING_LOCK_ROSE){
+
+            if(p_jsonObj.contains("lock")){
+                QJsonObject tmpLock = ProcJsonEasy::getJsonObject(p_jsonObj, "lock");
+
+                for(int i = 0; i < this->jsonArr_rosetubeTrack.count(); i++){
+                    QJsonObject tmpId = this->jsonArr_rosetubeTrack.at(i).toObject();
+                    QString cacheId = ProcJsonEasy::getString(tmpId, "id");
+
+                    if(tmpLock.contains(cacheId) == true){
+                        this->jsonArr_cacheLock.replace(i, true);
+                        this->viewAll_rosetube_track[i]->setCacheImgShow(true);
+                    }
+                    else{
+                        this->jsonArr_cacheLock.replace(i, false);
+                        this->viewAll_rosetube_track[i]->setCacheImgShow(false);
+                    }
+                }
+            }
+        }
         else if(p_id == HTTP_CACHING_DELETE_ITEM){
 
             if(p_jsonObj.contains("code") && (p_jsonObj.value("code").toString() == "G0000")){
 
+                ToastMsg::delay(this,"", tr("delay"), 5500);
                 QThread::msleep(5500);
 
                 NetworkHttp *network = new NetworkHttp;
@@ -366,6 +443,42 @@ namespace rosetube {
     void RoseTubeCacheViewAll::slot_hide_msg(){
 
         ContentLoadingwaitingMsgHide();
+    }
+
+
+    void RoseTubeCacheViewAll::slot_change_cache_state(){
+
+        QJsonObject json;
+        json.insert("page", 0);
+
+        NetworkHttp *network = new NetworkHttp();
+        connect(network, SIGNAL(response(int,QJsonObject)), SLOT(slot_responseHttp(int,QJsonObject)));
+
+        QString Url = "http://" + global.device.getDeviceIP() + ":" +global.port + "/tube_cache_lock";
+        network->request(HTTP_CACHING_LOCK_ROSE,
+                         Url,
+                         json,
+                         true,
+                         true);
+    }
+
+
+    void RoseTubeCacheViewAll::slot_change_cache_list(){
+
+        this->flag_cache_delete_send = true;
+
+        QJsonObject json;
+        json.insert("page", 0);
+
+        NetworkHttp *network = new NetworkHttp();
+        connect(network, SIGNAL(response(int,QJsonObject)), SLOT(slot_responseHttp(int,QJsonObject)));
+
+        QString Url = "http://" + global.device.getDeviceIP() + ":" +global.port + "/tube_cache_contents_get";
+        network->request(HTTP_CACHING_CONTENTS,
+                         Url,
+                         json,
+                         true,
+                         true);
     }
 
 
@@ -450,15 +563,9 @@ namespace rosetube {
                     data_header.imageUrl = ProcJsonEasy::getString(tmpObj, "thumbnailUrl");
                     data_header.data_pk = "https://youtu.be/" + ProcJsonEasy::getString(tmpObj, "id");  //j220906 share link
                     data_header.type = "YOUTUBE";      //j220906 share link
+                    data_header.cache_lock = this->jsonArr_cacheLock.at(index).toBool();
                     data_header.flagProcStar = false;
                     data_header.isShare = true;      //j220906 share link
-
-                    if(this->jsonObj_CacheLock.contains(data_header.data_pk)){
-                        data_header.cache_lock = true;
-                    }
-                    else{
-                        data_header.cache_lock = false;
-                    }
 
                     // OptMorePopup 띄우기 필요
                     this->makeObj_optMorePopup(OptMorePopup::Rosetube_Caching, data_header, index, section);
@@ -753,5 +860,16 @@ namespace rosetube {
             // 유효하지 않는 경우, 그대로 반환
             return p_jsonArr;
         }
+    }
+
+    /**
+     * @brief 스크롤링에 대해서, get more data 처리
+     * @param event
+     */
+    void RoseTubeCacheViewAll::resizeEvent(QResizeEvent *event){
+
+        Q_UNUSED(event);
+
+        this->setFlowLayoutResize(this, this->flowLayout_rosetube, this->rosetube_widget_width, this->rosetube_widget_margin);
     }
 }

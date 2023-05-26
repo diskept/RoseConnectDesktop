@@ -85,7 +85,7 @@ namespace apple {
             this->flagReqMore_track = false;
             this->flag_lastPage_track = false;
 
-            ContentLoadingwaitingMsgShow(tr("Content is being loaded. Please wait."));
+            print_debug();ContentLoadingwaitingMsgShow(tr("Content is being loaded. Please wait."));
             this->request_more_trackData();
         }
     }
@@ -181,7 +181,7 @@ namespace apple {
         this->label_mainTitle = this->get_addUIControl_mainTitle("Tracks");
 
         // filtering
-        //this->setUiControl_filter();
+        //this->setUIControl_filter();
 
         // filter option box
         this->chooseFilterOpt = new bugs::BugsChooseFilterOpt(this);
@@ -191,9 +191,9 @@ namespace apple {
 
 
     /**
-     * @brief QobuzMyAlbumAll::setUiControl_filter
+     * @brief QobuzMyAlbumAll::setUIControl_filter
      */
-    void AppleTrackListAll_Rose::setUiControl_filter(){
+    void AppleTrackListAll_Rose::setUIControl_filter(){
 
         // 필터링 부분
         this->filterWidget = new FilterWidget();
@@ -271,7 +271,7 @@ namespace apple {
         this->box_main_contents->addLayout(this->vBox_tracks);
         this->scrollArea_main->setVerticalScrollBarPolicy(Qt::ScrollBarAsNeeded);
 
-        ContentLoadingwaitingMsgShow(tr("Content is being loaded. Please wait."));
+        print_debug();ContentLoadingwaitingMsgShow(tr("Content is being loaded. Please wait."));
     }
 
 
@@ -284,7 +284,7 @@ namespace apple {
 
             this->flag_draw = true;
 
-            ContentLoadingwaitingMsgShow(tr("Content is being loaded. Please wait."));
+            print_debug();ContentLoadingwaitingMsgShow(tr("Content is being loaded. Please wait."));
             this->request_more_trackDraw();
         }
     }

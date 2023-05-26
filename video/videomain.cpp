@@ -169,6 +169,7 @@ namespace video {
                 this->videoFolder = new MusicFolder(topMenuBar,false);
                 this->stackedWidget_content->addWidget(videoFolder);
                 connect(videoFolder, SIGNAL(clickedSubTab(QJsonObject)), this, SLOT(goToMoveNewOrderPage_subStep(QJsonObject)));
+                connect(this->topMenuBar, SIGNAL(signal_clickedSameSubMenu(QString)), this->videoFolder, SLOT(slot_goToInitiPageFolder(QString)));
             }
 
             videoFolder->setDataABSPage(p_data);

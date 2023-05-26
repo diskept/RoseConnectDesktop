@@ -56,7 +56,7 @@ namespace roseRadio {
 
     private:
         void setUIControl_Search();
-        void setUIControl_Filter();
+        void setUIControl_filter();
 
         void request_more_searchData();
         void request_more_searchDraw();

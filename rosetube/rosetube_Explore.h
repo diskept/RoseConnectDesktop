@@ -48,6 +48,8 @@ namespace rosetube {
 
         void slot_clickedCategory();
 
+        void slot_applyResult_getRating_track(const QJsonArray&);
+
     private:
         void slot_applyResult_getShareLink(const QString &link);//c220818
         // 초기 UI화면 구성
@@ -93,6 +95,11 @@ namespace rosetube {
 
         QJsonArray rosetubeCategory;
         QJsonArray jsonArr_rosetubeTrack[20];
+
+        int flag_fav_idx = 0;
+        int flag_fav_star = 0;
+        int flag_fav_type = 0;
+
 
     };
 };

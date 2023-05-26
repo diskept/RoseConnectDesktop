@@ -28,7 +28,7 @@ namespace tidal {
         // 기본값
         this->fixed_imgWidth = 200;
         this->fixed_imgHeight = 200;
-        this->fixed_cornerRadius = 3;
+        this->fixed_cornerRadius = 4;
 
         this->flagUseTopBG = false;
         this->flagFavorite = false;
@@ -91,12 +91,9 @@ namespace tidal {
         this->vBoxLayout_total->addWidget(this->label_topListBG);
         this->vBoxLayout_total->addWidget(this->label_imageBig);
 
-
-
         this->setLayout(this->vBoxLayout_total);
         this->setContentsMargins(0, 0, 0, 0);
         this->setFixedSize(this->fixed_imgWidth, this->fixed_imgHeight);
-
 
         //------------------------------------------------------------------------
 
@@ -111,18 +108,22 @@ namespace tidal {
         };
 
         QList<QString> list_btn_imgPath {
-                    ":/images/album_fav_icon_off.png"
-                    , ":/images/album_fav_icon_on.png"
-                    , ":/images/rosehome/heart_ico2.png"
-                    , ":/images/rosehome/heart_ico3.png"
+                    //":/images/album_fav_icon_off.png"
+                    //, ":/images/album_fav_icon_on.png"
+                    ":/images/rosehome/heart_ico0x2.png"
+                    , ":/images/rosehome/heart_ico1x2.png"
+                    , ":/images/rosehome/heart_ico2x2.png"
+                    , ":/images/rosehome/heart_ico3x2.png"
                     , ":/images/album_play_icon.png"
                     , ":/images/album_more_icon.png"
         };
         QList<QString> list_btn_imgPath_forPress {
-                    ":/images/album_fav_icon_off_h.png"
-                    , ":/images/album_fav_icon_on_h.png"
-                    , ":/images/rosehome/heart_ico2.png"
-                    , ":/images/rosehome/heart_ico3.png"
+                    //":/images/album_fav_icon_off_h.png"
+                    //, ":/images/album_fav_icon_on_h.png"
+                    ":/images/rosehome/heart_ico0x2.png"
+                    , ":/images/rosehome/heart_ico1x2.png"
+                    , ":/images/rosehome/heart_ico2x2.png"
+                    , ":/images/rosehome/heart_ico3x2.png"
                     , ":/images/album_play_icon_h.png"
                     , ":/images/album_more_icon_h.png"
         };
@@ -133,6 +134,7 @@ namespace tidal {
         this->btn_fav_toDelete = new QPushButton();
         this->btn_play = new QPushButton();
         this->btn_more = new QPushButton();
+
         QList<QPushButton*> list_btn {
                     this->btn_fav_toAdd
                     , this->btn_fav_toAddx2
@@ -147,14 +149,52 @@ namespace tidal {
         hBox_btns->setSpacing(0);
         hBox_btns->setContentsMargins(0, 0, 0, 0);
         for(int i = 0; i < list_btn.length(); i++){
-            QString tmp_btnStyle = this->getStr_btnStyle(i, list_btn_imgPath.at(i), list_btn_imgPath_forPress.at(i));
+
+            if(i < 4){
+                QImage img_fav;
+                bool flagLoaded = img_fav.load(list_btn_imgPath.at(i));
+                if(flagLoaded){
+                    QPixmap pixmapIMG = QPixmap(QSize(60, 60));
+                    pixmapIMG.fill(Qt::transparent);
+
+                    QPixmap tmp_pixmap;
+                    tmp_pixmap = tmp_pixmap.fromImage(img_fav);
+                    tmp_pixmap = tmp_pixmap.scaled(100, 100, Qt::KeepAspectRatio, Qt::SmoothTransformation);
+
+                    QPainter painter (&pixmapIMG);
+                    painter.setRenderHint(QPainter::Antialiasing, true);
+                    painter.setRenderHint(QPainter::HighQualityAntialiasing, true);
+                    painter.setRenderHint(QPainter::SmoothPixmapTransform, true);
+
+                    QPainterPath path = QPainterPath();
+                    path.addRoundedRect(0, 0, 100, 100, 0, 0);
+
+                    int leftValue = (60 - tmp_pixmap.width()) / 2;
+                    int topValue = (60 - tmp_pixmap.height()) / 2;
+
+                    painter.setClipPath(path);
+                    painter.drawPixmap(leftValue, topValue, tmp_pixmap);
+                    painter.end();
+
+                    QLabel *lb_fav = new QLabel(list_btn.at(i));
+                    lb_fav->setFixedSize(60, 60);
+                    lb_fav->setGeometry(0, 0, 0, 0);
+                    lb_fav->setStyleSheet("background-color:transparent;");
+                    lb_fav->setPixmap(pixmapIMG);
+                }
+            }
+            else{
+                QString tmp_btnStyle = this->getStr_btnStyle(i, list_btn_imgPath.at(i), list_btn_imgPath_forPress.at(i));
+                list_btn.at(i)->setStyleSheet(tmp_btnStyle);
+            }
 
             list_btn.at(i)->setObjectName(QString("btn_%1").arg(i));
             list_btn.at(i)->setFixedSize(QSize(BTN_IMAGE_SIZE, BTN_IMAGE_SIZE));
             list_btn.at(i)->setProperty(KEY_CODE, list_btnMode.at(i));
-            list_btn.at(i)->setStyleSheet(tmp_btnStyle);
+
             list_btn.at(i)->setCursor(Qt::PointingHandCursor);
             connect(list_btn.at(i), &QPushButton::clicked, this, &AbstractItemImage::slot_clickedBtnItem);
+
             hBox_btns->addWidget(list_btn.at(i));
         }
 
@@ -233,7 +273,7 @@ namespace tidal {
     void AbstractItemImage::slot_clickedBtnItem(){
         BtnClickMode sender_clickMode = sender()->property(KEY_CODE).value<AbstractItemImage::BtnClickMode>();
 
-        if(sender_clickMode==BtnClickMode::Favorite_toAdd){
+        /*if(sender_clickMode==BtnClickMode::Favorite_toAdd){
             // show / hide 교체
             this->btn_fav_toAdd->setVisible(false);
             this->btn_fav_toAddx2->setVisible(true);
@@ -263,7 +303,9 @@ namespace tidal {
         }
         else{
             this->applyHoverOff();
-        }
+        }*/
+
+        this->applyHoverOff();
 
         emit this->signal_clickedBtn(sender_clickMode);
     }
@@ -275,7 +317,7 @@ namespace tidal {
      */
     void AbstractItemImage::slot_fileDownload_loadImage(){
 
-        /// freezing 이유로 QImage 사용
+        ///< freezing 이유로 QImage 사용
         QImage image;
         bool flagLoad = image.loadFromData(this->fileDownLoader->downloadedData());
 
@@ -285,7 +327,23 @@ namespace tidal {
 
             QPixmap tmp_pixmap;
             tmp_pixmap = tmp_pixmap.fromImage(image);
-            tmp_pixmap = tmp_pixmap.scaled(this->fixed_imgWidth, this->fixed_imgHeight, Qt::KeepAspectRatioByExpanding, Qt::SmoothTransformation);
+            if(this->flagArtist){
+                tmp_pixmap = tmp_pixmap.scaled(this->fixed_imgWidth, this->fixed_imgHeight, Qt::KeepAspectRatioByExpanding, Qt::SmoothTransformation);
+            }
+            else{
+                //tmp_pixmap = tmp_pixmap.scaled(this->fixed_imgWidth, this->fixed_imgHeight, Qt::KeepAspectRatio, Qt::SmoothTransformation);
+                if(tmp_pixmap.width() > tmp_pixmap.height()){
+                    tmp_pixmap = tmp_pixmap.scaledToWidth(this->fixed_imgWidth, Qt::SmoothTransformation);
+                    pixmapIMG.fill(Qt::black);
+                }
+                else if(tmp_pixmap.height() > tmp_pixmap.width()){
+                    tmp_pixmap = tmp_pixmap.scaledToHeight(this->fixed_imgHeight, Qt::SmoothTransformation);
+                    pixmapIMG.fill(Qt::black);
+                }
+                else{
+                    tmp_pixmap = tmp_pixmap.scaled(this->fixed_imgWidth, this->fixed_imgHeight, Qt::KeepAspectRatioByExpanding, Qt::SmoothTransformation);
+                }
+            }
 
             QPainter painter (&pixmapIMG);
             painter.setRenderHint(QPainter::Antialiasing, true);
@@ -294,19 +352,11 @@ namespace tidal {
 
             QPainterPath path;
             path.addRoundedRect(0, 0, this->fixed_imgWidth, this->fixed_imgHeight, this->fixed_cornerRadius, this->fixed_cornerRadius);
+
+            int leftValue = (this->fixed_imgWidth - tmp_pixmap.width()) / 2;
+            int topValue = (this->fixed_imgHeight - tmp_pixmap.height()) / 2;
+
             painter.setClipPath(path);
-
-            int leftValue = 0;
-            int topValue = 0;
-
-            if(tmp_pixmap.width() > this->fixed_imgWidth){
-                leftValue = (this->fixed_imgWidth - tmp_pixmap.width()) / 2;
-            }
-
-            if(tmp_pixmap.height() > this->fixed_imgHeight){
-                topValue = (this->fixed_imgHeight - tmp_pixmap.height()) / 2;
-            }
-
             painter.drawPixmap(leftValue, topValue, tmp_pixmap);
             painter.end();
 
@@ -317,7 +367,7 @@ namespace tidal {
                 QPixmap *img_type = new QPixmap();
                 if(img.load(this->type_image_path)){
                     *img_type = QPixmap::fromImage(img);
-                    *img_type = img_type->scaled(img.width(), img.height(), Qt::KeepAspectRatioByExpanding, Qt::SmoothTransformation);
+                    *img_type = img_type->scaled(img.width(), img.height(), Qt::IgnoreAspectRatio, Qt::SmoothTransformation);
                 }
 
                 this->label_imageType->setPixmap(*img_type);
@@ -331,7 +381,7 @@ namespace tidal {
                 QPixmap *img_type = new QPixmap();
                 if(img.load(this->type_image_cache)){
                     *img_type = QPixmap::fromImage(img);
-                    *img_type = img_type->scaled(img.width(), img.height(), Qt::KeepAspectRatioByExpanding, Qt::SmoothTransformation);
+                    *img_type = img_type->scaled(img.width(), img.height(), Qt::IgnoreAspectRatio, Qt::SmoothTransformation);
                 }
 
                 this->label_imageCache->setPixmap(*img_type);
@@ -379,7 +429,7 @@ namespace tidal {
                 QPixmap *img_type = new QPixmap();
                 if(img.load(this->type_image_onAir)){
                     *img_type = QPixmap::fromImage(img);
-                    *img_type = img_type->scaled(img.width(), img.height(), Qt::KeepAspectRatioByExpanding, Qt::SmoothTransformation);
+                    *img_type = img_type->scaled(img.width(), img.height(), Qt::IgnoreAspectRatio, Qt::SmoothTransformation);
                 }
 
                 this->label_imageOnAir->setPixmap(*img_type);
@@ -389,12 +439,29 @@ namespace tidal {
             }
         }
         else{
+            QPixmap pixmap(this->getImagePath_default());
+
+            // 빈 Pixmap
+            QPixmap pixmap_painter = QPixmap(QSize(this->fixed_imgWidth, this->fixed_imgHeight));
+            pixmap_painter.fill(Qt::transparent);
+
+            QPainter painter (&pixmap_painter);
+            painter.setRenderHint(QPainter::Antialiasing, true);
+            painter.setRenderHint(QPainter::HighQualityAntialiasing, true);
+            painter.setRenderHint(QPainter::SmoothPixmapTransform, true);
+
+            QBrush brush = QBrush(pixmap);
+            painter.setBrush(brush);
+            painter.drawRoundedRect(0, 0, this->fixed_imgWidth, this->fixed_imgHeight, this->fixed_cornerRadius, this->fixed_cornerRadius);
+
+            this->label_imageBig->setPixmap(pixmap_painter);
+
             if(this->flag_type_image){
                 QImage img;
                 QPixmap *img_type = new QPixmap();
                 if(img.load(this->type_image_path)){
                     *img_type = QPixmap::fromImage(img);
-                    *img_type = img_type->scaled(img.width(), img.height(), Qt::KeepAspectRatioByExpanding, Qt::SmoothTransformation);
+                    *img_type = img_type->scaled(img.width(), img.height(), Qt::IgnoreAspectRatio, Qt::SmoothTransformation);
                 }
 
                 this->label_imageType->setPixmap(*img_type);
@@ -408,7 +475,7 @@ namespace tidal {
                 QPixmap *img_type = new QPixmap();
                 if(img.load(this->type_image_cache)){
                     *img_type = QPixmap::fromImage(img);
-                    *img_type = img_type->scaled(img.width(), img.height(), Qt::KeepAspectRatioByExpanding, Qt::SmoothTransformation);
+                    *img_type = img_type->scaled(img.width(), img.height(), Qt::IgnoreAspectRatio, Qt::SmoothTransformation);
                 }
 
                 this->label_imageCache->setPixmap(*img_type);
@@ -456,7 +523,7 @@ namespace tidal {
                 QPixmap *img_type = new QPixmap();
                 if(img.load(this->type_image_onAir)){
                     *img_type = QPixmap::fromImage(img);
-                    *img_type = img_type->scaled(img.width(), img.height(), Qt::KeepAspectRatioByExpanding, Qt::SmoothTransformation);
+                    *img_type = img_type->scaled(img.width(), img.height(), Qt::IgnoreAspectRatio, Qt::SmoothTransformation);
                 }
 
                 this->label_imageOnAir->setPixmap(*img_type);
@@ -470,30 +537,64 @@ namespace tidal {
     }
 
 
-    /**
-     * @brief AbstractItemImage::setImage
-     * @param imagePath
-     */
+//    /**
+//     * @brief AbstractItemImage::setImage
+//     * @param imagePath
+//     */
+//    void AbstractItemImage::setImage(QString imagePath){
+
+//        if(imagePath.isEmpty()){
+//            // 기본 이미지로 세팅
+//            QPixmap pixmap(this->getImagePath_default());
+//            pixmap = pixmap.scaled(this->fixed_imgWidth, this->fixed_imgHeight, Qt::KeepAspectRatioByExpanding, Qt::SmoothTransformation);
+//            this->paint_imageBig(pixmap);
+//        }
+//        else{
+//            if(imagePath.contains(":/images")){
+
+//                QPixmap pixmap(imagePath);
+//                pixmap = pixmap.scaled(this->fixed_imgWidth, this->fixed_imgHeight, Qt::KeepAspectRatioByExpanding, Qt::SmoothTransformation);
+//                this->paint_imageBig(pixmap);
+//            }
+//            else{
+//                this->fileDownLoader->setImageURL(imagePath);
+//            }
+//        }
+//    }
+
     void AbstractItemImage::setImage(QString imagePath){
 
-        if(imagePath.isEmpty()){
-            // 기본 이미지로 세팅
-            QPixmap pixmap(this->getImagePath_default());
-            pixmap = pixmap.scaled(this->fixed_imgWidth, this->fixed_imgHeight, Qt::KeepAspectRatioByExpanding, Qt::SmoothTransformation);
-            this->paint_imageBig(pixmap);
-        }
-        else{
-            if(imagePath.contains(":/images")){
-                QPixmap pixmap(imagePath);
+            if(imagePath.isEmpty()){
+                // 기본 이미지로 세팅
+                QPixmap pixmap(this->getImagePath_default());
                 pixmap = pixmap.scaled(this->fixed_imgWidth, this->fixed_imgHeight, Qt::KeepAspectRatioByExpanding, Qt::SmoothTransformation);
                 this->paint_imageBig(pixmap);
             }
             else{
-                this->fileDownLoader->setImageURL(imagePath);
+                if(imagePath.contains(":/images")){
+
+                    QPixmap pixmap(imagePath);
+                    pixmap = pixmap.scaled(this->fixed_imgWidth, this->fixed_imgHeight, Qt::KeepAspectRatioByExpanding, Qt::SmoothTransformation);
+                    this->paint_imageBig(pixmap);
+                }
+                else if(imagePath.contains("https://")){    //imagePath.contains("https://resources.tidal.com/images//")
+
+                    QStringList firstSplit = imagePath.split("https://");
+
+                    if(firstSplit.at(1).contains("//")){
+                        QPixmap pixmap(this->getImagePath_default());
+                        pixmap = pixmap.scaled(this->fixed_imgWidth, this->fixed_imgHeight, Qt::KeepAspectRatioByExpanding, Qt::SmoothTransformation);
+                        this->paint_imageBig(pixmap);
+                    }
+                    else{
+                        this->fileDownLoader->setImageURL(imagePath);
+                    }
+                }
+                else{
+                    this->fileDownLoader->setImageURL(imagePath);
+                }
             }
         }
-    }
-
 
     /**
      * @brief pixmap 을 label_image 에 그린다. 가로/세로 사이즈와 corner 까지 고려함.
@@ -501,12 +602,16 @@ namespace tidal {
      * @param pixmap
      */
     void AbstractItemImage::paint_imageBig(QPixmap &pixmap){
+
         // 빈 Pixmap
         QPixmap pixmap_painter = QPixmap(QSize(this->fixed_imgWidth, this->fixed_imgHeight));
         pixmap_painter.fill(Qt::transparent);
 
         QPainter painter (&pixmap_painter);
         painter.setRenderHint(QPainter::Antialiasing, true);
+        painter.setRenderHint(QPainter::HighQualityAntialiasing, true);
+        painter.setRenderHint(QPainter::SmoothPixmapTransform, true);
+
         QBrush brush = QBrush(pixmap);
         painter.setBrush(brush);
         painter.drawRoundedRect(0, 0, this->fixed_imgWidth, this->fixed_imgHeight, this->fixed_cornerRadius, this->fixed_cornerRadius);
@@ -758,9 +863,45 @@ namespace tidal {
     }
 
 
+    void AbstractItemImage::setUseBtn_favoriteRT(bool flagUse){
+
+        this->btn_fav_toAdd->setVisible(flagUse);
+        this->btn_fav_toAddx2->setVisible(flagUse);
+        this->btn_fav_toAddx3->setVisible(flagUse);
+        this->btn_fav_toDelete->setVisible(flagUse);
+    }
+
+
     void AbstractItemImage::setUseBtn_favoriteRose(bool flagUse, int favCnt){
 
-        this->flagUseFavorite = flagUse;
+        Q_UNUSED(flagUse);
+
+        if(favCnt == 0){
+            this->btn_fav_toAdd->setVisible(true);
+            this->btn_fav_toAddx2->setVisible(false);
+            this->btn_fav_toAddx3->setVisible(false);
+            this->btn_fav_toDelete->setVisible(false);
+        }
+        else if(favCnt == 1){
+            this->btn_fav_toAdd->setVisible(false);
+            this->btn_fav_toAddx2->setVisible(true);
+            this->btn_fav_toAddx3->setVisible(false);
+            this->btn_fav_toDelete->setVisible(false);
+        }
+        else if(favCnt == 2){
+            this->btn_fav_toAdd->setVisible(false);
+            this->btn_fav_toAddx2->setVisible(false);
+            this->btn_fav_toAddx3->setVisible(true);
+            this->btn_fav_toDelete->setVisible(false);
+        }
+        else if(favCnt == 3){
+            this->btn_fav_toAdd->setVisible(false);
+            this->btn_fav_toAddx2->setVisible(false);
+            this->btn_fav_toAddx3->setVisible(false);
+            this->btn_fav_toDelete->setVisible(true);
+        }
+
+        /*this->flagUseFavorite = flagUse;
         this->UseFavoriteRoseCnt = favCnt;
         if(flagUse){
             if(favCnt == 0){
@@ -793,7 +934,7 @@ namespace tidal {
             this->btn_fav_toAddx2->setVisible(false);
             this->btn_fav_toAddx3->setVisible(false);
             this->btn_fav_toDelete->setVisible(false);
-        }
+        }*/
     }
 
 
@@ -885,6 +1026,10 @@ namespace tidal {
 
     void AbstractItemImage::applyHoverOnRose(){
         if(this->flagUseHoverRose){
+            this->setUseBtn_favorite(false);
+            this->btn_play->setVisible(this->flagUseHover2);
+            this->btn_more->setVisible(this->flagUseHover2);
+
             this->btn_allBox->setVisible(true);
             this->btn_allBox->setCursor(QCursor(Qt::PointingHandCursor));
         }
@@ -892,6 +1037,10 @@ namespace tidal {
 
     void AbstractItemImage::applyHoverOffRose(){
         if(this->flagUseHoverRose){
+            this->setUseBtn_favorite(false);
+            this->btn_play->setVisible(this->flagUseHover2);
+            this->btn_more->setVisible(this->flagUseHover2);
+
             this->btn_allBox->setVisible(false);
             this->btn_allBox->setCursor(QCursor(Qt::ArrowCursor));
         }
@@ -912,6 +1061,10 @@ namespace tidal {
 
     void AbstractItemImage::setUseHoverRose(bool flagUse){
         this->flagUseHoverRose = flagUse;
+    }
+
+    void AbstractItemImage::setUseArtist(bool flagUse){
+        this->flagArtist = flagUse;
     }
 
     /**

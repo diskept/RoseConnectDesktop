@@ -16,7 +16,7 @@
 
 namespace tidal {
 
-    const QString tmp_btnStyle      = "padding:10px;border:1px solid #707070;color:#CCCCCC;font-size:18px;";//cheon211008
+    const QString tmp_btnStyle      = "padding:8px;border:1px solid #707070;color:#CCCCCC;font-size:16px;";//cheon211008
     //const QString tmp_btnStyleHover = "background-color:#B18658;color:#FFFFFF;";//cheon211115-01
     const QString tmp_btnStyleHover = "background-color:#CCCCCC;color:#FFFFFF;";//cheon211115-01
     const QString tmp_btnStyleHover_selected = "background-color:#B18658;color:#FFFFFF;";//cheon211115-01
@@ -113,7 +113,7 @@ namespace tidal {
             this->flag_playlist[1] = false;
             this->flag_video[1] = false;
 
-            ContentLoadingwaitingMsgShow(tr("Content is being loaded. Please wait."));
+            print_debug();ContentLoadingwaitingMsgShow(tr("Content is being loaded. Please wait."));
 
             // request HTTP API for Suggested
             ProcCommon *proc = new ProcCommon(this);
@@ -140,6 +140,9 @@ namespace tidal {
             connect(proc, &ProcCommon::completeReq_list_videos, this, &TidalSearchMain::slot_applyResult_videos);
             proc->request_tidal_searchAllItems(this->data_search.search_word, 10, 0, ProcCommon::TidalSearch_ContentType::Videos);*/
         }
+        else{
+            print_debug();ContentLoadingwaitingMsgHide();   //j230328
+        }
     }
 
 
@@ -152,6 +155,16 @@ namespace tidal {
 
             // 항상 부모클래스의 함수 먼저 호출
             AbstractTidalSubWidget::setActivePage();
+
+            // j230407 Removing ghosting effect start
+            if(this->widget_main_contents != nullptr){
+                this->widget_main_contents->hide();
+                this->box_contents->removeWidget(this->widget_main_contents);
+
+                delete this->widget_main_contents;
+            }
+            // j230407 Removing ghosting effect finish
+
 
             this->box_contents->removeWidget(this->widget_main_contents);
             GSCommon::clearLayout(this->box_contents);
@@ -321,12 +334,12 @@ namespace tidal {
 
                 this->vBox_track->addSpacing(10);
 
-                QList<QString> tmp_clientkey;
                 int maxCount = this->list_track->size();
                 if(this->list_track->size() > 5){
                     maxCount = 5;
                 }
 
+                QList<QString> tmp_clientkey;
                 for(int i = 0; i < maxCount; i++){
                     this->search_track[i]->setDataTrackInfo_Tidal(this->list_track->at(i));
                     this->search_track[i]->resize(1550, 70);
@@ -336,13 +349,13 @@ namespace tidal {
                     tmp_clientkey.append(QString("%1").arg(this->list_track->at(i).id));
                 }
 
-                this->box_main_contents->addLayout(this->vBox_track);
-                this->box_main_contents->addSpacing(30);
-
                 // request HTTP API - get favorite for Rose Server
                 roseHome::ProcCommon *proc_fav_track = new roseHome::ProcCommon(this);
                 connect(proc_fav_track, &roseHome::ProcCommon::completeReq_rating_track, this, &TidalSearchMain::slot_applyResult_getRating_track);
-                proc_fav_track->request_rose_getRating_Track("QOBUZ", tmp_clientkey);
+                proc_fav_track->request_rose_getRating_Track("TIDAL", tmp_clientkey);
+
+                this->box_main_contents->addLayout(this->vBox_track);
+                this->box_main_contents->addSpacing(30);
             }
 
             if(flag_artist[1] == true){
@@ -490,7 +503,7 @@ namespace tidal {
         tmp_scrollArea->setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
         tmp_scrollArea->setStyleSheet("background-color:transparent; border:0px;");
         tmp_scrollArea->setContentsMargins(0,0,0,0);
-        tmp_scrollArea->setFixedHeight(275);
+        tmp_scrollArea->setFixedHeight(285);
 
         QScroller::grabGesture(tmp_scrollArea, QScroller::LeftMouseButtonGesture);
         //----------------------------------------------------------------------------------------------------  BODY : END
@@ -523,7 +536,7 @@ namespace tidal {
         tmp_scrollArea->setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
         tmp_scrollArea->setStyleSheet("background-color:transparent; border:0px;");
         tmp_scrollArea->setContentsMargins(0,0,0,0);
-        tmp_scrollArea->setFixedHeight(250);
+        tmp_scrollArea->setFixedHeight(260);
 
         QScroller::grabGesture(tmp_scrollArea, QScroller::LeftMouseButtonGesture);
         //----------------------------------------------------------------------------------------------------  BODY : END
@@ -563,7 +576,7 @@ namespace tidal {
         tmp_scrollArea->setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
         tmp_scrollArea->setStyleSheet("background-color:transparent; border:0px;");
         tmp_scrollArea->setContentsMargins(0,0,0,0);
-        tmp_scrollArea->setFixedHeight(295);
+        tmp_scrollArea->setFixedHeight(305);
 
         QScroller::grabGesture(tmp_scrollArea, QScroller::LeftMouseButtonGesture);
         //----------------------------------------------------------------------------------------------------
@@ -604,7 +617,7 @@ namespace tidal {
         tmp_scrollArea->setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
         tmp_scrollArea->setStyleSheet("background-color:transparent; border:0px;");
         tmp_scrollArea->setContentsMargins(0,0,0,0);
-        tmp_scrollArea->setFixedHeight(275);
+        tmp_scrollArea->setFixedHeight(285);
 
         QScroller::grabGesture(tmp_scrollArea, QScroller::LeftMouseButtonGesture);
         //----------------------------------------------------------------------------------------------------
@@ -813,17 +826,25 @@ namespace tidal {
 
     void TidalSearchMain::slot_tidal_completeReq_listAll_myFavoritesIds(const QJsonObject& p_jsonObj){
 
-        // Favorite 정보를 전달해줌. 알아서 처리하라고. => OptMorePopup 에서 하라고, 가려줌
+        // Favorite 정보를 전달해줌. 알아서 처리하라고.
         if(p_jsonObj.contains("flagOk") && ProcJsonEasy::get_flagOk(p_jsonObj)){
-            bool status  = ProcJsonEasy::getBool(p_jsonObj, "status");
 
-            // Qobuz favorite toggle check
+            // Tidal favorite check
             if(this->flag_send_track == true){
-                if((status == true && this->flag_track_fav == false) || (status == false && this->flag_track_fav == true)){
-                    // Tidal Favorite toggle
-                    //ProcCommon *proc = new ProcCommon(this);
-                    //connect(proc, &qobuz::ProcCommon::completeReq_listAll_myFavoritesIds, this, &TidalSearchMain::slot_qobuz_completeReq_listAll_myFavoritesIds);
-                    //proc->request_qobuz_set_favorite("track", QString("%1").arg(this->track_id_fav), this->flag_track_fav);
+                QVariantList arr_myFavoriteIds = ProcJsonEasy::getJsonArray(p_jsonObj, "TRACK").toVariantList();
+                bool status = arr_myFavoriteIds.contains(this->track_id_fav);
+
+                if(status == true && this->flag_track_fav == false){
+                    // Tidal track Favorite del
+                    ProcCommon *proc = new ProcCommon(this);
+                    connect(proc, &tidal::ProcCommon::completeReq_listAll_myFavoritesIds, this, &TidalSearchMain::slot_tidal_completeReq_listAll_myFavoritesIds);
+                    proc->request_tidal_del_favorite("tracks", QString("%1").arg(this->track_id_fav));
+                }
+                else if(status == false && this->flag_track_fav == true){
+                    // Tidal track Favorite add
+                    ProcCommon *proc = new ProcCommon(this);
+                    connect(proc, &tidal::ProcCommon::completeReq_listAll_myFavoritesIds, this, &TidalSearchMain::slot_tidal_completeReq_listAll_myFavoritesIds);
+                    proc->request_tidal_set_favorite("tracks", QString("%1").arg(this->track_id_fav));
                 }
                 this->flag_send_track = false;
             }
@@ -842,7 +863,7 @@ namespace tidal {
 
         if(id <= 0){
 
-            /*QJsonObject tmp_album = ProcJsonEasy::getJsonObject(jsonObj_track, "album");
+            QJsonObject tmp_album = ProcJsonEasy::getJsonObject(jsonObj_track, "album");
 
             QJsonObject tmp_artist = ProcJsonEasy::getJsonObject(tmp_album, "artist");
             QJsonObject artist;
@@ -905,7 +926,7 @@ namespace tidal {
             track.insert("star", 1);
             track.insert("thumbnailUrl", thumbnail);
             track.insert("title", ProcJsonEasy::getString(jsonObj_track, "title"));
-            track.insert("type", "QOBUZ");
+            track.insert("type", "TIDAL");
 
             QJsonArray tracks;
             tracks.append(track);
@@ -915,12 +936,12 @@ namespace tidal {
 
             // request HTTP API - get favorite for Rose Server
             roseHome::ProcCommon *proc_fav_track = new roseHome::ProcCommon(this);
-            connect(proc_fav_track, &roseHome::ProcCommon::completeCheck_rating_track, this, &QobuzSearchMain::slot_applyResult_addRating_track);
-            proc_fav_track->request_rose_addRating_Track(json);*/
+            connect(proc_fav_track, &roseHome::ProcCommon::completeCheck_rating_track, this, &TidalSearchMain::slot_applyResult_addRating_track);
+            proc_fav_track->request_rose_addRating_Track(json);
         }
         else{
 
-            /*QJsonObject tmp_album = ProcJsonEasy::getJsonObject(jsonObj_track, "album");
+            QJsonObject tmp_album = ProcJsonEasy::getJsonObject(jsonObj_track, "album");
 
             QJsonObject tmp_artist = ProcJsonEasy::getJsonObject(tmp_album, "artist");
             QJsonObject artist;
@@ -981,13 +1002,13 @@ namespace tidal {
             track.insert("star", 0);
             track.insert("thumbnailUrl", thumbnail);
             track.insert("title", ProcJsonEasy::getString(jsonObj_track, "title"));
-            track.insert("type", "QOBUZ");
+            track.insert("type", "TIDAL");
 
             QJsonObject ratingInfo;
             ratingInfo.insert("favorite", this->flag_track_fav);
             ratingInfo.insert("star", this->track_star_fav);
             ratingInfo.insert("thumbup", false);
-            ratingInfo.insert("type", "QOBUZ");
+            ratingInfo.insert("type", "TIDAL");
 
             QJsonObject json;
             json.insert("ratingInfo", ratingInfo);
@@ -995,8 +1016,8 @@ namespace tidal {
 
             // request HTTP API - get favorite for Rose Server
             roseHome::ProcCommon *proc_fav_track = new roseHome::ProcCommon(this);
-            connect(proc_fav_track, &roseHome::ProcCommon::completeReq_rating_track, this, &QobuzSearchMain::slot_applyResult_getRating_track);
-            proc_fav_track->request_rose_setRating_Track(json, this->flag_track_fav, this->track_star_fav);*/
+            connect(proc_fav_track, &roseHome::ProcCommon::completeReq_rating_track, this, &TidalSearchMain::slot_applyResult_getRating_track);
+            proc_fav_track->request_rose_setRating_Track(json, this->flag_track_fav, this->track_star_fav);
 
         }
     }
@@ -1066,24 +1087,31 @@ namespace tidal {
                     this->flag_track_fav = true;
                 }
 
-                if(this->track_star_fav == 0 || this->track_star_fav == 1){
-                    // Qobuz Favorite toggle
-                    this->track_id_fav = this->list_track->at(idx).id;
+                this->track_idx_fav = idx;
+                this->track_id_fav = this->list_track->at(idx).id;
 
-                    //ProcCommon *proc = new ProcCommon(this);
-                    //connect(proc, &tidal::ProcCommon::completeReq_listAll_myFavoritesIds, this, &TidalSearchMain::slot_qobuz_completeReq_listAll_myFavoritesIds);
-                    //proc->request_tidal_set_favorite("track", QString("%1").arg(this->track_id_fav), this->flag_track_fav);
-                    //this->flag_send_track = true;
+                if(this->track_star_fav == 1){
+                    // Tidal Track Favorite add
+                    ProcCommon *proc = new ProcCommon(this);
+                    proc->request_tidal_set_favorite("tracks", QString("%1").arg(this->track_id_fav));
+                }
+                else if(this->track_star_fav == 0){
+                    // Tidal Track Favorite del
+                    ProcCommon *proc = new ProcCommon(this);
+                    proc->request_tidal_del_favorite("tracks", QString("%1").arg(this->track_id_fav));
                 }
 
-                this->track_idx_fav = idx;
-                QJsonObject jsonObj = this->jsonArr_tracks_toPlay.at(idx).toObject();
+                // favorite 정보 가져오기
+                ProcCommon *proc_fav = new ProcCommon(this);
+                connect(proc_fav, &ProcCommon::completeReq_listAll_myFavoritesIds, this, &TidalSearchMain::slot_tidal_completeReq_listAll_myFavoritesIds);
+                proc_fav->request_tidal_getAll_favorites();
+                this->flag_send_track = true;
 
                 // request HTTP API - get favorite for Rose Server
-                //roseHome::ProcCommon *proc_favCheck_track = new roseHome::ProcCommon(this);
-                //connect(proc_favCheck_track, &roseHome::ProcCommon::completeCheck_rating_track, this, &TidalSearchMain::slot_applyResult_checkRating_track);
-                //proc_favCheck_track->request_rose_checkRating_Track("TIDAL", QString("%1").arg(ProcJsonEasy::getInt(jsonObj, "id")));
-                //this->flag_check_track = true;
+                roseHome::ProcCommon *proc_favCheck_track = new roseHome::ProcCommon(this);
+                connect(proc_favCheck_track, &roseHome::ProcCommon::completeCheck_rating_track, this, &TidalSearchMain::slot_applyResult_checkRating_track);
+                proc_favCheck_track->request_rose_checkRating_Track("TIDAL", QString("%1").arg(this->track_id_fav));
+                this->flag_check_track = true;
 
                 this->search_track[idx]->setFavoritesIds(this->flag_track_fav, this->track_star_fav);
             }

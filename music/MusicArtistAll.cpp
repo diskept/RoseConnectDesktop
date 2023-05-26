@@ -22,7 +22,7 @@ namespace music {
      * @brief ArtistListAll::ArtistListAll
      * @param parent
      */
-    ArtistListAll::ArtistListAll(QWidget *parent) : AbstractRoseHomeSubWidget(MainUIType::VerticalScroll_viewAll, parent) {
+    ArtistListAll::ArtistListAll(QWidget *parent) : AbstractRoseHomeSubWidget(MainUIType::VerticalScroll_roseviewAll, parent) {
 
         this->linker = Linker::getInstance();
 
@@ -62,7 +62,12 @@ namespace music {
             this->list_artist->clear();
             this->jsonArr_Artist = ProcJsonEasy::getJsonArray(jsonObj, "data");
 
-            ContentLoadingwaitingMsgShow(tr("Content is being loaded. Please wait."));
+            this->flag_flow_draw = false;
+
+            print_debug();ContentLoadingwaitingMsgShow(tr("Content is being loaded. Please wait."));
+        }
+        else{
+            print_debug();ContentLoadingwaitingMsgHide();   //j230328
         }
     }
 
@@ -81,27 +86,27 @@ namespace music {
             // init
             GSCommon::clearLayout(this->flowLayout_artists);
 
-            QList<roseHome::ArtistItemData> list_artist;
-            for(int i = 0; i < this->jsonArr_Artist.size(); i++){
+//            QList<roseHome::ArtistItemData> list_artist;
+//            for(int i = 0; i < this->jsonArr_Artist.size(); i++){
 
-                QJsonObject tmpObj = this->jsonArr_Artist.at(i).toObject();
+//                QJsonObject tmpObj = this->jsonArr_Artist.at(i).toObject();
 
-                QString tmpImg = ProcJsonEasy::getString(tmpObj, "album_art");
-                if(!tmpImg.isEmpty()){
-                    tmpImg = "http://" + global.device.getDeviceIP() + ":" + global.port_img + ProcJsonEasy::getString(tmpObj, "album_art");
-                }
+//                QString tmpImg = ProcJsonEasy::getString(tmpObj, "album_art");
+//                if(!tmpImg.isEmpty()){
+//                    tmpImg = "http://" + global.device.getDeviceIP() + ":" + global.port_img + ProcJsonEasy::getString(tmpObj, "album_art");
+//                }
 
-                roseHome::ArtistItemData tmpArtist;
-                tmpArtist.id = ProcJsonEasy::getInt(tmpObj, "id");
-                tmpArtist.imageUrl = tmpImg;
-                tmpArtist.name = ProcJsonEasy::getString(tmpObj, "artist");
-                tmpArtist.albums_count = ProcJsonEasy::getInt(tmpObj, "number_of_albums");
-                tmpArtist.tracks_count = ProcJsonEasy::getInt(tmpObj, "number_of_tracks");
+//                roseHome::ArtistItemData tmpArtist;
+//                tmpArtist.id = ProcJsonEasy::getInt(tmpObj, "id");
+//                tmpArtist.imageUrl = tmpImg;
+//                tmpArtist.name = ProcJsonEasy::getString(tmpObj, "artist");
+//                tmpArtist.albums_count = ProcJsonEasy::getInt(tmpObj, "number_of_albums");
+//                tmpArtist.tracks_count = ProcJsonEasy::getInt(tmpObj, "number_of_tracks");
 
-                list_artist.append(tmpArtist);
-            }
+//                list_artist.append(tmpArtist);
+//            }
 
-            this->slot_applyResult_artists(list_artist, QJsonArray(), true);
+//            this->slot_applyResult_artists(list_artist, QJsonArray(), true);
         }
     }
 
@@ -119,9 +124,23 @@ namespace music {
 
         this->label_mainTitle = this->get_addUIControl_mainTitle("artists");
 
+        // get widget width, right margin - by diskept j230317 start
+        GSCommon::clearLayout(this->box_contents);
+        this->box_contents->setAlignment(Qt::AlignTop);
+        this->scrollArea_main->setVerticalScrollBarPolicy(Qt::ScrollBarAsNeeded);
+
+        roseHome::ItemArtist_rosehome *listArtist = new roseHome::ItemArtist_rosehome(0, 0, tidal::AbstractItem::ImageSizeMode::Square_200x200);
+
+        this->artist_widget_width = listArtist->get_fixedWidth();
+        this->artist_widget_margin = listArtist->get_rightMargin();
+
+        //qDebug() << "[Debug] MusicAlbum::setUIControl_albums " << listAlbum->get_fixedWidth() << listAlbum->get_rightMargin();
+
+        delete listArtist;
+        //  get widget width, right margin - by diskept j230317 finish
+
         // layout for items
         this->flowLayout_artists = this->get_addUIControl_flowLayout(0, 20);
-        this->scrollArea_main->setVerticalScrollBarPolicy(Qt::ScrollBarAsNeeded);
     }
 
 
@@ -149,19 +168,24 @@ namespace music {
                 int max_cnt = this->list_artist->size();
 
                 for(int i = start_index; i < max_cnt; i++){
-                    this->listArtist_all[i] = new roseHome::ItemArtist_roseHome(i, SECTION_FOR_MORE_POPUP___artists, tidal::AbstractItem::ImageSizeMode::Square_200x200);
-                    connect(this->listArtist_all[i], &roseHome::ItemArtist_roseHome::signal_clicked, this, &ArtistListAll::slot_clickedItemArtist);
+                    this->listArtist_all[i] = new roseHome::ItemArtist_rosehome(i, SECTION_FOR_MORE_POPUP___artists, tidal::AbstractItem::ImageSizeMode::Square_200x200);
+                    QCoreApplication::processEvents();
                 }
 
                 for(int i = start_index; i < max_cnt; i++){
                     this->listArtist_all[i]->setData(this->list_artist->at(i));
-                    this->flowLayout_artists->addWidget(this->listArtist_all[i]);
-
                     QCoreApplication::processEvents();
                 }
+
+                for(int i = start_index; i < max_cnt; i++){
+                    this->flowLayout_artists->addWidget(this->listArtist_all[i]);
+                    connect(this->listArtist_all[i], &roseHome::ItemArtist_rosehome::signal_clicked, this, &ArtistListAll::slot_clickedItemArtist);
+                }
+
+                ContentLoadingwaitingMsgHide();
             }
 
-            ContentLoadingwaitingMsgHide();
+
         }
         else{
             ContentLoadingwaitingMsgHide();
@@ -239,6 +263,44 @@ namespace music {
 
                 emit linker->signal_clickedMovePage(jsonData);
             }
+        }
+    }
+
+
+    void ArtistListAll::resizeEvent(QResizeEvent *event){//c230304
+
+        Q_UNUSED(event);
+
+        //qDebug() << "[Debug] ArtistListAll::resizeEvent " << this->width();
+
+        // flowlayout spacing change - by diskept j230317 start
+        this->setFlowLayoutResize(this, this->flowLayout_artists, this->artist_widget_width, this->artist_widget_margin);
+        // flowlayout spacing change - by diskept j230317 finish
+
+        if(this->flag_flow_draw == false){
+            this->flag_flow_draw = true;
+
+            QList<roseHome::ArtistItemData> list_artist;
+            for(int i = 0; i < this->jsonArr_Artist.size(); i++){
+
+                QJsonObject tmpObj = this->jsonArr_Artist.at(i).toObject();
+
+                QString tmpImg = ProcJsonEasy::getString(tmpObj, "album_art");
+                if(!tmpImg.isEmpty()){
+                    tmpImg = "http://" + global.device.getDeviceIP() + ":" + global.port_img + ProcJsonEasy::getString(tmpObj, "album_art");
+                }
+
+                roseHome::ArtistItemData tmpArtist;
+                tmpArtist.id = ProcJsonEasy::getInt(tmpObj, "id");
+                tmpArtist.imageUrl = tmpImg;
+                tmpArtist.name = ProcJsonEasy::getString(tmpObj, "artist");
+                tmpArtist.albums_count = ProcJsonEasy::getInt(tmpObj, "number_of_albums");
+                tmpArtist.tracks_count = ProcJsonEasy::getInt(tmpObj, "number_of_tracks");
+
+                list_artist.append(tmpArtist);
+            }
+
+            this->slot_applyResult_artists(list_artist, QJsonArray(), true);
         }
     }
 }

@@ -6,6 +6,8 @@
 #include "qobuz/ItemPlaylist_forQobuz.h"
 #include "qobuz/ItemVideo_forQobuz.h"
 
+#include "roseHome/ConvertData_rosehome.h"
+
 #include "common/global.h"
 #include "common/gscommon.h"
 #include "common/ProcJsonEasy.h"
@@ -98,7 +100,7 @@ namespace qobuz {
      */
     void AbstractQobuzSubWidget::slot_clickBtnLogin_toShowDialog(){
 
-        // Qobuz Login system pendin... change source code Added 03.02.2021 by Jeon
+        // Qobuz Login system pendin... change source code Added 03.02.2021 by diskept
         this->dlbLogin = new DialogLogin_forQobuz(this);
         connect(this->dlbLogin, &DialogLogin_forQobuz::successLogin, this, &AbstractQobuzSubWidget::slot_acceptedDialogLogin);
         this->dlbLogin->exec();
@@ -467,9 +469,6 @@ namespace qobuz {
                 }
                 else if(clickMode == tidal::AbstractItem::ClickMode::MoreBtn){
 
-                    //---------------------------------//c220824_4
-
-
                     // OptionPopup 띄우기 필요
                     if(data_playlist.flagCreatedByUser){
                         // User Created Playlist
@@ -494,6 +493,7 @@ namespace qobuz {
      * @param section
      */
     void AbstractQobuzSubWidget::proc_clicked_itemPlaylist(QList<qobuz::PlaylistItemData>* list_playlist, const tidal::AbstractItem::ClickMode clickMode, const int index, const int section){
+
         if(this->is_qobuz_logined() == false){
             this->showNeededLoginQobuz();               // QOBUZ 로그인 안된 경우
         }
@@ -518,6 +518,7 @@ namespace qobuz {
      * @param section
      */
     void AbstractQobuzSubWidget::proc_clicked_itemAlbum(qobuz::AlbumItemData& data_album, const tidal::AbstractItem::ClickMode clickMode, const int index, const int section){
+
         if(this->is_qobuz_logined() == false){
             this->showNeededLoginQobuz();               // QOBUZ 로그인 안된 경우
         }
@@ -549,12 +550,7 @@ namespace qobuz {
                     }
                 }
                 else if(clickMode == tidal::AbstractItem::ClickMode::MoreBtn){
-                    print_debug();
-
-
-
-                    // OptionPopup 띄우기 필요
-                    //qDebug() << "[QOBUZ][SEQ][MSG] popup menu display -> goto Next step\n";
+                     // OptionPopup 띄우기 필요
                     this->makeObj_optMorePopup(OptMorePopup::Qobuz_Album, ConvertData::getConvertOptHeaderData(data_album), index, section);
                 }
             }
@@ -571,15 +567,12 @@ namespace qobuz {
      * @param section
      */
     void AbstractQobuzSubWidget::proc_clicked_itemAlbum(QList<qobuz::AlbumItemData>* list_album, const tidal::AbstractItem::ClickMode clickMode, const int index, const int section){
+
         if(this->is_qobuz_logined() == false){
             this->showNeededLoginQobuz();               // Qobuz 로그인 안된 경우
         }
         else{
             int real_index = this->checkValid_index(list_album->length(), index);
-
-            //print_qobuz_func();
-            //qDebug() << "1. [QOBUZ][SEQ][FUNC] : AbstractQobuzSubWidget.cpp -> AbstractQobuzSubWidget::proc_clicked_itemAlbum(QList<qobuz::AlbumItemData>* list_album, const tidal::AbstractItem::ClickMode clickMode, const int index, const int section)";
-            //qDebug() << "[QOBUZ][SEQ][MSG] clicked index : " << real_index;
 
             if(real_index >= 0){
                 //qDebug() << "[QOBUZ][SEQ][MSG] index is true -> goto Next step\n";
@@ -608,10 +601,20 @@ namespace qobuz {
         else{
             if(index >= 0){
                 if(clickMode == tidal::AbstractItem::ClickMode::AllBox){
-                    // Artist Detail 페이지 진입
-                    QJsonObject jsonObj_move = ConvertData::getObjectJson_artistData(data_artist);
-                    jsonObj_move.insert(KEY_PAGE_CODE, PAGECODE_Q_ARTIST_DETAIL);
-                    emit this->signal_clickedMovePage(jsonObj_move);            // 페이지 이동 signal
+                    if(global.user_forQobuz.flag_rosehome == true){
+                        global.user_forQobuz.rosehome_obj = QJsonObject();
+                        global.user_forQobuz.rosehome_obj.insert(KEY_PAGE_CODE, PAGECODE_Q_ARTIST_DETAIL);
+                        QJsonObject tmp_data = ConvertData::getObjectJson_artistData(data_artist);
+                        global.user_forQobuz.rosehome_obj.insert(KEY_DATA, tmp_data);
+
+                        emit linker->signal_RoseHome_movePage(QString(GSCommon::MainMenuCode::Qobuz));
+                    }
+                    else{
+                        // Artist Detail 페이지 진입
+                        QJsonObject jsonObj_move = ConvertData::getObjectJson_artistData(data_artist);
+                        jsonObj_move.insert(KEY_PAGE_CODE, PAGECODE_Q_ARTIST_DETAIL);
+                        emit this->signal_clickedMovePage(jsonObj_move);            // 페이지 이동 signal
+                    }
                 }
                 else if(clickMode == tidal::AbstractItem::ClickMode::MoreBtn){
                     // OptionPopup 띄우기 필요
@@ -914,10 +917,7 @@ namespace qobuz {
                 }
                 else if(clickMode == AlbumTrackDetailInfo_RHV::ClickMode::MoreBtn){
 
-
-
-                    print_debug();
-                // OptMorePopup 띄우기 필요
+                    // OptMorePopup 띄우기 필요
                     this->makeObj_optMorePopup(OptMorePopup::Qobuz_Track, ConvertData::getConvertOptHeaderData(data_track), index, section);
                 }
             }
@@ -1180,7 +1180,50 @@ namespace qobuz {
     }
 
 
+    /**
+     * @brief ItemHistroy에서 발생한 custom click 이벤트에 대한 실제 처리를 진행함  [overloading]
+     * @details 편의 제공을 위해 overloading.
+     * @param data_history
+     * @param clickMode
+     * @param index
+     * @param section
+     */
+    void AbstractQobuzSubWidget::proc_clicked_itemHistory(roseHome::HistoryItemData& data_history, const tidal::AbstractItem::ClickMode clickMode, const int index, const int section){
 
+        Q_UNUSED(section);
+
+        if(index >= 0){
+            if(clickMode == tidal::AbstractItem::ClickMode::AllBox){
+                // History 페이지 진입
+                QJsonObject jsonObj_move = roseHome::ConvertData::getObjectJson_historyData(data_history);
+                jsonObj_move.insert(KEY_PAGE_CODE, PAGECODE_Q_HISTORY_DETAIL);
+                emit this->signal_clickedMovePage(jsonObj_move);            // 페이지 이동 signal
+            }
+            else if(clickMode == tidal::AbstractItem::ClickMode::MoreBtn){
+                // OptionPopup 띄우기 필요
+                //this->makeObj_optMorePopup(OptMorePopup::Rosehome_Album, ConvertData::getConvertOptHeaderData(data_history), index, section);
+            }
+        }
+    }
+
+
+    /**
+     * @brief ItemHistory에서 발생한 custom click 이벤트에 대한 실제 처리를 진행함  [overloading]
+     * @details 편의 제공을 위해 overloading.
+     * @param list_history
+     * @param clickMode
+     * @param index
+     * @param section
+     */
+    void AbstractQobuzSubWidget::proc_clicked_itemHistory(QList<roseHome::HistoryItemData>* list_history, const tidal::AbstractItem::ClickMode clickMode, const int index, const int section){
+
+        int real_index = this->checkValid_index(list_history->length(), index);
+
+        if(real_index >= 0){
+            roseHome::HistoryItemData data = list_history->at(real_index);
+            this->proc_clicked_itemHistory(data, clickMode, real_index, section);
+        }
+    }
 
 
     //-----------------------------------------------------------------------------------------------------------------------
@@ -1511,32 +1554,8 @@ namespace qobuz {
         )
         {
             // Rose Play 요청
-            //ProcRosePlay_withQobuz *procRosePlay = new ProcRosePlay_withQobuz(this);
-            //procRosePlay->requestPlayRose_byTracks(jsonArr_toPlayAll, index, clickMode);
-
-            if(clickMode == OptMorePopup::ClickMode::SubMenu_Play_FromHere
-                    || clickMode == OptMorePopup::ClickMode::SubMenu_Play_FromHere_procEmpty
-                    || clickMode == OptMorePopup::ClickMode::SubMenu_QueueAdd_FromHere_Last)
-            {
-                QJsonArray tmpJsonArr = QJsonArray();
-                for(int i = index; i < jsonArr_toPlayAll.size(); i++){
-                    QJsonObject tmpJsonObj = jsonArr_toPlayAll.at(i).toObject();
-                    tmpJsonArr.append(tmpJsonObj);
-                }
-
-                // Rose Play 요청
-                ProcRosePlay_withQobuz *procRosePlay = new ProcRosePlay_withQobuz(this);
-                procRosePlay->requestPlayRose_byTracks(tmpJsonArr, 0, clickMode);
-            }
-            else{
-                QJsonObject tmpJsonObj = jsonArr_toPlayAll.at(index).toObject();
-                QJsonArray tmpJsonArr = QJsonArray();
-                tmpJsonArr.append(tmpJsonObj);
-
-                // Rose Play 요청
-                ProcRosePlay_withQobuz *procRosePlay = new ProcRosePlay_withQobuz(this);
-                procRosePlay->requestPlayRose_byTracks(tmpJsonArr, 0, clickMode);
-            }
+            ProcRosePlay_withQobuz *procRosePlay = new ProcRosePlay_withQobuz(this);
+            procRosePlay->requestPlayRose_byTracks(jsonArr_toPlayAll, index, clickMode);
         }
         else if(clickMode == OptMorePopup::ClickMode::Add_Favorite){
             // 즐겨찾기 추가 - Track
@@ -2212,6 +2231,7 @@ namespace qobuz {
     void AbstractQobuzSubWidget::movePage_video_allView(qobuz::PageInfo_VideoAllView& data_pageInfo){
         QJsonObject jsonObj_move = ConvertData::getObjectJson_pageInfo_videoAllView(data_pageInfo);
         jsonObj_move.insert(KEY_PAGE_CODE, PAGECODE_Q_VIDEO_ALL_LIST_VIEW);
+        print_debug();ContentLoadingwaitingMsgShow("BugsHome::setUIControl_appendWidget");
         emit this->signal_clickedMovePage(jsonObj_move);            // 페이지 이동 signal
     }
 
@@ -2222,6 +2242,7 @@ namespace qobuz {
     void AbstractQobuzSubWidget::movePage_track_allView(qobuz::PageInfo_TrackAllView& data_pageInfo){
         QJsonObject jsonObj_move = ConvertData::getObjectJson_pageInfo_trackAllView(data_pageInfo);
         jsonObj_move.insert(KEY_PAGE_CODE, PAGECODE_Q_TRACK_ALL_LIST_VIEW);
+        print_debug();ContentLoadingwaitingMsgShow("BugsHome::setUIControl_appendWidget");
         emit this->signal_clickedMovePage(jsonObj_move);            // 페이지 이동 signal
     }
 
@@ -2232,6 +2253,7 @@ namespace qobuz {
     void AbstractQobuzSubWidget::movePage_album_allView(qobuz::PageInfo_AlbumAllView& data_pageInfo){
         QJsonObject jsonObj_move = ConvertData::getObjectJson_pageInfo_albumAllView(data_pageInfo);
         jsonObj_move.insert(KEY_PAGE_CODE, PAGECODE_Q_ALBUM_ALL_LIST_VIEW);
+        print_debug();ContentLoadingwaitingMsgShow("BugsHome::setUIControl_appendWidget");
         emit this->signal_clickedMovePage(jsonObj_move);            // 페이지 이동 signal
     }
 
@@ -2239,6 +2261,7 @@ namespace qobuz {
     void AbstractQobuzSubWidget::movePage_sameArtist_allView(qobuz::PageInfo_AlbumAllView& data_pageInfo){
         QJsonObject jsonObj_move = ConvertData::getObjectJson_pageInfo_albumAllView(data_pageInfo);
         jsonObj_move.insert(KEY_PAGE_CODE, PAGECODE_Q_SAME_ARTIST_LIST_VIEW);
+        print_debug();ContentLoadingwaitingMsgShow("BugsHome::setUIControl_appendWidget");
         emit this->signal_clickedMovePage(jsonObj_move);            // 페이지 이동 signal
     }
 
@@ -2250,6 +2273,7 @@ namespace qobuz {
     void AbstractQobuzSubWidget::movePage_playlist_allView(qobuz::PageInfo_PlaylistAllView& data_pageInfo){
         QJsonObject jsonObj_move = ConvertData::getObjectJson_pageInfo_playlistAllView(data_pageInfo);
         jsonObj_move.insert(KEY_PAGE_CODE, PAGECODE_Q_PLAYLIST_ALL_LIST_VIEW);
+        print_debug();ContentLoadingwaitingMsgShow("BugsHome::setUIControl_appendWidget");
         emit this->signal_clickedMovePage(jsonObj_move);
     }
 
@@ -2257,6 +2281,7 @@ namespace qobuz {
     void AbstractQobuzSubWidget::movePage_similarPlaylist_allView(qobuz::PageInfo_PlaylistAllView& data_pageInfo){
         QJsonObject jsonObj_move = ConvertData::getObjectJson_pageInfo_playlistAllView(data_pageInfo);
         jsonObj_move.insert(KEY_PAGE_CODE, PAGECODE_Q_SIMILAR_PLAYLIST_VIEW);
+        print_debug();ContentLoadingwaitingMsgShow("BugsHome::setUIControl_appendWidget");
         emit this->signal_clickedMovePage(jsonObj_move);
     }
 
@@ -2268,6 +2293,7 @@ namespace qobuz {
     void AbstractQobuzSubWidget::movePage_playlist_editOfMine(qobuz::PlaylistItemData& data_playlist){
         QJsonObject jsonObj_move = ConvertData::getObjectJson_playlistData(data_playlist);
         jsonObj_move.insert(KEY_PAGE_CODE, PAGECODE_Q_MY_COLLECTION_PLAYLIST_EDIT);
+        print_debug();ContentLoadingwaitingMsgShow("BugsHome::setUIControl_appendWidget");
         emit this->signal_clickedMovePage(jsonObj_move);
     }
 
@@ -2286,6 +2312,7 @@ namespace qobuz {
 
             QJsonObject jsonObj_move = ConvertData::getObjectJson_artistData(tmp_data_artist);
             jsonObj_move.insert(KEY_PAGE_CODE, PAGECODE_Q_ARTIST_DETAIL);
+            print_debug();ContentLoadingwaitingMsgShow("BugsHome::setUIControl_appendWidget");
             emit this->signal_clickedMovePage(jsonObj_move);                    // 페이지 이동 signal
         }
     }
@@ -2303,6 +2330,7 @@ namespace qobuz {
 
             QJsonObject jsonObj_move = ConvertData::getObjectJson_albumData(tmp_data_album);
             jsonObj_move.insert(KEY_PAGE_CODE, PAGECODE_Q_ALBUM_DETAIL);
+            print_debug();ContentLoadingwaitingMsgShow("BugsHome::setUIControl_appendWidget");
             emit this->signal_clickedMovePage(jsonObj_move);                    // 페이지 이동 signal
         }
     }
@@ -2401,8 +2429,7 @@ namespace qobuz {
         }
         else{
 
-            QJsonObject data;
-            data.insert("tracks", ProcJsonEasy::getJsonArray(dataObj, "tracks"));
+            QJsonObject data = dataObj;
             data.insert("view_type", view_type);
             data.insert("type", "QOBUZ");
 

@@ -6,6 +6,7 @@
 #include <QDate>//c221007_2
 #include <QTimer>//c221007_2
 
+
 #define print_debug() qDebug() << "\n" << "file_name: " << __FILE__ << "function_name: " << __FUNCTION__ << "line: " << __LINE__ << "\n";
 namespace bugs {
 
@@ -103,6 +104,14 @@ namespace bugs {
 
         int playType = this->get_rose_playType(this->curr_clickMode);
 
+        if(global.user_forBugs.isLogined()){//c221116_2
+            print_debug();
+        }else{
+
+            print_debug();
+            emit linker->signal_checkQueue(35, tr("Bugs type is currently logged out."));
+            return;
+        }
         if(list_track.size() <= 0)
         {
             return;
@@ -197,6 +206,9 @@ namespace bugs {
         QJsonArray jsonArr_toPlayReal = this->get_rearrangeJsonArray_toPlayData(p_jsonArr_toPlayAll, curr_index, clickMode);
         if(jsonArr_toPlayReal.count() > 0){
             this->request_rose_bugsPlay_set_queue(playType, jsonArr_toPlayReal, shuffleMode);
+        }
+        else{
+            print_debug();
         }
     }
 
@@ -421,6 +433,7 @@ namespace bugs {
      */
     void ProcRoseAPI_withBugs::slot_responseHttp(const int& p_id, const QJsonObject& p_jsonObj){
         print_debug();
+        qDebug() << "p_id=" << p_id;
         QJsonDocument doc(p_jsonObj);  QString strJson(doc.toJson(QJsonDocument::Compact));  qDebug() << "ProcRoseAPI_withBugs::slot_responseHttp---" << strJson;
 
         switch (p_id) {
@@ -456,20 +469,21 @@ namespace bugs {
 
                     QString BUGS_ProductDisplayEndDt = ProcJsonEasy::getString(jsonObj_data, "BUGS_ProductDisplayEndDt");//c221007_2
                     BUGS_ProductDisplayEndDt.chop(2);
-                    qDebug() << "global.user_forBugs.getProduct_display_end_dt()=" << global.user_forBugs.getProduct_display_end_dt();
-                    qDebug() << "BUGS_ProductDisplayEndDt=" << BUGS_ProductDisplayEndDt;
-                    QString tt = BUGS_ProductDisplayEndDt;
-                    QDateTime e_date = QDateTime::fromString(tt,"yyyy.MM.dd HH:mm");
-                    qDebug() << "e_date=" << e_date;
-                    QDateTime c_date = QDateTime::currentDateTime();
-                    qDebug() << "c_date=" << c_date;
-                    if(e_date < c_date){
-                        print_debug();
-                        slot_clickBtnLogout();
-                    }else{
-                        print_debug();
-                    }
-
+                    /*
+                                    qDebug() << "global.user_forBugs.getProduct_display_end_dt()=" << global.user_forBugs.getProduct_display_end_dt();
+                                    qDebug() << "BUGS_ProductDisplayEndDt=" << BUGS_ProductDisplayEndDt;
+                                    QString tt = BUGS_ProductDisplayEndDt;
+                                    QDateTime e_date = QDateTime::fromString(tt,"yyyy.MM.dd HH:mm");
+                                    qDebug() << "e_date=" << e_date;
+                                    QDateTime c_date = QDateTime::currentDateTime();
+                                    qDebug() << "c_date=" << c_date;
+                                    if(e_date.isNull() || e_date < c_date){//c230426
+                                        print_debug();
+                                        slot_clickBtnLogout();
+                                    }else{
+                                        print_debug();
+                                    }
+                                    */
 
                     global.user_forBugs.setProduct_display_end_dt(BUGS_ProductDisplayEndDt);
                 }

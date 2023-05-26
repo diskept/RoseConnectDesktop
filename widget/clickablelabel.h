@@ -15,6 +15,7 @@ public:
     explicit ClickableLabel(QWidget *parent = nullptr);
     ClickableLabel(const QString &text, QWidget *parent = nullptr);
     ~ClickableLabel();
+
     void setImageResource(QString p_url);
 
 signals:

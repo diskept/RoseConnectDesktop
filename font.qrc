@@ -1,0 +1,19 @@
+<RCC>
+    <qresource prefix="/">
+        <file>font/nanumsquare_ac_b.ttf</file>
+        <file>font/nanumsquare_ac_eb.ttf</file>
+        <file>font/nanumsquare_ac_l.ttf</file>
+        <file>font/nanumsquare_ac_r.ttf</file>
+        <file>font/NanumSquareB.ttf</file>
+        <file>font/NanumSquareR.ttf</file>
+        <file>font/NotoSansCJKkr-Light.otf</file>
+        <file>font/NotoSansCJKkr-Medium.otf</file>
+        <file>font/NotoSansCJKkr-Regular.otf</file>
+        <file>font/NotoSans-Light.ttf</file>
+        <file>font/NotoSans-Medium.ttf</file>
+        <file>font/NotoSans-Regular.ttf</file>
+        <file>font/NotoSansCJKkr-Light.ttf</file>
+        <file>font/NotoSansCJKkr-Medium.ttf</file>
+        <file>font/NotoSansCJKkr-Regular.ttf</file>
+    </qresource>
+</RCC>

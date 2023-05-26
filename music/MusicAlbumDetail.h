@@ -53,6 +53,8 @@ namespace music {
         void slot_applyResult_getRating_album(const QJsonArray&);
         void slot_applyResult_getRating_track(const QJsonArray&);
 
+        void slot_add_rosePlaylist_withMusic(const int&, const QJsonObject&);
+
     private:
         void request_more_trackData();
         void request_more_trackDraw();
@@ -86,6 +88,7 @@ namespace music {
         // data
         int albumId = 0;
         QString albumKey = "";
+        QString albumPath = "";
         QString albumImg = "";
         QString albumTitle = "";
         QString albumMime = "";

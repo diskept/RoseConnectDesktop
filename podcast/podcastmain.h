@@ -27,13 +27,16 @@ namespace podcast {
         explicit PodCastMain(QWidget *parent = nullptr);
         ~PodCastMain();
 
-    signals:
+    protected slots:
+        void slot_overrideSigalSearch(bool b) override;//c220730
+        void slot_dragEnterEvent_hide_show(bool show);//c220730
 
     protected:
         void movePageOnly(QString p_pageCode, const QJsonObject &p_data) override;
-        void mousePressEvent(QMouseEvent *event) override;
+        //void mousePressEvent(QMouseEvent *event) override;
 
     private slots:
+        void slot_dragEnterEvent_restore();//c220826_1
         void slot_clickedViewAll(const QJsonObject &p_jsonData);
         void slot_search(const QString &p_text);
 
@@ -42,7 +45,9 @@ namespace podcast {
         void setUIControl();
 
     private :
-        // ★ Linker 변수 이미 있으니 추가하지마세요.. protected에 있어요
+        Linker *linker;             // ★ Linker 변수 이미 있으니 추가하지마세요.. protected에 있어요
+
+        QWidget *curr_widget;//c220730
 
         // 메뉴 관련 페이지  ----------------------
         // 메뉴 : 팟캐스트 > 인기

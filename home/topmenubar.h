@@ -11,6 +11,8 @@
 #include <QLabel>
 
 #include <common/linker.h>
+#include <QApplication>
+#include <QCoreApplication>
 
 /**
  * @brief The TopMenuBar class 상단 메인메뉴명Text와 연관된 서브메뉴명 보이는 위젯
@@ -62,6 +64,7 @@ private:
     /// 메인메뉴명 타이틀을 보이게할지 말지 여부 설정
     bool flagShowMainTitle = "";
     */
+    int menu_width_sum = 0;//c230323
     Linker *linker;//cheon211008
     QString title_org;                          ///< 타이틀텍스트 (메인메뉴명)
     ShowMenuStyle showMenuStyle;            ///< 어떤 스타일로 보일지 값

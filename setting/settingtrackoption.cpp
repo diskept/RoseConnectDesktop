@@ -83,13 +83,13 @@ QWidget* SettingTrackOption::getUIControlOption(QString p_title){//c220430
     this->comboBox_pod = new QComboBox();
     this->comboBox_pod->setContentsMargins(0,0,0,0);
     this->comboBox_pod->setObjectName("comboBox_playback");
-    this->comboBox_pod->addItem(tr("Album(or One song), Add to end of queue"), 1);                ///< 큐 끝에 추가            :: 13
-    this->comboBox_pod->addItem(tr("Album(or One song), Empty the queue and add"), 2);                ///< 큐 비우고 추가          :: 14
-    this->comboBox_pod->addItem(tr("Album(or One song), Add to a direct play"), 3);               ///< 바로 듣기 추가          :: 15
-    this->comboBox_pod->addItem(tr("Album(or One song), Add as next play"), 4);   ///< 현재 재생곡 다음 추가   :: 16
-    this->comboBox_pod->addItem(tr("Album(or Several songs), Play from here"), 5);                               ///< 여기부터 재생           :: 17
-    this->comboBox_pod->addItem(tr("Album(or Several songs), Empty the queue and play from here"), 6);               ///< 큐 비우고 여기부터 재생 :: 18
-    this->comboBox_pod->addItem(tr("Album(or Several songs), Add from here to the end of the queue"), 7);                ///< 여기부터 큐 끝에 추가   :: 19
+    this->comboBox_pod->addItem(tr("One song Add to end of queue"), 1);                ///< 큐 끝에 추가            :: 13
+    this->comboBox_pod->addItem(tr("One song Clear queue and add"), 2);                ///< 큐 비우고 추가          :: 14
+    this->comboBox_pod->addItem(tr("One song Add and play immediately"), 3);               ///< 바로 듣기 추가          :: 15
+    this->comboBox_pod->addItem(tr("One song Add to play next"), 4);   ///< 현재 재생곡 다음 추가   :: 16
+    this->comboBox_pod->addItem(tr("Play from here"), 5);                               ///< 여기부터 재생           :: 17
+    this->comboBox_pod->addItem(tr("Empty the queue and play from here"), 6);               ///< 큐 비우고 여기부터 재생 :: 18
+    this->comboBox_pod->addItem(tr("Add from here to the end of the queue"), 7);                ///< 여기부터 큐 끝에 추가   :: 19
 
     this->comboBox_pod->setStyleSheet("QComboBox { font-size:18px;color:#FFFFFF; background-color:#333333; padding:5px;  } "
                                 "QComboBox QListView { font-size:18px;color:#FFFFFF; background-color:#333333; } "

@@ -16,10 +16,6 @@ SettingMain::SettingMain(QWidget *parent) : AbstractMainContent(parent)
 
     this->resetLayoutUIfromParent();    // 부모의 레이아웃 수정
     this->setUIControl();               // 기본 UI 세팅
-
-    if(global.enable_section_left == true){
-        global.enable_section_left = false;
-    }
 }
 
 SettingMain::~SettingMain(){
@@ -167,10 +163,6 @@ void SettingMain::setUIControl(){
 //    connect(this->settingFriendPage, SIGNAL(clickedSubTab(QJsonObject)), this, SLOT(goToMoveNewOrderPage_subStep(QJsonObject)));
 //    connect(this->settingLib, SIGNAL(changedSubMenu(QJsonObject)), this, SLOT(goToMoveNewOrderPage(QJsonObject)) );
 //    connect(this->albumDetail, SIGNAL(clickedSubTab(QJsonObject)), this, SLOT(goToMoveNewOrderPage_subStep(QJsonObject)));
-
-    if(global.enable_section_left == true){
-        global.enable_section_left = false;
-    }
 
     // default : 첫번째 서브메뉴
     QJsonObject tmp_data;
@@ -341,6 +333,16 @@ void SettingMain::movePageOnly(QString p_pageCode, const QJsonObject &p_data){
             this->settingDisplay->requestGetValueDisplay();
             stackedWidget_content->setCurrentWidget(this->settingDisplay);
 
+        }else if(p_pageCode==PAGECODE_S_MENU){//c230329
+            if(settingMenu==nullptr){
+                settingMenu = new SettingMenu();
+                this->stackedWidget_content->addWidget(this->settingMenu);
+                settingMenu->setMaximumWidth(PAGE_MAX_WIDTH);
+                settingMenu->setMinimumWidth(PAGE_MIN_WIDTH);
+            }
+            this->settingMenu->requestVideoSetData();
+            stackedWidget_content->setCurrentWidget(this->settingMenu);
+
         }else if(p_pageCode==PAGECODE_S_TRACK){
             if(settingTrackOption==nullptr){
                 settingTrackOption = new SettingTrackOption();
@@ -475,7 +477,7 @@ void SettingMain::movePageOnly(QString p_pageCode, const QJsonObject &p_data){
         }else if(p_pageCode==PAGECODE_S_INPUTOUTPUT){
             QString deviceType = global.device.getDeviceType();
             //qDebug() << "settingmain-deviceType : " << deviceType;
-            if( deviceType == "RS150" || deviceType == "RS150B" || deviceType == "RS201" || deviceType == "RS250" || deviceType == "RS250A" || deviceType == "RS520" ){
+            if( deviceType == "RS150" || deviceType == "RS150B" || deviceType == "RS201" || deviceType == "RS250" || deviceType == "RS250A" || deviceType == "RS520"  || deviceType == "RS130" ){//c230427
                // if(settingInputOutput==nullptr){
                     settingInputOutput = new SettingInputOutput();
                     this->stackedWidget_content->addWidget(this->settingInputOutput);
@@ -521,7 +523,7 @@ void SettingMain::movePageOnly(QString p_pageCode, const QJsonObject &p_data){
         }else if(p_pageCode==PAGECODE_VA_MYPLAYLIST){
 
             if(viewAll_playListMusic==nullptr){
-                viewAll_playListMusic = new MusicList_Group(MusicList_Group::GroupMode::VIEWALL_MYPLAYLIST);
+                viewAll_playListMusic = new music::MusicList_Group(music::MusicList_Group::GroupMode::VIEWALL_MYPLAYLIST);
                 this->stackedWidget_content->addWidget(this->viewAll_playListMusic);
             }
             this->scrollArea_leftMenuBar->setVisible(false);    // 사이드메뉴 hide

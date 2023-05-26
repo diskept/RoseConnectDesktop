@@ -52,9 +52,9 @@ signals:
 
     void signal_showPlayFullScreen(const QJsonObject &p_jsonData);
     void signal_changedCurrPlayTrack(const QJsonObject &p_jsonData);
+    void signal_changedCurrHDMI(const bool flag);
 
 private slots:
-
     void slot_Update_call();//c221013_1
     void slot_clickedYoutubeQuestion();//c220803
     void slot_player_valuestop();//c220705
@@ -77,7 +77,34 @@ private slots:
     void slot_redirectUrl(const QString url);   //j220903 twitter
     void slot_checkQueueMsg(int,QString);//c211213
 
+    void slot_volume_change(int&);
+    void slot_muteState_change(int&);
+    void slot_volume_widget_hide();
+    void dialog_comfirmCD();
+
 private:
+
+    QLabel *lb_msg_show;//c230303_2
+    QDialog *msg_dialog_wait;//c230303_2
+
+    long latestCheckTimeSecond=0;
+    long latestCheckTimeSecond_connect=0;
+    long latestCheckTimeSecond_connect5sec=0;
+    long latestCheckTimeSecond_connect10sec=0;//c230522
+    long latestCheckTimeSecond_connect60sec=0;//c230315_1
+    long latestCheckTimeSecond_connectloginsec=0;//c230422
+
+    void ContentLoadingwaitingMsg_init();//c230303_2
+    void ContentLoadingwaitingAni_init();//c230303_2
+
+    void ContentLoadingwaitingAniShow(QString msg, int flag);
+    void ContentLoadingwaitingMsgShow(QString msg, int flag);//c211213
+    void setJsonData(QJsonObject p_jsonObject);
+    void setUIDataBasicInfo();
+    void setUIDataPlayIcon();
+    void nextSongPlay();//c220705
+
+
     bool tmp_window_activate_flag = false;
     bool flag_response_proc = false;//c220709
     DesktopMediaPlayerThread *Dt_thread;//c220705
@@ -87,10 +114,7 @@ private:
     bool showHideCheckFlag = false;
     QString thumbnail="";              ///< 앨범 이미지 경로
     bool isIsoOpen = false;
-    QString thumbnail_realHttp="";     ///< 실제 세팅할 시점에만 실제 세팅한 이미지 풀경로를 저장하고 있는다 (동일한 앨범이미지를 계속 세팅할 필요 없게 하기위해 변수 추가)
-    QString titleName="";              ///< 노래제목
-    QString albumName="";              ///< 로즈튜브의 id ? ?
-    QString artistName="";             ///<  가수이름
+
     int curPosition = 0;            ///< 현재 재생 시점 value
     int duration = -1;               ///< 재생 길이
     QString playType = "";
@@ -108,21 +132,31 @@ private:
 
     QTimer *timer;
     QPixmap *pixmap_albumImg;
-    QLabel *lb_albumThumb;
-    QLabel *lb_albumThumbText;
-    QLabel *lb_albumbg;
-    ClickableLabel *lb_bgOpacity;
-    QLabel *lb_icon_playType;
-    QLabel *lb_title;
-    QLabel *lb_artistName;
+
+
+
+
+
     //QWidget *widget_barValue;
-    sectionbottomSlider *slider_playbar;
+    //sectionbottomSlider *slider_playbar;
+    QSlider *slider_playbar;
+    QWidget *wg_playbar_cur;
     FileDownloader *filedownloader;
     QWidget *widget_total;
     QPushButton* getUIBtn(QString p_url, QString p_property);
     void resizeEvent(QResizeEvent* event);
     void setBackgroundAlbumImg();
 
+    QLabel *lb_albumbg;
+    ClickableLabel *lb_bgOpacity;
+
+    ClickableLabel *lb_albumThumb;
+    QLabel *lb_albumThumbText;
+
+    ClickableLabel *lb_icon_playType;
+    ClickableLabel *lb_title;
+    ClickableLabel *lb_artistName;
+    ClickableLabel *lb_trackinfo;
 
 
     QPushButton *btn_rep;
@@ -132,8 +166,26 @@ private:
     QPushButton *btn_shu;
     QPushButton *btn_list;
     QPushButton *btn_sound;
-    bool flagSelectedQueue = false; ///< 큐 목록 버튼 클릭 유무
+
+    QLabel *lb_rep_img;
+    QLabel *lb_back_img;
+    QLabel *lb_pause_img;
+    QLabel *lb_next_img;
+    QLabel *lb_shu_img;
+    QLabel *lb_list_img;
+    QLabel *lb_sound_img;
+    QLabel *lb_sound_text;
+
+    QString thumbnail_realHttp="";      ///< 실제 세팅할 시점에만 실제 세팅한 이미지 풀경로를 저장하고 있는다 (동일한 앨범이미지를 계속 세팅할 필요 없게 하기위해 변수 추가)
+    QString titleName="";               ///< 트랙 타이들
+    QString albumName="";               ///< 앨범 타이틀
+    QString artistName="";              ///< 아티스트 네임
+    QString trackinfo="";               ///< 트랙 해상도
+
+    bool flagSelectedQueue = false;     ///< 큐 목록 버튼 클릭 유무
     bool flagSelectedVolumn = false;    ///< 볼륨 버튼 클릭 유무
+    bool flagMuteState = false;         ///< Mute 상태 유무
+
     QDialog *dialog_wait;//c211213
     //QMovie *mov;
     bool bottomInfo_flag = false;
@@ -146,15 +198,9 @@ private:
 
     QLabel *lb_playbar_cur, *lb_playbar_duration;
 
-    long latestCheckTimeSecond=0;
-    long latestCheckTimeSecond_connect=0;
-    long latestCheckTimeSecond_connect5sec=0;
-    void ContentLoadingwaitingAniShow(QString msg, int flag);
-    void ContentLoadingwaitingMsgShow(QString msg, int flag);//c211213
-    void setJsonData(QJsonObject p_jsonObject);
-    void setUIDataBasicInfo();
-    void setUIDataPlayIcon();
-    void nextSongPlay();//c220705
+    int ui_state = 0;                   //c230327
+
+
 
     //------------------------------------------------------------------------------------
     // for Tidal, Bugs

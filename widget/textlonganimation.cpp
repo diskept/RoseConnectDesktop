@@ -89,11 +89,13 @@ LabelLongAnimation::LabelLongAnimation(int p_textAreaWidthMax, int p_textAreaWid
     // 기본 UI 레이아웃
     this->widget_total = new QWidget();
     this->widget_total->setFixedSize(p_textAreaWidthMax, p_textAreaHeight);
-    this->widget_total->setStyleSheet("background-color:transparent; border:0px;");
+    this->widget_total->setStyleSheet("background-color:transparent;");
 
     this->lb_text = new QLabel(this->widget_total);
-    this->lb_text->setTextInteractionFlags(Qt::TextSelectableByMouse);
-    this->lb_text->setGeometry(0, 0, 0, 0);
+    //this->lb_text->setTextInteractionFlags(Qt::TextSelectableByMouse);
+    this->lb_text->setStyleSheet("background-color:transparent;");
+    this->lb_text->setGeometry(0, 0, p_textAreaWidthMin, p_textAreaHeight);
+    this->lb_text->setAlignment(Qt::AlignCenter);
     this->lb_text->setText("");
 
     this->vBox_total = new QVBoxLayout();
@@ -120,6 +122,7 @@ LabelLongAnimation::~LabelLongAnimation(){
         disconnect(this->timer, SIGNAL(timeout()), this, SLOT(tmr_move_text()));
         this->timer->stop();
     }
+
     this->deleteLater();
 }
 
@@ -129,16 +132,17 @@ void LabelLongAnimation::setText(const QString &newText){
     this->text = newText;
     this->lb_text->setText(this->text);
     this->startPosX = 0;
+    this->text_length = 0;
 
     if(this->text.isEmpty() == false){
         this->text_length = this->lb_text->sizeHint().width();
-        this->lb_text->setFixedSize(this->text_length, this->sizeHint().height());
+        this->lb_text->setFixedSize(this->text_length, this->height());
 
         this->textAreaWidth = this->vBox_total->sizeHint().width();
 
         if(this->text_length > this->textAreaWidth){
             this->falg_connect = true;
-            this->lb_text->setGeometry(this->startPosX, 0, 0, 0);
+            this->lb_text->setGeometry(this->startPosX, -15, 0, 0);
 
             connect(this->timer, SIGNAL(timeout()), this, SLOT(tmr_move_text()));
             timer->start();
@@ -146,11 +150,19 @@ void LabelLongAnimation::setText(const QString &newText){
         else{
             this->widget_total->setFixedWidth(this->text_length);
 
-            this->lb_text->setGeometry(this->startPosX, 0, 0, 0);
+            this->lb_text->setGeometry(this->startPosX, -15, 0, 0);
 
             disconnect(this->timer, SIGNAL(timeout()), this, SLOT(tmr_move_text()));
         }
     }
+}
+
+
+void LabelLongAnimation::setStyleSheet(const QString &style){
+
+    QString tmpStyle = style;
+
+    this->lb_text->setStyleSheet(tmpStyle);
 }
 
 

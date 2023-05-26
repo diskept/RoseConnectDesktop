@@ -35,12 +35,13 @@ namespace qobuz {
      */
     QobuzPlaylistDetail::QobuzPlaylistDetail(QWidget *parent) : AbstractQobuzSubWidget(MainUIType::VerticalScroll_filter, parent) {
 
-        linker = Linker::getInstance();
+        this->linker = Linker::getInstance();
 
         // data
         this->list_track = new QList<qobuz::TrackItemData>();
         this->list_similarPlaylist = new QList<qobuz::PlaylistItemData>();
     }
+
 
     /**
      * @brief 소멸자.
@@ -132,9 +133,11 @@ namespace qobuz {
                 connect(proc_playlist, &ProcCommon::completeReq_list_playlists, this, &QobuzPlaylistDetail::slot_applyResult_similarPlaylist);
                 proc_playlist->request_qobuz_getList_items_of_playlist(this->data_playlist.id, GET_MAX_ITEM_SIZE___ONCE, 0);
 
-                ContentLoadingwaitingMsgShow(tr("Content is being loaded. Please wait."));
+                print_debug();ContentLoadingwaitingMsgShow(tr("Content is being loaded. Please wait."));
             }
             else{
+                print_debug();ContentLoadingwaitingMsgHide();   //j230328
+
                 // 리로드 하지 않는 경우에는, favorite 정보만 다시 요청한다. (playlist_id 가 변경되지 않고, 페이지가 다시 요청된 경우임)
                 // request HTTP API - get favorite for Rose Server
                 roseHome::ProcCommon *proc_fav_playlist = new roseHome::ProcCommon(this);
@@ -159,6 +162,8 @@ namespace qobuz {
             if(this->flag_track_ok == true){
                 GSCommon::clearLayout(this->box_main_contents);
                 this->box_contents->removeWidget(this->widget_main_contents);
+
+                this->flag_track_ok = false;
             }
 
             this->box_main_contents = new QVBoxLayout();
@@ -271,7 +276,7 @@ namespace qobuz {
         tmp_scrollArea->setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
         tmp_scrollArea->setStyleSheet("background-color:transparent; border:0px;");
         tmp_scrollArea->setContentsMargins(0,0,0,0);
-        tmp_scrollArea->setFixedHeight(293);
+        tmp_scrollArea->setFixedHeight(303);
 
         QScroller::grabGesture(tmp_scrollArea, QScroller::LeftMouseButtonGesture);
         //----------------------------------------------------------------------------------------------------
@@ -301,7 +306,7 @@ namespace qobuz {
 
             this->flag_draw = true;
 
-            ContentLoadingwaitingMsgShow(tr("Content is being loaded. Please wait."));
+            print_debug();ContentLoadingwaitingMsgShow(tr("Content is being loaded. Please wait."));
             this->request_more_trackDraw();
         }
     }
@@ -376,7 +381,7 @@ namespace qobuz {
      * @param data_playlist
      */
     void QobuzPlaylistDetail::slot_applyResult_playlistInfo(const qobuz::PlaylistItemData data_playlist){
-        ContentLoadingwaitingMsgHide();//c220616
+
         // Update Data
         this->track_totalCount = data_playlist.tracks_count;
 
@@ -453,6 +458,8 @@ namespace qobuz {
             proc_fav_track->request_rose_getRating_Track("QOBUZ", tmp_clientkey);
         }
 
+        ContentLoadingwaitingMsgHide();
+
         this->track_beforeOffset = this->track_currentOffset;
 
         if(this->track_totalCount == this->track_drawCount){
@@ -462,7 +469,6 @@ namespace qobuz {
             this->request_more_trackData();
         }
 
-        ContentLoadingwaitingMsgHide();
         this->flag_track_ok = true;
     }
 
@@ -505,32 +511,32 @@ namespace qobuz {
      */
     void QobuzPlaylistDetail::slot_qobuz_completeReq_listAll_myFavoritesIds(const QJsonObject& p_jsonObj){
 
-        if(p_jsonObj.contains("flagOk") && ProcJsonEasy::get_flagOk(p_jsonObj)){
-            bool status  = ProcJsonEasy::getBool(p_jsonObj, "status");
+//        if(p_jsonObj.contains("flagOk") && ProcJsonEasy::get_flagOk(p_jsonObj)){
+//            bool status  = ProcJsonEasy::getBool(p_jsonObj, "status");
 
-            // Qobuz favorite toggle check
-            if(this->flag_send_playlist == true){
-                if((status == true && this->flag_playlist_fav == false) || (status == false && this->flag_playlist_fav == true)){
-                    // Qobuz Favorite toggle
-                    ProcCommon *proc = new ProcCommon(this);
-                    connect(proc, &qobuz::ProcCommon::completeReq_listAll_myFavoritesIds, this, &QobuzPlaylistDetail::slot_qobuz_completeReq_listAll_myFavoritesIds);
-                    proc->request_qobuz_set_favorite("playlist", QString("%1").arg(data_playlist.id), this->flag_playlist_fav);
-                }
-                this->flag_send_playlist = false;
-            }
-            else if(this->flag_send_track == true){
-                if((status == true && this->flag_track_fav == false) || (status == false && this->flag_track_fav == true)){
-                    // Qobuz Favorite toggle
-                    ProcCommon *proc = new ProcCommon(this);
-                    connect(proc, &qobuz::ProcCommon::completeReq_listAll_myFavoritesIds, this, &QobuzPlaylistDetail::slot_qobuz_completeReq_listAll_myFavoritesIds);
-                    proc->request_qobuz_set_favorite("track", QString("%1").arg(this->track_id_fav), this->flag_track_fav);
-                }
-                this->flag_send_track = false;
-            }
-            else{
+//            // Qobuz favorite toggle check
+//            if(this->flag_send_playlist == true){
+//                if((status == true && this->flag_playlist_fav == false) || (status == false && this->flag_playlist_fav == true)){
+//                    // Qobuz Favorite toggle
+//                    ProcCommon *proc = new ProcCommon(this);
+//                    connect(proc, &qobuz::ProcCommon::completeReq_listAll_myFavoritesIds, this, &QobuzPlaylistDetail::slot_qobuz_completeReq_listAll_myFavoritesIds);
+//                    proc->request_qobuz_set_favorite("playlist", QString("%1").arg(data_playlist.id), this->flag_playlist_fav);
+//                }
+//                this->flag_send_playlist = false;
+//            }
+//            else if(this->flag_send_track == true){
+//                if((status == true && this->flag_track_fav == false) || (status == false && this->flag_track_fav == true)){
+//                    // Qobuz Favorite toggle
+//                    ProcCommon *proc = new ProcCommon(this);
+//                    connect(proc, &qobuz::ProcCommon::completeReq_listAll_myFavoritesIds, this, &QobuzPlaylistDetail::slot_qobuz_completeReq_listAll_myFavoritesIds);
+//                    proc->request_qobuz_set_favorite("track", QString("%1").arg(this->track_id_fav), this->flag_track_fav);
+//                }
+//                this->flag_send_track = false;
+//            }
+//            else{
 
-            }
-        }
+//            }
+//        }
     }
 
 

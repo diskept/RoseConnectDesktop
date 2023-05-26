@@ -4,9 +4,8 @@
 #include "roseHome/AbstractRoseHomeSubWidget.h"
 
 #include "roseHome/ItemAlbum_rosehome.h"
+#include "roseHome/ItemArtist_rosehome.h"
 #include "roseHome/ItemPlaylist_rosehome.h"
-
-#include "tidal/PushBtn_withID.h"
 
 #include "widget/AbstractPlaylistTrackDetailInfo_RHV.h"
 
@@ -34,6 +33,7 @@ namespace roseHome {
 
         void slot_clickedItemTrack_inList(const int, const PlaylistTrackDetailInfo_RHV::ClickMode) override;
         void slot_clickedItemAlbum(const tidal::AbstractItem::ClickMode) override;
+        void slot_clickedItemArtist(const tidal::AbstractItem::ClickMode) override;
         void slot_clickedItemPlaylist(const tidal::AbstractItem::ClickMode) override;
 
         // about OptMorePopup
@@ -41,6 +41,8 @@ namespace roseHome {
 
     protected:
         void proc_wheelEvent_to_getMoreData() override;
+
+        void resizeEvent(QResizeEvent *event) override;
 
     private slots:
         // about clicks
@@ -51,9 +53,12 @@ namespace roseHome {
 
         void slot_applyResult_favoriteTracks(const QList<roseHome::TrackItemData>&, const QJsonArray&, const bool);
         void slot_applyResult_favoriteAlbums(const QList<roseHome::AlbumItemData>&, const QJsonArray&, const bool);
+        void slot_applyResult_favoriteArtists(const QList<roseHome::ArtistItemData>&, const QJsonArray&, const bool);
         void slot_applyResult_favoritePlaylists(const QList<roseHome::PlaylistItemData>&, const QJsonArray&, const bool);
 
         void slot_applyResult_getRating_track(const QJsonArray&);
+        void slot_bugs_completeReq_listAll_myFavoritesIds(const QJsonObject&);
+        void slot_tidal_completeReq_listAll_myFavoritesIds(const QJsonObject&);
 
     private:
         // 초기 UI화면 구성
@@ -62,6 +67,7 @@ namespace roseHome {
         void setUIControl_chooseStep(QString type);
 
         void request_more_Data(QString type);
+        void request_more_Draw(QString type);
 
     private:
         Linker *linker;
@@ -110,6 +116,7 @@ namespace roseHome {
         QPushButton *btn_step_track;
         QPushButton *btn_step_album;
         QPushButton *btn_step_playlist;
+        QPushButton *btn_step_artist;
 
         QString contentStep = "";
 
@@ -120,10 +127,12 @@ namespace roseHome {
         QWidget *widget_tab_track;
         QWidget *widget_tab_album;
         QWidget *widget_tab_playlist;
+        QWidget *widget_tab_artist;
 
         QVBoxLayout *box_favorite_track;
         FlowLayout *flowLayout_favorite_album;
         FlowLayout *flowLayout_favorite_playlist;
+        FlowLayout *flowLayout_favorite_artist;
 
         bool step_change = false;
         bool filter_change = false;
@@ -132,13 +141,19 @@ namespace roseHome {
         PlaylistTrackDetailInfo_RHV *favorite_track[999999];
         roseHome::ItemAlbum_rosehome *favorite_album[99999];
         roseHome::ItemPlaylist_rosehome *favorite_playlist[99999];
+        roseHome::ItemArtist_rosehome *favorite_artist[99999];
 
         // data
         QList<roseHome::TrackItemData> *list_favoriteTrack;
         QList<roseHome::AlbumItemData> *list_favoriteAlbum;
         QList<roseHome::PlaylistItemData> *list_favoritePlaylist;
+        QList<roseHome::ArtistItemData> *list_favoriteArtist;
 
         QJsonArray jsonArr_tracks_toPlay;                       ///< Track 전체를 재생하기 위함
+
+        int item_widget_width = 0;
+        int item_widget_height = 0;
+        int item_widget_margin = 0;
 
         bool flagReqMore_track = false;
         bool flag_lastPage_track = false;
@@ -146,6 +161,7 @@ namespace roseHome {
 
         int track_next_offset = 0;
         int track_totalCount = 0;
+        int track_draw_cnt = 0;
 
         bool flagReqMore_album = false;
         bool flag_lastPage_album = false;
@@ -153,6 +169,8 @@ namespace roseHome {
 
         int album_next_offset = 0;
         int album_totalCount = 0;
+        int album_draw_cnt = 0;
+        int album_widget_cnt = 0;
 
         bool flagReqMore_playlist = false;
         bool flag_lastPage_playlist = false;
@@ -160,6 +178,17 @@ namespace roseHome {
 
         int playlist_next_offset = 0;
         int playlist_totalCount = 0;
+        int playlist_draw_cnt = 0;
+        int playlist_widget_cnt = 0;
+
+        bool flagReqMore_artist = false;
+        bool flag_lastPage_artist = false;
+        bool flag_draw_artist = false;
+
+        int artist_next_offset = 0;
+        int artist_totalCount = 0;
+        int artist_draw_cnt = 0;
+        int artist_widget_cnt = 0;
 
         int track_id_fav = 0;
         int track_idx_fav = 0;

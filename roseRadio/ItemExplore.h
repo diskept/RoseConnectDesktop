@@ -34,6 +34,9 @@ namespace roseRadio {
         ~ItemExplore();
 
         void setData(const QJsonObject&);
+        int get_fixedHeight();
+        int get_fixedWidth();
+        int get_rightMargin();
 
     signals:
         void explore_clicked(const int section, const int index, const roseRadio::ItemExplore::ClickMode_radio clickMode);

@@ -49,8 +49,13 @@ const int HTTP_REMOTE_AMP = 20;
 RemoteWidget::RemoteWidget(QWidget *parent) : QWidget(parent)
 {
 
-    linker = Linker::getInstance();
-    connect(linker, SIGNAL(signal_connected()), SLOT(slot_connectedDevice()));
+    this->linker = Linker::getInstance();
+    connect(this->linker, SIGNAL(signal_connected()), SLOT(slot_connectedDevice()));
+    connect(this->linker, SIGNAL(signal_volume_change(int&)), this, SLOT(slot_volume_change(int&)));
+
+    this->timer = new QTimer(this);
+    this->timer->setInterval(50);      ///< 1초 1000 timer interval
+    connect(this->timer, SIGNAL(timeout()), SLOT(slot_slider_auto_change()));
 
     this->widget_remote_onlyRose = new QWidget();
     this->widget_remote_onlyRose->setStyleSheet("background-color:transparent; border-radius:0px;");
@@ -117,11 +122,12 @@ void RemoteWidget::setUIRose(){
     // ============================================================
     // 현재 연결 된 기기
     // ============================================================
+    QString Ver = QString(tr("Rose Connect Ver %1  ")).arg(rosesettings.APPLICATION_VERSION) + QString("(Build Date: %1)").arg(rosesettings.APPLICATION_BUILD_DATE);
     QLabel *lb_connect_version = new QLabel(this->widget_remote_onlyRose);
     lb_connect_version->setFixedSize(400, 40);
     lb_connect_version->setGeometry(30, 40, 0, 0);
     lb_connect_version->setStyleSheet("font-size:16px; color:#E6E6E6; padding-left:16px; background-color:#4D4D4D; border-radius:10px;");
-    lb_connect_version->setText(QString(tr("Rose Connect Ver %1  (Build Date: %2)")).arg(rosesettings.APPLICATION_VERSION).arg(rosesettings.APPLICATION_BUILD_DATE));
+    lb_connect_version->setText(Ver);
 
     this->widget_curr_device = new QWidget(this->widget_remote_onlyRose);
     this->widget_curr_device->setFixedSize(400, 290);
@@ -205,7 +211,7 @@ void RemoteWidget::setUIRemoteBtn(){
         lb_standby_img->setGeometry(24, 8, 0, 0);
 
         lb_standby_name->setStyleSheet("background-color:transparent; border-radius:0px; font-size:13px; color:#E4E4E3;");
-        lb_standby_name->setFixedSize(68, 26);
+        lb_standby_name->setFixedSize(68, 30);
         lb_standby_name->setGeometry(16, 53, 0, 0);
 
     }
@@ -233,7 +239,7 @@ void RemoteWidget::setUIRemoteBtn(){
 
     QLabel *lb_reboot_name = new QLabel(btn_reboot);
     lb_reboot_name->setFixedSize(68, 18);
-    lb_reboot_name->setGeometry(16, 58, 0, 0);
+    lb_reboot_name->setGeometry(16, 56, 0, 0);
     lb_reboot_name->setAlignment(Qt::AlignCenter);
     lb_reboot_name->setStyleSheet("background-color:transparent; border-radius:0px; font-size:16px; color:#E4E4E3;");
     lb_reboot_name->setWordWrap(true);
@@ -254,7 +260,7 @@ void RemoteWidget::setUIRemoteBtn(){
 
     QLabel *lb_power_name = new QLabel(btn_power);
     lb_power_name->setFixedSize(100, 18);
-    lb_power_name->setGeometry(0, 58, 0, 0);
+    lb_power_name->setGeometry(0, 56, 0, 0);
     lb_power_name->setAlignment(Qt::AlignCenter);
     lb_power_name->setStyleSheet("background-color:transparent; border-radius:0px; font-size:16px; color:#E4E4E3;");
     lb_power_name->setWordWrap(true);
@@ -285,7 +291,7 @@ void RemoteWidget::setUIRemoteBtn(){
 
     QLabel *lb_back_name = new QLabel(btn_back);
     lb_back_name->setFixedSize(64, 18);
-    lb_back_name->setGeometry(16, 62, 0, 0);
+    lb_back_name->setGeometry(16, 60, 0, 0);
     lb_back_name->setAlignment(Qt::AlignCenter);
     lb_back_name->setStyleSheet(global.lang == 0 ? "background-color:transparent; border-radius:0px; font-size:14px; color:#E4E4E3;" :
                                                    "background-color:transparent; border-radius:0px; font-size:16px; color:#E4E4E3;");
@@ -313,8 +319,8 @@ void RemoteWidget::setUIRemoteBtn(){
     lb_rosehome_name->setText(tr("Rose Home"));
 
     if(global.lang == 0){
-        lb_rosehome_name->setFixedSize(50, 30);
-        lb_rosehome_name->setGeometry(23, 57, 0, 0);
+        lb_rosehome_name->setFixedSize(50, 32);
+        lb_rosehome_name->setGeometry(23, 55, 0, 0);
     }
     else{
         lb_rosehome_name->setFixedSize(50, 30);
@@ -339,8 +345,8 @@ void RemoteWidget::setUIRemoteBtn(){
     btn_lcd_name->setWordWrap(true);
     btn_lcd_name->setStyleSheet("background-color:transparent; border-radius:0px; font-size:14px; color:#E4E4E3;");
     btn_lcd_name->setText("LCD On/Off");
-    btn_lcd_name->setFixedSize(50, 30);
-    btn_lcd_name->setGeometry(23, 57, 0, 0);
+    btn_lcd_name->setFixedSize(50, 32);
+    btn_lcd_name->setGeometry(23, 55, 0, 0);
 
     QPushButton *btn_clock = new QPushButton(widget_display);
     btn_clock->setObjectName("btn_clock");
@@ -357,7 +363,7 @@ void RemoteWidget::setUIRemoteBtn(){
 
     QLabel *lb_clockc_name = new QLabel(btn_clock);
     lb_clockc_name->setFixedSize(64, 18);
-    lb_clockc_name->setGeometry(16, 62, 0, 0);
+    lb_clockc_name->setGeometry(16, 60, 0, 0);
     lb_clockc_name->setAlignment(Qt::AlignCenter);
     lb_clockc_name->setStyleSheet("background-color:transparent; border-radius:0px; font-size:16px; color:#E4E4E3;");
     lb_clockc_name->setText(tr("Clock"));
@@ -430,8 +436,8 @@ void RemoteWidget::setUIRemoteBtn(){
     lb_extIO_img->setStyleSheet("background-color:transparent; border-radius:0px;");
 
     QLabel *lb_extIO_name = new QLabel(btn_extIO);
-    lb_extIO_name->setFixedSize(100, 18);
-    lb_extIO_name->setGeometry(7, 59, 0, 0);
+    lb_extIO_name->setFixedSize(102, 22);
+    lb_extIO_name->setGeometry(7, 57, 0, 0);
     lb_extIO_name->setAlignment(Qt::AlignCenter);
     lb_extIO_name->setStyleSheet("background-color:transparent; border-radius:0px; font-size:16px; color:#E4E4E3;");
     lb_extIO_name->setText(tr("In/Out setting"));
@@ -451,7 +457,7 @@ void RemoteWidget::setUIRemoteBtn(){
 
     QLabel *lb_vu_name = new QLabel(btn_vu);
     lb_vu_name->setFixedSize(100, 18);
-    lb_vu_name->setGeometry(7, 59, 0, 0);
+    lb_vu_name->setGeometry(7, 57, 0, 0);
     lb_vu_name->setAlignment(Qt::AlignCenter);
     lb_vu_name->setStyleSheet("background-color:transparent; border-radius:0px; font-size:16px; color:#E4E4E3;");
     lb_vu_name->setText(tr("VU Mode"));
@@ -471,7 +477,7 @@ void RemoteWidget::setUIRemoteBtn(){
 
     this->lb_timer = new QLabel(btn_timer);
     this->lb_timer->setFixedSize(114, 18);
-    this->lb_timer->setGeometry(0, 59, 0, 0);
+    this->lb_timer->setGeometry(0, 57, 0, 0);
     this->lb_timer->setAlignment(Qt::AlignCenter);
     this->lb_timer->setStyleSheet("background-color:transparent; border-radius:0px; font-size:16px; color:#E4E4E3;");
     this->lb_timer->setText(tr("Timer"));
@@ -530,7 +536,7 @@ void RemoteWidget::setUIRemoteBtn(){
     lb_airplay_img->setStyleSheet("background-color:transparent; border-radius:0px;");
 
     QLabel *lb_airplay_name = new QLabel(btn_airplay);
-    lb_airplay_name->setFixedSize(100, 18);
+    lb_airplay_name->setFixedSize(100, 22);
     lb_airplay_name->setGeometry(0, 61, 0, 0);
     lb_airplay_name->setAlignment(Qt::AlignCenter);
     lb_airplay_name->setStyleSheet("background-color:transparent; border-radius:0px; font-size:16px; color:#E4E4E3;");
@@ -548,16 +554,16 @@ void RemoteWidget::setUIRemoteBtn(){
 
     QLabel *lb_vol = new QLabel(widget_volume);
     lb_vol->setFixedSize(100, 18);
-    lb_vol->setGeometry(0, 35, 0, 0);
+    lb_vol->setGeometry(0, 20, 0, 0);
     lb_vol->setAlignment(Qt::AlignCenter);
-    lb_vol->setStyleSheet("background-color:transparent; font-size:16px; color:#FFFFFF;");
+    lb_vol->setStyleSheet("background-color: transparent; font-size: 16px; font-weight: normal; line-height: 1.13;  text-align: center; color: #FFFFFF; ");
     lb_vol->setText(tr("Volume"));
 
     this->lb_volume = new QLabel(widget_volume);
     this->lb_volume->setFixedSize(24, 22);
-    this->lb_volume->setGeometry(38, 63, 0, 0);
+    this->lb_volume->setGeometry(38, 48, 0, 0);
     this->lb_volume->setAlignment(Qt::AlignCenter);
-    this->lb_volume->setStyleSheet("background-color:transparent; font-size:20px; color:#FFFFFF;");
+    this->lb_volume->setStyleSheet("background-color: transparent; font-size: 20px; font-weight: normal; line-height: 1.1;  text-align: center; color: #FFFFFF; ");
     this->lb_volume->setText("0");
 
     QPushButton *btn_vol_add = new QPushButton(widget_volume);
@@ -565,7 +571,7 @@ void RemoteWidget::setUIRemoteBtn(){
     btn_vol_add->setProperty("type", HTTP_REMOTE_VOLUME_ADD);
     btn_vol_add->setCursor(Qt::PointingHandCursor);
     btn_vol_add->setFixedSize(46, 46);
-    btn_vol_add->setGeometry(27, 106, 0, 0);
+    btn_vol_add->setGeometry(27, 91, 0, 0);
     btn_vol_add->setStyleSheet("#btn_vol_add{background-color:#777777; border-radius:23px;} #btn_vol_add:hover{background-color:#7D6144; border-radius:23px;}");
 
     QLabel *lb_vol_add = new QLabel(btn_vol_add);
@@ -581,7 +587,7 @@ void RemoteWidget::setUIRemoteBtn(){
 
     QPixmap tmp_pixmap_add;
     tmp_pixmap_add = tmp_pixmap_add.fromImage(image_add);
-    tmp_pixmap_add = tmp_pixmap_add.scaled(90, 90, Qt::KeepAspectRatioByExpanding, Qt::SmoothTransformation);
+    tmp_pixmap_add = tmp_pixmap_add.scaled(90, 90, Qt::KeepAspectRatio, Qt::SmoothTransformation);
 
     QPainter painter_add (&pixmapIMG_add);
     painter_add.setRenderHint(QPainter::Antialiasing, true);
@@ -597,12 +603,11 @@ void RemoteWidget::setUIRemoteBtn(){
 
     lb_vol_add->setPixmap(pixmapIMG_add);
 
-    this->slider_volume = new QSlider(widget_volume);
+    this->slider_volume = new VolSlider_Remote(widget_volume);
     this->slider_volume->setObjectName("slider_volume");
-    this->slider_volume->setPageStep(1);
     this->slider_volume->setMaximum(99);
-    this->slider_volume->setFixedSize(16, 268);
-    this->slider_volume->setGeometry(42, 178, 0, 0);
+    this->slider_volume->setFixedSize(16, 297);
+    this->slider_volume->setGeometry(42, 160, 0, 0);
     this->slider_volume->setCursor(Qt::PointingHandCursor);
     this->slider_volume->setStyleSheet("QSlider::groove:vertical { background:#333333;width:4px; } QSlider::handle:vertical { background:white;height:16px;border-radius:8px;margin:0 -6px; } QSlider::add-page:vertical { background:#CCCCCC; } QSlider::sub-page:vertical { background:#333333; } ");
 
@@ -611,7 +616,7 @@ void RemoteWidget::setUIRemoteBtn(){
     btn_vol_sub->setProperty("type", HTTP_REMOTE_VOLUME_SUB);
     btn_vol_sub->setCursor(Qt::PointingHandCursor);
     btn_vol_sub->setFixedSize(46, 46);
-    btn_vol_sub->setGeometry(27, 470, 0, 0);
+    btn_vol_sub->setGeometry(27, 485, 0, 0);
     btn_vol_sub->setStyleSheet("#btn_vol_sub{background-color:#777777; border-radius:23px;} #btn_vol_sub:hover{background-color:#7D6144; border-radius:23px;}");
 
     QLabel *lb_vol_sub = new QLabel(btn_vol_sub);
@@ -627,7 +632,7 @@ void RemoteWidget::setUIRemoteBtn(){
 
     QPixmap tmp_pixmap_sub;
     tmp_pixmap_sub = tmp_pixmap_sub.fromImage(image_sub);
-    tmp_pixmap_sub = tmp_pixmap_sub.scaled(90, 90, Qt::KeepAspectRatioByExpanding, Qt::SmoothTransformation);
+    tmp_pixmap_sub = tmp_pixmap_sub.scaled(90, 90, Qt::KeepAspectRatio, Qt::SmoothTransformation);
 
     QPainter painter_sub (&pixmapIMG_sub);
     painter_sub.setRenderHint(QPainter::Antialiasing, true);
@@ -681,8 +686,8 @@ void RemoteWidget::setUIRemoteBtn(){
     lb_amp_img->setStyleSheet("background-color:transparent; border-radius:0px;");
 
     QLabel *lb_amp_name = new QLabel(btn_amp);
-    lb_amp_name->setFixedSize(370, 20);
-    lb_amp_name->setGeometry(93, 15, 0, 0);
+    lb_amp_name->setFixedSize(370, 24);
+    lb_amp_name->setGeometry(93, 13, 0, 0);
     lb_amp_name->setAlignment(Qt::AlignLeft);
     lb_amp_name->setStyleSheet("background-color:transparent; border-radius:0px; font-size:16px; color:#E4E4E3;");
     lb_amp_name->setText(tr("Amp Connection Management"));
@@ -714,7 +719,8 @@ void RemoteWidget::setUIRemoteBtn(){
 
     connect(btn_vol_add, SIGNAL(clicked()), this, SLOT(slot_clicked_remoteItem()));
     connect(btn_vol_sub, SIGNAL(clicked()), this, SLOT(slot_clicked_remoteItem()));
-    connect(this->slider_volume, SIGNAL(valueChanged(int)) ,this, SLOT(slot_volume_set(int)));
+    //connect(this->slider_volume, SIGNAL(sliderReleased()) ,this, SLOT(slot_volume_set()));
+    connect(this->slider_volume, SIGNAL(signal_vol_slider_clicked(int)) ,this, SLOT(slot_volume_set(int)));
     connect(this->btn_mute, SIGNAL(clicked()), this, SLOT(slot_clicked_remoteItem()));
 
     connect(btn_amp, SIGNAL(clicked()), this, SLOT(slot_clicked_remoteItem()));
@@ -846,6 +852,7 @@ void RemoteWidget::slot_clicked_remoteItem(){
 
             case HTTP_REMOTE_VU :
                 if(global.device.CurrPlayType == "VIDEO" || global.device.CurrPlayType == "YOUTUBE" || global.device.CurrPlayType == "TIDAL_VIDEO" || global.device.CurrPlayType == "BUGS_MV"){
+                    this->flag_button_enable = false;
                     ToastMsg::show(this, "", tr("Not supported in current mode."));
                 }
                 else{
@@ -894,7 +901,8 @@ void RemoteWidget::slot_clicked_remoteItem(){
                         this->btn_mute->setStyleSheet("#btn_mute{background-color:#4D4D4D; border-radius:10px;} #btn_mute:hover{background-color:#7D6144; border-radius:10px;}");
                     }
 
-                    this->slider_volume->setValue(value);
+                    //this->slider_volume->setValue(value);
+                    this->slot_volume_set(value);
                 }
                 break;
 
@@ -908,7 +916,8 @@ void RemoteWidget::slot_clicked_remoteItem(){
                         this->btn_mute->setStyleSheet("#btn_mute{background-color:#4D4D4D; border-radius:10px;} #btn_mute:hover{background-color:#7D6144; border-radius:10px;}");
                     }
 
-                    this->slider_volume->setValue(value);
+                    //this->slider_volume->setValue(value);
+                    this->slot_volume_set(value);
                 }
                 break;
 
@@ -959,11 +968,19 @@ void RemoteWidget::dialog_comfirm(NetworkHttp *network, int type){
             break;
 
         case HTTP_REMOTE_DLNA :
-            dlgConfirmMSG->setText(tr("Do you want to restart the DLNA service?"));
+            if(this->flag_dlna == 0){
+                dlgConfirmMSG->setText(tr("Do you want to start DLNA service?"));
+            }else if(this->flag_dlna == 1){
+                dlgConfirmMSG->setText(tr("Are you sure you want to close the DLNA service?"));
+            }
             break;
 
         case HTTP_REMOTE_AIRPLAY :
-            dlgConfirmMSG->setText(tr("Do you want to restart the AirPlay service?"));
+            if(this->flag_airplay == 0){
+                dlgConfirmMSG->setText(tr("Do you want to start Airplay service?"));
+            }else if(this->flag_airplay == 1){
+                dlgConfirmMSG->setText(tr("Are you sure you want to close the Airplay service?"));
+            }
             break;
 
         case HTTP_REMOTE_AMP :
@@ -996,14 +1013,28 @@ void RemoteWidget::dialog_comfirm(NetworkHttp *network, int type){
                 json = QJsonObject();
                 //json.insert("barControl", "remote_bar_order.reboot");
                 json.insert("barControl", "remote_bar_order_dlna_restart");
-                json.insert("value", "-1");
+                if(flag_dlna == 0){
+                    json.insert("value", "1");
+                    this->flag_dlna = 1;
+                }
+                else if(flag_dlna ==1){
+                    json.insert("value", "0");
+                    this->flag_dlna = 0;
+                }
                 json.insert("roseToken", global.device.getDeviceRoseToken());
                 break;
 
             case HTTP_REMOTE_AIRPLAY :
                 json = QJsonObject();
                 json.insert("barControl", "remote_bar_order_airplay_restart");
-                json.insert("value", "-1");
+                if(flag_airplay == 0){
+                    json.insert("value", "1");
+                    this->flag_airplay = 1;
+                }
+                else if(flag_airplay ==1){
+                    json.insert("value", "0");
+                    this->flag_airplay = 0;
+                }
                 json.insert("roseToken", global.device.getDeviceRoseToken());
                 break;
 
@@ -1041,6 +1072,8 @@ void RemoteWidget::slot_responseHttp(const int &p_id, const QJsonObject &p_jsonO
                 int volume = ProcJsonEasy::getInt(p_jsonObject, "volumeValue");
                 this->lb_volume->setText(QString("%1").number(volume));
                 this->slider_volume->setValue(volume);
+
+                emit this->linker->signal_volume_change(volume);
             }
 
             if(p_jsonObject.contains("airplayInfo")){
@@ -1056,8 +1089,53 @@ void RemoteWidget::slot_responseHttp(const int &p_id, const QJsonObject &p_jsonO
             }
             break;
 
-        case HTTP_REMOTE_POWER :
-            emit linker->signal_devicePowerChanged();
+        case HTTP_REMOTE_POWER ://c230423
+            //emit linker->signal_devicePowerChanged();
+            if(global.curMenuCode == QString(GSCommon::MainMenuCode::RoseHome)){
+                emit linker->signal_change_device_state(SIGNAL_CATEGORY_ROSE);//
+            }
+            else if(global.curMenuCode == QString(GSCommon::MainMenuCode::Music)){
+                emit linker->signal_change_device_state(SIGNAL_CATEGORY_MUSIC);//
+            }
+            else if(global.curMenuCode == QString(GSCommon::MainMenuCode::Video)){
+                emit linker->signal_change_device_state(SIGNAL_CATEGORY_ROSE);//
+            }
+            else if(global.curMenuCode == QString(GSCommon::MainMenuCode::Radio)){
+                emit linker->signal_change_device_state(SIGNAL_CATEGORY_ROSE);//
+            }
+            else if(global.curMenuCode == QString(GSCommon::MainMenuCode::RoseRadio)){
+                emit linker->signal_change_device_state(SIGNAL_CATEGORY_ROSE);//
+            }
+            else if(global.curMenuCode == QString(GSCommon::MainMenuCode::RoseFM)){
+                emit linker->signal_change_device_state(SIGNAL_CATEGORY_ROSE);//
+            }
+            else if(global.curMenuCode == QString(GSCommon::MainMenuCode::RoseTube)){
+                emit linker->signal_change_device_state(SIGNAL_CATEGORY_ROSE);//
+            }
+            else if(global.curMenuCode == QString(GSCommon::MainMenuCode::PodCast)){
+                emit linker->signal_change_device_state(SIGNAL_CATEGORY_ROSE);//
+            }
+            else if(global.curMenuCode == QString(GSCommon::MainMenuCode::CDplay)){
+                emit linker->signal_change_device_state(SIGNAL_CATEGORY_ROSE);//
+            }
+            else if(global.curMenuCode == QString(GSCommon::MainMenuCode::Tidal)){
+                emit linker->signal_change_device_state(SIGNAL_CATEGORY_TIDAL);//
+            }
+            else if(global.curMenuCode == QString(GSCommon::MainMenuCode::Bugs)){
+                emit linker->signal_change_device_state(SIGNAL_CATEGORY_BUGS);//
+            }
+            else if(global.curMenuCode == QString(GSCommon::MainMenuCode::Qobuz)){
+                emit linker->signal_change_device_state(SIGNAL_CATEGORY_QOBUZ);//
+            }
+            else if(global.curMenuCode == QString(GSCommon::MainMenuCode::AppleMusic)){
+                emit linker->signal_change_device_state(SIGNAL_CATEGORY_APPLE);//
+            }
+            else if(global.curMenuCode == QString(GSCommon::MainMenuCode::Spotify)){
+                emit linker->signal_change_device_state(SIGNAL_CATEGORY_ROSE);//
+            }
+            else if(global.curMenuCode == QString(GSCommon::MainMenuCode::Setting)){
+                emit linker->signal_change_device_state(SIGNAL_CATEGORY_ROSE);//
+            }
             break;
         case HTTP_REMOTE_STANDBY :
             break;
@@ -1120,6 +1198,7 @@ void RemoteWidget::slot_responseHttp(const int &p_id, const QJsonObject &p_jsonO
             if(p_jsonObject.contains("mute")){
                 int mute = ProcJsonEasy::getInt(p_jsonObject, "mute");
                 this->flag_mute = (mute == 1) ? true : false;
+                global.setMuteState = this->flag_mute;
                 this->slot_volume_mute();
             }
             break;
@@ -1137,21 +1216,29 @@ void RemoteWidget::slot_responseHttp(const int &p_id, const QJsonObject &p_jsonO
  * @brief RemoteWidget::slot_volume_set [SLOT]
  * @param p_value
  */
-void RemoteWidget::slot_volume_set(int p_value){
+void RemoteWidget::slot_volume_set(int value){
 
-    this->lb_volume->setText(QString::number(p_value));
+    if(this->flag_auto_change == false){
+        //int p_value = this->slider_volume->value();
+        int p_value = value;
 
-    if(this->flag_mute == false){
-        NetworkHttp *network = new NetworkHttp(this);
-        connect(network, SIGNAL(response(int,QJsonObject)), SLOT(slot_responseHttp(int,QJsonObject)));
+        this->lb_volume->setText(QString::number(p_value));
+        this->slider_volume->setValue(p_value);
 
-        // API 볼륨 조절
-        QJsonObject json;
-        json.insert("volumeType", "volume_set");
-        json.insert("volumeValue", p_value);
+        if(this->flag_mute == false){
+            NetworkHttp *network = new NetworkHttp(this);
+            connect(network, SIGNAL(response(int,QJsonObject)), SLOT(slot_responseHttp(int,QJsonObject)));
 
-        QString url = QString("http://%1").arg(global.device.getDeviceIP()) + QString(":%1/volume").arg(global.port);
-        network->request(HTTP_REMOTE_VOLUME_ADD, url, json, true);
+            // API 볼륨 조절
+            QJsonObject json;
+            json.insert("volumeType", "volume_set");
+            json.insert("volumeValue", p_value);
+
+            QString url = QString("http://%1").arg(global.device.getDeviceIP()) + QString(":%1/volume").arg(global.port);
+            network->request(HTTP_REMOTE_VOLUME_ADD, url, json, true);
+
+            emit this->linker->signal_volume_change(p_value);
+        }
     }
 }
 
@@ -1176,6 +1263,45 @@ void RemoteWidget::slot_volume_mute(){
 }
 
 
+void RemoteWidget::slot_volume_change(int &p_value){
+
+    global.setVolumeSync = p_value;
+
+    this->lb_volume->setText(QString::number(p_value));
+
+    this->flag_auto_change = true;
+
+    if(this->timer->isActive() == false){
+        this->timer->start();
+    }
+}
+
+
+void RemoteWidget::slot_slider_auto_change(){
+
+    if(global.setVolumeSync != this->slider_volume->value()){
+
+        int compareInt = this->slider_volume->value();
+        if(global.setVolumeSync > compareInt){
+            compareInt++;
+            this->slider_volume->setValue(compareInt);
+        }
+        else if(global.setVolumeSync < compareInt){
+            compareInt--;
+            this->slider_volume->setValue(compareInt);
+        }
+        else{
+            this->flag_auto_change = false;
+            this->timer->stop();
+        }
+    }
+    else{
+        this->flag_auto_change = false;
+        this->timer->stop();
+    }
+}
+
+
 /**
  * @brief RemoteWidget::slot_connectedDevice : [슬롯] 기기 연결
  * @details 리모콘에 현재 연결된 기기 정보 세팅
@@ -1183,7 +1309,10 @@ void RemoteWidget::slot_volume_mute(){
 void RemoteWidget::slot_connectedDevice(){
 
     QPixmap *pixmap_icon;
-    if(global.device.getDeviceType()=="RS150"){
+    if(global.device.getDeviceType()=="RS130"){//c230427
+        pixmap_icon = GSCommon::getUIPixmapImg(":/images/rs130_on.png");
+    }
+    else if(global.device.getDeviceType()=="RS150"){
         pixmap_icon = GSCommon::getUIPixmapImg(":/images/rs150_on.png");
     }
     else if(global.device.getDeviceType()=="RS150B"){
@@ -1223,7 +1352,7 @@ void RemoteWidget::slot_connectedDevice(){
     left = (398 - lb_tmp->sizeHint().width()) / 2;
     this->lb_curr_name->setText(global.device.getDeviceName());
     this->lb_curr_name->setStyleSheet("background-color:transparent; font-size:20px; color:#FFFFFF;");
-    this->lb_curr_name->setGeometry(left, 146, lb_tmp->sizeHint().width(), 22);
+    this->lb_curr_name->setGeometry(left, 146, lb_tmp->sizeHint().width(), lb_tmp->sizeHint().height());
 
     lb_tmp->setStyleSheet("background-color:transparent; font-size:16px; color:#FFFFFF;");
     lb_tmp->setText(global.device.getDeviceType() + " (Rose OS " + global.device.getDeviceVersion() + ")");
@@ -1272,6 +1401,15 @@ void RemoteWidget::showEvent(QShowEvent *event){
         connect(network_control, SIGNAL(response(int,QJsonObject)), SLOT(slot_responseHttp(int,QJsonObject)));
         network_control->request(HTTP_REMOTE_CONTROL, QString("http://%1:%2/get_control_info").arg(global.device.getDeviceIP()).arg(global.port), json, true);*/
     }
+}
+
+
+void RemoteWidget::hideEvent(QHideEvent *event){
+
+    Q_UNUSED(event);
+
+    this->flag_auto_change = false;
+    this->timer->stop();
 }
 
 

@@ -6,6 +6,8 @@
 
 #include "common/linker.h"
 
+#include "home/topmenubar.h"
+
 #include "widget/AbstractAlbumTrackDetailInfo_RHV.h"
 
 
@@ -26,6 +28,9 @@ namespace CDplay {
 
         void show_topBtnControl();
         void hide_topBtnControl();
+
+    protected:
+        void resizeEvent(QResizeEvent* event) override;
 
     protected slots:
         void slot_responseHttp(const int&, const QJsonObject&) override;

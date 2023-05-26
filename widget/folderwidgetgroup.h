@@ -5,10 +5,12 @@
 #include <QWidget>
 #include <QLabel>
 
+
 const QString FOLDER_USB_DIR_CODE_INIT = "init";
 const QString FOLDER_USB_DIR_CODE_DRIVER = "driver";
 const QString FOLDER_USB_DIR_CODE_NETWORK = "network";
 const QString FOLDER_USB_DIR_CODE_CLOUD = "cloud";
+
 
 /**
  * @brief The Folder_TopDirName class 상단 Dir 이름 클릭가능한 클래스 (폴더 아이콘과 폴더이름)
@@ -26,15 +28,6 @@ private:
     QString dirPath;
     void mousePressEvent(QMouseEvent *event) override;
 };
-
-
-
-
-
-
-
-
-
 
 
 
@@ -69,19 +62,6 @@ private:
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
 /**
  * @brief The Folder_ClickableRow class 탐색 첫 화면의 클릭가능한 Row 클래스
  * @note [음악>폴더], [비디오>폴더] 에서 사용
@@ -104,24 +84,28 @@ private:
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
 class FolderNetwork_ClickableRow : public QWidget
 {
     Q_OBJECT
 public:
     explicit FolderNetwork_ClickableRow(QString p_iconPath, QString p_text, QWidget *parent = nullptr);
+    void setImage(QString p_iconPath);
+signals:
+    void signal_clicked();
+    void signal_clickedRemove();
+private:
+    QLabel *lb_icon;
+    void mousePressEvent(QMouseEvent *event) override;
+};
+
+
+
+
+class FolderCloud_ClickableRow : public QWidget
+{
+    Q_OBJECT
+public:
+    explicit FolderCloud_ClickableRow(QString p_iconPath, QString p_name, QString p_path, QWidget *parent = nullptr);
     void setImage(QString p_iconPath);
 signals:
     void signal_clicked();

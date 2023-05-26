@@ -13,13 +13,15 @@ class RoseSettings
 {
 public :
 
-    QString ORGANIZATION_NAME = "citech";            //cheon211006               ///<"Goosl Company";
+    QString ORGANIZATION_NAME = "CITech";                           ///<"Goosl Company";    //cheon211006
     QString ORGANIZATION_DOMAIN = "hifirose.com";                   ///<"goosl.co.kr";
     QString APPLICATION_NAME = "Rose_Connect";
     QString APPLICATION_VERSION = "4.1.9.1";//cheon211006
     QString APPLICATION_BUILD_DATE = "22-07-18";//c220718
 
     QString SETTINGS_NEED_TUTORIAL = "settings/tutorial";           ///<튜토리얼 show/hide
+    QString SETTINGS_L = "settings/left";                           ///<App left
+    QString SETTINGS_T = "settings/top";                            ///<App top
     QString SETTINGS_W = "settings/width";                          ///<App width
     QString SETTINGS_H = "settings/height";                         ///<App height
     QString SETTINGS_AUTO_LOGIN = "settings/autoLogin";             ///<자동로그인 유무
@@ -35,11 +37,17 @@ public :
     QString SETTINGS_FILTER_ORDER = "filter/order";                 ///<음악분류 정렬순서
     QString SETTINGS_FILTER_STAR = "filter/star";                   ///<음악분류 별점
 
-    QString SETTINGS_AFILTER_FILETYPE = "filterA/fileType";           ///<음악앨범 파일타입
-    QString SETTINGS_AFILTER_BIT = "filterA/bitDepth";                ///<음악앨범 Bit Depth
-    QString SETTINGS_AFILTER_SAMPLEING = "filterA/sampling";          ///<음악앨범 Sampling Rate
-    QString SETTINGS_AFILTER_ORDER = "filterA/order";                 ///<음악앨범 정렬순서
-    QString SETTINGS_AFILTER_STAR = "filterA/star";                   ///<음악앨범 별점
+    QString SETTINGS_AFILTER_FILETYPE = "filterA/fileType";         ///<음악앨범 파일타입
+    QString SETTINGS_AFILTER_BIT = "filterA/bitDepth";              ///<음악앨범 Bit Depth
+    QString SETTINGS_AFILTER_SAMPLEING = "filterA/sampling";        ///<음악앨범 Sampling Rate
+    QString SETTINGS_AFILTER_ORDER = "filterA/order";               ///<음악앨범 정렬순서
+    QString SETTINGS_AFILTER_STAR = "filterA/star";                 ///<음악앨범 별점
+
+    QString SETTINGS_RFILTER_FILETYPE = "filterR/fileType";         ///<음악추천 파일타입
+    QString SETTINGS_RFILTER_BIT = "filterR/bitDepth";              ///<음악추천 Bit Depth
+    QString SETTINGS_RFILTER_SAMPLING = "filterR/sampling";         ///<음악추천 Sampling Rate
+    QString SETTINGS_RFILTER_ORDER = "filterR/order";               ///<음악추천 정렬순서
+    QString SETTINGS_RFILTER_STAR = "filterR/star";                 ///<음악추천 별점
 
 
 public :

@@ -17,6 +17,7 @@
 #include "settinglanguage.h" //cheon07_language
 #include "settingvideo.h"
 #include "settingvu.h"
+#include "settingmenu.h"//c230329
 
 #include <QWidget>
 #include <QMutex>
@@ -84,6 +85,7 @@ private :
     SettingRoseMenu *settingRoseMenu=nullptr;
     SettingAppMenu *settingAppMenu=nullptr;
     SettingAppInfo *settingAppInfo=nullptr;
+    SettingMenu *settingMenu=nullptr;//c230329
 
     // 옵션팝업 관련 페이지 ----------------------
     AlbumDetail *albumDetail=nullptr;            ///< 옵션팝업 : 앨범상세
@@ -93,7 +95,7 @@ private :
     ArtistInfo *artistInfo=nullptr;              ///< 옵션팝업 : 아티스트상세
 
     // View All 관련 페이지 ----------------------
-    MusicList_Group *viewAll_playListMusic=nullptr;     ///< 마이페이지에서 음악 플레이리스트의 ViewAll
+    music::MusicList_Group *viewAll_playListMusic=nullptr;     ///< 마이페이지에서 음악 플레이리스트의 ViewAll
     RoseTube_ViewAll *viewAll_playListRoseTube=nullptr; ///< 마이페이지에서 로즈튜브 플레이리스트의 ViewAll
 
     MusicFolder *settingMediaLibAddDel=nullptr;

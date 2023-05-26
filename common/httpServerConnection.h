@@ -2,6 +2,7 @@
 #define HTTPSERVERCONNECTION_H
 
 #include "common/linker.h"
+#include "widget/dialogconfirm.h"//
 
 #include <memory>
 #include <QByteArray>
@@ -25,10 +26,12 @@ public:
 private slots:
     void readyRead();
     void msghide();
+    //
 
 signals:
 
 private:
+
     void setRequestBody(QJsonObject p_jsonObject);
     void msgshow(const QString &p_msgText, int duration);
 

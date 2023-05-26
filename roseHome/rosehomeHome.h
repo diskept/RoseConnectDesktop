@@ -3,10 +3,12 @@
 
 #include "roseHome/AbstractRoseHomeSubWidget.h"
 
+#include "roseHome/ItemRecommends_rosehome.h"
 #include "roseHome/ItemAlbum_rosehome.h"
 #include "roseHome/ItemPlaylist_rosehome.h"
-#include "roseHome/ItemRecommends_rosehome.h"
 #include "rosetube/ItemTrack_rosetube.h"
+#include "roseHome/ItemArtist_rosehome.h"
+#include "roseHome/ItemHistory_rosehome.h"
 
 #include "common/linker.h"
 
@@ -14,6 +16,9 @@
 
 #include "widget/AbstractPlaylistTrackDetailInfo_RHV.h"
 #include "widget/myqwidget.h"//c220727
+
+#include <QCoreApplication>
+#include <QObject>
 
 
 namespace roseHome {
@@ -36,9 +41,13 @@ namespace roseHome {
         void slot_clickedItemAlbum(const tidal::AbstractItem::ClickMode clickMode) override;
         void slot_clickedItemPlaylist(const tidal::AbstractItem::ClickMode clickMode) override;
         void slot_clickedItemTrack_inList(const int, const PlaylistTrackDetailInfo_RHV::ClickMode) override;
+        void slot_clickedItemArtist(const tidal::AbstractItem::ClickMode clickMode) override;
 
         // about OptMorePopup
         void slot_optMorePopup_menuClicked(const OptMorePopup::ClickMode, const int, const int) override;
+
+    protected:
+        void resizeEvent(QResizeEvent *event) override;
 
     public slots:
         void slot_changedSubTabUI(const QJsonObject &p_data) override;
@@ -46,6 +55,8 @@ namespace roseHome {
     private slots:
         void slot_time_out();
         void slot_hide_msg();
+
+        //void slot_
 
         void slot_clickBtn_Filter();
         void slot_clickBtn_Filter_close();
@@ -61,15 +72,31 @@ namespace roseHome {
         void slot_applyResult_recentlyPlaylist(const QList<roseHome::PlaylistItemData>&, const QJsonArray&, const bool);
         void slot_applyResult_recentlyRosetube(const QJsonArray&, const int&, const bool);
         void slot_applyResult_recentlyTrack(const QList<roseHome::TrackItemData>&, const QJsonArray&, const bool);
+        void slot_applyResult_recentlyArtist(const QList<roseHome::ArtistItemData>&, const QJsonArray&, const bool);
+        void slot_applyResult_historylist(const QList<roseHome::HistoryItemData>&, const QJsonArray&);
         void slot_applyResult_MyPlaylist(const QList<roseHome::PlaylistItemData>&, const QJsonArray&, const bool);
         void slot_applyResult_NewPlaylist(const QList<roseHome::PlaylistItemData>&, const QJsonArray&, const bool);
         void slot_applyResult_PopPlaylist(const QList<roseHome::PlaylistItemData>&, const QJsonArray&, const bool);
+        void slot_applyResult_duduoPlaylist(const QList<roseHome::PlaylistItemData>&, const QJsonArray&, const bool);
+
+        void slot_applyResult_recentlyAlbumCheck(const QList<roseHome::AlbumItemData>&, const QJsonArray&, const bool);
+        void slot_applyResult_recentlyPlaylistCheck(const QList<roseHome::PlaylistItemData>&, const QJsonArray&, const bool);
+        void slot_applyResult_recentlyRosetubeCheck(const QJsonArray&, const int&, const bool);
+        void slot_applyResult_recentlyTrackCheck(const QList<roseHome::TrackItemData>&, const QJsonArray&, const bool);
+        void slot_applyResult_recentlyArtistCheck(const QList<roseHome::ArtistItemData>&, const QJsonArray&, const bool);
+        void slot_applyResult_MyPlaylistCheck(const QList<roseHome::PlaylistItemData>&, const QJsonArray&, const bool);
 
         void slot_showLoginPage();
         void slot_getMyInfo_loginAfter();
         void slot_change_device_state(const QString&);
 
+        void slot_add_rosePlaylist_withRosetube(const int&, const QJsonObject&);
+
+        void slot_applyResult_myPlaylistDelete(const QJsonObject&);
+
         void slot_applyResult_getRating_track(const QJsonArray&);
+        void slot_bugs_completeReq_listAll_myFavoritesIds(const QJsonObject&);
+        void slot_tidal_completeReq_listAll_myFavoritesIds(const QJsonObject&);
 
     private:
         // 초기 UI화면 구성
@@ -79,6 +106,7 @@ namespace roseHome {
         void setUIControl_requestRose();
 
         void setUIControl_appendWidget_rose();
+        void setUIControl_checkWidget_rose();
 
         QWidget* setUIControl_LoginBefore();
 
@@ -90,6 +118,7 @@ namespace roseHome {
         void changedOnlyTabUI_notSendSignal(QString p_step);
 
     private:
+
         Linker *linker;
 
         //===============================================================================
@@ -127,11 +156,15 @@ namespace roseHome {
         Dialog::DialogLogin *dlg_rose_login;
 
         QWidget *widget_main_contents;
-        QWidget *widget_login_contents;
+        bool widget_login_contents_flag = false;//c230525
+        QWidget *widget_login_contents = nullptr;//c230524
         QStackedWidget *stackedWidget_Contents;
 
-        QLabel *lb_subTitle[10];
-        QPushButton *btnView_all[10];
+        QLabel *lb_loginBefore;
+        QPushButton *btn_loginBefore;
+
+        QLabel *lb_subTitle[20];
+        QPushButton *btnView_all[20];
 
         TopMenuBar *menubar;
 
@@ -142,9 +175,12 @@ namespace roseHome {
         roseHome::ItemRecommends_rosehome *home_recommends[15];
         roseHome::ItemAlbum_rosehome *home_recently_album[15];
         roseHome::ItemPlaylist_rosehome *home_recently_playlist[15];
+        roseHome::ItemArtist_rosehome *home_recently_artist[15];
+        roseHome::ItemHistory_rosehome *home_historylist[15];
         roseHome::ItemPlaylist_rosehome *home_myPlaylist[15];
         roseHome::ItemPlaylist_rosehome *home_newPlaylist[15];
         roseHome::ItemPlaylist_rosehome *home_popPlaylist[15];
+        roseHome::ItemPlaylist_rosehome *home_duduoPlaylist[15];
 
         rosetube::ItemTrack_rosetube *home_recently_rosetube[15];
         PlaylistTrackDetailInfo_RHV *home_recently_track[5];
@@ -156,25 +192,39 @@ namespace roseHome {
         QWidget *widget_recentlyPlay;
         QWidget *widget_recentlyRoseTube;
         QWidget *widget_recentlyTrack;
+        QWidget *widget_recentlyArtist;
+        QWidget *widget_historylist;
         QWidget *widget_myPlaylist;
         QWidget *widget_newPlaylist;
         QWidget *widget_popPlaylist;
+        QWidget *widget_duduoPlaylist;
 
         QVBoxLayout *vBox_recommends;
         QVBoxLayout *vBox_recentlyPlay;
         QVBoxLayout *vBox_recentlyRoseTube;
         QVBoxLayout *vBox_recentlyTrack;
+        QVBoxLayout *vBox_recentlyArtist;
+        QVBoxLayout *vBox_historylist;
         QVBoxLayout *vBox_myPlaylist;
         QVBoxLayout *vBox_newPlaylist;
         QVBoxLayout *vBox_popPlaylist;
+        QVBoxLayout *vBox_duduoPlaylist;
 
         QHBoxLayout *hBox_recommends;
         QHBoxLayout *hBox_recentlyAlbum;
         QHBoxLayout *hBox_recentlyPlaylist;
         QHBoxLayout *hBox_recentlyRoseTube;
+        QHBoxLayout *hBox_recentlyArtist;
+        QHBoxLayout *hBox_historylist;
         QHBoxLayout *hBox_myPlaylist;
         QHBoxLayout *hBox_newPlaylist;
         QHBoxLayout *hBox_popPlaylist;
+        QHBoxLayout *hBox_duduoPlaylist;
+
+        QVBoxLayout *vBox_recentlyTrack_info;
+
+        QScrollArea *album_scrollArea;
+        QScrollArea *playlist_scrollArea;
 
         // data
         QList<roseHome::RecommendsItemData> *list_Recommends;
@@ -182,9 +232,12 @@ namespace roseHome {
         QList<roseHome::AlbumItemData> *list_RecentAlbum;
         QList<roseHome::PlaylistItemData> *list_RecentPlaylist;
         QList<roseHome::TrackItemData> *list_RecentTrack;
+        QList<roseHome::ArtistItemData> *list_RecentArtist;
+        QList<roseHome::HistoryItemData> *list_Historylist;
         QList<roseHome::PlaylistItemData> *list_MyPlaylist;
         QList<roseHome::PlaylistItemData> *list_NewPlaylist;
         QList<roseHome::PlaylistItemData> *list_PopPlaylist;
+        QList<roseHome::PlaylistItemData> *list_DuduoPlaylist;
 
         QJsonArray jsonArr_rosetube;
         QJsonArray jsonArr_tracks_toPlay;
@@ -200,12 +253,26 @@ namespace roseHome {
         bool flag_recentPlaylist[2] = {false, false};
         bool flag_recentRosetube[2] = {false, false};
         bool flag_recentTrack[2] = {false, false};
+        bool flag_recentArtist[2] = {false, false};
+        bool flag_historylist[2] = {false, false};
         bool flag_myPlaylist[2] = {false, false};
         bool flag_newPlaylist[2] = {false, false};
         bool flag_popPlaylist[2] = {false, false};
+        bool flag_duduoPlaylist[2] = {false, false};
 
+        bool flag_recentAlbum_check[2] = {false, false};
+        bool flag_recentPlaylist_check[2] = {false, false};
+        bool flag_recentRosetube_check[2] = {false, false};
+        bool flag_recentTrack_check[2] = {false, false};
+        bool flag_recentArtist_check[2] = {false, false};
+        bool flag_myPlaylist_check[2] = {false, false};
+
+        bool flag_page_draw = false;
+
+        int track_id_fav = 0;
         int track_idx_fav = 0;
         int track_star_fav = 0;
+        int track_type_fav = 0;
 
         bool flag_track_fav = false;
         bool flag_send_track = false;

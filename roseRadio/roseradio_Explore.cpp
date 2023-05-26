@@ -16,6 +16,7 @@
 
 #include <QDebug>
 #include <QScroller>
+#include <QScrollBar>
 
 
 namespace roseRadio {
@@ -25,7 +26,9 @@ namespace roseRadio {
     const int GET_ITEM_SIZE___ONCE = 30;
 
 
-    RoseRadioExplore::RoseRadioExplore(QWidget *parent) : roseHome::AbstractRoseHomeSubWidget(VerticalScroll_viewAll, parent) {
+    RoseRadioExplore::RoseRadioExplore(QWidget *parent) : roseHome::AbstractRoseHomeSubWidget(VerticalScroll_roseviewAll, parent) {
+
+        this->setUIControl_appendWidget_Genre();
 
         this->linker = Linker::getInstance();
         connect(linker, SIGNAL(signal_logined()), SLOT(slot_getMyInfo_loginAfter()));
@@ -36,6 +39,18 @@ namespace roseRadio {
     RoseRadioExplore::~RoseRadioExplore(){
 
         this->deleteLater();
+    }
+
+    void RoseRadioExplore::setUIControl_appendWidget_Genre(){
+
+        this->box_contents->removeWidget(this->widget_explore_contents);
+        GSCommon::clearLayout(this->box_contents);
+        this->box_contents->setAlignment(Qt::AlignTop);
+
+        this->genre_widget_width = 284;
+        this->genre_widget_margin = 20;
+
+        this->flow_explore_contents = this->get_addUIControl_flowLayout(0, 20);
     }
 
     /**
@@ -51,16 +66,7 @@ namespace roseRadio {
                 AbstractRoseHomeSubWidget::setActivePage();
                 this->flagNeedReload = true;
 
-                this->box_contents->removeWidget(this->widget_explore_contents);
-                GSCommon::clearLayout(this->box_contents);
-                this->box_contents->setAlignment(Qt::AlignTop);
-
-                this->flow_explore_contents = new FlowLayout(0, 20, 20);
-                this->flow_explore_contents->setSizeConstraint(QLayout::SetMinimumSize);
-
                 this->widget_explore_contents = new QWidget();
-                this->widget_explore_contents->setContentsMargins(0, 20, 0, 0);
-                this->widget_explore_contents->setStyleSheet("background:#212121; border:0px;");
                 this->widget_explore_contents->setLayout(this->flow_explore_contents);
                 this->widget_explore_contents->hide();
 
@@ -76,7 +82,7 @@ namespace roseRadio {
 
                 if(global.updateCheckFlag){
 
-                    //ContentLoadingwaitingMsgShow(tr("Content is being loaded. Please wait."));              //cheon211114-01//c1223
+                    //print_debug();ContentLoadingwaitingMsgShow(tr("Content is being loaded. Please wait."));              //cheon211114-01//c1223
                     //QTimer::singleShot(10000, this, SLOT(slot_hide_msg()));
 
                     this->widget_explore_contents->hide();
@@ -85,7 +91,7 @@ namespace roseRadio {
                 }
                 else if(!global.user.getAccess_token().isEmpty()){
 
-                    ContentLoadingwaitingMsgShow(tr("Content is being loaded. Please wait."));              //cheon211114-01//c1223
+                    print_debug();ContentLoadingwaitingMsgShow(tr("Content is being loaded. Please wait."));              //cheon211114-01//c1223
 
                     this->request_more_genreData();
 
@@ -97,13 +103,6 @@ namespace roseRadio {
             else{
 
                 this->flagNeedReload = true;
-
-                this->box_contents->removeWidget(this->widget_explore_contents);
-                GSCommon::clearLayout(this->box_contents);
-                this->box_contents->setAlignment(Qt::AlignTop);
-
-                this->flow_explore_contents = new FlowLayout(0, 20, 20);
-                this->flow_explore_contents->setSizeConstraint(QLayout::SetMinimumSize);
 
                 this->widget_explore_contents = new QWidget();
                 this->widget_explore_contents->setStyleSheet("background:#212121; border:0px;");
@@ -159,11 +158,16 @@ namespace roseRadio {
 
     void RoseRadioExplore::proc_wheelEvent_to_getMoreData(){
 
-        if((this->genre_total_cnt > this->genre_draw_cnt) && (this->jsonArr_Genre.size() > this->genre_draw_cnt) && (this->flag_genre_draw == false)){
+        if((!this->flagReqMore_Genre && !this->flag_lastPage_Genre) && (this->scrollArea_main->verticalScrollBar()->value() == this->scrollArea_main->verticalScrollBar()->maximum())){
+            this->flagReqMore_Genre = true;
 
-            this->flag_genre_draw = true;
+            print_debug();ContentLoadingwaitingMsgShow(tr("Content is being loaded. Please wait."));
 
-            ContentLoadingwaitingMsgShow(tr("Content is being loaded. Please wait."));
+            this->request_more_genreData();
+        }
+        else if((this->genre_total_cnt > this->genre_draw_cnt) && this->flag_genre_draw == false && (this->scrollArea_main->verticalScrollBar()->value() == this->scrollArea_main->verticalScrollBar()->maximum())){
+
+            print_debug();ContentLoadingwaitingMsgShow(tr("Content is being loaded. Please wait."));
 
             this->request_more_genreDraw();
         }
@@ -172,50 +176,72 @@ namespace roseRadio {
 
     void RoseRadioExplore::request_more_genreData(){
 
-        if(!this->flagReqMore_Genre && !this->flag_lastPage_Genre){
-            this->flagReqMore_Genre = true;
+        // next_offset
+        if(this->genre_total_cnt == 0){
+            this->next_offset = 0;
+            this->jsonArr_Genre = QJsonArray();
+        }
+        else{
+            this->next_offset++;
+        }
 
-            // next_offset
-            if(this->genre_total_cnt == 0){
-                this->next_offset = 0;
-                this->jsonArr_Genre = QJsonArray();
-            }
-            else{
-                this->next_offset++;
-            }
+        roseHome::ProcCommon *proc_Genre = new roseHome::ProcCommon(this);
+        connect(proc_Genre, &roseHome::ProcCommon::completeReq_list_roseRadio, this, &RoseRadioExplore::slot_applyResult_Genre);
+        proc_Genre->setProperty("idx", this->next_offset);
+        proc_Genre->request_rose_getList_radioGenre(this->next_offset, GET_ITEM_SIZE___ONCE);
 
-            roseHome::ProcCommon *proc_Genre = new roseHome::ProcCommon(this);
-            connect(proc_Genre, &roseHome::ProcCommon::completeReq_list_roseRadio, this, &RoseRadioExplore::slot_applyResult_Genre);
-            proc_Genre->request_rose_getList_radioGenre(this->next_offset, GET_ITEM_SIZE___ONCE);
-
-            if(this->next_offset == 0){
-                this->flag_genre_draw = true;
-            }
+        if(this->next_offset == 0){
+            this->flag_genre_draw = true;
         }
     }
 
 
     void RoseRadioExplore::request_more_genreDraw(){
 
+        this->flag_genre_draw = true;
+
+        int f_width = this->flow_explore_contents->geometry().width();
+
+        if(this->flow_explore_contents->geometry().width() <= 0){
+            f_width = this->width() - (80 + 63) - 10;
+        }
+
+        int f_wg_cnt = f_width / (this->genre_widget_width + this->genre_widget_margin);
+        int f_mod = this->genre_draw_cnt % f_wg_cnt;
+
+        if(f_mod == 0){
+            this->genre_widget_cnt = f_wg_cnt * 10;
+        }
+        else{
+            this->genre_widget_cnt = f_wg_cnt * 10 + (f_wg_cnt - f_mod);
+        }
+
+        //qDebug() << "[Debug] RoseHomegenreListAll::request_more_genreDraw " << f_width << f_wg_cnt << f_mod << this->genre_widget_cnt;
+
         int start_index = this->genre_draw_cnt;
-        int max_cnt = ((this->genre_total_cnt - this->genre_draw_cnt) > GET_ITEM_SIZE___ONCE ) ? GET_ITEM_SIZE___ONCE : (this->genre_total_cnt - this->genre_draw_cnt);
+        int max_cnt = ((this->genre_total_cnt - this->genre_draw_cnt) > this->genre_widget_cnt ) ? this->genre_widget_cnt : (this->genre_total_cnt - this->genre_draw_cnt);
         this->genre_draw_cnt += max_cnt;
 
         for(int i = start_index; i < this->genre_draw_cnt; i++){
             this->explore_genre[i] = new roseRadio::ItemExplore(i, SECTION_FOR_MORE_POPUP___GENRE);
-            connect(this->explore_genre[i], &roseRadio::ItemExplore::explore_clicked, this, &RoseRadioExplore::slot_clickedItemGenre);
+            QCoreApplication::processEvents();
         }
 
         for(int i = start_index; i < this->genre_draw_cnt; i++){
             this->explore_genre[i]->setData(this->jsonArr_Genre.at(i).toObject());
-
-            this->flow_explore_contents->addWidget(this->explore_genre[i]);
-
             QCoreApplication::processEvents();
         }
 
-        if(this->genre_total_cnt == this->genre_draw_cnt){
-            this->box_contents->addSpacing(60);
+        for(int i = start_index; i < this->genre_draw_cnt; i++){
+            QVBoxLayout *box_wrap = new QVBoxLayout;
+            box_wrap->setContentsMargins(10, 10, 10, 10);
+            box_wrap->addWidget(this->explore_genre[i]);
+
+            QWidget *wg_wrap = new QWidget;
+            wg_wrap->setLayout(box_wrap);
+
+            this->flow_explore_contents->addWidget(wg_wrap);
+            connect(this->explore_genre[i], &roseRadio::ItemExplore::explore_clicked, this, &RoseRadioExplore::slot_clickedItemGenre);
         }
 
         this->flag_genre_draw = false;
@@ -227,6 +253,12 @@ namespace roseRadio {
 
         Q_UNUSED(totalCount);
 
+        int idx = sender()->property("idx").toInt();
+
+        if(idx != this->next_offset){
+            return;
+        }
+
         if(jsonArr.size() > 0){
             this->flagReqMore_Genre = false;
             this->flag_lastPage_Genre = flag_lastPage;
@@ -237,10 +269,9 @@ namespace roseRadio {
             }
 
             int start_index = this->jsonArr_Genre.size();
+            this->jsonArr_Genre = jsonArr;
 
             if(start_index == 0){
-
-                this->jsonArr_Genre = jsonArr;
 
                 int countryCnt = 0;
                 int langCnt = 0;
@@ -290,40 +321,73 @@ namespace roseRadio {
             }
 
             if(start_index == 0){
-                int max_cnt = this->jsonArr_Genre.size();
-                this->genre_draw_cnt = max_cnt;
+                int f_width = this->flow_explore_contents->geometry().width();
+
+                if(this->flow_explore_contents->geometry().width() <= 0){
+                    f_width = this->width() - (80 + 63) - 10;
+                }
+
+                int f_wg_cnt = f_width / (this->genre_widget_width + this->genre_widget_margin);
+                int f_mod = this->genre_draw_cnt % f_wg_cnt;
+
+                if(f_mod == 0){
+                    this->genre_widget_cnt = f_wg_cnt * 10;
+                }
+                else{
+                    this->genre_widget_cnt = f_wg_cnt * 10 + (f_wg_cnt - f_mod);
+                }
+
+                int start_index = this->genre_draw_cnt;
+                int max_cnt = ((this->genre_total_cnt - this->genre_draw_cnt) > this->genre_widget_cnt ) ? this->genre_widget_cnt : (this->genre_total_cnt - this->genre_draw_cnt);
+                this->genre_draw_cnt += max_cnt;
 
                 for(int i = start_index; i < this->genre_draw_cnt; i++){
                     this->explore_genre[i] = new roseRadio::ItemExplore(i, SECTION_FOR_MORE_POPUP___GENRE);
-                    connect(this->explore_genre[i], &roseRadio::ItemExplore::explore_clicked, this, &RoseRadioExplore::slot_clickedItemGenre);
+                    QCoreApplication::processEvents();
                 }
 
                 for(int i = start_index; i < this->genre_draw_cnt; i++){
                     this->explore_genre[i]->setData(this->jsonArr_Genre.at(i).toObject());
-
-                    this->flow_explore_contents->addWidget(this->explore_genre[i]);
-
                     QCoreApplication::processEvents();
                 }
+
+                for(int i = start_index; i < this->genre_draw_cnt; i++){
+                    QVBoxLayout *box_wrap = new QVBoxLayout;
+                    box_wrap->setContentsMargins(10, 10, 10, 10);
+                    box_wrap->addWidget(this->explore_genre[i]);
+
+                    QWidget *wg_wrap = new QWidget;
+                    wg_wrap->setLayout(box_wrap);
+
+                    this->flow_explore_contents->addWidget(wg_wrap);
+                    connect(this->explore_genre[i], &roseRadio::ItemExplore::explore_clicked, this, &RoseRadioExplore::slot_clickedItemGenre);
+                }
+
+
+                this->slot_hide_msg();
 
                 this->flag_flow_draw = true;
                 this->flag_genre_draw = false;
             }
-
-            if(this->genre_total_cnt == this->genre_draw_cnt){
-                this->box_contents->addSpacing(60);
+            else{
+                this->request_more_genreDraw();
             }
-
-            this->request_more_genreData();
-            this->slot_hide_msg();
         }
         else{
             this->slot_hide_msg();
 
-            NoData_Widget *noData_widget = new NoData_Widget(NoData_Widget::NoData_Message::Track_NoData);
-            noData_widget->setFixedSize(1500, 290);
+            if(this->jsonArr_Genre.size() <= 0){
+                int f_width = this->flow_explore_contents->geometry().width();
 
-            this->flow_explore_contents->addWidget(noData_widget);
+                if(this->flow_explore_contents->geometry().width() <= 0){
+                    f_width = this->width() - (80 + 63) - 10;
+                }
+
+                NoData_Widget *noData_widget = new NoData_Widget(NoData_Widget::NoData_Message::Album_NoData);
+                noData_widget->setFixedSize(f_width, 500);
+
+                this->flow_explore_contents->addWidget(noData_widget);
+            }
         }
     }
 
@@ -411,4 +475,12 @@ namespace roseRadio {
             }
         }
     }
+
+    void RoseRadioExplore::resizeEvent(QResizeEvent *event){//c230223
+
+        Q_UNUSED(event);
+
+        this->setFlowLayoutResize(this, this->flow_explore_contents, this->genre_widget_width, this->genre_widget_margin);
+    }
 }
+

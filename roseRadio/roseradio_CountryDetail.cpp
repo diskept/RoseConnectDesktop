@@ -75,6 +75,9 @@ namespace roseRadio {
             this->flag_popular[0] = false;
             this->flag_popular[1] = false;
         }
+        else{
+            ContentLoadingwaitingMsgHide();
+        }
     }
 
 
@@ -132,8 +135,13 @@ namespace roseRadio {
                 this->vBox_popular->setAlignment(Qt::AlignTop);
                 GSCommon::clearLayout(this->vBox_popular);
 
-                this->flow_popular = new FlowLayout(0, 0, 20);
-                GSCommon::clearLayout(this->flow_popular);
+                this->hBox_popular = new QHBoxLayout();
+                GSCommon::clearLayout(this->hBox_popular);
+
+                for(int i = 0; i < 10; i++){
+                    this->lb_subTitle[i] = new QLabel();
+                    this->btnView_all[i] = new QPushButton();
+                }
 
                 // sub Title UI
                 for(int i = 0; i < 14; i++){
@@ -142,7 +150,7 @@ namespace roseRadio {
                 }
 
                 // request HTTP API
-                ContentLoadingwaitingMsgShow(tr("Content is being loaded. Please wait."));
+                print_debug();ContentLoadingwaitingMsgShow(tr("Content is being loaded. Please wait."));
 
                 this->setUIControl_requestRegion();
             }
@@ -171,7 +179,8 @@ namespace roseRadio {
 
         roseHome::ProcCommon *proc_popular = new roseHome::ProcCommon(this);
         connect(proc_popular, &roseHome::ProcCommon::completeReq_list_roseRadio, this, &RoseRadioCountryDetail::slot_applyResult_Popular);
-        proc_popular->request_rose_getList_radioChannel(roseHome::ProcCommon::HttpRequestType::GetList_Item_Local, "/channel?", this->regionId, "POPULAR", 0, 14);
+        //proc_popular->request_rose_getList_radioChannel(roseHome::ProcCommon::HttpRequestType::GetList_Item_Local, "/channel?", this->regionId, "POPULAR", 0, 14);
+        proc_popular->request_rose_getList_radioChannel(roseHome::ProcCommon::HttpRequestType::GetList_Item_Local, "/channel?", this->regionId, "NAME_ASC", 0, 14);
     }
 
 
@@ -184,23 +193,8 @@ namespace roseRadio {
             if(this->flag_region[0] == true){
 
                 this->widget_region = new QWidget();
-                this->widget_region->setFixedSize(1550, 30);
+                this->widget_region = this->setUIControl_subTitle_withSideBtn(tr("Regions"), "View All", BTN_IDX_SUBTITLE_Region, this->vBox_region);
 
-                this->lb_subTitle[BTN_IDX_SUBTITLE_Region] = new QLabel(this->widget_region);
-                this->lb_subTitle[BTN_IDX_SUBTITLE_Region]->setText(tr("Regions"));
-                this->lb_subTitle[BTN_IDX_SUBTITLE_Region]->setStyleSheet("font-size:24px;font-weight:bold;color:#FFFFFF;");
-                this->lb_subTitle[BTN_IDX_SUBTITLE_Region]->setGeometry(0, 1, 1000, 28);
-
-                this->btnView_all[BTN_IDX_SUBTITLE_Region] = new QPushButton(this->widget_region);
-                this->btnView_all[BTN_IDX_SUBTITLE_Region]->setText("View All");
-                this->btnView_all[BTN_IDX_SUBTITLE_Region]->setStyleSheet("QPushButton{background:transparent; color:#CCCCCC; font-size:20px;} QPushButton:hover{color:#B18658;}");
-                this->btnView_all[BTN_IDX_SUBTITLE_Region]->setProperty("idx", BTN_IDX_SUBTITLE_Region);
-                this->btnView_all[BTN_IDX_SUBTITLE_Region]->setCursor(Qt::PointingHandCursor);
-                this->btnView_all[BTN_IDX_SUBTITLE_Region]->setGeometry(1435, 3, 100, 24);
-
-                connect(this->btnView_all[BTN_IDX_SUBTITLE_Region], SIGNAL(clicked()), this, SLOT(slot_clickBtn_subTitle_viewAll()));
-
-                this->vBox_region->addWidget(this->widget_region, 0, Qt::AlignTop);
                 this->vBox_region->addSpacing(10);
 
                 if(this->flag_region[1] == true){
@@ -277,39 +271,35 @@ namespace roseRadio {
             if(this->flag_popular[0] == true){
 
                 this->widget_popular = new QWidget();
-                this->widget_popular->setFixedSize(1550, 30);
+                this->widget_popular = this->setUIControl_subTitle_withSideBtn(tr("Broadcast stations"), "View All", BTN_IDX_SUBTITLE_PouplarChannel, this->vBox_popular);
 
-                this->lb_subTitle[BTN_IDX_SUBTITLE_PouplarChannel] = new QLabel(this->widget_popular);
-                this->lb_subTitle[BTN_IDX_SUBTITLE_PouplarChannel]->setText(tr("Broadcast stations"));
-                this->lb_subTitle[BTN_IDX_SUBTITLE_PouplarChannel]->setStyleSheet("font-size:24px;font-weight:bold;color:#FFFFFF;");
-                this->lb_subTitle[BTN_IDX_SUBTITLE_PouplarChannel]->setGeometry(0, 1, 1000, 28);
-
-                this->btnView_all[BTN_IDX_SUBTITLE_PouplarChannel] = new QPushButton(this->widget_popular);
-                this->btnView_all[BTN_IDX_SUBTITLE_PouplarChannel]->setText("View All");
-                this->btnView_all[BTN_IDX_SUBTITLE_PouplarChannel]->setStyleSheet("QPushButton{background:transparent; color:#CCCCCC; font-size:20px;} QPushButton:hover{color:#B18658;}");
-                this->btnView_all[BTN_IDX_SUBTITLE_PouplarChannel]->setProperty("idx", BTN_IDX_SUBTITLE_PouplarChannel);
-                this->btnView_all[BTN_IDX_SUBTITLE_PouplarChannel]->setCursor(Qt::PointingHandCursor);
-                this->btnView_all[BTN_IDX_SUBTITLE_PouplarChannel]->setGeometry(1435, 3, 100, 24);
-
-                connect(this->btnView_all[BTN_IDX_SUBTITLE_PouplarChannel], SIGNAL(clicked()), this, SLOT(slot_clickBtn_subTitle_viewAll()));
-
-                this->vBox_popular->addWidget(this->widget_popular, 0, Qt::AlignTop);
                 this->vBox_popular->addSpacing(10);
 
                 if(this->flag_popular[1] == true){
-
                     //----------------------------------------------------------------------------------------------------  BODY : START
-                    this->flow_popular->setAlignment(Qt::AlignTop);
-                    this->flow_popular->setSizeConstraint(QLayout::SetMinimumSize);
+                    this->hBox_popular->setSpacing(0);
+                    this->hBox_popular->setContentsMargins(0, 0, 0, 0);
+                    this->hBox_popular->setAlignment(Qt::AlignTop);
+                    this->hBox_popular->setSizeConstraint(QLayout::SetFixedSize);
 
                     QWidget *widget_content = new QWidget;
-                    widget_content->setLayout(this->flow_popular);
+                    widget_content->setLayout(this->hBox_popular);
                     widget_content->setContentsMargins(0, 0, 0, 0);
-                    widget_content->setFixedHeight(610);
+
+                    QScrollArea *playlist_scrollArea = new QScrollArea();
+                    playlist_scrollArea->setWidget(widget_content);
+                    playlist_scrollArea->setWidgetResizable(false);
+                    playlist_scrollArea->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
+                    playlist_scrollArea->setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
+                    playlist_scrollArea->setStyleSheet("background-color:transparent; border:0px;");
+                    playlist_scrollArea->setContentsMargins(0, 0, 0, 0);
+                    playlist_scrollArea->setFixedHeight(287);
+
+                    QScroller::grabGesture(playlist_scrollArea, QScroller::LeftMouseButtonGesture);
                     //----------------------------------------------------------------------------------------------------  BODY : END
 
                     // Apply Main Layout with spacing
-                    this->vBox_popular->addWidget(widget_content, 0, Qt::AlignTop);
+                    this->vBox_popular->addWidget(playlist_scrollArea, 0, Qt::AlignTop);
 
                     int maxCount = 0;
                     if(this->jsonArr_popular.size() > 14){
@@ -321,8 +311,10 @@ namespace roseRadio {
 
                     for(int i = 0; i < maxCount; i++){
                         this->region_popular[i]->setData(this->jsonArr_popular.at(i).toObject());
-                        this->flow_popular->addWidget(this->region_popular[i]);
+                        this->hBox_popular->addWidget(this->region_popular[i]);
                     }
+
+
                 }
                 else{
                     NoData_Widget *noData_widget = new NoData_Widget(NoData_Widget::NoData_Message::Radio_NoData);
@@ -359,10 +351,9 @@ namespace roseRadio {
             this->btnView_all[btnId]->setStyleSheet("QPushButton{background:transparent; color:#CCCCCC; font-size:20px;} QPushButton:hover{color:#B18658;}");
             this->btnView_all[btnId]->setProperty("idx", btnId);
             this->btnView_all[btnId]->setCursor(Qt::PointingHandCursor);
-            this->btnView_all[btnId]->setContentsMargins(0, 0, 0, 0);
             connect(this->btnView_all[btnId], SIGNAL(clicked()), this, SLOT(slot_clickBtn_subTitle_viewAll()));
 
-            tmp_hBox->addWidget(this->btnView_all[btnId], 0, Qt::AlignVCenter | Qt::AlignRight);
+            tmp_hBox->addWidget(this->btnView_all[btnId], 1, Qt::AlignVCenter | Qt::AlignRight);
         }
 
         // Apply Main Layout with spacing

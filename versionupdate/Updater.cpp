@@ -22,7 +22,7 @@
 
 #include <QJsonValue>
 #include <QJsonObject>
-#include <QMessageBox>
+//#include <QMessageBox>//c230315_3
 #include <QApplication>
 #include <QJsonDocument>
 #include <QDesktopServices>
@@ -91,14 +91,25 @@ Updater::Updater()
     emit linker->signal_checkQueue(18, "");
     setUserAgentString(QString("%1/%2 (Qt; QSimpleUpdater)").arg(qApp->applicationName(), qApp->applicationVersion()));
     //qDebug() << "qApp->applicationVersion()=" << qApp->applicationVersion();//cheon210721-update
-    connect(m_downloader, SIGNAL(downloadFinished(QString, QString)), this, SIGNAL(downloadFinished(QString, QString)));
+    connect(m_downloader, SIGNAL(downloadFinished(QString, QString)), this, SLOT(slot_downloadFinished(QString, QString)));//c230410
     connect(m_manager, SIGNAL(finished(QNetworkReply *)), this, SLOT(onReply(QNetworkReply *)));
 }
+
 
 Updater::~Updater()
 {
     delete m_downloader;
 }
+
+
+void  Updater::slot_downloadFinished(QString url, QString filename){//c230410
+    //downloadFinished(m_url, m_downloadDir.filePath(m_fileName));
+    print_debug();
+    qDebug() << "m_url=" << m_url;
+    qDebug() << "filename=" << filename;
+    finishFlag = false;
+}
+
 
 /**
  * Returns the URL of the update definitions file
@@ -107,6 +118,7 @@ QString Updater::url() const
 {
     return m_url;
 }
+
 
 /**
  * Returns the URL that the update definitions file wants us to open in
@@ -120,6 +132,7 @@ QString Updater::openUrl() const
     return m_openUrl;
 }
 
+
 /**
  * Returns the changelog defined by the update definitions file.
  * \warning You should call \c checkForUpdates() before using this function
@@ -130,9 +143,8 @@ QString Updater::changelog() const
         return m_changelog_eng;
     }else
         return m_changelog_kor;
-
-
 }
+
 
 /**
  * Returns the name of the module (if defined)
@@ -141,6 +153,7 @@ QString Updater::moduleName() const
 {
     return m_moduleName;
 }
+
 
 /**
  * Returns the platform key (be it system-set or user-set).
@@ -157,6 +170,7 @@ QString Updater::platformKey() const
     return m_platform;
 }
 
+
 /**
  * Returns the download URL defined by the update definitions file.
  * \warning You should call \c checkForUpdates() before using this function
@@ -165,6 +179,7 @@ QString Updater::downloadUrl() const
 {
     return m_downloadUrl;
 }
+
 
 /**
  * Returns the latest version defined by the update definitions file.
@@ -175,6 +190,7 @@ QString Updater::latestVersion() const
     return m_latestVersion;
 }
 
+
 /**
  * Returns the user-agent header used by the client when communicating
  * with the server through HTTP
@@ -184,6 +200,7 @@ QString Updater::userAgentString() const
     return m_userAgentString;
 }
 
+
 /**
  * Returns the "local" version of the installed module
  */
@@ -191,6 +208,7 @@ QString Updater::moduleVersion() const
 {
     return m_moduleVersion;
 }
+
 
 /**
  * Returns \c true if the updater should NOT interpret the downloaded appcast.
@@ -202,6 +220,7 @@ bool Updater::customAppcast() const
     return m_customAppcast;
 }
 
+
 /**
  * Returns \c true if the updater should notify the user when an update is
  * available.
@@ -210,6 +229,7 @@ bool Updater::notifyOnUpdate() const
 {
     return m_notifyOnUpdate;
 }
+
 
 /**
  * Returns \c true if the updater should notify the user when it finishes
@@ -225,6 +245,7 @@ bool Updater::notifyOnFinish() const
     return m_notifyOnFinish;
 }
 
+
 /**
  * Returns \c true if there the current update is mandatory.
  * \warning You should call \c checkForUpdates() before using this function
@@ -234,6 +255,7 @@ bool Updater::mandatoryUpdate() const
     return m_mandatoryUpdate;
 }
 
+
 /**
  * Returns \c true if there is an update available.
  * \warning You should call \c checkForUpdates() before using this function
@@ -242,6 +264,7 @@ bool Updater::updateAvailable() const
 {
     return m_updateAvailable;
 }
+
 
 /**
  * Returns \c true if the integrated downloader is enabled.
@@ -253,6 +276,7 @@ bool Updater::downloaderEnabled() const
     return m_downloaderEnabled;
 }
 
+
 /**
  * Returns \c true if the updater shall not intervene when the download has
  * finished (you can use the \c QSimpleUpdater signals to know when the
@@ -262,6 +286,8 @@ bool Updater::useCustomInstallProcedures() const
 {
     return m_downloader->useCustomInstallProcedures();
 }
+
+
 void Updater::checkForUpdates_tmp()
 {
     //print_debug();
@@ -293,22 +319,31 @@ void Updater::checkForUpdates_tmp()
     m_updater_tmp->checkForUpdates (DEFS_URL);
     //print_debug();
 }
+
+
 /**
  * Downloads and interpets the update definitions file referenced by the
  * \c url() function.
  */
-void Updater::checkForUpdates()
+void Updater::checkForUpdates()//c230306_1
 {
     print_debug();
     QNetworkRequest request(url());
     qDebug() << " Updater::checkForUpdates--User-Agent: " << userAgentString().toUtf8();
-    if (!userAgentString().isEmpty())
+    if (!userAgentString().isEmpty()){
         request.setRawHeader("User-Agent", userAgentString().toUtf8());
+        m_manager->get(request);
+        print_debug();
+    }else{
+        //m_manager->get(request);
+        emit linker->signal_checkQueue(19, "");
+        print_debug();
+    }
 
     //qDebug() << " Updater::checkForUpdates--User-Agent: " << userAgentString().toUtf8();
-    m_manager->get(request);
-    print_debug();
+
 }
+
 
 /**
  * Changes the \c url in which the \c Updater can find the update definitions
@@ -319,6 +354,7 @@ void Updater::setUrl(const QString &url)
     print_debug();
     m_url = url;
 }
+
 
 /**
  * Changes the module \a name.
@@ -331,6 +367,7 @@ void Updater::setModuleName(const QString &name)
     m_moduleName = name;
 }
 
+
 /**
  * If \a notify is set to \c true, then the \c Updater will notify the user
  * when an update is available.
@@ -342,6 +379,7 @@ void Updater::setNotifyOnUpdate(const bool notify)
     m_notifyOnUpdate = notify;
 }
 
+
 /**
  * If \a notify is set to \c true, then the \c Updater will notify the user
  * when it has finished interpreting the update definitions file.
@@ -352,6 +390,7 @@ void Updater::setNotifyOnFinish(const bool notify)
     qDebug() << "setNotifyOnFinish--notify" << notify;
     m_notifyOnFinish = notify;
 }
+
 
 /**
  * Changes the user agent string used to identify the client application
@@ -366,6 +405,7 @@ void Updater::setUserAgentString(const QString &agent)
     m_downloader->setUserAgentString(agent);
 }
 
+
 /**
  * Changes the module \a version
  * \note The module version is used to compare the local and remote versions.
@@ -379,6 +419,7 @@ void Updater::setModuleVersion(const QString &version)
     m_moduleVersion = version;
 }
 
+
 /**
  * If the \a enabled parameter is set to \c true, the \c Updater will open the
  * integrated downloader if the user agrees to install the update (if any)
@@ -389,6 +430,7 @@ void Updater::setDownloaderEnabled(const bool enabled)
     qDebug() << "Updater::setDownloaderEnabled--m_downloaderEnabled = " << m_downloaderEnabled;
     m_downloaderEnabled = enabled;
 }
+
 
 /**
  * Changes the platform key.
@@ -405,6 +447,7 @@ void Updater::setPlatformKey(const QString &platformKey)
     m_platform = platformKey;
 }
 
+
 /**
  * If the \a customAppcast parameter is set to \c true, then the \c Updater
  * will not try to read the network reply from the server, instead, it will
@@ -417,6 +460,7 @@ void Updater::setUseCustomAppcast(const bool customAppcast)
     m_customAppcast = customAppcast;
 }
 
+
 /**
  * If the \a custom parameter is set to \c true, the \c Updater will not try
  * to open the downloaded file. Use the signals fired by the \c QSimpleUpdater
@@ -428,6 +472,7 @@ void Updater::setUseCustomInstallProcedures(const bool custom)
     m_downloader->setUseCustomInstallProcedures(custom);
 }
 
+
 /**
  * If the \a mandatory_update is set to \c true, the \c Updater has to download and install the
  * update. If the user cancels or exits, the application will close
@@ -438,12 +483,13 @@ void Updater::setMandatoryUpdate(const bool mandatory_update)
     qDebug() << "Updater::Updater::setMandatoryUpdate--m_mandatoryUpdate = " << m_mandatoryUpdate;
     m_mandatoryUpdate = mandatory_update;
 }
+
+
 /**
  * Called when the download of the update definitions file is finished.
  */
 void Updater::onReply(QNetworkReply *reply)
 {
-
     print_debug();
     // ContentLoadingwaitingMsgHide();
     /* Check if we need to redirect */
@@ -514,6 +560,7 @@ void Updater::onReply(QNetworkReply *reply)
     emit checkingFinished(url());
 }
 
+
 /**
  * Prompts the user based on the value of the \a available parameter and the
  * settings of this instance of the \c Updater class.
@@ -537,7 +584,7 @@ void Updater::setUpdateAvailable(const bool available)
     btn_PlayPosition->setStyleSheet("QPushButton {font-size:16px; color:#ececec;  background-color:transparent;  border:2px solid #CCCCCC;border-radius:13px;} QPushButton:hover {background-color: #505050; color: white;} QPushButton:pressed{background-color: #F79862;} QPushButton:checked{background-color: #F79862;border:none;} QToolTip{ color: #404040; }");
 
 
-    QMessageBox box;
+    //QMessageBox box;//c230315_3
     //box.setWindowFlags(Qt::FramelessWindowHint |Qt::WindowStaysOnTopHint);
     box.setWindowFlags(Qt::FramelessWindowHint );
     QPixmap tmp_pixmap(":images/def_mus_60.png");
@@ -550,8 +597,8 @@ void Updater::setUpdateAvailable(const bool available)
     box.setTextFormat(Qt::RichText);
     //box.setIcon(QMessageBox::Information);
 
-    left = global.left_mainwindow+global.width_mainwindow/4;//c221007_1
-    top = global.top_mainwindow+global.height_mainwindow/4;//c221007_1
+    left = (global.left_mainwindow + global.width_mainwindow) / 2;//c221007_1
+    top = (global.top_mainwindow+global.height_mainwindow) / 2;//c221007_1
     box.setGeometry(left, top, 0, 0);//c221007_1
     /*//c221007_1
     left = (latestWidth / 2) - (box.sizeHint().width() / 2);
@@ -593,7 +640,7 @@ void Updater::setUpdateAvailable(const bool available)
 
         QSpacerItem* horizontalSpacer = new QSpacerItem(550, 0, QSizePolicy::Expanding, QSizePolicy::Expanding);
         QGridLayout* layout = (QGridLayout*)box.layout();
-        layout->addWidget(btn_PlayPosition, 5, 2);
+        //layout->addWidget(btn_PlayPosition, 5, 2);
         layout->addItem(horizontalSpacer, layout->rowCount(), 0, 1, layout->columnCount());
 
         foreach (QAbstractButton *button, box.buttons())
@@ -728,6 +775,7 @@ void Updater::slot_DescriptionShow(){
 
 }
 
+
 /**
  * Compares the two version strings (\a x and \a y).
  *     - If \a x is greater than \y, this function returns \c true.
@@ -756,6 +804,8 @@ bool Updater::compare(const QString &x, const QString &y)
 
     return versionsY.count() < versionsX.count();
 }
+
+
 void Updater::ContentLoadingwaitingMsgShow(QString msg, int flag)//cheontidal
 {
     Q_UNUSED(msg);
@@ -802,6 +852,7 @@ void Updater::ContentLoadingwaitingMsgShow(QString msg, int flag)//cheontidal
 */
 
 }
+
 
 void Updater::ContentLoadingwaitingMsgHide()//cheontidal
 {

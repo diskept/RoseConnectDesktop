@@ -40,6 +40,8 @@ namespace roseRadio {
 
     RoseRadioHome::RoseRadioHome(QWidget *parent) : roseHome::AbstractRoseHomeSubWidget(VerticalScroll_filter, parent) {
 
+        global.isDrawingMainContent = false;
+
         this->linker = Linker::getInstance();
         connect(linker, SIGNAL(signal_logined()), SLOT(slot_getMyInfo_loginAfter()));
         connect(linker, SIGNAL(signal_change_device_state(QString)), SLOT(slot_change_device_state(QString)));
@@ -58,6 +60,7 @@ namespace roseRadio {
     void RoseRadioHome::setActivePage(){
 
         if(this->flagNeedReload == false){
+            print_debug();ContentLoadingwaitingMsgShow(tr("Content is being loaded. Please wait."));//c230303
 
             if(global.user.isValid() == true){
 
@@ -71,7 +74,7 @@ namespace roseRadio {
 
                 this->box_rose_contents = new QVBoxLayout();
                 this->box_rose_contents->setSpacing(0);
-                this->box_rose_contents->setContentsMargins(0, 0, 0, 0);
+                this->box_rose_contents->setContentsMargins(0, 10, 0, 0);
                 this->box_rose_contents->setAlignment(Qt::AlignTop);
 
                 this->widget_rose_contents = new QWidget();
@@ -158,7 +161,7 @@ namespace roseRadio {
 
                 if(global.updateCheckFlag){
 
-                    //ContentLoadingwaitingMsgShow(tr("Content is being loaded. Please wait."));              //cheon211114-01//c1223
+                    //print_debug();ContentLoadingwaitingMsgShow(tr("Content is being loaded. Please wait."));              //cheon211114-01//c1223
                     //QTimer::singleShot(10000, this, SLOT(slot_hide_msg()));
 
                     this->widget_rose_contents->hide();
@@ -173,7 +176,7 @@ namespace roseRadio {
 
                     global.enable_message_count = 0;
                     global.enable_message_flag = true;
-                    ContentLoadingwaitingMsgShow(tr("Content is being loaded. Please wait."));              //cheon211114-01//c1223
+                    print_debug();ContentLoadingwaitingMsgShow(tr("Content is being loaded. Please wait."));              //cheon211114-01//c1223
 
                     this->setUIControl_requestRose();
 
@@ -271,9 +274,11 @@ namespace roseRadio {
 
     void RoseRadioHome::setUIControl_requestRose(){
 
+        print_debug();ContentLoadingwaitingMsgShow(tr("Content is being loaded. Please wait."));//c230303
+
         roseHome::ProcCommon *proc_featured = new roseHome::ProcCommon(this);
         connect(proc_featured, &roseHome::ProcCommon::completeReq_list_roseRadio, this, &RoseRadioHome::slot_applyResult_Featured);
-        proc_featured->request_rose_getList_radioChannel(roseHome::ProcCommon::HttpRequestType::GetList_FeaturedChannel, "/recommend?", 0, "POPULAR", 0, 15);
+        proc_featured->request_rose_getList_radioChannel(roseHome::ProcCommon::HttpRequestType::GetList_FeaturedChannel, "/recommend?", 0, "", 0, 15);
 
         roseHome::ProcCommon *proc_recently = new roseHome::ProcCommon(this);
         connect(proc_recently, &roseHome::ProcCommon::completeReq_list_roseRadio, this, &RoseRadioHome::slot_applyResult_Recently);
@@ -290,6 +295,8 @@ namespace roseRadio {
         roseHome::ProcCommon *proc_local = new roseHome::ProcCommon(this);
         connect(proc_local, &roseHome::ProcCommon::completeReq_list_roseRadio, this, &RoseRadioHome::slot_applyResult_Local);
         proc_local->request_rose_getList_radioChannel(roseHome::ProcCommon::HttpRequestType::GetList_Item_Local, "/channel?", 0, "", 0, 15);
+
+        print_debug();ContentLoadingwaitingMsgHide();//c230322_3
     }
 
 
@@ -297,6 +304,8 @@ namespace roseRadio {
 
         if(this->flag_featured[0] == true && this->flag_recently[0] == true && this->flag_favorite[0] == true
                 && flag_popular[0] == true && flag_local[0] == true){
+
+            print_debug();ContentLoadingwaitingMsgShow(tr("Content is being loaded. Please wait."));//c230303
 
             if(this->flag_featured[0] == true){
 
@@ -589,6 +598,8 @@ namespace roseRadio {
             }
 
             this->slot_hide_msg();
+            global.isDrawingMainContent = true;
+            print_debug();ContentLoadingwaitingMsgHide();//c230322_3
         }
     }
 
@@ -798,18 +809,20 @@ namespace roseRadio {
 
     void RoseRadioHome::slot_hide_msg(){
 
-        ContentLoadingwaitingMsgHide();
+        //ContentLoadingwaitingMsgHide();
 
         if(global.enable_message_flag == true){
             global.enable_message_flag = false;
             global.enable_message_count = 0;
         }
+
+        if(global.enable_section_left == true){
+            global.enable_section_left = false;
+        }
     }
 
 
     void RoseRadioHome::slot_time_out(){
-
-        ContentLoadingwaitingMsgHide();
 
         if(global.enable_message_flag == true){
             global.enable_message_flag = false;
@@ -840,6 +853,12 @@ namespace roseRadio {
             this->widget_login_contents->show();
             this->stackedWidget_Contents->setCurrentIndex(1);
         }
+
+        if(global.enable_section_left == true){
+            global.enable_section_left = false;
+        }
+
+        ContentLoadingwaitingMsgHide();
     }
 
 

@@ -20,6 +20,8 @@ namespace bugs {
 
         void setData(const bugs::VideoItemData &p_data_video);
         int get_fixedHeight() override;
+        int get_fixedWidth();
+        int get_rightMargin();
 
     private:
         void setUIControl();

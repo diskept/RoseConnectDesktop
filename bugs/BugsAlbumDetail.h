@@ -28,7 +28,6 @@ namespace bugs {
         void setActivePage() override;
 
     protected slots:
-
         // ArtistImageDetailInfo의 signal 처리를 위해
         void slot_detailInfo_btnClicked(const AbstractImageDetailContents_RHV::BtnClickMode) override;
 
@@ -54,6 +53,7 @@ namespace bugs {
         void changedOnlyTabUI_notSendSignal(QString p_step);
 
         void slot_applyResult_albumInfo(bugs::AlbumItemData data_album);
+        void slot_add_rosePlaylist_withBugs(const int&, const QJsonObject&);
         void slot_applyResult_getShareLink(const QString &link);//c220818
 
         void slot_applyResult_checkRating_album(const QJsonObject&);
@@ -64,9 +64,13 @@ namespace bugs {
         void slot_applyResult_getRating_track(const QJsonArray&);
         void slot_applyResult_addRating_track(const QJsonObject&);
 
+        void slot_bugs_completeReq_listAll_myFavoritesIds(const QJsonObject&);
+
         void slot_clickBtn_subTitle_viewAll();
 
     private:
+        Linker *linker;
+
         AbstractImageDetailContents_RHV *album_detail_info;
         AlbumTrackDetailInfo_RHV *album_tracks[9999];
 

@@ -2,7 +2,13 @@
 #define BUGSMYCOLLECTION_H
 
 #include "bugs/AbstractBugsSubWidget.h"
-#include "delegate/BugsTrackDelegate.h"
+
+#include "bugs/ItemTrackSqure_bugs.h"
+#include "bugs/ItemMyAlbum_bugs.h"
+#include "bugs/BugsSettings.h"
+
+#include "widget/AbstractPlaylistTrackDetailInfo_RHV.h"
+
 #include <QWidget>
 namespace bugs {
 
@@ -14,57 +20,105 @@ namespace bugs {
         Q_OBJECT
     public:
         explicit BugsMyCollection(QWidget *parent = nullptr);
+        ~BugsMyCollection();
 
-        void applyLoginSuccessState() override;
-
-
-    protected:
-        void setUIControl_logined() override;
-        void proc_preUpdate_favorite_track(const ItemPositionData&) override;
-
+        void setJsonObject_forData(const QJsonObject& jsonObj) override;
+        void setActivePage() override;
 
     protected slots:
-        // about 서브 타이틀의 버튼
-        void slot_clickBtn_subTitle_side(const int) override;
-
-        void slot_applyResult_tracks(const QList<bugs::TrackItemData>&, const QJsonArray&, const bool) override;
+        void slot_applyResult_trackLike(const QList<bugs::TrackItemData>&, const QJsonArray&, const bool);
+        void slot_applyResult_trackRecently(const QList<bugs::TrackItemData>&, const QJsonArray&, const bool);
+        void slot_applyResult_trackMost(const QList<bugs::TrackItemData>&, const QJsonArray&, const bool);
         void slot_applyResult_my_albums(const QList<bugs::MyAlbumItemData>&, const bool) override;
 
         void slot_clickedItemTrackSqure(const tidal::AbstractItem::ClickMode) override;
-        void slot_clickedItemTrack_inList(const int, const tidal::AbstractTidalTrackDelegate::ClickMode) override;
-        void slot_thumbnailDownloaded_fotListWidget_delegate() override;
-
+        void slot_clickedItemTrack_inList(const int idx, const PlaylistTrackDetailInfo_RHV::ClickMode clickMode) override;
         void slot_clickedItemMyAlbum(const tidal::AbstractItem::ClickMode) override;
 
         // about OptMorePopup
         void slot_optMorePopup_menuClicked(const OptMorePopup::ClickMode, const int, const int) override;
 
+    private slots:
+        void slot_applyResult_getShareLink(const QString &link);
+
+        void slot_clickBtn_subTitle_viewAll();
+
+        void slot_applyResult_checkRating_track(const QJsonObject&);
+        void slot_applyResult_getRating_track(const QJsonArray&);
+        void slot_applyResult_addRating_track(const QJsonObject&);
+
+        void slot_bugs_completeReq_listAll_myFavoritesIds(const QJsonObject&);
+
 
     private:
-        // 좋아한 음악
-        bool flagReq_like = false;
-        QHBoxLayout *hBox_like;
-        QList<bugs::TrackItemData> *list_track_like;
-        QJsonArray jsonArr_tracks_toPlay_like;
+        void setUIControl_requestBugs();
 
-        // 최근 들은 곡
-        bool flagReq_recently = false;
-        BugsTrackDelegate *delegate_recently;
-        QListWidget *listWidget_track_recently;
-        QList<bugs::TrackItemData> *list_track_recently;
-        QJsonArray jsonArr_tracks_toPlay_recently;
+        void setUIControl_appendWidget();
 
-        // 많이 들은 곡
-        bool flagReq_most = false;
-        BugsTrackDelegate *delegate_most;
-        QListWidget *listWidget_track_most;
-        QList<bugs::TrackItemData> *list_track_most;
-        QJsonArray jsonArr_tracks_toPlay_most;
+        QWidget* setUIControl_subTitle_withSideBtn(const QString subTitle, const QString btnText, const int btnId, QLayout *p_layout);
+        QHBoxLayout* setUIControl_hBoxLayout_forAlbum(QLayout *p_layout);
+        QHBoxLayout* setUIControl_hBoxLayout_forPlaylist(QLayout *p_layout);
+    private:
+        Linker *linker;//cheon211008
 
-        // 내 앨범
-        bool flagReq_my_album = false;
-        FlowLayout *flowLayout_album_my;
-        QList<bugs::MyAlbumItemData> *list_album_my;
+        // 관리 필요한 Layout UI
+        bugs::BugsSettings *bugsSettings;
+
+        QString page = "";
+
+        QLabel *lb_subTitle[20];
+        QPushButton *btnView_all[20];
+
+        QWidget *widget_login_contents;
+
+        //===============================================================================
+
+        bugs::ItemTrackSqure_bugs *myCollection_track_like[15];
+        PlaylistTrackDetailInfo_RHV *myCollection_track_recently[5];
+        PlaylistTrackDetailInfo_RHV *myCollection_track_most[5];
+        bugs::ItemMyAlbum_bugs *myCollection_album_myAlbum[15];
+
+        QVBoxLayout *box_main_contents;
+        QWidget *widget_main_contents;
+
+        QWidget *widget_trackLike;
+        QWidget *widget_trackRecently;
+        QWidget *widget_trackMost;
+        QWidget *widget_albumMyalbum;
+
+        QVBoxLayout *vBox_trackLike;
+        QVBoxLayout *vBox_trackRecently;
+        QVBoxLayout *vBox_trackMost;
+        QVBoxLayout *vBox_albumMyalbum;
+
+        QHBoxLayout *hBox_trackLike;
+        QHBoxLayout *hBox_trackRecently;
+        QHBoxLayout *hBox_trackMost;
+        QHBoxLayout *hBox_albumMyalbum;
+
+        QJsonArray jsonArr_trackLike_toPlay;
+        QJsonArray jsonArr_trackRecently_toPlay;
+        QJsonArray jsonArr_trackMost_toPlay;
+
+
+        QList<bugs::TrackItemData> *list_trackLike;
+        QList<bugs::TrackItemData> *list_trackRecently;
+        QList<bugs::TrackItemData> *list_trackMost;
+        QList<bugs::MyAlbumItemData> *list_albumMyalbum;
+
+        bool flag_trackLike[2] = {false, false};
+        bool flag_trackRecently[2] = {false, false};
+        bool flag_trackMost[2] = {false, false};
+        bool flag_albumMyalbum[2] = {false, false};
+
+        bool flag_check_track = false;
+        bool flag_track_fav = false;
+        bool flag_send_track = false;
+
+        int track_id_fav = 0;
+        int track_idx_fav = 0;
+        int track_star_fav = 0;
+
 
     };
 

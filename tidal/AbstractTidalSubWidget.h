@@ -25,7 +25,7 @@
 
 #include "bugs/BugsChooseFilterOpt.h"       // for filtering
 
-#include "qobuz/Dialog_ChoosePlaylist_forQobuz.h"   //for filtering... Added Jeon 16/12/2020
+#include "qobuz/Dialog_ChoosePlaylist_forQobuz.h"   //for filtering... Added diskept 16/12/2020
 
 #include <QJsonArray>
 #include <QStackedWidget>
@@ -79,7 +79,7 @@ namespace tidal {
 
         // AbstractImageDetailInfo 관련 - 타이달 전용 (Album 상세, Playlist 상세)
         virtual void slot_detailInfo_btnClicked(const AbstractImageDetailInfo::BtnClickMode){ }
-        virtual void slot_detailInfo_btnClicked(const AbstractImageDetailContents_RHV::BtnClickMode){ }             //Added Jeon 02/17/2022
+        virtual void slot_detailInfo_btnClicked(const AbstractImageDetailContents_RHV::BtnClickMode){ }             //Added diskept 02/17/2022
 
         // ListWidget 관련 - 타이달 전용
         virtual void slot_clickedItemTrack_inList(const int, const tidal::AbstractTidalTrackDelegate::ClickMode){ }
@@ -146,7 +146,8 @@ namespace tidal {
         void proc_clicked_itemTrack_inList(tidal::TrackItemData& data_track, const QJsonArray& jsonArray_toPlayAll, const PlaylistTrackDetailInfo_RHV::ClickMode clickMode, const int index, const int section);
         void proc_clicked_itemTrack_inList(QList<tidal::TrackItemData>* list_track, const QJsonArray& jsonArray_toPlayAll, const PlaylistTrackDetailInfo_RHV::ClickMode clickMode, const int index, const int section);
 
-
+        void proc_clicked_itemHistory(roseHome::HistoryItemData& data_history, const tidal::AbstractItem::ClickMode clickMode, const int index, const int section);
+        void proc_clicked_itemHistory(QList<roseHome::HistoryItemData>* list_history, const tidal::AbstractItem::ClickMode clickMode, const int index, const int section);
 
 
         // My created playlist 처리에 대해서 UI갱신 처리

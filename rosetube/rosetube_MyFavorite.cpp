@@ -13,7 +13,7 @@
 #include "widget/toastmsg.h"
 #include "widget/VerticalScrollArea.h"
 
-#include <QScroller>
+#include <QScrollBar>
 #include <QPixmapCache>
 
 
@@ -81,6 +81,17 @@ namespace rosetube {
             this->flagNeedReload = true;
 
             this->page = pageCode;
+
+            this->list_favoriteTrack->clear();
+            this->list_favoriteAlbum->clear();
+            this->list_favoritePlaylist->clear();
+
+            this->flag_draw_track = false;
+            this->flag_draw_album = false;
+            this->flag_draw_playlist = false;
+        }
+        else{
+            print_debug();ContentLoadingwaitingMsgHide();   //j230328
         }
     }
 
@@ -179,6 +190,10 @@ namespace rosetube {
         this->lb_order->setAlignment(Qt::AlignCenter);
 
 
+        GSCommon::clearLayout(this->box_contents);
+        this->box_contents->setAlignment(Qt::AlignTop);
+        this->scrollArea_main->setVerticalScrollBarPolicy(Qt::ScrollBarAsNeeded);
+
         this->box_favorite_track = new QVBoxLayout();
         this->box_favorite_track->setContentsMargins(5, 0, 5, 0);
         this->box_favorite_track->setSpacing(0);
@@ -219,9 +234,6 @@ namespace rosetube {
 
         this->box_contents->addLayout(this->box_main_contents);
         this->box_contents->addSpacing(30);
-
-        this->scrollArea_main->setVerticalScrollBarPolicy(Qt::ScrollBarAsNeeded);
-
 
         // 커넥션
         connect(this->btn_step_track, SIGNAL(clicked()), this, SLOT(slot_changedSubTabUI()));
@@ -433,7 +445,7 @@ namespace rosetube {
 
                     if(this->stackedWidget_body->isVisible() == false){
                         if(this->list_favoriteTrack->count() > 0){
-                            int height = this->list_favoriteTrack->count() * 70;
+                            int height = this->track_drawCount * 70;
                             this->stackedWidget_body->setFixedHeight(height);
                         }
                         else{
@@ -476,7 +488,7 @@ namespace rosetube {
 
                     if(this->stackedWidget_body->isVisible() == false){
                         if(this->list_favoriteTrack->count() > 0){
-                            int height = this->list_favoriteTrack->count() * 70;
+                            int height = this->track_drawCount * 70;
                             this->stackedWidget_body->setFixedHeight(height);
                         }
                         else{
@@ -572,10 +584,10 @@ namespace rosetube {
                         if(this->album_totalCount > 0){
                             int height = 0;
                             if((this->album_totalCount % 7) == 0){
-                                height = (this->album_totalCount / 7) * 289 + 20;
+                                height = (this->album_drawCount / 7) * 289 + 20;
                             }
                             else{
-                                height = ((this->album_totalCount / 7) + 1) * 289 + 20;
+                                height = ((this->album_drawCount / 7) + 1) * 289 + 20;
                             }
                             this->stackedWidget_body->setFixedHeight(height);
                         }
@@ -672,10 +684,10 @@ namespace rosetube {
                         if(this->playlist_totalCount > 0){
                             int height = 0;
                             if((this->playlist_totalCount % 7) == 0){
-                                height = (this->playlist_totalCount / 7) * 321 + 20;
+                                height = (this->playlist_drawCount / 7) * 321 + 20;
                             }
                             else{
-                                height = ((this->playlist_totalCount / 7) + 1) * 321 + 20;
+                                height = ((this->playlist_drawCount / 7) + 1) * 321 + 20;
                             }
                             this->stackedWidget_body->setFixedHeight(height);
                         }
@@ -728,8 +740,6 @@ namespace rosetube {
                 roseHome::ProcCommon *proc = new roseHome::ProcCommon(this);
                 connect(proc, &roseHome::ProcCommon::completeReq_list_tracks, this, &RoseTubeFavorite::slot_applyResult_favoriteTracks);
                 proc->request_rose_getList_favoriteTracks(orderType, "YOUTUBE", this->track_next_offset, 20);
-
-                ContentLoadingwaitingMsgShow(tr("Content is being loaded. Please wait."));
             }
         }
         else if(type == STEP_ALBUM){
@@ -765,7 +775,7 @@ namespace rosetube {
                 connect(proc, &roseHome::ProcCommon::completeReq_list_albums, this, &RoseTubeFavorite::slot_applyResult_favoriteAlbums);
                 proc->request_rose_getList_favoriteAlbums(orderType, "YOUTUBE", this->track_next_offset, 20);
 
-                ContentLoadingwaitingMsgShow(tr("Content is being loaded. Please wait."));
+                print_debug();ContentLoadingwaitingMsgShow(tr("Content is being loaded. Please wait."));
             }
         }
         else if(type == STEP_PLAYLIST){
@@ -801,8 +811,140 @@ namespace rosetube {
                 connect(proc, &roseHome::ProcCommon::completeReq_list_playlists, this, &RoseTubeFavorite::slot_applyResult_favoritePlaylists);
                 proc->request_rose_getList_favoritePlaylists(orderType, "YOUTUBE", this->track_next_offset, 20);
 
-                ContentLoadingwaitingMsgShow(tr("Content is being loaded. Please wait."));
+                print_debug();ContentLoadingwaitingMsgShow(tr("Content is being loaded. Please wait."));
             }
+        }
+    }
+
+
+    void RoseTubeFavorite::request_more_Draw(QString type){
+
+        if(type == STEP_TRACK){
+            int start_index = this->track_drawCount;
+            int max_cnt = ((this->track_totalCount - this->track_drawCount) > 20 ) ? 20 : (this->track_totalCount - this->track_drawCount);
+            this->track_drawCount += max_cnt;
+
+            if(this->stackedWidget_body->isVisible() == false){
+                int height = this->track_drawCount * 70;
+                this->stackedWidget_body->setFixedHeight(height);
+
+                this->stackedWidget_body->setCurrentIndex(0);
+                this->stackedWidget_body->show();
+            }
+            else{
+                int height = this->track_drawCount * 70;
+                this->stackedWidget_body->setFixedHeight(height);
+            }
+
+            for(int i = start_index; i < this->track_drawCount; i++){
+                this->favorite_track[i] = new PlaylistTrackDetailInfo_RHV();
+                connect(this->favorite_track[i], &PlaylistTrackDetailInfo_RHV::clicked, this, &RoseTubeFavorite::slot_clickedItemTrack_inList);
+                this->favorite_track[i]->setProperty("index", i);
+
+                this->box_favorite_track->addWidget(this->favorite_track[i]);
+            }
+
+            for(int i = start_index; i < this->track_drawCount; i++){
+                this->favorite_track[i]->setDataTrackInfo_Rose(this->list_favoriteTrack->at(i));
+                this->favorite_track[i]->setFavoritesIds(this->list_favoriteTrack->at(i).favorite, this->list_favoriteTrack->at(i).star);
+
+                QCoreApplication::processEvents();
+            }
+
+            ContentLoadingwaitingMsgHide();
+            this->flag_draw_track = false;
+        }
+        else if(type == STEP_ALBUM){
+            int start_index = this->album_drawCount;
+            int max_cnt = ((this->album_totalCount - this->album_drawCount) > 20 ) ? 20 : (this->album_totalCount - this->album_drawCount);
+            this->album_drawCount += max_cnt;
+
+            for(int i = start_index; i < max_cnt; i++){
+                this->favorite_album[i] = new roseHome::ItemAlbum_rosehome(i, SECTION_FOR_MORE_POPUP___FavoriteALBUM, tidal::AbstractItem::ImageSizeMode::Square_200x200, true);
+                connect(this->favorite_album[i], &roseHome::ItemAlbum_rosehome::signal_clicked, this, &RoseTubeFavorite::slot_clickedItemAlbum);
+            }
+
+            for(int i = start_index; i < max_cnt; i++){
+                this->favorite_album[i]->setData(this->list_favoriteAlbum->at(i));
+                this->flowLayout_favorite_album->addWidget(this->favorite_album[i]);
+
+                QCoreApplication::processEvents();
+            }
+
+            if(this->stackedWidget_body->isVisible() == false){
+
+                int height = 0;
+                if((this->album_totalCount % 7) == 0){
+                    height = (this->album_drawCount / 7) * 289 + 20;
+                }
+                else{
+                    height = ((this->album_drawCount / 7) + 1) * 289 + 20;
+                }
+                this->stackedWidget_body->setFixedHeight(height);
+
+                this->stackedWidget_body->setCurrentIndex(1);
+                this->stackedWidget_body->show();
+            }
+            else{
+
+                int height = 0;
+                if((this->album_totalCount % 7) == 0){
+                    height = (this->album_drawCount / 7) * 289 + 20;
+                }
+                else{
+                    height = ((this->album_drawCount / 7) + 1) * 289 + 20;
+                }
+                this->stackedWidget_body->setFixedHeight(height);
+            }
+
+            ContentLoadingwaitingMsgHide();
+            this->flag_draw_album = false;
+        }
+        else if(type == STEP_PLAYLIST){
+            int start_index = this->playlist_drawCount;
+            int max_cnt = ((this->playlist_totalCount - this->playlist_drawCount) > 20 ) ? 20 : (this->playlist_totalCount - this->playlist_drawCount);
+            this->playlist_drawCount += max_cnt;
+
+            for(int i = start_index; i < max_cnt; i++){
+                this->favorite_playlist[i] = new roseHome::ItemPlaylist_rosehome(i, SECTION_FOR_MORE_POPUP___FavoritePLAYLIST, tidal::AbstractItem::ImageSizeMode::Square_200x200, 1, true);
+                connect(this->favorite_playlist[i], &roseHome::ItemAlbum_rosehome::signal_clicked, this, &RoseTubeFavorite::slot_clickedItemPlaylist);
+            }
+
+            for(int i = start_index; i < max_cnt; i++){
+                this->favorite_playlist[i]->setData(this->list_favoritePlaylist->at(i));
+                this->flowLayout_favorite_playlist->addWidget(this->favorite_playlist[i]);
+
+                QCoreApplication::processEvents();
+            }
+
+            if(this->stackedWidget_body->isVisible() == false){
+
+                int height = 0;
+                if((this->playlist_totalCount % 7) == 0){
+                    height = (this->playlist_drawCount / 7) * 321 + 20;
+                }
+                else{
+                    height = ((this->playlist_drawCount / 7) + 1) * 321 + 20;
+                }
+                this->stackedWidget_body->setFixedHeight(height);
+
+                this->stackedWidget_body->setCurrentIndex(2);
+                this->stackedWidget_body->show();
+            }
+            else{
+
+                int height = 0;
+                if((this->playlist_totalCount % 7) == 0){
+                    height = (this->playlist_totalCount / 7) * 321 + 20;
+                }
+                else{
+                    height = ((this->playlist_totalCount / 7) + 1) * 321 + 20;
+                }
+                this->stackedWidget_body->setFixedHeight(height);
+            }
+
+            ContentLoadingwaitingMsgHide();
+            this->flag_draw_playlist = false;
         }
     }
 
@@ -819,20 +961,26 @@ namespace rosetube {
 
     void RoseTubeFavorite::proc_wheelEvent_to_getMoreData(){
 
-        if(this->contentStep == STEP_TRACK && (!this->flag_lastPage_track && !this->flagReqMore_track) && (this->flag_draw_track == false)){
+        if(this->contentStep == STEP_TRACK && (this->track_totalCount > this->track_drawCount) && (this->flag_draw_track == false)
+                && (this->scrollArea_main->verticalScrollBar()->value() == this->scrollArea_main->verticalScrollBar()->maximum())){
             this->flag_draw_track = true;
 
-            this->request_more_Data(STEP_TRACK);
+            print_debug();ContentLoadingwaitingMsgShow(tr("Content is being loaded. Please wait."));
+            this->request_more_Draw(STEP_TRACK);
         }
-        else if(this->contentStep == STEP_ALBUM && (!this->flag_lastPage_album && !this->flagReqMore_album) && (this->flag_draw_album == false)){
+        else if(this->contentStep == STEP_ALBUM && (this->album_totalCount > this->album_drawCount) && (this->flag_draw_album == false)
+                && (this->scrollArea_main->verticalScrollBar()->value() == this->scrollArea_main->verticalScrollBar()->maximum())){
             this->flag_draw_album = true;
 
-            this->request_more_Data(STEP_ALBUM);
+            print_debug();ContentLoadingwaitingMsgShow(tr("Content is being loaded. Please wait."));
+            this->request_more_Draw(STEP_ALBUM);
         }
-        else if(this->contentStep == STEP_PLAYLIST && (!this->flag_lastPage_playlist && !this->flagReqMore_playlist) && (this->flag_draw_playlist == false)){
+        else if(this->contentStep == STEP_PLAYLIST && (this->playlist_totalCount > this->playlist_drawCount) && (this->flag_draw_playlist == false)
+                && (this->scrollArea_main->verticalScrollBar()->value() == this->scrollArea_main->verticalScrollBar()->maximum())){
             this->flag_draw_playlist = true;
 
-            this->request_more_Data(STEP_PLAYLIST);
+            print_debug();ContentLoadingwaitingMsgShow(tr("Content is being loaded. Please wait."));
+            this->request_more_Draw(STEP_PLAYLIST);
         }
     }
 
@@ -964,39 +1112,43 @@ namespace rosetube {
             this->list_favoriteTrack->append(list_data);
             ProcJsonEasy::mergeJsonArray(this->jsonArr_tracks_toPlay, jsonArr_dataToPlay);
 
-            if(this->stackedWidget_body->isVisible() == false){
-                int height = this->list_favoriteTrack->count() * 70;
-                this->stackedWidget_body->setFixedHeight(height);
+            if(start_index == 0){
 
-                this->stackedWidget_body->setCurrentIndex(0);
-                this->stackedWidget_body->show();
-            }
-            else{
-                int height = this->list_favoriteTrack->count() * 70;
-                this->stackedWidget_body->setFixedHeight(height);
-            }
+                int max_cnt = this->list_favoriteTrack->size();
+                this->track_drawCount = max_cnt;
 
-            int max_cnt = this->list_favoriteTrack->size();
+                if(this->stackedWidget_body->isVisible() == false){
+                    int height = this->track_drawCount * 70;
+                    this->stackedWidget_body->setFixedHeight(height);
 
-            for(int i = start_index; i < max_cnt; i++){
-                this->favorite_track[i] = new PlaylistTrackDetailInfo_RHV();
-                connect(this->favorite_track[i], &PlaylistTrackDetailInfo_RHV::clicked, this, &RoseTubeFavorite::slot_clickedItemTrack_inList);
-                this->favorite_track[i]->setProperty("index", i);
+                    this->stackedWidget_body->setCurrentIndex(0);
+                    this->stackedWidget_body->show();
+                }
+                else{
+                    int height = this->track_drawCount * 70;
+                    this->stackedWidget_body->setFixedHeight(height);
+                }
 
-                this->box_favorite_track->addWidget(this->favorite_track[i]);
-            }
+                for(int i = start_index; i < max_cnt; i++){
+                    this->favorite_track[i] = new PlaylistTrackDetailInfo_RHV();
+                    connect(this->favorite_track[i], &PlaylistTrackDetailInfo_RHV::clicked, this, &RoseTubeFavorite::slot_clickedItemTrack_inList);
+                    this->favorite_track[i]->setProperty("index", i);
 
-            for(int i = start_index; i < max_cnt; i++){
-                this->favorite_track[i]->setDataTrackInfo_Rose(this->list_favoriteTrack->at(i));
-                this->favorite_track[i]->setFavoritesIds(this->list_favoriteTrack->at(i).favorite, this->list_favoriteTrack->at(i).star);
+                    this->box_favorite_track->addWidget(this->favorite_track[i]);
+                }
 
-                QCoreApplication::processEvents();
+                for(int i = start_index; i < max_cnt; i++){
+                    this->favorite_track[i]->setDataTrackInfo_Rose(this->list_favoriteTrack->at(i));
+                    this->favorite_track[i]->setFavoritesIds(this->list_favoriteTrack->at(i).favorite, this->list_favoriteTrack->at(i).star);
+
+                    QCoreApplication::processEvents();
+                }
             }
 
             ContentLoadingwaitingMsgHide();
 
-            if(this->flag_lastPage_track == false && this->track_totalCount > this->list_favoriteTrack->size()){
-                this->flag_draw_track = false;
+            if(this->track_totalCount > this->list_favoriteTrack->size()){
+                this->request_more_Data(STEP_TRACK);
             }
         }
         else{
@@ -1036,50 +1188,53 @@ namespace rosetube {
             this->list_favoriteAlbum->append(list_data);
 
             int max_cnt = this->list_favoriteAlbum->size();
+            this->album_drawCount = max_cnt;
 
-            for(int i = start_index; i < max_cnt; i++){
-                this->favorite_album[i] = new roseHome::ItemAlbum_rosehome(i, SECTION_FOR_MORE_POPUP___FavoriteALBUM, tidal::AbstractItem::ImageSizeMode::Square_200x200, true);
-                connect(this->favorite_album[i], &roseHome::ItemAlbum_rosehome::signal_clicked, this, &RoseTubeFavorite::slot_clickedItemAlbum);
-            }
+            if(start_index == 0){
+                for(int i = start_index; i < max_cnt; i++){
+                    this->favorite_album[i] = new roseHome::ItemAlbum_rosehome(i, SECTION_FOR_MORE_POPUP___FavoriteALBUM, tidal::AbstractItem::ImageSizeMode::Square_200x200, true);
+                    connect(this->favorite_album[i], &roseHome::ItemAlbum_rosehome::signal_clicked, this, &RoseTubeFavorite::slot_clickedItemAlbum);
+                }
 
-            for(int i = start_index; i < max_cnt; i++){
-                this->favorite_album[i]->setData(this->list_favoriteAlbum->at(i));
-                this->flowLayout_favorite_album->addWidget(this->favorite_album[i]);
+                for(int i = start_index; i < max_cnt; i++){
+                    this->favorite_album[i]->setData(this->list_favoriteAlbum->at(i));
+                    this->flowLayout_favorite_album->addWidget(this->favorite_album[i]);
 
-                QCoreApplication::processEvents();
-            }
+                    QCoreApplication::processEvents();
+                }
 
-            if(this->stackedWidget_body->isVisible() == false){
+                if(this->stackedWidget_body->isVisible() == false){
 
-                int height = 0;
-                if((this->album_totalCount % 7) == 0){
-                    height = (this->album_totalCount / 7) * 289 + 20;
+                    int height = 0;
+                    if((this->album_totalCount % 7) == 0){
+                        height = (this->album_drawCount / 7) * 289 + 20;
+                    }
+                    else{
+                        height = ((this->album_drawCount / 7) + 1) * 289 + 20;
+                    }
+                    this->stackedWidget_body->setFixedHeight(height);
+
+                    this->stackedWidget_body->setCurrentIndex(1);
+                    this->stackedWidget_body->show();
                 }
                 else{
-                    height = ((this->album_totalCount / 7) + 1) * 289 + 20;
-                }
-                this->stackedWidget_body->setFixedHeight(height);
 
-                this->stackedWidget_body->setCurrentIndex(1);
-                this->stackedWidget_body->show();
-            }
-            else{
-
-                int height = 0;
-                if((this->album_totalCount % 7) == 0){
-                    height = (this->album_totalCount / 7) * 289 + 20;
+                    int height = 0;
+                    if((this->album_totalCount % 7) == 0){
+                        height = (this->album_totalCount / 7) * 289 + 20;
+                    }
+                    else{
+                        height = ((this->album_totalCount / 7) + 1) * 289 + 20;
+                    }
+                    this->stackedWidget_body->setFixedHeight(height);
                 }
-                else{
-                    height = ((this->album_totalCount / 7) + 1) * 289 + 20;
-                }
-                this->stackedWidget_body->setFixedHeight(height);
-            }
-
-            if(this->flag_lastPage_album == false && this->album_totalCount > this->list_favoriteAlbum->size()){
-                this->flag_draw_album = false;
             }
 
             ContentLoadingwaitingMsgHide();
+
+            if(this->album_totalCount > this->list_favoriteAlbum->size()){
+                this->request_more_Data(STEP_ALBUM);
+            }
         }
         else{
             ContentLoadingwaitingMsgHide();
@@ -1118,50 +1273,53 @@ namespace rosetube {
             this->list_favoritePlaylist->append(list_data);
 
             int max_cnt = this->list_favoritePlaylist->size();
+            this->playlist_drawCount = max_cnt;
 
-            for(int i = start_index; i < max_cnt; i++){
-                this->favorite_playlist[i] = new roseHome::ItemPlaylist_rosehome(i, SECTION_FOR_MORE_POPUP___FavoritePLAYLIST, tidal::AbstractItem::ImageSizeMode::Square_200x200, 1, true);
-                connect(this->favorite_playlist[i], &roseHome::ItemAlbum_rosehome::signal_clicked, this, &RoseTubeFavorite::slot_clickedItemPlaylist);
-            }
+            if(start_index == 0){
+                for(int i = start_index; i < max_cnt; i++){
+                    this->favorite_playlist[i] = new roseHome::ItemPlaylist_rosehome(i, SECTION_FOR_MORE_POPUP___FavoritePLAYLIST, tidal::AbstractItem::ImageSizeMode::Square_200x200, 1, true);
+                    connect(this->favorite_playlist[i], &roseHome::ItemAlbum_rosehome::signal_clicked, this, &RoseTubeFavorite::slot_clickedItemPlaylist);
+                }
 
-            for(int i = start_index; i < max_cnt; i++){
-                this->favorite_playlist[i]->setData(this->list_favoritePlaylist->at(i));
-                this->flowLayout_favorite_playlist->addWidget(this->favorite_playlist[i]);
+                for(int i = start_index; i < max_cnt; i++){
+                    this->favorite_playlist[i]->setData(this->list_favoritePlaylist->at(i));
+                    this->flowLayout_favorite_playlist->addWidget(this->favorite_playlist[i]);
 
-                QCoreApplication::processEvents();
-            }
+                    QCoreApplication::processEvents();
+                }
 
-            if(this->stackedWidget_body->isVisible() == false){
+                if(this->stackedWidget_body->isVisible() == false){
 
-                int height = 0;
-                if((this->playlist_totalCount % 7) == 0){
-                    height = (this->playlist_totalCount / 7) * 321 + 20;
+                    int height = 0;
+                    if((this->playlist_totalCount % 7) == 0){
+                        height = (this->playlist_drawCount / 7) * 321 + 20;
+                    }
+                    else{
+                        height = ((this->playlist_drawCount / 7) + 1) * 321 + 20;
+                    }
+                    this->stackedWidget_body->setFixedHeight(height);
+
+                    this->stackedWidget_body->setCurrentIndex(2);
+                    this->stackedWidget_body->show();
                 }
                 else{
-                    height = ((this->playlist_totalCount / 7) + 1) * 321 + 20;
-                }
-                this->stackedWidget_body->setFixedHeight(height);
 
-                this->stackedWidget_body->setCurrentIndex(2);
-                this->stackedWidget_body->show();
-            }
-            else{
-
-                int height = 0;
-                if((this->playlist_totalCount % 7) == 0){
-                    height = (this->playlist_totalCount / 7) * 321 + 20;
+                    int height = 0;
+                    if((this->playlist_totalCount % 7) == 0){
+                        height = (this->playlist_totalCount / 7) * 321 + 20;
+                    }
+                    else{
+                        height = ((this->playlist_totalCount / 7) + 1) * 321 + 20;
+                    }
+                    this->stackedWidget_body->setFixedHeight(height);
                 }
-                else{
-                    height = ((this->playlist_totalCount / 7) + 1) * 321 + 20;
-                }
-                this->stackedWidget_body->setFixedHeight(height);
-            }
-
-            if(this->flag_lastPage_playlist == false && this->playlist_totalCount > this->list_favoritePlaylist->size()){
-                this->flag_draw_playlist = false;
             }
 
             ContentLoadingwaitingMsgHide();
+
+            if(this->playlist_totalCount > this->list_favoritePlaylist->size()){
+                this->request_more_Data(STEP_PLAYLIST);
+            }
         }
         else{
             ContentLoadingwaitingMsgHide();

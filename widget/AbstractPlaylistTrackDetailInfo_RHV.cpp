@@ -62,10 +62,22 @@ void PlaylistTrackDetailInfo_RHV::setUIControl_basic(){
     this->label_track_type->hide();
 
     this->label_rank = new QLabel(this->widget_info_main);
-    this->label_rank->setStyleSheet("background-color:transparent;color:#FFFFFF;font-size:18px;font-weight:300;");
-    this->label_rank->setGeometry(72, 25, 60, 20);
+    this->label_rank->setStyleSheet("background-color:transparent;color:#FFFFFF;font-size:18px;font-weight:bold;");
     this->label_rank->setAlignment(Qt::AlignCenter);
     this->label_rank->hide();
+
+    this->label_rank_ico = new QLabel(this->widget_info_main);
+    this->label_rank_ico->setAlignment(Qt::AlignCenter);
+    this->label_rank_ico->hide();
+
+    this->label_rank_value = new QLabel(this->widget_info_main);
+    this->label_rank_value->setAlignment(Qt::AlignCenter);
+    this->label_rank_value->hide();
+
+    this->label_adult_certification = new QLabel(this->widget_info_main);
+    this->label_adult_certification->setGeometry(120, 15, 30, 30);
+    this->label_adult_certification->setStyleSheet("background-color:transparent;");
+    this->label_adult_certification->hide();
 
     this->label_title = new QLabel(this->widget_info_main);
     this->label_title->setStyleSheet("background-color:transparent;color:#FFFFFF;font-size:16px;font-weight:normal;");
@@ -281,6 +293,10 @@ void PlaylistTrackDetailInfo_RHV::setDataTrackInfo_Music(const QJsonObject &json
 
     if(title_width > 720){
         this->label_title->setText(GSCommon::getTextCutFromLabelWidth(title, 680, this->label_title->font()));
+        if(this->label_title->text().contains("…")){
+            this->label_title->setToolTip(title);//c230321
+            this->label_title->setToolTipDuration(2000);//c230321
+        }
         this->label_title->setGeometry(80, 10, 720, 25);
     }
     else{
@@ -312,9 +328,13 @@ void PlaylistTrackDetailInfo_RHV::setDataTrackInfo_Music(const QJsonObject &json
     int artist_width = 0;
     artist_width = tmp_artist->sizeHint().width();
 
-    if(artist_width > 580){
-        this->label_artist->setText(GSCommon::getTextCutFromLabelWidth(artist, 580, this->label_title->font()));
-        this->label_artist->setGeometry(80, 34, 580, 25);
+    if(artist_width > 680){
+        this->label_artist->setText(GSCommon::getTextCutFromLabelWidth(artist, 680, this->label_title->font()));
+        if(this->label_artist->text().contains("…")){
+            this->label_artist->setToolTip(artist);//c230321
+            this->label_artist->setToolTipDuration(2000);//c230321
+        }
+        this->label_artist->setGeometry(80, 34, 680, 25);
     }
     else{
         this->label_artist->setText(artist);
@@ -363,6 +383,10 @@ void PlaylistTrackDetailInfo_RHV::setDataTrackInfo_Music(const QJsonObject &json
         album_title_width = tmp_album_title->sizeHint().width() + 220;
 
         this->label_album->setText(GSCommon::getTextCutFromLabelWidth(album, album_title_width, this->label_album->font()));
+        if(this->label_album->text().contains("…")){
+            this->label_album->setToolTip(album);//c230321
+            this->label_album->setToolTipDuration(2000);//c230321
+        }
         this->label_album->setGeometry(937, 14, 220, 40);
     }
     else{
@@ -379,14 +403,12 @@ void PlaylistTrackDetailInfo_RHV::setDataTrackInfo_Music(const QJsonObject &json
 }
 
 
-
 void PlaylistTrackDetailInfo_RHV::setDataTrackInfo_Tidal(const tidal::TrackItemData &data_track){
-
-
-
 
     QList<tidal::TrackItemData> *list_track = new QList<tidal::TrackItemData>();
     list_track->append(data_track);
+
+    this->label_adult_certification->hide();
 
     this->playlist_type = "TIDAL";
 
@@ -411,15 +433,7 @@ void PlaylistTrackDetailInfo_RHV::setDataTrackInfo_Tidal(const tidal::TrackItemD
     int title_width = 0;
     title_width = tmp_title->sizeHint().width();
 
-    if(title_width > 720){
-        this->label_title->setText(GSCommon::getTextCutFromLabelWidth(title_total, 720, this->label_title->font()));
-        this->label_title->setGeometry(80, 10, 720, 25);
-    }
-    else{
-        this->label_title->setText(title_total);
-        this->label_title->setGeometry(80, 10, title_width, 25);
-    }
-
+    QString mqa_path = ":/images/tidal/mqa_ico.png";
 
     QString artist = list_track->at(0).list_artist_name.join(",");
     QLabel *tmp_artist = new QLabel();
@@ -429,27 +443,152 @@ void PlaylistTrackDetailInfo_RHV::setDataTrackInfo_Tidal(const tidal::TrackItemD
     int artist_width = 0;
     artist_width = tmp_artist->sizeHint().width();
 
-    if(artist_width > 580){
-        this->label_artist->setText(GSCommon::getTextCutFromLabelWidth(artist, 580, this->label_title->font()));
-        this->label_artist->setGeometry(80, 34, 580, 25);
+    if(list_track->at(0).adult_certification == true){
+        QString adult_certification_path = "";
+        if(global.lang == 0){
+            adult_certification_path = ":/images/tidal/tidal-e-ico.png";
+        }
+        else{
+            adult_certification_path = ":/images/bugs/ico-19.png";
+        }
+        QImage img;
+        QPixmap *img_adult_certification = new QPixmap();
+        if(img.load(adult_certification_path)){
+            *img_adult_certification = QPixmap::fromImage(img);
+            *img_adult_certification = img_adult_certification->scaled(30, 30, Qt::KeepAspectRatio, Qt::SmoothTransformation);
+        }
+        this->label_adult_certification->setPixmap(*img_adult_certification);
+        this->label_adult_certification->setFixedSize(30, 30);
+
+        this->label_adult_certification->setGeometry(85, 20, 0, 0);
+        this->label_adult_certification->show();
+
+        if(list_track->at(0).audioQuality == "HI_RES"){
+            title_width += (15 + 36);
+
+            int title_width_resize = 0;
+            if(title_width > 680){
+                title_width_resize = 680 - (15 + 36);
+                this->label_title->setText(GSCommon::getTextCutFromLabelWidth(title_total, title_width_resize, this->label_title->font()));
+                if(this->label_title->text().contains("…")){
+                    this->label_title->setToolTip(title_total);//c230321
+                    this->label_title->setToolTipDuration(2000);//c230321
+                }
+                this->label_title->setGeometry(135, 10, title_width_resize, 25);
+            }
+            else{
+                title_width_resize = title_width - (15 + 36);
+                this->label_title->setText(title_total);
+                this->label_title->setGeometry(135, 10, title_width_resize, 25);
+            }
+
+            QImage img;
+            QPixmap *img_hires = new QPixmap();
+            if(img.load(mqa_path)){
+                *img_hires = QPixmap::fromImage(img);                                        //이미지를 버퍼에 옮긴다.
+                *img_hires = img_hires->scaled(36, 13, Qt::KeepAspectRatio, Qt::SmoothTransformation);                //이미지 사이즈 조절
+            }
+
+            this->label_track_hires->setPixmap(*img_hires);
+            this->label_track_hires->setFixedSize(36, 13);
+
+            int left = this->label_title->geometry().left() + this->label_title->geometry().width() + 15;
+
+            this->label_track_hires->setGeometry(left, 18, 0, 0);
+            this->label_track_hires->show();
+        }
+        else{
+            if(title_width > 680){
+                this->label_title->setText(GSCommon::getTextCutFromLabelWidth(title_total, 680, this->label_title->font()));
+                if(this->label_title->text().contains("…")){
+                    this->label_title->setToolTip(title_total);//c230321
+                    this->label_title->setToolTipDuration(2000);//c230321
+                }
+                this->label_title->setGeometry(135, 10, 680, 25);
+            }
+            else{
+                this->label_title->setText(title_total);
+                this->label_title->setGeometry(135, 10, title_width, 25);
+            }
+        }
+
+        if(artist_width > 680){
+            this->label_artist->setText(GSCommon::getTextCutFromLabelWidth(artist, 680, this->label_title->font()));
+            if(this->label_artist->text().contains("…")){
+                this->label_artist->setToolTip(artist);//c230321
+                this->label_artist->setToolTipDuration(2000);//c230321
+            }
+            this->label_artist->setGeometry(135, 34, 680, 25);
+        }
+        else{
+            this->label_artist->setText(artist);
+            this->label_artist->setGeometry(135, 34, artist_width, 25);
+        }
     }
     else{
-        this->label_artist->setText(artist);
-        this->label_artist->setGeometry(80, 34, artist_width, 25);
+        if(list_track->at(0).audioQuality == "HI_RES"){
+            title_width += (15 + 36);
+
+            int title_width_resize = 0;
+            if(title_width > 720){
+                title_width_resize = 720 - (15 + 36);
+                this->label_title->setText(GSCommon::getTextCutFromLabelWidth(title_total, title_width_resize, this->label_title->font()));
+                if(this->label_title->text().contains("…")){
+                    this->label_title->setToolTip(title_total);//c230321
+                    this->label_title->setToolTipDuration(2000);//c230321
+                }
+                this->label_title->setGeometry(85, 10, title_width_resize, 25);
+            }
+            else{
+                title_width_resize = title_width - (15 + 36);
+                this->label_title->setText(title_total);
+                this->label_title->setGeometry(85, 10, title_width_resize, 25);
+            }
+
+            QImage img;
+            QPixmap *img_hires = new QPixmap();
+            if(img.load(mqa_path)){
+                *img_hires = QPixmap::fromImage(img);                                        //이미지를 버퍼에 옮긴다.
+                *img_hires = img_hires->scaled(36, 13, Qt::KeepAspectRatio, Qt::SmoothTransformation);                //이미지 사이즈 조절
+            }
+
+            this->label_track_hires->setPixmap(*img_hires);
+            this->label_track_hires->setFixedSize(36, 13);
+
+            int left = this->label_title->geometry().left() + this->label_title->geometry().width() + 15;
+
+            this->label_track_hires->setGeometry(left, 18, 0, 0);
+            this->label_track_hires->show();
+        }
+        else{
+            if(title_width > 720){
+                this->label_title->setText(GSCommon::getTextCutFromLabelWidth(title_total, 720, this->label_title->font()));
+                if(this->label_title->text().contains("…")){
+                    this->label_title->setToolTip(title_total);//c230321
+                    this->label_title->setToolTipDuration(2000);//c230321
+                }
+                this->label_title->setGeometry(85, 10, 720, 25);
+            }
+            else{
+                this->label_title->setText(title_total);
+                this->label_title->setGeometry(85, 10, title_width, 25);
+            }
+        }
+
+        if(artist_width > 680){
+            this->label_artist->setText(GSCommon::getTextCutFromLabelWidth(artist, 680, this->label_title->font()));
+            if(this->label_artist->text().contains("…")){
+                this->label_artist->setToolTip(artist);//c230321
+                this->label_artist->setToolTipDuration(2000);//c230321
+            }
+            this->label_artist->setGeometry(85, 34, 680, 25);
+        }
+        else{
+            this->label_artist->setText(artist);
+            this->label_artist->setGeometry(85, 34, artist_width, 25);
+        }
     }
 
-    QString mqa_path = ":/images/tidal/mqa_ico.png";
-    if(list_track->at(0).audioQuality == "HI_RES"){
-
-        QPixmap *img_mqa = GSCommon::getUIPixmapImg(mqa_path);
-        this->label_track_hires->setPixmap(*img_mqa);
-        this->label_track_hires->setFixedSize(36, 13);
-
-        int left = this->label_title->geometry().left() + this->label_title->geometry().width() + 15;
-
-        this->label_track_hires->setGeometry(left, 18, 0, 0);
-        this->label_track_hires->show();
-    }
 
     /*if(!list_track->at(0).quality.isEmpty()){
         this->label_track_resolution->setText(QString("%1").arg(list_track->at(0).audioQuality));
@@ -510,6 +649,10 @@ void PlaylistTrackDetailInfo_RHV::setDataTrackInfo_Tidal(const tidal::TrackItemD
         album_title_width = tmp_album_title->sizeHint().width() + 220;
 
         this->label_album->setText(GSCommon::getTextCutFromLabelWidth(list_track->at(0).albumName, album_title_width, this->label_album->font()));
+        if(this->label_album->text().contains("…")){
+            this->label_album->setToolTip(list_track->at(0).albumName);//c230321
+            this->label_album->setToolTipDuration(2000);//c230321
+        }
         this->label_album->setGeometry(937, 14, 220, 40);
     }
     else{
@@ -522,6 +665,16 @@ void PlaylistTrackDetailInfo_RHV::setDataTrackInfo_Tidal(const tidal::TrackItemD
     }
     else{
         this->label_duration->setText(QDateTime::fromTime_t(data_track.duration).toUTC().toString("mm:ss"));
+    }
+
+    if(list_track->at(0).streamReady == false){
+        this->label_title->setStyleSheet("background-color:transparent;color:#666666;font-size:16px;font-weight:normal;");
+        this->label_artist->setStyleSheet("background-color:transparent;color:#666666;font-size:16px;font-weight:300;");
+        this->label_track_resolution->setStyleSheet("background-color:transparent;color:#666666;font-size:12px;font-weight:300;border:1px solid #666666;border-radius:8px;");
+        this->label_album->setStyleSheet("background-color:transparent;color:#666666;font-size:14px;font-weight:300;");
+        this->label_duration->setStyleSheet("background-color:transparent;color:#666666;font-size:14px;font-weight:300;");
+
+        this->setEnabled(false);
     }
 }
 
@@ -546,60 +699,237 @@ void PlaylistTrackDetailInfo_RHV::setDataTrackInfo_Bugs(const bugs::TrackItemDat
     }
 
     if(type == "Chart"){
+        this->label_rank->hide();
+        this->label_rank_ico->hide();
+        this->label_rank_value->hide();
+
+        QImage img_up;
+        QPixmap *img_ranking_up = new QPixmap();
+        if(img_up.load(":/images/bugs/ranking_ico1.png")){
+            *img_ranking_up = QPixmap::fromImage(img_up);
+            *img_ranking_up = img_ranking_up->scaled(10, 10, Qt::KeepAspectRatio, Qt::SmoothTransformation);
+        }
+
+        QImage img_down;
+        QPixmap *img_ranking_down = new QPixmap();
+        if(img_down.load(":/images/bugs/ranking_ico2.png")){
+            *img_ranking_down = QPixmap::fromImage(img_down);
+            *img_ranking_down = img_ranking_down->scaled(10, 10, Qt::KeepAspectRatio, Qt::SmoothTransformation);
+        }
+
+        QImage img_same;
+        QPixmap *img_ranking_same = new QPixmap();
+        if(img_same.load(":/images/bugs/ranking_ico3.png")){
+            *img_ranking_same = QPixmap::fromImage(img_same);
+            *img_ranking_same = img_ranking_same->scaled(10, 10, Qt::KeepAspectRatio, Qt::SmoothTransformation);
+        }
+
         this->label_rank->setText(QString("%1").number(this->property("index").toInt() + 1));
+        this->label_rank->setGeometry(72, 10, 60, 20);
         this->label_rank->show();
+
+
+        if(list_track->at(0).rank_code == "UP"){
+            this->label_rank_ico->setPixmap(*img_ranking_up);
+            this->label_rank_ico->setGeometry(91, 45, 10, 10);
+            this->label_rank_ico->show();
+
+            this->label_rank_value->setText(list_track->at(0).rank_code_value);
+            this->label_rank_value->setGeometry(103, 41, 14, 20);
+            this->label_rank_value->setStyleSheet("background-color:transparent;color:#FF0000;font-size:14px;font-weight:300;line-height: 2.68;");
+            this->label_rank_value->show();
+
+        }
+        else if(list_track->at(0).rank_code == "DOWN"){
+            this->label_rank_ico->setPixmap(*img_ranking_down);
+            this->label_rank_ico->setGeometry(91, 46, 10, 10);
+            this->label_rank_ico->setStyleSheet("color:#ACACAC;");
+            this->label_rank_ico->show();
+
+            this->label_rank_value->setText(list_track->at(0).rank_code_value);
+            this->label_rank_value->setGeometry(103, 41, 14, 20);
+            this->label_rank_value->setStyleSheet("background-color:transparent;color:#ACACAC;font-size:14px;font-weight:300;line-height: 2.68;");
+            this->label_rank_value->show();
+        }
+        else{
+            this->label_rank_ico->setPixmap(*img_ranking_same);
+            this->label_rank_ico->setGeometry(97, 45, 10, 10);
+            this->label_rank_ico->setStyleSheet("color:#ACACAC;");
+            this->label_rank_ico->show();
+
+            this->label_rank_value->hide();
+        }
+
+        this->label_adult_certification->hide();
 
         QString title_total = list_track->at(0).track_title;
 
         QLabel *tmp_title = new QLabel();
         tmp_title->setStyleSheet("background-color:transparent;color:#FFFFFF;font-size:16px;font-weight:normal;");
+
         tmp_title->setText(title_total);
 
         int title_width = 0;
         title_width = tmp_title->sizeHint().width();
 
-        if(title_width > 680){
-            this->label_title->setText(GSCommon::getTextCutFromLabelWidth(title_total, 680, this->label_title->font()));
-            this->label_title->setGeometry(140, 10, 680, 25);
-        }
-        else{
-            this->label_title->setText(title_total);
-            this->label_title->setGeometry(140, 10, title_width, 25);
-        }
-
-        if(!list_track->at(0).bitrates.isEmpty()){
-            this->label_track_resolution->setText(QString("%1").arg(list_track->at(0).bitrates));
-            this->label_track_resolution->setAlignment(Qt::AlignCenter);
-
-            int width = this->label_track_resolution->sizeHint().width() + 20;
-            int left = 0;
-            if(title_width < 680){
-                left = this->label_title->geometry().left() + title_width + 15;
-            }
-            else{
-                left = this->label_title->geometry().left() + this->label_title->geometry().width() + 15;
-            }
-
-            this->label_track_resolution->setGeometry(left, 15, width, 16);
-            this->label_track_resolution->show();
-        }
-
         QString artist = list_track->at(0).list_artist_nm.join(",");
 
-        QLabel *tmp_artist = new QLabel();
-        tmp_artist->setStyleSheet("background-color:transparent;color:#999999;font-size:16px;font-weight:300;");
-        tmp_artist->setText(artist);
+        if(list_track->at(0).adult_yn == true){
+            QString adult_yn_path = "";
+            if(global.lang == 0){
+                adult_yn_path = ":/images/tidal/tidal-e-ico.png";
+            }
+            else{
+                adult_yn_path = ":/images/bugs/ico-19.png";
+            }
+            QImage img;
+            QPixmap *img_adult_yn = new QPixmap();
+            if(img.load(adult_yn_path)){
+                *img_adult_yn = QPixmap::fromImage(img);
+                *img_adult_yn = img_adult_yn->scaled(30, 30, Qt::KeepAspectRatio, Qt::SmoothTransformation);
+            }
+            this->label_adult_certification->setPixmap(*img_adult_yn);
+            this->label_adult_certification->setFixedSize(30, 30);
 
-        int artist_width = 0;
-        artist_width = tmp_artist->sizeHint().width();
+            this->label_adult_certification->setGeometry(135 , 20, 0, 0);
+            this->label_adult_certification->show();
 
-        if(artist_width > 520){
-            this->label_artist->setText(GSCommon::getTextCutFromLabelWidth(artist, 520, this->label_title->font()));
-            this->label_artist->setGeometry(140, 34, 520, 25);
+            if(!list_track->at(0).bitrates.isEmpty()){
+
+                this->label_track_resolution->setText(QString("%1").arg(list_track->at(0).bitrates));
+                this->label_track_resolution->setAlignment(Qt::AlignCenter);
+
+                int width = this->label_track_resolution->sizeHint().width() + 20;
+                int left = 0;
+
+                title_width += (width + 15);
+
+                int title_width_resize = 0;
+                if(title_width > 630){
+                    title_width_resize = 630 - (width + 15);
+                    this->label_title->setText(GSCommon::getTextCutFromLabelWidth(title_total, title_width_resize, this->label_title->font()));
+                    if(this->label_title->text().contains("…")){
+                        this->label_title->setToolTip(title_total);//c230321
+                        this->label_title->setToolTipDuration(2000);//c230321
+                    }
+                    this->label_title->setGeometry(190, 10, title_width_resize, 25);
+
+                    left = this->label_title->geometry().left() + title_width + 15;
+                }
+                else{
+                    title_width_resize = title_width - (width + 15);
+                    this->label_title->setText(title_total);
+                    this->label_title->setGeometry(190, 10, title_width_resize, 25);
+
+                    left = this->label_title->geometry().left() + this->label_title->geometry().width() + 15;
+                }
+
+                this->label_track_resolution->setGeometry(left, 15, width, 16);
+                this->label_track_resolution->show();
+            }
+            else{
+                if(title_width > 630){
+                    this->label_title->setText(GSCommon::getTextCutFromLabelWidth(title_total, 630, this->label_title->font()));
+                    if(this->label_title->text().contains("…")){
+                        this->label_title->setToolTip(title_total);//c230321
+                        this->label_title->setToolTipDuration(2000);//c230321
+                    }
+                    this->label_title->setGeometry(140, 10, 630, 25);
+                }
+                else{
+                    this->label_title->setText(title_total);
+                    this->label_title->setGeometry(140, 10, title_width, 25);
+                }
+            }
+
+            QLabel *tmp_artist = new QLabel();
+            tmp_artist->setStyleSheet("background-color:transparent;color:#999999;font-size:16px;font-weight:300;");
+            tmp_artist->setText(artist);
+
+            int artist_width = 0;
+            artist_width = tmp_artist->sizeHint().width();
+
+            if(artist_width > 520){
+                this->label_artist->setText(GSCommon::getTextCutFromLabelWidth(artist, 520, this->label_title->font()));
+                if(this->label_artist->text().contains("…")){
+                    this->label_artist->setToolTip(artist);//c230321
+                    this->label_artist->setToolTipDuration(2000);//c230321
+                }
+                this->label_artist->setGeometry(190, 34, 520, 25);
+            }
+            else{
+                this->label_artist->setText(artist);
+                this->label_artist->setGeometry(190, 34, artist_width, 25);
+            }
         }
         else{
-            this->label_artist->setText(artist);
-            this->label_artist->setGeometry(140, 34, artist_width, 25);
+            if(!list_track->at(0).bitrates.isEmpty()){
+
+                this->label_track_resolution->setText(QString("%1").arg(list_track->at(0).bitrates));
+                this->label_track_resolution->setAlignment(Qt::AlignCenter);
+
+                int width = this->label_track_resolution->sizeHint().width() + 20;
+                int left = 0;
+
+                title_width += (width + 15);
+
+                int title_width_resize = 0;
+                if(title_width > 680){
+                    title_width_resize = 680 - (width + 15);
+                    this->label_title->setText(GSCommon::getTextCutFromLabelWidth(title_total, title_width_resize, this->label_title->font()));
+                    if(this->label_title->text().contains("…")){
+                        this->label_title->setToolTip(title_total);//c230321
+                        this->label_title->setToolTipDuration(2000);//c230321
+                    }
+                    this->label_title->setGeometry(140, 10, title_width_resize, 25);
+
+                    left = this->label_title->geometry().left() + title_width_resize + 15;
+                }
+                else{
+                    title_width_resize = title_width - (width + 15);
+                    this->label_title->setText(title_total);
+                    this->label_title->setGeometry(140, 10, title_width_resize, 25);
+
+                    left = this->label_title->geometry().left() + this->label_title->geometry().width() + 15;
+                }
+
+                this->label_track_resolution->setGeometry(left, 15, width, 16);
+                this->label_track_resolution->show();
+            }
+            else{
+                if(title_width > 680){
+                    this->label_title->setText(GSCommon::getTextCutFromLabelWidth(title_total, 680, this->label_title->font()));
+                    if(this->label_title->text().contains("…")){
+                        this->label_title->setToolTip(title_total);//c230321
+                        this->label_title->setToolTipDuration(2000);//c230321
+                    }
+                    this->label_title->setGeometry(140, 10, 680, 25);
+                }
+                else{
+                    this->label_title->setText(title_total);
+                    this->label_title->setGeometry(140, 10, title_width, 25);
+                }
+            }
+
+            QLabel *tmp_artist = new QLabel();
+            tmp_artist->setStyleSheet("background-color:transparent;color:#999999;font-size:16px;font-weight:300;");
+            tmp_artist->setText(artist);
+
+            int artist_width = 0;
+            artist_width = tmp_artist->sizeHint().width();
+
+            if(artist_width > 520){
+                this->label_artist->setText(GSCommon::getTextCutFromLabelWidth(artist, 520, this->label_title->font()));
+                if(this->label_artist->text().contains("…")){
+                    this->label_artist->setToolTip(artist);//c230321
+                    this->label_artist->setToolTipDuration(2000);//c230321
+                }
+                this->label_artist->setGeometry(140, 34, 520, 25);
+            }
+            else{
+                this->label_artist->setText(artist);
+                this->label_artist->setGeometry(140, 34, artist_width, 25);
+            }
         }
 
         QLabel *tmp_album_title = new QLabel();
@@ -644,6 +974,10 @@ void PlaylistTrackDetailInfo_RHV::setDataTrackInfo_Bugs(const bugs::TrackItemDat
             album_title_width = tmp_album_title->sizeHint().width() + 220;
 
             this->label_album->setText(GSCommon::getTextCutFromLabelWidth(list_track->at(0).album_title, album_title_width, this->label_album->font()));
+            if(this->label_album->text().contains("…")){
+                this->label_album->setToolTip(list_track->at(0).album_title);//c230321
+                this->label_album->setToolTipDuration(2000);//c230321
+            }
             this->label_album->setGeometry(937, 14, 220, 40);
         }
         else{
@@ -677,6 +1011,9 @@ void PlaylistTrackDetailInfo_RHV::setDataTrackInfo_Bugs(const bugs::TrackItemDat
         }
     }
     else{
+
+        this->label_adult_certification->hide();
+
         QString title_total = list_track->at(0).track_title;
 
         QLabel *tmp_title = new QLabel();
@@ -685,32 +1022,6 @@ void PlaylistTrackDetailInfo_RHV::setDataTrackInfo_Bugs(const bugs::TrackItemDat
 
         int title_width = 0;
         title_width = tmp_title->sizeHint().width();
-
-        if(title_width > 720){
-            this->label_title->setText(GSCommon::getTextCutFromLabelWidth(title_total, 720, this->label_title->font()));
-            this->label_title->setGeometry(80, 10, 720, 25);
-        }
-        else{
-            this->label_title->setText(title_total);
-            this->label_title->setGeometry(80, 10, title_width, 25);
-        }
-
-        if(!list_track->at(0).bitrates.isEmpty()){
-            this->label_track_resolution->setText(QString("%1").arg(list_track->at(0).bitrates));
-            this->label_track_resolution->setAlignment(Qt::AlignCenter);
-
-            int width = this->label_track_resolution->sizeHint().width() + 20;
-            int left = 0;
-            if(title_width < 720){
-                left = this->label_title->geometry().left() + title_width + 15;
-            }
-            else{
-                left = this->label_title->geometry().left() + this->label_title->geometry().width() + 15;
-            }
-
-            this->label_track_resolution->setGeometry(left, 15, width, 16);
-            this->label_track_resolution->show();
-        }
 
         QString artist = list_track->at(0).list_artist_nm.join(",");
 
@@ -721,13 +1032,173 @@ void PlaylistTrackDetailInfo_RHV::setDataTrackInfo_Bugs(const bugs::TrackItemDat
         int artist_width = 0;
         artist_width = tmp_artist->sizeHint().width();
 
-        if(artist_width > 580){
-            this->label_artist->setText(GSCommon::getTextCutFromLabelWidth(artist, 580, this->label_title->font()));
-            this->label_artist->setGeometry(80, 34, 580, 25);
+        if(list_track->at(0).adult_yn == true){
+            QString adult_yn_path = "";
+            if(global.lang == 0){
+                adult_yn_path = ":/images/tidal/tidal-e-ico.png";
+            }
+            else{
+                adult_yn_path = ":/images/bugs/ico-19.png";
+            }
+            QImage img;
+            QPixmap *img_parental_warning = new QPixmap();
+            if(img.load(adult_yn_path)){
+                *img_parental_warning = QPixmap::fromImage(img);
+                *img_parental_warning = img_parental_warning->scaled(30, 30, Qt::KeepAspectRatio, Qt::SmoothTransformation);
+            }
+            this->label_adult_certification->setPixmap(*img_parental_warning);
+            this->label_adult_certification->setFixedSize(30, 30);
+
+            this->label_adult_certification->setGeometry(85, 20, 0, 0);
+            this->label_adult_certification->show();
+
+            if(!list_track->at(0).bitrates.isEmpty()){
+                this->label_track_resolution->setText(QString("%1").arg(list_track->at(0).bitrates));
+                this->label_track_resolution->setAlignment(Qt::AlignCenter);
+
+                int width = this->label_track_resolution->sizeHint().width() + 20;
+                int left = 0;
+
+                title_width += (width + 15);
+
+                int title_width_resize = 0;
+                if(title_width > 680){
+                    title_width_resize = 680 - (width + 15);
+                    this->label_title->setText(GSCommon::getTextCutFromLabelWidth(title_total, title_width_resize, this->label_title->font()));
+                    if(this->label_title->text().contains("…")){
+                        this->label_title->setToolTip(title_total);
+                        this->label_title->setToolTipDuration(2000);
+                    }
+                    this->label_title->setGeometry(135, 10, title_width_resize, 25);
+                }
+                else{
+                    title_width_resize = title_width - (width + 15);
+                    this->label_title->setText(title_total);
+                    this->label_title->setGeometry(135, 10, title_width_resize, 25);
+                }
+
+                if(artist_width > 680){
+                    this->label_artist->setText(GSCommon::getTextCutFromLabelWidth(artist, 680, this->label_title->font()));
+                    if(this->label_artist->text().contains("…")){
+                        this->label_artist->setToolTip(artist);
+                        this->label_artist->setToolTipDuration(2000);
+                    }
+                    this->label_artist->setGeometry(135, 34, 680, 25);
+                }
+                else{
+                    this->label_artist->setText(artist);
+                    this->label_artist->setGeometry(135, 34, artist_width, 25);
+                }
+
+                if(title_width > 680){
+                    left = this->label_title->geometry().left() + title_width + 15;
+                }
+                else{
+                    left = this->label_title->geometry().left() + this->label_title->geometry().width() + 15;
+                }
+
+                this->label_track_resolution->setGeometry(left, 15, width, 16);
+                this->label_track_resolution->show();
+            }
+            else{
+                if(title_width > 680){
+                    this->label_title->setText(GSCommon::getTextCutFromLabelWidth(title_total, 680, this->label_title->font()));
+                    if(this->label_title->text().contains("…")){
+                        this->label_title->setToolTip(title_total);
+                        this->label_title->setToolTipDuration(2000);
+                    }
+                    this->label_title->setGeometry(135, 10, 680, 25);
+                }
+                else{
+                    this->label_title->setText(title_total);
+                    this->label_title->setGeometry(135, 10, title_width, 25);
+                }
+
+                if(artist_width > 680){
+                    this->label_artist->setText(GSCommon::getTextCutFromLabelWidth(artist, 680, this->label_title->font()));
+                    if(this->label_artist->text().contains("…")){
+                        this->label_artist->setToolTip(artist);
+                        this->label_artist->setToolTipDuration(2000);
+                    }
+                    this->label_artist->setGeometry(135, 34, 680, 25);
+                }
+                else{
+                    this->label_artist->setText(artist);
+                    this->label_artist->setGeometry(135, 34, artist_width, 25);
+                }
+            }
         }
         else{
-            this->label_artist->setText(artist);
-            this->label_artist->setGeometry(80, 34, artist_width, 25);
+            if(!list_track->at(0).bitrates.isEmpty()){
+                this->label_track_resolution->setText(QString("%1").arg(list_track->at(0).bitrates));
+                this->label_track_resolution->setAlignment(Qt::AlignCenter);
+
+                int width = this->label_track_resolution->sizeHint().width() + 20;
+                int left = 0;
+
+                title_width += (width + 15);
+
+                int title_width_resize = 0;
+                if(title_width > 720){
+                    title_width_resize = 720 - (width + 15);
+                    this->label_title->setText(GSCommon::getTextCutFromLabelWidth(title_total, title_width_resize, this->label_title->font()));
+                    if(this->label_title->text().contains("…")){
+                        this->label_title->setToolTip(title_total);
+                        this->label_title->setToolTipDuration(2000);
+                    }
+                    this->label_title->setGeometry(85, 10, title_width_resize, 25);
+                }
+                else{
+                    title_width_resize = title_width - (width + 15);
+                    this->label_title->setText(title_total);
+                    this->label_title->setGeometry(85, 10, title_width_resize, 25);
+                }
+
+                if(artist_width > 680){
+                    this->label_artist->setText(GSCommon::getTextCutFromLabelWidth(artist, 680, this->label_title->font()));
+                    if(this->label_artist->text().contains("…")){
+                        this->label_artist->setToolTip(artist);
+                        this->label_artist->setToolTipDuration(2000);
+                    }
+                    this->label_artist->setGeometry(85, 34, 680, 25);
+                }
+                else{
+                    this->label_artist->setText(artist);
+                    this->label_artist->setGeometry(85, 34, artist_width, 25);
+                }
+
+                left = this->label_title->geometry().left() + this->label_title->geometry().width() + 15;
+
+                this->label_track_resolution->setGeometry(left, 15, width, 16);
+                this->label_track_resolution->show();
+            }
+            else{
+                if(title_width > 720){
+                    this->label_title->setText(GSCommon::getTextCutFromLabelWidth(title_total, 720, this->label_title->font()));
+                    if(this->label_title->text().contains("…")){
+                        this->label_title->setToolTip(title_total);
+                        this->label_title->setToolTipDuration(2000);
+                    }
+                    this->label_title->setGeometry(85, 10, 720, 25);
+                }
+                else{
+                    this->label_title->setText(title_total);
+                    this->label_title->setGeometry(85, 10, title_width, 25);
+                }
+
+                if(artist_width > 680){
+                    this->label_artist->setText(GSCommon::getTextCutFromLabelWidth(artist, 680, this->label_title->font()));
+                    if(this->label_artist->text().contains("…")){
+                        this->label_artist->setToolTip(artist);
+                        this->label_artist->setToolTipDuration(2000);
+                    }
+                    this->label_artist->setGeometry(85, 34, 680, 25);
+                }
+                else{
+                    this->label_artist->setText(artist);
+                    this->label_artist->setGeometry(85, 34, artist_width, 25);
+                }
+            }
         }
 
         QLabel *tmp_album_title = new QLabel();
@@ -772,6 +1243,10 @@ void PlaylistTrackDetailInfo_RHV::setDataTrackInfo_Bugs(const bugs::TrackItemDat
             album_title_width = tmp_album_title->sizeHint().width() + 220;
 
             this->label_album->setText(GSCommon::getTextCutFromLabelWidth(list_track->at(0).album_title, album_title_width, this->label_album->font()));
+            if(this->label_album->text().contains("…")){
+                this->label_album->setToolTip(list_track->at(0).album_title);
+                this->label_album->setToolTipDuration(2000);
+            }
             this->label_album->setGeometry(937, 14, 220, 40);
         }
         else{
@@ -805,6 +1280,16 @@ void PlaylistTrackDetailInfo_RHV::setDataTrackInfo_Bugs(const bugs::TrackItemDat
             }
         }
     }
+
+    if(list_track->at(0).service_yn == false){
+        this->label_title->setStyleSheet("background-color:transparent;color:#666666;font-size:16px;font-weight:normal;");
+        this->label_artist->setStyleSheet("background-color:transparent;color:#666666;font-size:16px;font-weight:300;");
+        this->label_track_resolution->setStyleSheet("background-color:transparent;color:#666666;font-size:12px;font-weight:300;border:1px solid #666666;border-radius:8px;");
+        this->label_album->setStyleSheet("background-color:transparent;color:#666666;font-size:14px;font-weight:300;");
+        this->label_duration->setStyleSheet("background-color:transparent;color:#666666;font-size:14px;font-weight:300;");
+
+        this->setEnabled(false);
+    }
 }
 
 
@@ -834,22 +1319,14 @@ void PlaylistTrackDetailInfo_RHV::setDataTrackInfo_Qobuz(const qobuz::TrackItemD
 
     title_total = title_work + list_track->at(0).title + title_version;
 
+    QString hires_path = ":/images/qobuz/hires_ico.png";
+
     QLabel *tmp_title = new QLabel();
     tmp_title->setStyleSheet("background-color:transparent;color:#FFFFFF;font-size:16px;font-weight:normal;");
     tmp_title->setText(title_total);
 
     int title_width = 0;
     title_width = tmp_title->sizeHint().width();
-
-    if(title_width > 720){
-        this->label_title->setText(GSCommon::getTextCutFromLabelWidth(title_total, 720, this->label_title->font()));
-        this->label_title->setGeometry(80, 10, 720, 25);
-    }
-    else{
-        this->label_title->setText(title_total);
-        this->label_title->setGeometry(80, 10, title_width, 25);
-    }
-
 
     QString performer = list_track->at(0).list_artist_name.join(",");
     if(performer.isEmpty()){
@@ -863,50 +1340,299 @@ void PlaylistTrackDetailInfo_RHV::setDataTrackInfo_Qobuz(const qobuz::TrackItemD
     int artist_width = 0;
     artist_width = tmp_artist->sizeHint().width();
 
-    if(artist_width > 580){
-        this->label_artist->setText(GSCommon::getTextCutFromLabelWidth(performer, 580, this->label_title->font()));
-        this->label_artist->setGeometry(80, 34, 580, 25);
-    }
-    else{
-        this->label_artist->setText(performer);
-        this->label_artist->setGeometry(80, 34, artist_width, 25);
-    }
+    this->label_adult_certification->hide();
 
-    QString hires_path = ":/images/qobuz/hires_ico.png";
-    if(list_track->at(0).hires == true){
+    int width = 0;
+    int left = 0;
+    if(list_track->at(0).parental_warning == true){
 
-        //QPixmap *img_hires = GSCommon::getUIPixmapImg(hires_path);
-        QImage img;
-        QPixmap *img_hires = new QPixmap();
-        if(img.load(hires_path)){
-            *img_hires = QPixmap::fromImage(img);                                        //이미지를 버퍼에 옮긴다.
-            *img_hires = img_hires->scaled(20, 20, Qt::KeepAspectRatio, Qt::SmoothTransformation);                //이미지 사이즈 조절
-        }
-
-        this->label_track_hires->setPixmap(*img_hires);
-        this->label_track_hires->setFixedSize(20, 20);
-
-        int left = this->label_title->geometry().left() + this->label_title->geometry().width() + 15;
-
-        this->label_track_hires->setGeometry(left, 14, 0, 0);
-        this->label_track_hires->show();
-    }
-
-    if(list_track->at(0).maximum_sampling_rate > 0){        
-        this->label_track_resolution->setText(QString("%1 kHz").arg(list_track->at(0).maximum_sampling_rate));
-        this->label_track_resolution->setAlignment(Qt::AlignCenter);
-
-        int width = this->label_track_resolution->sizeHint().width() + 20;
-        int left = 0;
-        if(artist_width < 580){
-            left = this->label_artist->geometry().left() + artist_width + 15;
+        QString parental_warning_path = "";
+        if(global.lang == 0){
+            parental_warning_path = ":/images/tidal/tidal-e-ico.png";
         }
         else{
-            left = this->label_artist->geometry().left() + this->label_artist->geometry().width() + 15;
+            parental_warning_path = ":/images/bugs/ico-19.png";
+        }
+        QImage img;
+        QPixmap *img_parental_warning = new QPixmap();
+        if(img.load(parental_warning_path)){
+            *img_parental_warning = QPixmap::fromImage(img);
+            *img_parental_warning = img_parental_warning->scaled(30, 30, Qt::KeepAspectRatio, Qt::SmoothTransformation);
+        }
+        this->label_adult_certification->setPixmap(*img_parental_warning);
+        this->label_adult_certification->setFixedSize(30, 30);
+
+        this->label_adult_certification->setGeometry(85, 20, 0, 0);
+        this->label_adult_certification->show();
+
+        if(list_track->at(0).maximum_sampling_rate > 0){
+            this->label_track_resolution->setText(QString("%1 kHz").arg(list_track->at(0).maximum_sampling_rate));
+            this->label_track_resolution->setAlignment(Qt::AlignCenter);
+
+            width = this->label_track_resolution->sizeHint().width() + 20;
+
+            if(list_track->at(0).hires == true){
+                title_width += (15 + width + 15 + 20);
+
+                int title_width_resize = 0;
+                if(title_width > 680){
+                    title_width_resize = 680 - (15 + width + 15 + 20);
+                    this->label_title->setText(GSCommon::getTextCutFromLabelWidth(title_total, title_width_resize, this->label_title->font()));
+                    if(this->label_title->text().contains("…")){
+                        this->label_title->setToolTip(title_total);
+                        this->label_title->setToolTipDuration(2000);
+                    }
+                    this->label_title->setGeometry(135, 10, title_width_resize, 25);
+                }
+                else{
+                    title_width_resize = title_width - (15 + width + 15 + 20);
+                    this->label_title->setText(title_total);
+                    this->label_title->setGeometry(135, 10, title_width_resize, 25);
+                }
+
+                QImage img;
+                QPixmap *img_hires = new QPixmap();
+                if(img.load(hires_path)){
+                    *img_hires = QPixmap::fromImage(img);                                                           //이미지를 버퍼에 옮긴다.
+                    *img_hires = img_hires->scaled(20, 20, Qt::KeepAspectRatio, Qt::SmoothTransformation);          //이미지 사이즈 조절
+                }
+
+                this->label_track_hires->setPixmap(*img_hires);
+                this->label_track_hires->setFixedSize(20, 20);
+
+                left = this->label_title->geometry().left() + this->label_title->geometry().width() + 15;
+
+                this->label_track_hires->setGeometry(left, 14, 0, 0);
+                this->label_track_hires->show();
+
+                left = this->label_title->geometry().left() + this->label_title->geometry().width() + 15 + 20 + 15;
+
+                this->label_track_resolution->setGeometry(left, 16, width, 16);
+                this->label_track_resolution->show();
+            }
+            else{
+                title_width += (15 + width);
+
+                int title_width_resize = 0;
+                if(title_width > 680){
+                    title_width_resize = 680 - (15 + width);
+                    this->label_title->setText(GSCommon::getTextCutFromLabelWidth(title_total, title_width_resize, this->label_title->font()));
+                    if(this->label_title->text().contains("…")){
+                        this->label_title->setToolTip(title_total);
+                        this->label_title->setToolTipDuration(2000);
+                    }
+                    this->label_title->setGeometry(135, 10, title_width_resize, 25);
+                }
+                else{
+                    title_width_resize = title_width - (15 + width);
+                    this->label_title->setText(title_total);
+                    this->label_title->setGeometry(135, 10, title_width_resize, 25);
+                }
+
+                left = this->label_title->geometry().left() + this->label_title->geometry().width() + 15;
+
+                this->label_track_resolution->setGeometry(left, 16, width, 16);
+                this->label_track_resolution->show();
+            }
+        }
+        else{
+            if(list_track->at(0).hires == true){
+                title_width += (15 + 20);
+
+                int title_width_resize = 0;
+                if(title_width > 680){
+                    title_width_resize = 680 - (15 + 20);
+                    this->label_title->setText(GSCommon::getTextCutFromLabelWidth(title_total, title_width_resize, this->label_title->font()));
+                    if(this->label_title->text().contains("…")){
+                        this->label_title->setToolTip(title_total);
+                        this->label_title->setToolTipDuration(2000);
+                    }
+                    this->label_title->setGeometry(135, 10, title_width_resize, 25);
+                }
+                else{
+                    title_width_resize = title_width - (15 + 20);
+                    this->label_title->setText(title_total);
+                    this->label_title->setGeometry(135, 10, title_width_resize, 25);
+                }
+
+                QImage img;
+                QPixmap *img_hires = new QPixmap();
+                if(img.load(hires_path)){
+                    *img_hires = QPixmap::fromImage(img);                                                           //이미지를 버퍼에 옮긴다.
+                    *img_hires = img_hires->scaled(20, 20, Qt::KeepAspectRatio, Qt::SmoothTransformation);          //이미지 사이즈 조절
+                }
+
+                this->label_track_hires->setPixmap(*img_hires);
+                this->label_track_hires->setFixedSize(20, 20);
+
+                left = this->label_title->geometry().left() + this->label_title->geometry().width() + 15;
+
+                this->label_track_hires->setGeometry(left, 14, 0, 0);
+                this->label_track_hires->show();
+            }
+            else{
+                if(title_width > 680){
+                    this->label_title->setText(GSCommon::getTextCutFromLabelWidth(title_total, 680, this->label_title->font()));
+                    if(this->label_title->text().contains("…")){
+                        this->label_title->setToolTip(title_total);
+                        this->label_title->setToolTipDuration(2000);
+                    }
+                    this->label_title->setGeometry(135, 10, 720, 25);
+                }
+                else{
+                    this->label_title->setText(title_total);
+                    this->label_title->setGeometry(135, 10, title_width, 25);
+                }
+            }
         }
 
-        this->label_track_resolution->setGeometry(left, 40, width, 16);
-        this->label_track_resolution->show();
+        if(artist_width > 680){
+            this->label_artist->setText(GSCommon::getTextCutFromLabelWidth(performer, 680, this->label_title->font()));
+            if(this->label_artist->text().contains("…")){
+                this->label_artist->setToolTip(performer);
+                this->label_artist->setToolTipDuration(2000);
+            }
+            this->label_artist->setGeometry(135, 34, 680, 25);
+        }
+        else{
+            this->label_artist->setText(performer);
+            this->label_artist->setGeometry(135, 34, artist_width, 25);
+        }
+    }
+    else{
+        if(list_track->at(0).maximum_sampling_rate > 0){
+            this->label_track_resolution->setText(QString("%1 kHz").arg(list_track->at(0).maximum_sampling_rate));
+            this->label_track_resolution->setAlignment(Qt::AlignCenter);
+
+            width = this->label_track_resolution->sizeHint().width() + 20;
+
+            if(list_track->at(0).hires == true){
+                title_width += (15 + width) + 15 + 20;
+
+                int title_width_resize = 0;
+                if(title_width > 720){
+                    title_width_resize = 720 - (15 + width + 15 + 20);
+                    this->label_title->setText(GSCommon::getTextCutFromLabelWidth(title_total, title_width_resize, this->label_title->font()));
+                    if(this->label_title->text().contains("…")){
+                        this->label_title->setToolTip(title_total);
+                        this->label_title->setToolTipDuration(2000);
+                    }
+                    this->label_title->setGeometry(85, 10, title_width_resize, 25);
+                }
+                else{
+                    title_width_resize = title_width - (15 + width + 15 + 20);
+                    this->label_title->setText(title_total);
+                    this->label_title->setGeometry(85, 10, title_width_resize, 25);
+                }
+
+                QImage img;
+                QPixmap *img_hires = new QPixmap();
+                if(img.load(hires_path)){
+                    *img_hires = QPixmap::fromImage(img);                                                           //이미지를 버퍼에 옮긴다.
+                    *img_hires = img_hires->scaled(20, 20, Qt::KeepAspectRatio, Qt::SmoothTransformation);          //이미지 사이즈 조절
+                }
+
+                this->label_track_hires->setPixmap(*img_hires);
+                this->label_track_hires->setFixedSize(20, 20);
+
+                left = this->label_title->geometry().left() + this->label_title->geometry().width() + 15;
+
+                this->label_track_hires->setGeometry(left, 14, 0, 0);
+                this->label_track_hires->show();
+
+                left = this->label_title->geometry().left() + this->label_title->geometry().width() + 15 + 20 + 15;
+
+                this->label_track_resolution->setGeometry(left, 16, width, 16);
+                this->label_track_resolution->show();
+            }
+            else{
+                title_width += (15 + width);
+
+                int title_width_resize = 0;
+                if(title_width > 720){
+                    title_width_resize = 720 - (15 + width);
+                    this->label_title->setText(GSCommon::getTextCutFromLabelWidth(title_total, title_width_resize, this->label_title->font()));
+                    if(this->label_title->text().contains("…")){
+                        this->label_title->setToolTip(title_total);
+                        this->label_title->setToolTipDuration(2000);
+                    }
+                    this->label_title->setGeometry(85, 10, title_width_resize, 25);
+                }
+                else{
+                    title_width_resize = title_width - (15 + width);
+                    this->label_title->setText(title_total);
+                    this->label_title->setGeometry(85, 10, title_width_resize, 25);
+                }
+
+                left = this->label_title->geometry().left() + this->label_title->geometry().width() + 15;
+
+                this->label_track_resolution->setGeometry(left, 16, width, 16);
+                this->label_track_resolution->show();
+            }
+        }
+        else{
+            if(list_track->at(0).hires == true){
+                title_width += (15 + 20);
+
+                int title_width_resize = 0;
+                if(title_width > 720){
+                    title_width_resize = 720 - (15 + 20);
+                    this->label_title->setText(GSCommon::getTextCutFromLabelWidth(title_total, title_width_resize, this->label_title->font()));
+                    if(this->label_title->text().contains("…")){
+                        this->label_title->setToolTip(title_total);
+                        this->label_title->setToolTipDuration(2000);
+                    }
+                    this->label_title->setGeometry(85, 10, title_width_resize, 25);
+                }
+                else{
+                    title_width_resize = title_width - (15 + 20);
+                    this->label_title->setText(title_total);
+                    this->label_title->setGeometry(85, 10, title_width_resize, 25);
+                }
+
+                QImage img;
+                QPixmap *img_hires = new QPixmap();
+                if(img.load(hires_path)){
+                    *img_hires = QPixmap::fromImage(img);                                                           //이미지를 버퍼에 옮긴다.
+                    *img_hires = img_hires->scaled(20, 20, Qt::KeepAspectRatio, Qt::SmoothTransformation);          //이미지 사이즈 조절
+                }
+
+                this->label_track_hires->setPixmap(*img_hires);
+                this->label_track_hires->setFixedSize(20, 20);
+
+                left = this->label_title->geometry().left() + this->label_title->geometry().width() + 15;
+
+                this->label_track_hires->setGeometry(left, 14, 0, 0);
+                this->label_track_hires->show();
+            }
+            else{
+                if(title_width > 720){
+                    this->label_title->setText(GSCommon::getTextCutFromLabelWidth(title_total, 720, this->label_title->font()));
+                    if(this->label_title->text().contains("…")){
+                        this->label_title->setToolTip(title_total);
+                        this->label_title->setToolTipDuration(2000);
+                    }
+                    this->label_title->setGeometry(85, 10, 720, 25);
+                }
+                else{
+                    this->label_title->setText(title_total);
+                    this->label_title->setGeometry(85, 10, title_width, 25);
+                }
+            }
+        }
+
+        if(artist_width > 680){
+            this->label_artist->setText(GSCommon::getTextCutFromLabelWidth(performer, 680, this->label_title->font()));
+            if(this->label_artist->text().contains("…")){
+                this->label_artist->setToolTip(performer);
+                this->label_artist->setToolTipDuration(2000);
+            }
+            this->label_artist->setGeometry(85, 34, 680, 25);
+        }
+        else{
+            this->label_artist->setText(performer);
+            this->label_artist->setGeometry(85, 34, artist_width, 25);
+        }
     }
 
     QLabel *tmp_album_title = new QLabel();
@@ -951,6 +1677,10 @@ void PlaylistTrackDetailInfo_RHV::setDataTrackInfo_Qobuz(const qobuz::TrackItemD
         album_title_width = tmp_album_title->sizeHint().width() + 220;
 
         this->label_album->setText(GSCommon::getTextCutFromLabelWidth(list_track->at(0).album_title, album_title_width, this->label_album->font()));
+        if(this->label_album->text().contains("…")){
+            this->label_album->setToolTip(list_track->at(0).album_title);
+            this->label_album->setToolTipDuration(2000);
+        }
         this->label_album->setGeometry(937, 14, 220, 40);
     }
     else{
@@ -963,6 +1693,16 @@ void PlaylistTrackDetailInfo_RHV::setDataTrackInfo_Qobuz(const qobuz::TrackItemD
     }
     else{
         this->label_duration->setText(QDateTime::fromTime_t(list_track->at(0).duration).toUTC().toString("mm:ss"));
+    }
+
+    if(list_track->at(0).streamable == false){
+        this->label_title->setStyleSheet("background-color:transparent;color:#666666;font-size:16px;font-weight:normal;");
+        this->label_artist->setStyleSheet("background-color:transparent;color:#666666;font-size:16px;font-weight:300;");
+        this->label_track_resolution->setStyleSheet("background-color:transparent;color:#666666;font-size:12px;font-weight:300;border:1px solid #666666;border-radius:8px;");
+        this->label_album->setStyleSheet("background-color:transparent;color:#666666;font-size:14px;font-weight:300;");
+        this->label_duration->setStyleSheet("background-color:transparent;color:#666666;font-size:14px;font-weight:300;");
+
+        this->setEnabled(false);
     }
 }
 
@@ -997,6 +1737,10 @@ void PlaylistTrackDetailInfo_RHV::setDataAlbumInfo_Qobuz(const qobuz::AlbumItemD
 
     if(title_width > 720){
         this->label_title->setText(GSCommon::getTextCutFromLabelWidth(title_total, 720, this->label_title->font()));
+        if(this->label_title->text().contains("…")){
+            this->label_title->setToolTip(title_total);
+            this->label_title->setToolTipDuration(2000);
+        }
         this->label_title->setGeometry(80, 10, 720, 25);
     }
     else{
@@ -1012,9 +1756,13 @@ void PlaylistTrackDetailInfo_RHV::setDataAlbumInfo_Qobuz(const qobuz::AlbumItemD
     int artist_width = 0;
     artist_width = tmp_artist->sizeHint().width();
 
-    if(artist_width > 580){
-        this->label_artist->setText(GSCommon::getTextCutFromLabelWidth(artist, 580, this->label_title->font()));
-        this->label_artist->setGeometry(80, 34, 580, 25);
+    if(artist_width > 680){
+        this->label_artist->setText(GSCommon::getTextCutFromLabelWidth(artist, 680, this->label_title->font()));
+        if(this->label_artist->text().contains("…")){
+            this->label_artist->setToolTip(artist);
+            this->label_artist->setToolTipDuration(2000);
+        }
+        this->label_artist->setGeometry(80, 34, 680, 25);
     }
     else{
         this->label_artist->setText(artist);
@@ -1096,11 +1844,15 @@ void PlaylistTrackDetailInfo_RHV::setDataTrackInfo_Apple(const QJsonObject &trac
 
     if(title_width > 720){
         this->label_title->setText(GSCommon::getTextCutFromLabelWidth(title, 720, this->label_title->font()));
-        this->label_title->setGeometry(80, 10, 720, 25);
+        if(this->label_title->text().contains("…")){
+            this->label_title->setToolTip(title);
+            this->label_title->setToolTipDuration(2000);
+        }
+        this->label_title->setGeometry(85, 10, 720, 25);
     }
     else{
         this->label_title->setText(title);
-        this->label_title->setGeometry(80, 10, title_width, 25);
+        this->label_title->setGeometry(85, 10, title_width, 25);
     }
 
     QString performer = ProcJsonEasy::getString(attributes, "artistName");
@@ -1117,11 +1869,15 @@ void PlaylistTrackDetailInfo_RHV::setDataTrackInfo_Apple(const QJsonObject &trac
 
     if(artist_width > 720){
         this->label_artist->setText(GSCommon::getTextCutFromLabelWidth(performer, 720, this->label_artist->font()));
-        this->label_artist->setGeometry(80, 34, 720, 25);
+        if(this->label_artist->text().contains("…")){
+            this->label_artist->setToolTip(performer);
+            this->label_artist->setToolTipDuration(2000);
+        }
+        this->label_artist->setGeometry(85, 34, 720, 25);
     }
     else{
         this->label_artist->setText(performer);
-        this->label_artist->setGeometry(80, 34, artist_width, 25);
+        this->label_artist->setGeometry(85, 34, artist_width, 25);
     }
 
     QString albumName = ProcJsonEasy::getString(attributes, "albumName");
@@ -1168,6 +1924,10 @@ void PlaylistTrackDetailInfo_RHV::setDataTrackInfo_Apple(const QJsonObject &trac
         album_title_width = tmp_album_title->sizeHint().width() + 220;
 
         this->label_album->setText(GSCommon::getTextCutFromLabelWidth(albumName, album_title_width, this->label_album->font()));
+        if(this->label_album->text().contains("…")){
+            this->label_album->setToolTip(albumName);
+            this->label_album->setToolTipDuration(2000);
+        }
         this->label_album->setGeometry(937, 14, 220, 40);
     }
     else{
@@ -1254,7 +2014,6 @@ void PlaylistTrackDetailInfo_RHV::setDataTrackInfo_Rose(const roseHome::TrackIte
 
     painter.setClipPath(path);
 
-    qDebug() << image.width() << image.height();
     if(this->playlist_type == "MUSIC"){
         painter.drawPixmap(0, 0, tmp_pixmap);
         this->label_track_type->setGeometry(70, 14, image.width(), image.height());
@@ -1273,7 +2032,7 @@ void PlaylistTrackDetailInfo_RHV::setDataTrackInfo_Rose(const roseHome::TrackIte
     }
     else if(this->playlist_type == "BUGS"){
         painter.drawPixmap(0, 0, tmp_pixmap);
-        this->label_track_type->setGeometry(71, 12, image.width(), image.height());
+        this->label_track_type->setGeometry(70, 12, image.width(), image.height());
     }
     else if(this->playlist_type == "QOBUZ"){
         painter.drawPixmap(0, 0, tmp_pixmap);
@@ -1315,77 +2074,6 @@ void PlaylistTrackDetailInfo_RHV::setDataTrackInfo_Rose(const roseHome::TrackIte
     int title_width = 0;
     title_width = tmp_title->sizeHint().width();
 
-    if(title_width > 720){
-        this->label_title->setText(GSCommon::getTextCutFromLabelWidth(title_total, 720, this->label_title->font()));
-        this->label_title->setGeometry(120, 10, 720, 25);
-    }
-    else{
-        this->label_title->setText(title_total);
-        this->label_title->setGeometry(120, 10, title_width, 25);
-    }
-
-    this->label_track_hires->hide();
-
-    if(list_track->at(0).hires == true){
-        QString hires_path = "";
-
-        if(this->playlist_type == "TIDAL"){
-
-            hires_path = ":/images/tidal/mqa_ico.png";
-
-            QImage img;
-            QPixmap *img_hires = new QPixmap();
-            if(img.load(hires_path)){
-                *img_hires = QPixmap::fromImage(img);                                                           //이미지를 버퍼에 옮긴다.
-                *img_hires = img_hires->scaled(36, 13, Qt::KeepAspectRatio, Qt::SmoothTransformation);          //이미지 사이즈 조절
-            }
-
-            this->label_track_hires->setPixmap(*img_hires);
-            this->label_track_hires->setFixedSize(36, 13);
-
-            int left = this->label_title->geometry().left() + this->label_title->geometry().width() + 15;
-
-            this->label_track_hires->setGeometry(left, 18, 0, 0);
-            this->label_track_hires->show();
-        }
-        else if(this->playlist_type == "QOBUZ"){
-
-            hires_path = ":/images/qobuz/hires_ico.png";
-
-            QImage img;
-            QPixmap *img_hires = new QPixmap();
-            if(img.load(hires_path)){
-                *img_hires = QPixmap::fromImage(img);                                                           //이미지를 버퍼에 옮긴다.
-                *img_hires = img_hires->scaled(20, 20, Qt::KeepAspectRatio, Qt::SmoothTransformation);          //이미지 사이즈 조절
-            }
-
-            this->label_track_hires->setPixmap(*img_hires);
-            this->label_track_hires->setFixedSize(20, 20);
-
-            int left = this->label_title->geometry().left() + this->label_title->geometry().width() + 15;
-
-            this->label_track_hires->setGeometry(left, 14, 0, 0);
-            this->label_track_hires->show();
-        }
-        else if(this->playlist_type == "BUGS"){
-
-            this->label_track_resolution->setText(QString("%1").arg(list_track->at(0).bitrates));
-            this->label_track_resolution->setAlignment(Qt::AlignCenter);
-
-            int width = this->label_track_resolution->sizeHint().width() + 20;
-            int left = 0;
-            if(title_width < 720){
-                left = this->label_title->geometry().left() + title_width + 15;
-            }
-            else{
-                left = this->label_title->geometry().left() + this->label_title->geometry().width() + 15;
-            }
-
-            this->label_track_resolution->setGeometry(left, 15, width, 16);
-            this->label_track_resolution->show();
-        }
-    }
-
     QString performer;
     if(this->playlist_type == "QOBUZ"){
         performer = list_track->at(0).list_artist_name.join(",");
@@ -1404,30 +2092,594 @@ void PlaylistTrackDetailInfo_RHV::setDataTrackInfo_Rose(const roseHome::TrackIte
     int artist_width = 0;
     artist_width = tmp_artist->sizeHint().width();
 
-    if(artist_width > 720){
-        this->label_artist->setText(GSCommon::getTextCutFromLabelWidth(performer, 720, this->label_artist->font()));
-        this->label_artist->setGeometry(120, 34, 720, 25);
-    }
-    else{
-        this->label_artist->setText(performer);
-        this->label_artist->setGeometry(120, 34, artist_width, 25);
-    }
+    this->label_adult_certification->hide();
+    this->label_track_hires->hide();
 
-    if(list_track->at(0).maximum_sampling_rate > 0){
-        this->label_track_resolution->setText(QString("%1 kHz").arg(list_track->at(0).maximum_sampling_rate));
-        this->label_track_resolution->setAlignment(Qt::AlignCenter);
+    int width = 0;
+    int left = 0;
+    if(list_track->at(0).adult_certification == true){
+        QString adult_certification_path = "";
 
-        int width = this->label_track_resolution->sizeHint().width() + 20;;
-        int left = 0;
-        if(artist_width > 720){
-            left = this->label_artist->geometry().left() + this->label_artist->geometry().width() + 15;
+        if(global.lang == 0){
+            adult_certification_path = ":/images/tidal/tidal-e-ico.png";
         }
         else{
-            left = this->label_artist->geometry().left() + artist_width + 15;
+            adult_certification_path = ":/images/bugs/ico-19.png";
+        }
+        QImage img;
+        QPixmap *img_adult_certification = new QPixmap();
+        if(img.load(adult_certification_path)){
+            *img_adult_certification = QPixmap::fromImage(img);
+            *img_adult_certification = img_adult_certification->scaled(30, 30, Qt::KeepAspectRatio, Qt::SmoothTransformation);
+        }
+        this->label_adult_certification->setPixmap(*img_adult_certification);
+        this->label_adult_certification->setFixedSize(30, 30);
+
+        this->label_adult_certification->setGeometry(120, 20, 0, 0);
+        this->label_adult_certification->show();
+
+        if(list_track->at(0).hires == true){
+            QString hires_path = "";
+
+            if(this->playlist_type == "TIDAL"){
+
+                hires_path = ":/images/tidal/mqa_ico.png";
+
+                title_width += (15 + 36);
+
+                int title_width_resize = 0;
+                if(title_width > 640){
+                    title_width_resize = 640 - (15 + 36);
+                    this->label_title->setText(GSCommon::getTextCutFromLabelWidth(title_total, title_width_resize, this->label_title->font()));
+                    if(this->label_title->text().contains("…")){
+                        this->label_title->setToolTip(title_total);
+                        this->label_title->setToolTipDuration(2000);
+                    }
+                    this->label_title->setGeometry(170, 10, title_width_resize, 25);
+                }
+                else{
+                    title_width_resize = title_width - (15 + 36);
+                    this->label_title->setText(title_total);
+                    this->label_title->setGeometry(170, 10, title_width_resize, 25);
+                }
+                QImage img;
+                QPixmap *img_hires = new QPixmap();
+                if(img.load(hires_path)){
+                    *img_hires = QPixmap::fromImage(img);                                                           //이미지를 버퍼에 옮긴다.
+                    *img_hires = img_hires->scaled(36, 13, Qt::KeepAspectRatio, Qt::SmoothTransformation);          //이미지 사이즈 조절
+                }
+
+                this->label_track_hires->setPixmap(*img_hires);
+                this->label_track_hires->setFixedSize(36, 13);
+
+                left = this->label_title->geometry().left() + this->label_title->geometry().width() + 15;
+
+                this->label_track_hires->setGeometry(left, 18, 0, 0);
+                this->label_track_hires->show();
+            }
+            else if(this->playlist_type == "QOBUZ"){
+
+                hires_path = ":/images/qobuz/hires_ico.png";
+
+                if(list_track->at(0).maximum_sampling_rate > 0){
+                    this->label_track_resolution->setText(QString("%1 kHz").arg(list_track->at(0).maximum_sampling_rate));
+                    this->label_track_resolution->setAlignment(Qt::AlignCenter);
+
+                    width = this->label_track_resolution->sizeHint().width() + 20;
+
+                    title_width += (15 + width + 15 + 20);
+
+                    int title_width_resize = 0;
+                    if(title_width > 640){
+                        title_width_resize = 640 - (15 + width + 15 + 20);
+                        this->label_title->setText(GSCommon::getTextCutFromLabelWidth(title_total, title_width_resize, this->label_title->font()));
+                        if(this->label_title->text().contains("…")){
+                            this->label_title->setToolTip(title_total);
+                            this->label_title->setToolTipDuration(2000);
+                        }
+                        this->label_title->setGeometry(170, 10, title_width_resize, 25);
+                    }
+                    else{
+                        title_width_resize = title_width - (15 + width + 15 + 20);
+                        this->label_title->setText(title_total);
+                        this->label_title->setGeometry(170, 10, title_width_resize, 25);
+                    }
+
+                    QImage img;
+                    QPixmap *img_hires = new QPixmap();
+                    if(img.load(hires_path)){
+                        *img_hires = QPixmap::fromImage(img);                                                           //이미지를 버퍼에 옮긴다.
+                        *img_hires = img_hires->scaled(20, 20, Qt::KeepAspectRatio, Qt::SmoothTransformation);          //이미지 사이즈 조절
+                    }
+
+                    this->label_track_hires->setPixmap(*img_hires);
+                    this->label_track_hires->setFixedSize(20, 20);
+
+                    left = this->label_title->geometry().left() + this->label_title->geometry().width() + 15;
+
+                    this->label_track_hires->setGeometry(left, 14, 0, 0);
+                    this->label_track_hires->show();
+
+                    left = this->label_title->geometry().left() + this->label_title->geometry().width() + 15 + 20 + 15;
+
+                    this->label_track_resolution->setGeometry(left, 15, width, 16);
+                    this->label_track_resolution->show();
+                }
+                else{
+                    title_width += (15 + 20);
+
+                    int title_width_resize = 0;
+                    if(title_width > 640){
+                        title_width_resize = 640 - (15 + width);
+                        this->label_title->setText(GSCommon::getTextCutFromLabelWidth(title_total, title_width_resize, this->label_title->font()));
+                        if(this->label_title->text().contains("…")){
+                            this->label_title->setToolTip(title_total);
+                            this->label_title->setToolTipDuration(2000);
+                        }
+                        this->label_title->setGeometry(170, 10, title_width_resize, 25);
+                    }
+                    else{
+                        title_width_resize = title_width - (15 + width);
+                        this->label_title->setText(title_total);
+                        this->label_title->setGeometry(170, 10, title_width_resize, 25);
+                    }
+
+                    left = this->label_title->geometry().left() + this->label_title->geometry().width() + 15;
+
+                    this->label_track_resolution->setGeometry(left, 16, width, 16);
+                    this->label_track_resolution->show();
+                }
+            }
+            else if(this->playlist_type == "BUGS"){
+
+                if(!list_track->at(0).bitrates.isEmpty()){
+                    this->label_track_resolution->setText(QString("%1").arg(list_track->at(0).bitrates));
+                    this->label_track_resolution->setAlignment(Qt::AlignCenter);
+
+                    width = this->label_track_resolution->sizeHint().width() + 20;
+
+                    title_width += (15 + width);
+
+                    int title_width_resize = 0;
+                    if(title_width > 640){
+                        title_width_resize = 640 - (15 + width);
+                        this->label_title->setText(GSCommon::getTextCutFromLabelWidth(title_total, title_width_resize, this->label_title->font()));
+                        if(this->label_title->text().contains("…")){
+                            this->label_title->setToolTip(title_total);
+                            this->label_title->setToolTipDuration(2000);
+                        }
+                        this->label_title->setGeometry(170, 10, title_width_resize, 25);
+                    }
+                    else{
+                        title_width_resize = title_width - (15 + width);
+                        this->label_title->setText(title_total);
+                        this->label_title->setGeometry(170, 10, title_width_resize, 25);
+                    }
+
+                    left = this->label_title->geometry().left() + this->label_title->geometry().width() + 15;
+
+                    this->label_track_resolution->setGeometry(left, 15, width, 16);
+                    this->label_track_resolution->show();
+                }
+                else{
+                    if(title_width > 640){
+                        this->label_title->setText(GSCommon::getTextCutFromLabelWidth(title_total, 640, this->label_title->font()));
+                        if(this->label_title->text().contains("…")){
+                            this->label_title->setToolTip(title_total);
+                            this->label_title->setToolTipDuration(2000);
+                        }
+                        this->label_title->setGeometry(170, 10, 640, 25);
+                    }
+                    else{
+                        this->label_title->setText(title_total);
+                        this->label_title->setGeometry(170, 10, title_width, 25);
+                    }
+                }
+            }
+        }
+        else{
+            if(this->playlist_type == "QOBUZ"){
+
+                if(list_track->at(0).maximum_sampling_rate > 0){
+                    this->label_track_resolution->setText(QString("%1 kHz").arg(list_track->at(0).maximum_sampling_rate));
+                    this->label_track_resolution->setAlignment(Qt::AlignCenter);
+
+                    width = this->label_track_resolution->sizeHint().width() + 20;
+
+                    title_width += (15 + width);
+
+                    int title_width_resize = 0;
+                    if(title_width > 640){
+                        title_width_resize = 640 - (15 + width);
+                        this->label_title->setText(GSCommon::getTextCutFromLabelWidth(title_total, title_width_resize, this->label_title->font()));
+                        if(this->label_title->text().contains("…")){
+                            this->label_title->setToolTip(title_total);
+                            this->label_title->setToolTipDuration(2000);
+                        }
+                        this->label_title->setGeometry(170, 10, title_width_resize, 25);
+                    }
+                    else{
+                        title_width_resize = title_width - (15 + width);
+                        this->label_title->setText(title_total);
+                        this->label_title->setGeometry(170, 10, title_width_resize, 25);
+                    }
+
+                    left = this->label_title->geometry().left() + this->label_title->geometry().width() + 15;
+
+                    this->label_track_resolution->setGeometry(left, 15, width, 16);
+                    this->label_track_resolution->show();
+                }
+                else{
+                    if(title_width > 640){
+                        this->label_title->setText(GSCommon::getTextCutFromLabelWidth(title_total, title_width, this->label_title->font()));
+                        if(this->label_title->text().contains("…")){
+                            this->label_title->setToolTip(title_total);
+                            this->label_title->setToolTipDuration(2000);
+                        }
+                        this->label_title->setGeometry(170, 10, title_width, 25);
+                    }
+                    else{
+                        this->label_title->setText(title_total);
+                        this->label_title->setGeometry(170, 10, title_width, 25);
+                    }
+                }
+            }
+            else if(this->playlist_type == "BUGS"){
+
+                if(!list_track->at(0).bitrates.isEmpty()){
+                    this->label_track_resolution->setText(QString("%1").arg(list_track->at(0).bitrates));
+                    this->label_track_resolution->setAlignment(Qt::AlignCenter);
+
+                    width = this->label_track_resolution->sizeHint().width() + 20;
+
+                    title_width += (15 + width);
+
+                    int title_width_resize = 0;
+                    if(title_width > 640){
+                        title_width_resize = 640 - (15 + width);
+                        this->label_title->setText(GSCommon::getTextCutFromLabelWidth(title_total, title_width_resize, this->label_title->font()));
+                        if(this->label_title->text().contains("…")){
+                            this->label_title->setToolTip(title_total);
+                            this->label_title->setToolTipDuration(2000);
+                        }
+                        this->label_title->setGeometry(170, 10, title_width_resize, 25);
+                    }
+                    else{
+                        title_width_resize = title_width - (15 + width);
+                        this->label_title->setText(title_total);
+                        this->label_title->setGeometry(170, 10, title_width_resize, 25);
+                    }
+
+                    left = this->label_title->geometry().left() + this->label_title->geometry().width() + 15;
+
+                    this->label_track_resolution->setGeometry(left, 15, width, 16);
+                    this->label_track_resolution->show();
+                }
+                else{
+                    if(title_width > 640){
+                        this->label_title->setText(GSCommon::getTextCutFromLabelWidth(title_total, 640, this->label_title->font()));
+                        if(this->label_title->text().contains("…")){
+                            this->label_title->setToolTip(title_total);
+                            this->label_title->setToolTipDuration(2000);
+                        }
+                        this->label_title->setGeometry(170, 10, 640, 25);
+                    }
+                    else{
+                        this->label_title->setText(title_total);
+                        this->label_title->setGeometry(170, 10, title_width, 25);
+                    }
+                }
+            }
+            else{
+                if(title_width > 640){
+                    this->label_title->setText(GSCommon::getTextCutFromLabelWidth(title_total, 640, this->label_title->font()));
+                    if(this->label_title->text().contains("…")){
+                        this->label_title->setToolTip(title_total);
+                        this->label_title->setToolTipDuration(2000);
+                    }
+                    this->label_title->setGeometry(170, 10, 640, 25);
+                }
+                else{
+                    this->label_title->setText(title_total);
+                    this->label_title->setGeometry(170, 10, title_width, 25);
+                }
+            }
         }
 
-        this->label_track_resolution->setGeometry(left, 40, width, 16);
-        this->label_track_resolution->show();
+        if(artist_width > 680){
+            this->label_artist->setText(GSCommon::getTextCutFromLabelWidth(performer, 680, this->label_artist->font()));
+            if(this->label_artist->text().contains("…")){
+                this->label_artist->setToolTip(performer);
+                this->label_artist->setToolTipDuration(2000);
+            }
+            this->label_artist->setGeometry(170, 34, 680, 25);
+        }
+        else{
+            this->label_artist->setText(performer);
+            this->label_artist->setGeometry(170, 34, artist_width, 25);
+        }
+    }
+    else{
+        if(list_track->at(0).hires == true){
+            QString hires_path = "";
+
+            if(this->playlist_type == "TIDAL"){
+
+                hires_path = ":/images/tidal/mqa_ico.png";
+
+                title_width += (15 + 36);
+
+                int title_width_resize = 0;
+                if(title_width > 690){
+                    title_width_resize = 690 - (15 + 36);
+                    this->label_title->setText(GSCommon::getTextCutFromLabelWidth(title_total, title_width_resize, this->label_title->font()));
+                    if(this->label_title->text().contains("…")){
+                        this->label_title->setToolTip(title_total);
+                        this->label_title->setToolTipDuration(2000);
+                    }
+                    this->label_title->setGeometry(120, 10, title_width_resize, 25);
+                }
+                else{
+                    title_width_resize = title_width - (15 + 36);
+                    this->label_title->setText(title_total);
+                    this->label_title->setGeometry(120, 10, title_width_resize, 25);
+                }
+                QImage img;
+                QPixmap *img_hires = new QPixmap();
+                if(img.load(hires_path)){
+                    *img_hires = QPixmap::fromImage(img);                                                           //이미지를 버퍼에 옮긴다.
+                    *img_hires = img_hires->scaled(36, 13, Qt::KeepAspectRatio, Qt::SmoothTransformation);          //이미지 사이즈 조절
+                }
+
+                this->label_track_hires->setPixmap(*img_hires);
+                this->label_track_hires->setFixedSize(36, 13);
+
+                left = this->label_title->geometry().left() + this->label_title->geometry().width() + 15;
+
+                this->label_track_hires->setGeometry(left, 18, 0, 0);
+                this->label_track_hires->show();
+            }
+            else if(this->playlist_type == "QOBUZ"){
+
+                hires_path = ":/images/qobuz/hires_ico.png";
+
+                if(list_track->at(0).maximum_sampling_rate > 0){
+                    this->label_track_resolution->setText(QString("%1 kHz").arg(list_track->at(0).maximum_sampling_rate));
+                    this->label_track_resolution->setAlignment(Qt::AlignCenter);
+
+                    width = this->label_track_resolution->sizeHint().width() + 20;
+
+                    title_width += (15 + width + 15 + 20);
+
+                    int title_width_resize = 0;
+                    if(title_width > 690){
+                        title_width_resize = 690 - (15 + width + 15 + 20);
+                        this->label_title->setText(GSCommon::getTextCutFromLabelWidth(title_total, title_width_resize, this->label_title->font()));
+                        if(this->label_title->text().contains("…")){
+                            this->label_title->setToolTip(title_total);
+                            this->label_title->setToolTipDuration(2000);
+                        }
+                        this->label_title->setGeometry(120, 10, title_width_resize, 25);
+                    }
+                    else{
+                        title_width_resize = title_width - (15 + width + 15 + 20);
+                        this->label_title->setText(title_total);
+                        this->label_title->setGeometry(120, 10, title_width_resize, 25);
+                    }
+
+                    QImage img;
+                    QPixmap *img_hires = new QPixmap();
+                    if(img.load(hires_path)){
+                        *img_hires = QPixmap::fromImage(img);                                                           //이미지를 버퍼에 옮긴다.
+                        *img_hires = img_hires->scaled(20, 20, Qt::KeepAspectRatio, Qt::SmoothTransformation);          //이미지 사이즈 조절
+                    }
+
+                    this->label_track_hires->setPixmap(*img_hires);
+                    this->label_track_hires->setFixedSize(20, 20);
+
+                    left = this->label_title->geometry().left() + this->label_title->geometry().width() + 15;
+
+                    this->label_track_hires->setGeometry(left, 14, 0, 0);
+                    this->label_track_hires->show();
+
+                    left = this->label_title->geometry().left() + this->label_title->geometry().width() + 15 + 20 + 15;
+
+                    this->label_track_resolution->setGeometry(left, 15, width, 16);
+                    this->label_track_resolution->show();
+                }
+                else{
+                    title_width += (15 + 20);
+
+                    int title_width_resize = 0;
+                    if(title_width > 690){
+                        title_width_resize = 690 - (15 + width);
+                        this->label_title->setText(GSCommon::getTextCutFromLabelWidth(title_total, title_width_resize, this->label_title->font()));
+                        if(this->label_title->text().contains("…")){
+                            this->label_title->setToolTip(title_total);
+                            this->label_title->setToolTipDuration(2000);
+                        }
+                        this->label_title->setGeometry(120, 10, title_width_resize, 25);
+                    }
+                    else{
+                        title_width_resize = title_width - (15 + width);
+                        this->label_title->setText(title_total);
+                        this->label_title->setGeometry(120, 10, title_width_resize, 25);
+                    }
+
+                    left = this->label_title->geometry().left() + this->label_title->geometry().width() + 15;
+
+                    this->label_track_resolution->setGeometry(left, 16, width, 16);
+                    this->label_track_resolution->show();
+                }
+            }
+            else if(this->playlist_type == "BUGS"){
+
+                if(!list_track->at(0).bitrates.isEmpty()){
+                    this->label_track_resolution->setText(QString("%1").arg(list_track->at(0).bitrates));
+                    this->label_track_resolution->setAlignment(Qt::AlignCenter);
+
+                    width = this->label_track_resolution->sizeHint().width() + 20;
+
+                    title_width += (15 + width);
+
+                    int title_width_resize = 0;
+                    if(title_width > 690){
+                        title_width_resize = 690 - (15 + width);
+                        this->label_title->setText(GSCommon::getTextCutFromLabelWidth(title_total, title_width_resize, this->label_title->font()));
+                        if(this->label_title->text().contains("…")){
+                            this->label_title->setToolTip(title_total);
+                            this->label_title->setToolTipDuration(2000);
+                        }
+                        this->label_title->setGeometry(120, 10, title_width_resize, 25);
+                    }
+                    else{
+                        title_width_resize = title_width - (15 + width);
+                        this->label_title->setText(title_total);
+                        this->label_title->setGeometry(120, 10, title_width_resize, 25);
+                    }
+
+                    left = this->label_title->geometry().left() + this->label_title->geometry().width() + 15;
+
+                    this->label_track_resolution->setGeometry(left, 15, width, 16);
+                    this->label_track_resolution->show();
+                }
+                else{
+                    if(title_width > 690){
+                        this->label_title->setText(GSCommon::getTextCutFromLabelWidth(title_total, 690, this->label_title->font()));
+                        if(this->label_title->text().contains("…")){
+                            this->label_title->setToolTip(title_total);
+                            this->label_title->setToolTipDuration(2000);
+                        }
+                        this->label_title->setGeometry(120, 10, 690, 25);
+                    }
+                    else{
+                        this->label_title->setText(title_total);
+                        this->label_title->setGeometry(120, 10, title_width, 25);
+                    }
+                }
+            }
+        }
+        else{
+            if(this->playlist_type == "QOBUZ"){
+
+                if(list_track->at(0).maximum_sampling_rate > 0){
+                    this->label_track_resolution->setText(QString("%1 kHz").arg(list_track->at(0).maximum_sampling_rate));
+                    this->label_track_resolution->setAlignment(Qt::AlignCenter);
+
+                    width = this->label_track_resolution->sizeHint().width() + 20;
+
+                    title_width += (15 + width);
+
+                    int title_width_resize = 0;
+                    if(title_width > 690){
+                        title_width_resize = 690 - (15 + width);
+                        this->label_title->setText(GSCommon::getTextCutFromLabelWidth(title_total, title_width_resize, this->label_title->font()));
+                        if(this->label_title->text().contains("…")){
+                            this->label_title->setToolTip(title_total);
+                            this->label_title->setToolTipDuration(2000);
+                        }
+                        this->label_title->setGeometry(120, 10, title_width_resize, 25);
+                    }
+                    else{
+                        title_width_resize = title_width - (15 + width);
+                        this->label_title->setText(title_total);
+                        this->label_title->setGeometry(120, 10, title_width_resize, 25);
+                    }
+
+                    left = this->label_title->geometry().left() + this->label_title->geometry().width() + 15;
+
+                    this->label_track_resolution->setGeometry(left, 15, width, 16);
+                    this->label_track_resolution->show();
+                }
+                else{
+                    if(title_width > 690){
+                        this->label_title->setText(GSCommon::getTextCutFromLabelWidth(title_total, title_width, this->label_title->font()));
+                        if(this->label_title->text().contains("…")){
+                            this->label_title->setToolTip(title_total);
+                            this->label_title->setToolTipDuration(2000);
+                        }
+                        this->label_title->setGeometry(120, 10, title_width, 25);
+                    }
+                    else{
+                        this->label_title->setText(title_total);
+                        this->label_title->setGeometry(120, 10, title_width, 25);
+                    }
+                }
+            }
+            else if(this->playlist_type == "BUGS"){
+
+                if(!list_track->at(0).bitrates.isEmpty()){
+                    this->label_track_resolution->setText(QString("%1").arg(list_track->at(0).bitrates));
+                    this->label_track_resolution->setAlignment(Qt::AlignCenter);
+
+                    width = this->label_track_resolution->sizeHint().width() + 20;
+
+                    title_width += (15 + width);
+
+                    int title_width_resize = 0;
+                    if(title_width > 690){
+                        title_width_resize = 690 - (15 + width);
+                        this->label_title->setText(GSCommon::getTextCutFromLabelWidth(title_total, title_width_resize, this->label_title->font()));
+                        if(this->label_title->text().contains("…")){
+                            this->label_title->setToolTip(title_total);
+                            this->label_title->setToolTipDuration(2000);
+                        }
+                        this->label_title->setGeometry(120, 10, title_width_resize, 25);
+                    }
+                    else{
+                        title_width_resize = title_width - (15 + width);
+                        this->label_title->setText(title_total);
+                        this->label_title->setGeometry(120, 10, title_width_resize, 25);
+                    }
+
+                    left = this->label_title->geometry().left() + this->label_title->geometry().width() + 15;
+
+                    this->label_track_resolution->setGeometry(left, 15, width, 16);
+                    this->label_track_resolution->show();
+                }
+                else{
+                    if(title_width > 690){
+                        this->label_title->setText(GSCommon::getTextCutFromLabelWidth(title_total, 690, this->label_title->font()));
+                        if(this->label_title->text().contains("…")){
+                            this->label_title->setToolTip(title_total);
+                            this->label_title->setToolTipDuration(2000);
+                        }
+                        this->label_title->setGeometry(120, 10, title_width, 25);
+                    }
+                    else{
+                        this->label_title->setText(title_total);
+                        this->label_title->setGeometry(120, 10, 690, 25);
+                    }
+                }
+            }
+            else{
+                if(title_width > 690){
+                    this->label_title->setText(GSCommon::getTextCutFromLabelWidth(title_total, 690, this->label_title->font()));
+                    if(this->label_title->text().contains("…")){
+                        this->label_title->setToolTip(title_total);
+                        this->label_title->setToolTipDuration(2000);
+                    }
+                    this->label_title->setGeometry(120, 10, 690, 25);
+                }
+                else{
+                    this->label_title->setText(title_total);
+                    this->label_title->setGeometry(120, 10, title_width, 25);
+                }
+            }
+        }
+
+        if(artist_width > 680){
+            this->label_artist->setText(GSCommon::getTextCutFromLabelWidth(performer, 680, this->label_artist->font()));
+            if(this->label_artist->text().contains("…")){
+                this->label_artist->setToolTip(performer);
+                this->label_artist->setToolTipDuration(2000);
+            }
+            this->label_artist->setGeometry(120, 34, 680, 25);
+        }
+        else{
+            this->label_artist->setText(performer);
+            this->label_artist->setGeometry(120, 34, artist_width, 25);
+        }
     }
 
     QLabel *tmp_album_title = new QLabel();
@@ -1472,6 +2724,10 @@ void PlaylistTrackDetailInfo_RHV::setDataTrackInfo_Rose(const roseHome::TrackIte
         album_title_width = tmp_album_title->sizeHint().width() + 220;
 
         this->label_album->setText(GSCommon::getTextCutFromLabelWidth(list_track->at(0).album_title, album_title_width, this->label_album->font()));
+        if(this->label_album->text().contains("…")){
+            this->label_album->setToolTip(list_track->at(0).album_title);
+            this->label_album->setToolTipDuration(2000);
+        }
         this->label_album->setGeometry(937, 14, 220, 40);
     }
     else{
@@ -1503,12 +2759,22 @@ void PlaylistTrackDetailInfo_RHV::setDataTrackInfo_Rose(const roseHome::TrackIte
             this->label_duration->setText(QDateTime::fromTime_t(data_track.duration).toUTC().toString("mm:ss"));
         }
     }
+
+    if(list_track->at(0).streamable == false){
+        this->label_title->setStyleSheet("background-color:transparent;color:#666666;font-size:16px;font-weight:normal;");
+        this->label_artist->setStyleSheet("background-color:transparent;color:#666666;font-size:16px;font-weight:300;");
+        this->label_track_resolution->setStyleSheet("background-color:transparent;color:#666666;font-size:12px;font-weight:300;border:1px solid #666666;border-radius:8px;");
+        this->label_album->setStyleSheet("background-color:transparent;color:#666666;font-size:14px;font-weight:300;");
+        this->label_duration->setStyleSheet("background-color:transparent;color:#666666;font-size:14px;font-weight:300;");
+
+        this->setEnabled(false);
+    }
 }
 
 
 void PlaylistTrackDetailInfo_RHV::setDataTrackInfo_RoseMain(const roseHome::TrackItemData &data_track){
 
-    this->widget_info_main->setFixedSize(1413, 70);
+    this->widget_info_main->setFixedSize(1415, 70);
 
     QList<roseHome::TrackItemData> *list_track = new QList<roseHome::TrackItemData>();
     list_track->append(data_track);
@@ -1605,7 +2871,7 @@ void PlaylistTrackDetailInfo_RHV::setDataTrackInfo_RoseMain(const roseHome::Trac
     this->label_track_type->setStyleSheet("background-color:transparent;");
     this->label_track_type->setPixmap(pixmapIMG);
     this->label_track_type->setGeometry(80, 36, 30, 20);
-    this->label_track_type->show();
+    this->label_track_type->hide();
 
     QString title_work = "";
     QString title_version = "";
@@ -1627,77 +2893,6 @@ void PlaylistTrackDetailInfo_RHV::setDataTrackInfo_RoseMain(const roseHome::Trac
     int title_width = 0;
     title_width = tmp_title->sizeHint().width();
 
-    if(title_width > 710){
-        this->label_title->setText(GSCommon::getTextCutFromLabelWidth(title_total, 710, this->label_title->font()));
-        this->label_title->setGeometry(80, 10, 710, 25);
-    }
-    else{
-        this->label_title->setText(title_total);
-        this->label_title->setGeometry(80, 10, title_width, 25);
-    }
-
-    this->label_track_hires->hide();
-
-    if(list_track->at(0).hires == true){
-        QString hires_path = "";
-
-        if(this->playlist_type == "TIDAL"){
-
-            hires_path = ":/images/tidal/mqa_ico.png";
-
-            QImage img;
-            QPixmap *img_hires = new QPixmap();
-            if(img.load(hires_path)){
-                *img_hires = QPixmap::fromImage(img);                                                           //이미지를 버퍼에 옮긴다.
-                *img_hires = img_hires->scaled(36, 13, Qt::KeepAspectRatio, Qt::SmoothTransformation);          //이미지 사이즈 조절
-            }
-
-            this->label_track_hires->setPixmap(*img_hires);
-            this->label_track_hires->setFixedSize(36, 13);
-
-            int left = this->label_title->geometry().left() + this->label_title->geometry().width() + 15;
-
-            this->label_track_hires->setGeometry(left, 18, 0, 0);
-            this->label_track_hires->show();
-        }
-        else if(this->playlist_type == "QOBUZ"){
-
-            hires_path = ":/images/qobuz/hires_ico.png";
-
-            QImage img;
-            QPixmap *img_hires = new QPixmap();
-            if(img.load(hires_path)){
-                *img_hires = QPixmap::fromImage(img);                                                           //이미지를 버퍼에 옮긴다.
-                *img_hires = img_hires->scaled(20, 20, Qt::KeepAspectRatio, Qt::SmoothTransformation);          //이미지 사이즈 조절
-            }
-
-            this->label_track_hires->setPixmap(*img_hires);
-            this->label_track_hires->setFixedSize(20, 20);
-
-            int left = this->label_title->geometry().left() + this->label_title->geometry().width() + 15;
-
-            this->label_track_hires->setGeometry(left, 14, 0, 0);
-            this->label_track_hires->show();
-        }
-        else if(this->playlist_type == "BUGS"){
-
-            this->label_track_resolution->setText(QString("%1").arg(list_track->at(0).bitrates));
-            this->label_track_resolution->setAlignment(Qt::AlignCenter);
-
-            int width = this->label_track_resolution->sizeHint().width() + 20;
-            int left = 0;
-            if(title_width < 710){
-                left = this->label_title->geometry().left() + title_width + 15;
-            }
-            else{
-                left = this->label_title->geometry().left() + this->label_title->geometry().width() + 15;
-            }
-
-            this->label_track_resolution->setGeometry(left, 15, width, 16);
-            this->label_track_resolution->show();
-        }
-    }
-
     QString performer;
     if(this->playlist_type == "QOBUZ"){
         performer = list_track->at(0).list_artist_name.join(",");
@@ -1716,29 +2911,600 @@ void PlaylistTrackDetailInfo_RHV::setDataTrackInfo_RoseMain(const roseHome::Trac
     int artist_width = 0;
     artist_width = tmp_artist->sizeHint().width();
 
-    if(artist_width > 670){
-        this->label_artist->setText(GSCommon::getTextCutFromLabelWidth(performer, 670, this->label_artist->font()));
-        this->label_artist->setGeometry(115, 33, 670, 25);
-    }else{
-        this->label_artist->setText(performer);
-        this->label_artist->setGeometry(115, 33, artist_width, 25);
-    }
+    this->label_adult_certification->hide();
+    this->label_track_hires->hide();
 
-    if(list_track->at(0).maximum_sampling_rate > 0){
-        this->label_track_resolution->setText(QString("%1 kHz").arg(list_track->at(0).maximum_sampling_rate));
-        this->label_track_resolution->setAlignment(Qt::AlignCenter);
+    int width = 0;
+    int left = 0;
+    if(list_track->at(0).adult_certification == true){
+        QString adult_certification_path = "";
 
-        int width = this->label_track_resolution->sizeHint().width() + 20;;
-        int left = 0;
-        if(artist_width > 670){
-            left = this->label_artist->geometry().left() + this->label_artist->geometry().width() + 15;
+        if(global.lang == 0){
+            adult_certification_path = ":/images/tidal/tidal-e-ico.png";
         }
         else{
-            left = this->label_artist->geometry().left() + artist_width + 15;
+            adult_certification_path = ":/images/bugs/ico-19.png";
+        }
+        QImage img;
+        QPixmap *img_adult_certification = new QPixmap();
+        if(img.load(adult_certification_path)){
+            *img_adult_certification = QPixmap::fromImage(img);
+            *img_adult_certification = img_adult_certification->scaled(30, 30, Qt::KeepAspectRatio, Qt::SmoothTransformation);
+        }
+        this->label_adult_certification->setPixmap(*img_adult_certification);
+        this->label_adult_certification->setFixedSize(30, 30);
+
+        this->label_adult_certification->setGeometry(85, 18, 0, 0);
+        this->label_adult_certification->show();
+
+        if(list_track->at(0).hires == true){
+            QString hires_path = "";
+
+            if(this->playlist_type == "TIDAL"){
+
+                hires_path = ":/images/tidal/mqa_ico.png";
+
+                title_width += (15 + 36);
+
+                int title_width_resize = 0;
+                if(title_width > 650){
+                    title_width_resize = 650 - (15 + 36);
+                    this->label_title->setText(GSCommon::getTextCutFromLabelWidth(title_total, title_width_resize, this->label_title->font()));
+                    if(this->label_title->text().contains("…")){
+                        this->label_title->setToolTip(title_total);
+                        this->label_title->setToolTipDuration(2000);
+                    }
+                    this->label_title->setGeometry(135, 10, title_width_resize, 25);
+                }
+                else{
+                    title_width_resize = title_width - (15 + 36);
+                    this->label_title->setText(title_total);
+                    this->label_title->setGeometry(135, 10, title_width_resize, 25);
+                }
+                QImage img;
+                QPixmap *img_hires = new QPixmap();
+                if(img.load(hires_path)){
+                    *img_hires = QPixmap::fromImage(img);                                                           //이미지를 버퍼에 옮긴다.
+                    *img_hires = img_hires->scaled(36, 13, Qt::KeepAspectRatio, Qt::SmoothTransformation);          //이미지 사이즈 조절
+                }
+
+                this->label_track_hires->setPixmap(*img_hires);
+                this->label_track_hires->setFixedSize(36, 13);
+
+                left = this->label_title->geometry().left() + this->label_title->geometry().width() + 15;
+
+                this->label_track_hires->setGeometry(left, 18, 0, 0);
+                this->label_track_hires->show();
+            }
+            else if(this->playlist_type == "QOBUZ"){
+
+                hires_path = ":/images/qobuz/hires_ico.png";
+
+                if(list_track->at(0).maximum_sampling_rate > 0){
+                    this->label_track_resolution->setText(QString("%1 kHz").arg(list_track->at(0).maximum_sampling_rate));
+                    this->label_track_resolution->setAlignment(Qt::AlignCenter);
+
+                    width = this->label_track_resolution->sizeHint().width() + 20;
+
+                    title_width += (15 + width + 15 + 20);
+
+                    int title_width_resize = 0;
+                    if(title_width > 650){
+                        title_width_resize = 650 - (15 + width + 15 + 20);
+                        this->label_title->setText(GSCommon::getTextCutFromLabelWidth(title_total, title_width_resize, this->label_title->font()));
+                        if(this->label_title->text().contains("…")){
+                            this->label_title->setToolTip(title_total);
+                            this->label_title->setToolTipDuration(2000);
+                        }
+                        this->label_title->setGeometry(135, 10, title_width_resize, 25);
+                    }
+                    else{
+                        title_width_resize = title_width - (15 + width + 15 + 20);
+                        this->label_title->setText(title_total);
+                        this->label_title->setGeometry(135, 10, title_width_resize, 25);
+                    }
+
+                    QImage img;
+                    QPixmap *img_hires = new QPixmap();
+                    if(img.load(hires_path)){
+                        *img_hires = QPixmap::fromImage(img);                                                           //이미지를 버퍼에 옮긴다.
+                        *img_hires = img_hires->scaled(20, 20, Qt::KeepAspectRatio, Qt::SmoothTransformation);          //이미지 사이즈 조절
+                    }
+
+                    this->label_track_hires->setPixmap(*img_hires);
+                    this->label_track_hires->setFixedSize(20, 20);
+
+                    left = this->label_title->geometry().left() + this->label_title->geometry().width() + 15;
+
+                    this->label_track_hires->setGeometry(left, 14, 0, 0);
+                    this->label_track_hires->show();
+
+                    left = this->label_title->geometry().left() + this->label_title->geometry().width() + 15 + 20 + 15;
+
+                    this->label_track_resolution->setGeometry(left, 15, width, 16);
+                    this->label_track_resolution->show();
+                }
+                else{
+                    title_width += (15 + 20);
+
+                    int title_width_resize = 0;
+                    if(title_width > 650){
+                        title_width_resize = 650 - (15 + width);
+                        this->label_title->setText(GSCommon::getTextCutFromLabelWidth(title_total, title_width_resize, this->label_title->font()));
+                        if(this->label_title->text().contains("…")){
+                            this->label_title->setToolTip(title_total);
+                            this->label_title->setToolTipDuration(2000);
+                        }
+                        this->label_title->setGeometry(135, 10, title_width_resize, 25);
+                    }
+                    else{
+                        title_width_resize = title_width - (15 + width);
+                        this->label_title->setText(title_total);
+                        this->label_title->setGeometry(135, 10, title_width_resize, 25);
+                    }
+
+                    left = this->label_title->geometry().left() + this->label_title->geometry().width() + 15;
+
+                    this->label_track_resolution->setGeometry(left, 16, width, 16);
+                    this->label_track_resolution->show();
+                }
+            }
+            else if(this->playlist_type == "BUGS"){
+
+                if(!list_track->at(0).bitrates.isEmpty()){
+                    this->label_track_resolution->setText(QString("%1").arg(list_track->at(0).bitrates));
+                    this->label_track_resolution->setAlignment(Qt::AlignCenter);
+
+                    width = this->label_track_resolution->sizeHint().width() + 20;
+
+                    title_width += (15 + width);
+
+                    int title_width_resize = 0;
+                    if(title_width > 650){
+                        title_width_resize = 650 - (15 + width);
+                        this->label_title->setText(GSCommon::getTextCutFromLabelWidth(title_total, title_width_resize, this->label_title->font()));
+                        if(this->label_title->text().contains("…")){
+                            this->label_title->setToolTip(title_total);
+                            this->label_title->setToolTipDuration(2000);
+                        }
+                        this->label_title->setGeometry(135, 10, title_width_resize, 25);
+                    }
+                    else{
+                        title_width_resize = title_width - (15 + width);
+                        this->label_title->setText(title_total);
+                        this->label_title->setGeometry(135, 10, title_width_resize, 25);
+                    }
+
+                    left = this->label_title->geometry().left() + this->label_title->geometry().width() + 15;
+
+                    this->label_track_resolution->setGeometry(left, 15, width, 16);
+                    this->label_track_resolution->show();
+                }
+                else{
+                    if(title_width > 650){
+                        this->label_title->setText(GSCommon::getTextCutFromLabelWidth(title_total, 650, this->label_title->font()));
+                        if(this->label_title->text().contains("…")){
+                            this->label_title->setToolTip(title_total);
+                            this->label_title->setToolTipDuration(2000);
+                        }
+                        this->label_title->setGeometry(135, 10, 650, 25);
+                    }
+                    else{
+                        this->label_title->setText(title_total);
+                        this->label_title->setGeometry(135, 10, title_width, 25);
+                    }
+                }
+            }
+        }
+        else{
+            if(this->playlist_type == "QOBUZ"){
+
+                if(list_track->at(0).maximum_sampling_rate > 0){
+                    this->label_track_resolution->setText(QString("%1 kHz").arg(list_track->at(0).maximum_sampling_rate));
+                    this->label_track_resolution->setAlignment(Qt::AlignCenter);
+
+                    width = this->label_track_resolution->sizeHint().width() + 20;
+
+                    title_width += (15 + width);
+
+                    int title_width_resize = 0;
+                    if(title_width > 650){
+                        title_width_resize = 650 - (15 + width);
+                        this->label_title->setText(GSCommon::getTextCutFromLabelWidth(title_total, title_width_resize, this->label_title->font()));
+                        if(this->label_title->text().contains("…")){
+                            this->label_title->setToolTip(title_total);
+                            this->label_title->setToolTipDuration(2000);
+                        }
+                        this->label_title->setGeometry(135, 10, title_width_resize, 25);
+                    }
+                    else{
+                        title_width_resize = title_width - (15 + width);
+                        this->label_title->setText(title_total);
+                        this->label_title->setGeometry(135, 10, title_width_resize, 25);
+                    }
+
+                    left = this->label_title->geometry().left() + this->label_title->geometry().width() + 15;
+
+                    this->label_track_resolution->setGeometry(left, 15, width, 16);
+                    this->label_track_resolution->show();
+                }
+                else{
+                    if(title_width > 650){
+                        this->label_title->setText(GSCommon::getTextCutFromLabelWidth(title_total, title_width, this->label_title->font()));
+                        if(this->label_title->text().contains("…")){
+                            this->label_title->setToolTip(title_total);
+                            this->label_title->setToolTipDuration(2000);
+                        }
+                        this->label_title->setGeometry(135, 10, title_width, 25);
+                    }
+                    else{
+                        this->label_title->setText(title_total);
+                        this->label_title->setGeometry(135, 10, title_width, 25);
+                    }
+                }
+            }
+            else if(this->playlist_type == "BUGS"){
+
+                if(!list_track->at(0).bitrates.isEmpty()){
+                    this->label_track_resolution->setText(QString("%1").arg(list_track->at(0).bitrates));
+                    this->label_track_resolution->setAlignment(Qt::AlignCenter);
+
+                    width = this->label_track_resolution->sizeHint().width() + 20;
+
+                    title_width += (15 + width);
+
+                    int title_width_resize = 0;
+                    if(title_width > 650){
+                        title_width_resize = 650 - (15 + width);
+                        this->label_title->setText(GSCommon::getTextCutFromLabelWidth(title_total, title_width_resize, this->label_title->font()));
+                        if(this->label_title->text().contains("…")){
+                            this->label_title->setToolTip(title_total);
+                            this->label_title->setToolTipDuration(2000);
+                        }
+                        this->label_title->setGeometry(135, 10, title_width_resize, 25);
+                    }
+                    else{
+                        title_width_resize = title_width - (15 + width);
+                        this->label_title->setText(title_total);
+                        this->label_title->setGeometry(135, 10, title_width_resize, 25);
+                    }
+
+                    left = this->label_title->geometry().left() + this->label_title->geometry().width() + 15;
+
+                    this->label_track_resolution->setGeometry(left, 15, width, 16);
+                    this->label_track_resolution->show();
+                }
+                else{
+                    if(title_width > 650){
+                        this->label_title->setText(GSCommon::getTextCutFromLabelWidth(title_total, 650, this->label_title->font()));
+                        if(this->label_title->text().contains("…")){
+                            this->label_title->setToolTip(title_total);
+                            this->label_title->setToolTipDuration(2000);
+                        }
+                        this->label_title->setGeometry(135, 10, 650, 25);
+                    }
+                    else{
+                        this->label_title->setText(title_total);
+                        this->label_title->setGeometry(135, 10, title_width, 25);
+                    }
+                }
+            }
+            else{
+                if(title_width > 650){
+                    this->label_title->setText(GSCommon::getTextCutFromLabelWidth(title_total, 650, this->label_title->font()));
+                    if(this->label_title->text().contains("…")){
+                        this->label_title->setToolTip(title_total);
+                        this->label_title->setToolTipDuration(2000);
+                    }
+                    this->label_title->setGeometry(135, 10, 650, 25);
+                }
+                else{
+                    this->label_title->setText(title_total);
+                    this->label_title->setGeometry(135, 10, title_width, 25);
+                }
+            }
         }
 
-        this->label_track_resolution->setGeometry(left, 40, width, 16);
-        this->label_track_resolution->show();
+        this->label_track_type->setGeometry(135, 36, 30, 20);
+        this->label_track_type->show();
+
+        if(artist_width > 610){
+            this->label_artist->setText(GSCommon::getTextCutFromLabelWidth(performer, 610, this->label_artist->font()));
+            if(this->label_artist->text().contains("…")){
+                this->label_artist->setToolTip(performer);
+                this->label_artist->setToolTipDuration(2000);
+            }
+            this->label_artist->setGeometry(165, 34, 610, 25);
+        }
+        else{
+            this->label_artist->setText(performer);
+            this->label_artist->setGeometry(165, 34, artist_width, 25);
+        }
+    }
+    else{
+        if(list_track->at(0).hires == true){
+            QString hires_path = "";
+
+            if(this->playlist_type == "TIDAL"){
+
+                hires_path = ":/images/tidal/mqa_ico.png";
+
+                title_width += (15 + 36);
+
+                int title_width_resize = 0;
+                if(title_width > 700){
+                    title_width_resize = 700 - (15 + 36);
+                    this->label_title->setText(GSCommon::getTextCutFromLabelWidth(title_total, title_width_resize, this->label_title->font()));
+                    if(this->label_title->text().contains("…")){
+                        this->label_title->setToolTip(title_total);
+                        this->label_title->setToolTipDuration(2000);
+                    }
+                    this->label_title->setGeometry(85, 10, title_width_resize, 25);
+                }
+                else{
+                    title_width_resize = title_width - (15 + 36);
+                    this->label_title->setText(title_total);
+                    this->label_title->setGeometry(85, 10, title_width_resize, 25);
+                }
+                QImage img;
+                QPixmap *img_hires = new QPixmap();
+                if(img.load(hires_path)){
+                    *img_hires = QPixmap::fromImage(img);                                                           //이미지를 버퍼에 옮긴다.
+                    *img_hires = img_hires->scaled(36, 13, Qt::KeepAspectRatio, Qt::SmoothTransformation);          //이미지 사이즈 조절
+                }
+
+                this->label_track_hires->setPixmap(*img_hires);
+                this->label_track_hires->setFixedSize(36, 13);
+
+                left = this->label_title->geometry().left() + this->label_title->geometry().width() + 15;
+
+                this->label_track_hires->setGeometry(left, 18, 0, 0);
+                this->label_track_hires->show();
+            }
+            else if(this->playlist_type == "QOBUZ"){
+
+                hires_path = ":/images/qobuz/hires_ico.png";
+
+                if(list_track->at(0).maximum_sampling_rate > 0){
+                    this->label_track_resolution->setText(QString("%1 kHz").arg(list_track->at(0).maximum_sampling_rate));
+                    this->label_track_resolution->setAlignment(Qt::AlignCenter);
+
+                    width = this->label_track_resolution->sizeHint().width() + 20;
+
+                    title_width += (15 + width + 15 + 20);
+
+                    int title_width_resize = 0;
+                    if(title_width > 700){
+                        title_width_resize = 700 - (15 + width + 15 + 20);
+                        this->label_title->setText(GSCommon::getTextCutFromLabelWidth(title_total, title_width_resize, this->label_title->font()));
+                        if(this->label_title->text().contains("…")){
+                            this->label_title->setToolTip(title_total);
+                            this->label_title->setToolTipDuration(2000);
+                        }
+                        this->label_title->setGeometry(85, 10, title_width_resize, 25);
+                    }
+                    else{
+                        title_width_resize = title_width - (15 + width + 15 + 20);
+                        this->label_title->setText(title_total);
+                        this->label_title->setGeometry(85, 10, title_width_resize, 25);
+                    }
+
+                    QImage img;
+                    QPixmap *img_hires = new QPixmap();
+                    if(img.load(hires_path)){
+                        *img_hires = QPixmap::fromImage(img);                                                           //이미지를 버퍼에 옮긴다.
+                        *img_hires = img_hires->scaled(20, 20, Qt::KeepAspectRatio, Qt::SmoothTransformation);          //이미지 사이즈 조절
+                    }
+
+                    this->label_track_hires->setPixmap(*img_hires);
+                    this->label_track_hires->setFixedSize(20, 20);
+
+                    left = this->label_title->geometry().left() + this->label_title->geometry().width() + 15;
+
+                    this->label_track_hires->setGeometry(left, 14, 0, 0);
+                    this->label_track_hires->show();
+
+                    left = this->label_title->geometry().left() + this->label_title->geometry().width() + 15 + 20 + 15;
+
+                    this->label_track_resolution->setGeometry(left, 15, width, 16);
+                    this->label_track_resolution->show();
+                }
+                else{
+                    title_width += (15 + 20);
+
+                    int title_width_resize = 0;
+                    if(title_width > 700){
+                        title_width_resize = 690 - (15 + width);
+                        this->label_title->setText(GSCommon::getTextCutFromLabelWidth(title_total, title_width_resize, this->label_title->font()));
+                        if(this->label_title->text().contains("…")){
+                            this->label_title->setToolTip(title_total);
+                            this->label_title->setToolTipDuration(2000);
+                        }
+                        this->label_title->setGeometry(85, 10, title_width_resize, 25);
+                    }
+                    else{
+                        title_width_resize = title_width - (15 + width);
+                        this->label_title->setText(title_total);
+                        this->label_title->setGeometry(85, 10, title_width_resize, 25);
+                    }
+
+                    left = this->label_title->geometry().left() + this->label_title->geometry().width() + 15;
+
+                    this->label_track_resolution->setGeometry(left, 16, width, 16);
+                    this->label_track_resolution->show();
+                }
+            }
+            else if(this->playlist_type == "BUGS"){
+
+                if(!list_track->at(0).bitrates.isEmpty()){
+                    this->label_track_resolution->setText(QString("%1").arg(list_track->at(0).bitrates));
+                    this->label_track_resolution->setAlignment(Qt::AlignCenter);
+
+                    width = this->label_track_resolution->sizeHint().width() + 20;
+
+                    title_width += (15 + width);
+
+                    int title_width_resize = 0;
+                    if(title_width > 700){
+                        title_width_resize = 690 - (15 + width);
+                        this->label_title->setText(GSCommon::getTextCutFromLabelWidth(title_total, title_width_resize, this->label_title->font()));
+                        if(this->label_title->text().contains("…")){
+                            this->label_title->setToolTip(title_total);
+                            this->label_title->setToolTipDuration(2000);
+                        }
+                        this->label_title->setGeometry(85, 10, title_width_resize, 25);
+                    }
+                    else{
+                        title_width_resize = title_width - (15 + width);
+                        this->label_title->setText(title_total);
+                        this->label_title->setGeometry(85, 10, title_width_resize, 25);
+                    }
+
+                    left = this->label_title->geometry().left() + this->label_title->geometry().width() + 15;
+
+                    this->label_track_resolution->setGeometry(left, 15, width, 16);
+                    this->label_track_resolution->show();
+                }
+                else{
+                    if(title_width > 700){
+                        this->label_title->setText(GSCommon::getTextCutFromLabelWidth(title_total, 690, this->label_title->font()));
+                        if(this->label_title->text().contains("…")){
+                            this->label_title->setToolTip(title_total);
+                            this->label_title->setToolTipDuration(2000);
+                        }
+                        this->label_title->setGeometry(85, 10, 690, 25);
+                    }
+                    else{
+                        this->label_title->setText(title_total);
+                        this->label_title->setGeometry(85, 10, title_width, 25);
+                    }
+                }
+            }
+        }
+        else{
+            if(this->playlist_type == "QOBUZ"){
+
+                if(list_track->at(0).maximum_sampling_rate > 0){
+                    this->label_track_resolution->setText(QString("%1 kHz").arg(list_track->at(0).maximum_sampling_rate));
+                    this->label_track_resolution->setAlignment(Qt::AlignCenter);
+
+                    width = this->label_track_resolution->sizeHint().width() + 20;
+
+                    title_width += (15 + width);
+
+                    int title_width_resize = 0;
+                    if(title_width > 700){
+                        title_width_resize = 690 - (15 + width);
+                        this->label_title->setText(GSCommon::getTextCutFromLabelWidth(title_total, title_width_resize, this->label_title->font()));
+                        if(this->label_title->text().contains("…")){
+                            this->label_title->setToolTip(title_total);
+                            this->label_title->setToolTipDuration(2000);
+                        }
+                        this->label_title->setGeometry(85, 10, title_width_resize, 25);
+                    }
+                    else{
+                        title_width_resize = title_width - (15 + width);
+                        this->label_title->setText(title_total);
+                        this->label_title->setGeometry(85, 10, title_width_resize, 25);
+                    }
+
+                    left = this->label_title->geometry().left() + this->label_title->geometry().width() + 15;
+
+                    this->label_track_resolution->setGeometry(left, 15, width, 16);
+                    this->label_track_resolution->show();
+                }
+                else{
+                    if(title_width > 700){
+                        this->label_title->setText(GSCommon::getTextCutFromLabelWidth(title_total, title_width, this->label_title->font()));
+                        if(this->label_title->text().contains("…")){
+                            this->label_title->setToolTip(title_total);
+                            this->label_title->setToolTipDuration(2000);
+                        }
+                        this->label_title->setGeometry(85, 10, title_width, 25);
+                    }
+                    else{
+                        this->label_title->setText(title_total);
+                        this->label_title->setGeometry(85, 10, title_width, 25);
+                    }
+                }
+            }
+            else if(this->playlist_type == "BUGS"){
+
+                if(!list_track->at(0).bitrates.isEmpty()){
+                    this->label_track_resolution->setText(QString("%1").arg(list_track->at(0).bitrates));
+                    this->label_track_resolution->setAlignment(Qt::AlignCenter);
+
+                    width = this->label_track_resolution->sizeHint().width() + 20;
+
+                    title_width += (15 + width);
+
+                    int title_width_resize = 0;
+                    if(title_width > 700){
+                        title_width_resize = 700 - (15 + width);
+                        this->label_title->setText(GSCommon::getTextCutFromLabelWidth(title_total, title_width_resize, this->label_title->font()));
+                        if(this->label_title->text().contains("…")){
+                            this->label_title->setToolTip(title_total);
+                            this->label_title->setToolTipDuration(2000);
+                        }
+                        this->label_title->setGeometry(85, 10, title_width_resize, 25);
+                    }
+                    else{
+                        title_width_resize = title_width - (15 + width);
+                        this->label_title->setText(title_total);
+                        this->label_title->setGeometry(85, 10, title_width_resize, 25);
+                    }
+
+                    left = this->label_title->geometry().left() + this->label_title->geometry().width() + 15;
+
+                    this->label_track_resolution->setGeometry(left, 15, width, 16);
+                    this->label_track_resolution->show();
+                }
+                else{
+                    if(title_width > 700){
+                        this->label_title->setText(GSCommon::getTextCutFromLabelWidth(title_total, 700, this->label_title->font()));
+                        if(this->label_title->text().contains("…")){
+                            this->label_title->setToolTip(title_total);
+                            this->label_title->setToolTipDuration(2000);
+                        }
+                        this->label_title->setGeometry(85, 10, title_width, 25);
+                    }
+                    else{
+                        this->label_title->setText(title_total);
+                        this->label_title->setGeometry(85, 10, 690, 25);
+                    }
+                }
+            }
+            else{
+                if(title_width > 700){
+                    this->label_title->setText(GSCommon::getTextCutFromLabelWidth(title_total, 700, this->label_title->font()));
+                    if(this->label_title->text().contains("…")){
+                        this->label_title->setToolTip(title_total);
+                        this->label_title->setToolTipDuration(2000);
+                    }
+                    this->label_title->setGeometry(85, 10, 690, 25);
+                }
+                else{
+                    this->label_title->setText(title_total);
+                    this->label_title->setGeometry(85, 10, title_width, 25);
+                }
+            }
+        }
+
+        this->label_track_type->setGeometry(85, 36, 30, 20);
+        this->label_track_type->show();
+
+        if(artist_width > 660){
+            this->label_artist->setText(GSCommon::getTextCutFromLabelWidth(performer, 660, this->label_artist->font()));
+            if(this->label_artist->text().contains("…")){
+                this->label_artist->setToolTip(performer);
+                this->label_artist->setToolTipDuration(2000);
+            }
+            this->label_artist->setGeometry(115, 34, 660, 25);
+        }
+        else{
+            this->label_artist->setText(performer);
+            this->label_artist->setGeometry(115, 34, artist_width, 25);
+        }
     }
 
     QLabel *tmp_album_title = new QLabel();
@@ -1783,6 +3549,10 @@ void PlaylistTrackDetailInfo_RHV::setDataTrackInfo_RoseMain(const roseHome::Trac
         album_title_width = tmp_album_title->sizeHint().width() + 220;
 
         this->label_album->setText(GSCommon::getTextCutFromLabelWidth(list_track->at(0).album_title, album_title_width, this->label_album->font()));
+        if(this->label_album->text().contains("…")){
+            this->label_album->setToolTip(list_track->at(0).album_title);
+            this->label_album->setToolTipDuration(2000);
+        }
         this->label_album->setGeometry(819, 14, 220, 40);
     }
     else{
@@ -1819,6 +3589,16 @@ void PlaylistTrackDetailInfo_RHV::setDataTrackInfo_RoseMain(const roseHome::Trac
     this->btn_list_fav->setGeometry(1290, 6, 50, 58);
 
     this->btn_menu->setGeometry(1340, 6, 50, 58);
+
+    if(list_track->at(0).streamable == false){
+        this->label_title->setStyleSheet("background-color:transparent;color:#666666;font-size:16px;font-weight:normal;");
+        this->label_artist->setStyleSheet("background-color:transparent;color:#666666;font-size:16px;font-weight:300;");
+        this->label_track_resolution->setStyleSheet("background-color:transparent;color:#666666;font-size:12px;font-weight:300;border:1px solid #666666;border-radius:8px;");
+        this->label_album->setStyleSheet("background-color:transparent;color:#666666;font-size:14px;font-weight:300;");
+        this->label_duration->setStyleSheet("background-color:transparent;color:#666666;font-size:14px;font-weight:300;");
+
+        this->setEnabled(false);
+    }
 }
 
 
@@ -1896,6 +3676,10 @@ void PlaylistTrackDetailInfo_RHV::setDataTrackInfo_RoseListEdit(const QJsonObjec
 
     if(title_width > 720){
         this->label_title->setText(GSCommon::getTextCutFromLabelWidth(title, 720, this->label_title->font()));
+        if(this->label_title->text().contains("…")){
+            this->label_title->setToolTip(title);
+            this->label_title->setToolTipDuration(2000);
+        }
         this->label_title->setGeometry(120, 10, 720, 25);
     }
     else{
@@ -2008,6 +3792,10 @@ void PlaylistTrackDetailInfo_RHV::setDataTrackInfo_RoseListEdit(const QJsonObjec
         album_title_width = tmp_album_title->sizeHint().width() + 220;
 
         this->label_album->setText(GSCommon::getTextCutFromLabelWidth(title, album_title_width, this->label_album->font()));
+        if(this->label_album->text().contains("…")){
+            this->label_album->setToolTip(title);
+            this->label_album->setToolTipDuration(2000);
+        }
         this->label_album->setGeometry(937, 14, 220, 40);
     }
     else{
@@ -2031,6 +3819,7 @@ void PlaylistTrackDetailInfo_RHV::setDataTrackInfo_RoseListEdit(const QJsonObjec
 
     this->setStyleSheet("#trackInfo { border-bottom:1px solid #333333; } #trackInfo:hover { } ");
     //this->setCursor(Qt::ArrowCursor);//c0208
+
 }
 
 
@@ -2060,6 +3849,10 @@ void PlaylistTrackDetailInfo_RHV::setDataTrackInfo_Video(const QJsonObject &trac
 
     if(title_width > 720){
         this->label_title->setText(GSCommon::getTextCutFromLabelWidth(title, 720, this->label_title->font()));
+        if(this->label_title->text().contains("…")){
+            this->label_title->setToolTip(title);
+            this->label_title->setToolTipDuration(2000);
+        }
         this->label_title->setGeometry(80, 10, 720, 25);
     }
     else{
@@ -2112,19 +3905,19 @@ void PlaylistTrackDetailInfo_RHV::slot_clickBtn_signal(){
     QString type = sender()->property("type").toString();
 
     if(type == "playtrack"){
-        emit this->clicked(this->property("index").toInt(), ClickMode::AllBox);
+        emit this->clicked(this->property("index").toInt(), PlaylistTrackDetailInfo_RHV::ClickMode::AllBox);
     }
     else if(type == "playlist"){
-        emit this->clicked(this->property("index").toInt(), ClickMode::AddCollectionBtn);
+        emit this->clicked(this->property("index").toInt(), PlaylistTrackDetailInfo_RHV::ClickMode::AddCollectionBtn);
     }
     else if(type == "fav"){
-        emit this->clicked(this->property("index").toInt(), ClickMode::FavBtn);
+        emit this->clicked(this->property("index").toInt(), PlaylistTrackDetailInfo_RHV::ClickMode::FavBtn);
     }
     else if(type == "more"){
-        emit this->clicked(this->property("index").toInt(), ClickMode::MoreBtn);
+        emit this->clicked(this->property("index").toInt(), PlaylistTrackDetailInfo_RHV::ClickMode::MoreBtn);
     }
     else if(type == "musicVideo"){
-        emit this->clicked(this->property("index").toInt(), ClickMode::MusicVideoBtn);
+        emit this->clicked(this->property("index").toInt(), PlaylistTrackDetailInfo_RHV::ClickMode::MusicVideoBtn);
     }
 }
 
@@ -2174,16 +3967,39 @@ void PlaylistTrackDetailInfo_RHV::slot_fileDownload_loadImage()
 
     if(flagLoad){
         QPixmap pixmapIMG = QPixmap(QSize(60, 60));
-        pixmapIMG.fill(Qt::transparent);
-
+        pixmapIMG.fill(Qt::black);
+        /*if(this->playlist_type == "VIDEO"){
+            pixmapIMG.fill(Qt::transparent);
+        }
+        else{
+            pixmapIMG.fill(Qt::black);
+        }*/
 
         QPixmap tmp_pixmap;
         tmp_pixmap = tmp_pixmap.fromImage(image);
-        if(this->playlist_type == "VIDEO"){
-            tmp_pixmap = tmp_pixmap.scaled(42, 42, Qt::KeepAspectRatioByExpanding, Qt::SmoothTransformation);
+        /*if(this->playlist_type == "VIDEO"){
+            tmp_pixmap = tmp_pixmap.scaled(42, 42, Qt::KeepAspectRatio, Qt::SmoothTransformation);
         }
         else{
-            tmp_pixmap = tmp_pixmap.scaled(60, 60, Qt::KeepAspectRatioByExpanding, Qt::SmoothTransformation);
+            if(60 > tmp_pixmap.width() && 60 <= tmp_pixmap.height()){
+                tmp_pixmap = tmp_pixmap.scaled(tmp_pixmap.width(), 60, Qt::KeepAspectRatio, Qt::SmoothTransformation);
+            }
+            else if(60 <= tmp_pixmap.width() && 60 > tmp_pixmap.height()){
+                tmp_pixmap = tmp_pixmap.scaled(60, tmp_pixmap.height(), Qt::KeepAspectRatio, Qt::SmoothTransformation);
+            }
+            else{
+                tmp_pixmap = tmp_pixmap.scaled(60, 60, Qt::KeepAspectRatio, Qt::SmoothTransformation);
+            }
+        }*/
+
+        if(60 > tmp_pixmap.width() && 60 <= tmp_pixmap.height()){
+            tmp_pixmap = tmp_pixmap.scaled(tmp_pixmap.width(), 60, Qt::KeepAspectRatio, Qt::SmoothTransformation);
+        }
+        else if(60 <= tmp_pixmap.width() && 60 > tmp_pixmap.height()){
+            tmp_pixmap = tmp_pixmap.scaled(60, tmp_pixmap.height(), Qt::KeepAspectRatio, Qt::SmoothTransformation);
+        }
+        else{
+            tmp_pixmap = tmp_pixmap.scaled(60, 60, Qt::KeepAspectRatio, Qt::SmoothTransformation);
         }
 
         QPainter painter (&pixmapIMG);
@@ -2192,20 +4008,12 @@ void PlaylistTrackDetailInfo_RHV::slot_fileDownload_loadImage()
         painter.setRenderHint(QPainter::SmoothPixmapTransform, true);
 
         QPainterPath path = QPainterPath();
-        path.addRoundedRect(0, 0, 60, 60, 2, 2, Qt::RelativeSize);
+        path.addRoundedRect(0, 0, 60, 60, 4, 4, Qt::RelativeSize);
+
+        int leftValue = (60 - tmp_pixmap.width()) / 2;
+        int topValue = (60 - tmp_pixmap.height()) / 2;
+
         painter.setClipPath(path);
-
-        int leftValue = 0;
-        int topValue = 0;
-
-        if(tmp_pixmap.width() > 60 || tmp_pixmap.width() < 60){
-            leftValue = (60 - tmp_pixmap.width()) / 2;
-        }
-
-        if(tmp_pixmap.height() > 60 || tmp_pixmap.height() < 60){
-            topValue = (60 - tmp_pixmap.height()) / 2;
-        }
-
         painter.drawPixmap(leftValue, topValue, tmp_pixmap);
         painter.end();
 

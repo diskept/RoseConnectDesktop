@@ -193,7 +193,7 @@ namespace rosetube {
 
     void RoseTubeExplore::setUIControl_requestExplore(){
 
-        ContentLoadingwaitingMsgShow(tr("Content is being loaded. Please wait."));
+        print_debug();ContentLoadingwaitingMsgShow(tr("Content is being loaded. Please wait."));
 
         NetworkHttp *network = new NetworkHttp;
         connect(network, SIGNAL(response(int,QJsonObject)), SLOT(slot_responseHttp(int,QJsonObject)));
@@ -213,6 +213,24 @@ namespace rosetube {
                          , json
                          , false
                          , true);
+    }
+
+    void RoseTubeExplore::slot_applyResult_getRating_track(const QJsonArray &contents){
+
+        if(contents.size() > 0){
+
+            QJsonObject tmpObj = contents.at(0).toObject();
+
+            if(tmpObj.value("flagOk").toBool() == true && tmpObj.value("message").toString() == "정상"){
+                this->home_rosetube_track[this->flag_fav_type][this->flag_fav_idx]->setFavorite_btnHeart(this->flag_fav_star == 0 ? false : true, this->flag_fav_star);
+
+            }
+        }
+
+        ContentLoadingwaitingMsgHide();
+
+
+
     }
 
 
@@ -433,7 +451,7 @@ namespace rosetube {
 
                     if(maxCount == 0){
                         NoData_Widget *noData_widget = new NoData_Widget(NoData_Widget::NoData_Message::Rosetube_NoData);
-                        noData_widget->setFixedSize(1500, 300);
+                        noData_widget->setFixedSize(1500, 308);
 
                         this->vBox_Track[this->flag_track_idx]->addWidget(noData_widget);
                     }
@@ -454,7 +472,7 @@ namespace rosetube {
                         playlist_scrollArea->setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
                         playlist_scrollArea->setStyleSheet("background-color:transparent; border:0px;");
                         playlist_scrollArea->setContentsMargins(0, 0, 0, 0);
-                        playlist_scrollArea->setFixedHeight(300);
+                        playlist_scrollArea->setFixedHeight(308);
 
                         QScroller::grabGesture(playlist_scrollArea, QScroller::LeftMouseButtonGesture);
                         //----------------------------------------------------------------------------------------------------  BODY : END
@@ -601,42 +619,51 @@ namespace rosetube {
         int section = ((tidal::AbstractItem*)sender())->section();
 
         // ClickMode 별로 처리
-        if(clickMode == tidal::AbstractItem::ClickMode::FavBtn_Add){
+        if(clickMode == tidal::AbstractItem::ClickMode::FavBtn_Add || clickMode == tidal::AbstractItem::ClickMode::FavBtn_Addx2
+                || clickMode == tidal::AbstractItem::ClickMode::FavBtn_Addx3 || clickMode == tidal::AbstractItem::ClickMode::FavBtn_Delete){
 
-            /*if(this->flag_check_track == false){
-                    this->track_star_fav = this->home_recently_track[idx]->getFavoritesStars();
-                    this->flag_track_fav = false;
+            bool flag_fav = false;
+            int star_fav = 0;
 
-                    if(this->track_star_fav == 3){
-                        this->track_star_fav = 0;
-                        this->flag_track_fav = false;
-                    }
-                    else if(this->track_star_fav >= 0 && this->track_star_fav < 3){
-                        this->track_star_fav++;
-                        this->flag_track_fav = true;
-                    }
+            if(clickMode == tidal::AbstractItem::ClickMode::FavBtn_Add){
+                flag_fav = true;
+                star_fav = 1;
+            }
+            else if(clickMode == tidal::AbstractItem::ClickMode::FavBtn_Addx2){
+                flag_fav = true;
+                star_fav = 2;
+            }
+            else if(clickMode == tidal::AbstractItem::ClickMode::FavBtn_Addx3){
+                flag_fav = true;
+                star_fav = 3;
+            }
+            else if(clickMode == tidal::AbstractItem::ClickMode::FavBtn_Delete){
+                flag_fav = true;
+                star_fav = 0;
+            }
 
-                    this->track_idx_fav = idx;
+            this->flag_fav_idx = index;
+            this->flag_fav_star = star_fav;
+            this->flag_fav_type = section;
 
-                    QJsonObject ratingInfo;
-                    ratingInfo.insert("favorite", this->flag_track_fav);
-                    ratingInfo.insert("star", this->track_star_fav);
-                    ratingInfo.insert("thumbup", false);
-                    ratingInfo.insert("type", );
+            QJsonObject track = this->jsonArr_rosetubeTrack[section].at(index).toObject();
 
-                    QJsonObject track = this->jsonArr_tracks_toPlay.at(idx).toObject();
+            QJsonObject ratingInfo;
+            ratingInfo.insert("favorite", flag_fav);
+            ratingInfo.insert("star", star_fav);
+            ratingInfo.insert("thumbup", false);
+            ratingInfo.insert("type", "YOUTUBE");
 
-                    QJsonObject json;
-                    json.insert("ratingInfo", ratingInfo);
-                    json.insert("track", track);
+            QJsonObject json;
+            json.insert("track", track);
+            json.insert("ratingInfo", ratingInfo);
 
-                    // request HTTP API - get favorite for Rose Server
-                    roseHome::ProcCommon *proc_fav_track = new roseHome::ProcCommon(this);
-                    connect(proc_fav_track, &roseHome::ProcCommon::completeReq_rating_track, this, &RoseHome::slot_applyResult_getRating_track);
-                    proc_fav_track->request_rose_setRating_Track(json, this->flag_track_fav, this->track_star_fav);
+            // request HTTP API - get favorite for Rose Server
+            roseHome::ProcCommon *proc_fav_track = new roseHome::ProcCommon(this);
+            connect(proc_fav_track, &roseHome::ProcCommon::completeReq_rating_track, this, &RoseTubeExplore::slot_applyResult_getRating_track);
+            proc_fav_track->request_rose_setRating_Track(json, flag_fav, star_fav);
 
-                    this->flag_check_track = true;
-                }*/
+            print_debug();ContentLoadingwaitingMsgShow(tr("Content is being loaded. Please wait."));
         }
         else{
 

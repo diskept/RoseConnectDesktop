@@ -74,9 +74,12 @@ namespace qobuz {
 
             this->flag_album_draw = false;
 
-            ContentLoadingwaitingMsgShow(tr("Content is being loaded. Please wait."));
+            print_debug();ContentLoadingwaitingMsgShow(tr("Content is being loaded. Please wait."));
 
             this->request_more_albumData();
+        }
+        else{
+            print_debug();ContentLoadingwaitingMsgHide();   //j230328
         }
     }
 
@@ -128,13 +131,36 @@ namespace qobuz {
 
             this->flag_album_draw = true;
 
-            ContentLoadingwaitingMsgShow(tr("Content is being loaded. Please wait."));
+            print_debug();ContentLoadingwaitingMsgShow(tr("Content is being loaded. Please wait."));
 
             this->request_more_albumDraw();
         }
     }
 
 
+    void QobuzAlbumListAll::resizeEvent(QResizeEvent *event){//c230223
+
+        int w = flowLayout_albums->sizeHint().width();
+        int l = 80, r = 60, scrollbarW = 0;
+
+        int mod_nn = (global.LmtCnt-l-r-scrollbarW)%(w+0);
+        //qDebug() << "mod_nn=" << mod_nn;
+        int i = 0;
+        while(1){
+
+            mod_nn = (global.LmtCnt-l-r-scrollbarW)%(w+0+i);
+            if(mod_nn > 20){
+
+                mod_nn = (global.LmtCnt-l-r-scrollbarW)%(w+(0+(i++)));
+            }else{
+                break;
+            }
+        }
+
+        flowLayout_albums->setSpacingHV(0+i,20);
+        // BugsChooseFilterOpt 위젯의 사이즈를 업데이트 해줘야함
+
+    }
     // MARK : Request HTTP API  ------------------------------------------------------------------------------------------
 
     /**
@@ -147,7 +173,12 @@ namespace qobuz {
             this->flagReqMore_album = true;
 
             // j220913 list count check
-            int width_cnt = global.LmtCnt / 220;
+            int width_cnt;//c230223
+            if(flowLayout_albums->sizeHint().width() < 0) {//c230223
+                width_cnt = global.LmtCnt / 217;
+            }else{
+                width_cnt = global.LmtCnt / flowLayout_albums->sizeHint().width();//
+            }
             int mod = this->album_draw_cnt % width_cnt;
 
             if(mod == 0){
@@ -185,7 +216,12 @@ namespace qobuz {
     void QobuzAlbumListAll::request_more_albumDraw(){
 
         // j220913 list count check
-        int width_cnt = global.LmtCnt / 220;
+        int width_cnt;//c230223
+        if(flowLayout_albums->sizeHint().width() < 0) {//c230223
+            width_cnt = global.LmtCnt / 217;
+        }else{
+            width_cnt = global.LmtCnt / flowLayout_albums->sizeHint().width();//
+        }
         int mod = this->album_draw_cnt % width_cnt;
 
         if(mod == 0){
@@ -258,12 +294,46 @@ namespace qobuz {
                     QCoreApplication::processEvents();
                 }
 
+                //c230306_1-start
+                int w = flowLayout_albums->sizeHint().width();
+                int l = 80, r = 60, scrollbarW = 10, mod = 0;
+
+                int mod_nn = (global.LmtCnt-l-r-scrollbarW)%(w + mod);
+                int nn = (global.LmtCnt-l-r-scrollbarW)/(w + mod);
+                //qDebug() << "global.LmtCnt=" << global.LmtCnt;
+                //qDebug() << "this->width()=" << this->width();
+                //qDebug() << "nn=" << nn;
+                //qDebug() << "mod_nn=" << mod_nn;
+
+
+                int i = 0;
+                while(1){
+
+                    mod_nn = (global.LmtCnt-l-r-scrollbarW)%(w + mod + i);
+                    if(mod_nn > 20){
+
+                        mod_nn = (global.LmtCnt-l-r-scrollbarW)%(w + ( mod +(i++)));
+                    }else{
+                        break;
+                    }
+                }
+                //print_debug();
+                //qDebug() << "w=" << w;
+                //qDebug() << "i=" << i;
+                //qDebug() << "this->width()=" << this->width();
+                //this->resize(this->width()+1, this->height());
+                flowLayout_albums->setSpacingHV(mod+i,20);
+                //c230306_1-end
+
+                ContentLoadingwaitingMsgHide();
+
                 this->flag_flow_draw = true;
                 this->flag_album_draw = false;
             }
 
-            ContentLoadingwaitingMsgHide();
-            this->request_more_albumData();
+            if(this->flag_lastPage_album == false){
+                this->request_more_albumData();
+            }
         }
         else{
             ContentLoadingwaitingMsgHide();      //cheon Tidal
@@ -377,9 +447,12 @@ namespace qobuz {
 
             this->flag_album_draw = false;
 
-            ContentLoadingwaitingMsgShow(tr("Content is being loaded. Please wait."));
+            print_debug();ContentLoadingwaitingMsgShow(tr("Content is being loaded. Please wait."));
 
             this->request_more_albumData();
+        }
+        else{
+            print_debug();ContentLoadingwaitingMsgHide();   //j230328
         }
     }
 
@@ -430,13 +503,35 @@ namespace qobuz {
 
             this->flag_album_draw = true;
 
-            ContentLoadingwaitingMsgShow(tr("Content is being loaded. Please wait."));
+            print_debug();ContentLoadingwaitingMsgShow(tr("Content is being loaded. Please wait."));
 
             this->request_more_albumDraw();
         }
     }
 
+    void QobuzLastReleaseList::resizeEvent(QResizeEvent *event){//c230223
 
+        int w = flowLayout_albums->sizeHint().width();
+        int l = 80, r = 60, scrollbarW = 0;
+
+        int mod_nn = (global.LmtCnt-l-r-scrollbarW)%(w+0);
+        //qDebug() << "mod_nn=" << mod_nn;
+        int i = 0;
+        while(1){
+
+            mod_nn = (global.LmtCnt-l-r-scrollbarW)%(w+0+i);
+            if(mod_nn > 20){
+
+                mod_nn = (global.LmtCnt-l-r-scrollbarW)%(w+(0+(i++)));
+            }else{
+                break;
+            }
+        }
+
+        flowLayout_albums->setSpacingHV(0+i,20);
+        // BugsChooseFilterOpt 위젯의 사이즈를 업데이트 해줘야함
+
+    }
     // MARK : Request HTTP API  ------------------------------------------------------------------------------------------
 
     /**
@@ -449,7 +544,12 @@ namespace qobuz {
             this->flagReqMore_album = true;
 
             // j220913 list count check
-            int width_cnt = global.LmtCnt / 220;
+            int width_cnt;//c230223
+            if(flowLayout_albums->sizeHint().width() < 0) {//c230223
+                width_cnt = global.LmtCnt / 217;
+            }else{
+                width_cnt = global.LmtCnt / flowLayout_albums->sizeHint().width();//
+            }
             int mod = this->album_draw_cnt % width_cnt;
 
             if(mod == 0){
@@ -475,7 +575,12 @@ namespace qobuz {
     void QobuzLastReleaseList::request_more_albumDraw(){
 
         // j220913 list count check
-        int width_cnt = global.LmtCnt / 220;
+        int width_cnt;//c230223
+        if(flowLayout_albums->sizeHint().width() < 0) {//c230223
+            width_cnt = global.LmtCnt / 217;
+        }else{
+            width_cnt = global.LmtCnt / flowLayout_albums->sizeHint().width();//
+        }
         int mod = this->album_draw_cnt % width_cnt;
 
         if(mod == 0){
@@ -547,12 +652,12 @@ namespace qobuz {
 
                     QCoreApplication::processEvents();
                 }
+                ContentLoadingwaitingMsgHide();
 
                 this->flag_flow_draw = true;
                 this->flag_album_draw = false;
             }
 
-            ContentLoadingwaitingMsgHide();
             this->request_more_albumData();
         }
         else{
@@ -660,6 +765,9 @@ namespace qobuz {
 
             this->label_mainTitle->setText(this->api_mainTitle);
         }
+        else{
+            print_debug();ContentLoadingwaitingMsgHide();   //j230328
+        }
     }
 
 
@@ -676,7 +784,7 @@ namespace qobuz {
 
             GSCommon::clearLayout(this->flowLayout_albums);
 
-            ContentLoadingwaitingMsgShow(tr("Content is being loaded. Please wait."));
+            print_debug();ContentLoadingwaitingMsgShow(tr("Content is being loaded. Please wait."));
 
             QJsonArray json_arr;
             this->slot_applyResult_albums(*this->list_album, json_arr, false);
@@ -719,7 +827,7 @@ namespace qobuz {
             this->scrollArea_main->setVerticalScrollBarPolicy(Qt::ScrollBarAsNeeded);
         }
 
-        this->list_album->append(list_data);
+        //this->list_album->append(list_data);
         int max_cnt = this->list_album->size();
 
         for(int i = 0; i < max_cnt; i++){

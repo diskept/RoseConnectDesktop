@@ -21,7 +21,7 @@ namespace rosetube {
     const int SECTION_FOR_MORE_POPUP___PLAYLIST = 1;
 
 
-    RosetubeViewAll::RosetubeViewAll(QWidget *parent) : roseHome::AbstractRoseHomeSubWidget(MainUIType::VerticalScroll_viewAll, parent) {
+    RosetubeViewAll::RosetubeViewAll(QWidget *parent) : roseHome::AbstractRoseHomeSubWidget(MainUIType::VerticalScroll_roseviewAll, parent) {
 
         this->setUIControl_RoseTube();
     }
@@ -66,6 +66,9 @@ namespace rosetube {
             // request HTTP API
             this->request_more_rosetubeData();
         }
+        else{
+            print_debug();ContentLoadingwaitingMsgHide();   //j230328
+        }
     }
 
 
@@ -90,63 +93,166 @@ namespace rosetube {
 
         this->label_mainTitle = this->get_addUIControl_mainTitle("View All");
 
+        // 하단에 구분 라인
+        this->addUIControl_dividedLine_onMain();
+
+        GSCommon::clearLayout(this->box_contents);
+        this->box_contents->setAlignment(Qt::AlignTop);
+        this->scrollArea_main->setVerticalScrollBarPolicy(Qt::ScrollBarAsNeeded);
+
+        rosetube::ItemTrack_rosetube *listAlbum = new rosetube::ItemTrack_rosetube(0, SECTION_FOR_MORE_POPUP___TRACK, tidal::AbstractItem::ImageSizeMode::Ractangle_284x157, true);
+
+        this->rosetube_widget_width = listAlbum->get_fixedWidth();
+        this->rosetube_widget_margin = listAlbum->get_rightMargin();
+
+        delete listAlbum;
+
         // layout for items
         this->flowLayout_rosetube = this->get_addUIControl_flowLayout(0, 20);
-        this->scrollArea_main->setVerticalScrollBarPolicy(Qt::ScrollBarAsNeeded);
+
     }
 
 
     void RosetubeViewAll::proc_wheelEvent_to_getMoreData(){
 
-        if((!this->flagReqMore_rosetube && !this->flag_lastPage_rosetube) && (this->rosetube_total_cnt > this->rosetube_draw_cnt) && (this->flag_rosetube_draw == false)
-                && (this->scrollArea_main->verticalScrollBar()->value() == this->scrollArea_main->verticalScrollBar()->maximum())){
-
-            this->flag_rosetube_draw = true;
+        if((!this->flagReqMore_rosetube && !this->flag_lastPage_rosetube) && (this->scrollArea_main->verticalScrollBar()->value() == this->scrollArea_main->verticalScrollBar()->maximum())){
+            this->flagReqMore_rosetube = true;
 
             ContentLoadingwaitingMsgShow(tr("Content is being loaded. Please wait."));
 
             this->request_more_rosetubeData();
+        }
+        else if((this->rosetube_total_cnt > this->rosetube_draw_cnt) && this->flag_rosetube_draw == false && (this->scrollArea_main->verticalScrollBar()->value() == this->scrollArea_main->verticalScrollBar()->maximum())){
+
+            ContentLoadingwaitingMsgShow(tr("Content is being loaded. Please wait."));
+
+            this->request_more_rosetubeDraw();
         }
     }
 
 
     void RosetubeViewAll::request_more_rosetubeData(){
 
-        if(!this->flagReqMore_rosetube && !this->flag_lastPage_rosetube){
-            this->flagReqMore_rosetube = true;
-
-            // next_offset
-            if(this->rosetube_total_cnt == 0){
-                this->next_offset = 0;
-                this->jsonArr_rosetubeTrack = QJsonArray();
-                this->jsonArr_rosetubePlaylist = QJsonArray();
-            }
-            else{
-                this->next_offset++;
-            }
-
-
-            // request HTTP API
-            NetworkHttp *network = new NetworkHttp;
-            connect(network, SIGNAL(response(int,QJsonObject)), SLOT(slot_responseHttp(int,QJsonObject)));
-
-            QString url = global.legacy_v1 + "/member/youtube/viewmore?" + QString("subCategoryId=%1").arg(this->subCategoryId) + QString("&page=%1&size=50").arg(this->next_offset);
-
-            qDebug() << url;
-            QJsonObject json;
-
-            network->request(HTTP_ROSETUBE
-                             , url
-                             , json
-                             , false
-                             , true);
-
-            if(this->next_offset == 0){
-                this->flag_rosetube_draw = true;
-            }
+        // next_offset
+        if(this->rosetube_total_cnt == 0){
+            this->next_offset = 0;
+            this->jsonArr_rosetubeTrack = QJsonArray();
+            this->jsonArr_rosetubePlaylist = QJsonArray();
         }
+        else{
+            this->next_offset++;
+        }
+
+
+        // request HTTP API
+        NetworkHttp *network = new NetworkHttp;
+        connect(network, SIGNAL(response(int,QJsonObject)), SLOT(slot_responseHttp(int,QJsonObject)));
+
+        QString url = global.legacy_v1 + "/member/youtube/viewmore?" + QString("subCategoryId=%1").arg(this->subCategoryId) + QString("&page=%1&size=200").arg(this->next_offset);
+
+        qDebug() << url;
+        QJsonObject json;
+
+        network->request(HTTP_ROSETUBE
+                         , url
+                         , json
+                         , false
+                         , true);
+
+        if(this->next_offset == 0){
+            this->flag_rosetube_draw = true;
+        }
+
     }
 
+    void RosetubeViewAll::request_more_rosetubeDraw(){
+
+        this->flag_rosetube_draw = true;
+
+        int f_width = this->flowLayout_rosetube->geometry().width();
+
+        if(this->flowLayout_rosetube->geometry().width() <= 0){
+            f_width = this->width() - (80 + 63) - 10;
+        }
+
+        int f_wg_cnt = f_width / (this->rosetube_widget_width + this->rosetube_widget_margin);
+        int f_mod = this->rosetube_draw_cnt % f_wg_cnt;
+
+        if(f_mod == 0){
+            this->rosetube_widget_cnt = f_wg_cnt * 10;
+        }
+        else{
+            this->rosetube_widget_cnt = f_wg_cnt * 10 + (f_wg_cnt - f_mod);
+        }
+
+        int start_index = this->rosetube_draw_cnt;
+        int max_cnt = ((this->rosetube_total_cnt - this->rosetube_draw_cnt) > this->rosetube_widget_cnt ) ? this->rosetube_widget_cnt : (this->rosetube_total_cnt - this->rosetube_draw_cnt);
+        this->rosetube_draw_cnt += max_cnt;
+
+        if(this->list_type =="TRACK"){
+
+            for(int i = start_index; i < this->rosetube_draw_cnt; i++){
+                this->viewAll_rosetube_track[i] = new rosetube::ItemTrack_rosetube(i, SECTION_FOR_MORE_POPUP___TRACK, tidal::AbstractItem::ImageSizeMode::Ractangle_284x157, true);
+                qDebug() << "i = :" << i;
+                QCoreApplication::processEvents();
+            }
+
+            for(int i = start_index; i < this->rosetube_draw_cnt; i++){
+                this->viewAll_rosetube_track[i]->setData(this->jsonArr_rosetubeTrack.at(i).toObject());
+                QCoreApplication::processEvents();
+            }
+
+            for(int i = start_index; i < this->rosetube_draw_cnt; i++){
+                connect(this->viewAll_rosetube_track[i], &rosetube::ItemTrack_rosetube::signal_clicked, this, &RosetubeViewAll::slot_clickedItemPlaylist);
+                this->flowLayout_rosetube->addWidget(this->viewAll_rosetube_track[i]);
+            }
+        }
+        else if(this->list_type =="PLAYLIST"){
+
+            for(int i = start_index; i < this->rosetube_draw_cnt; i++){
+                this->viewAll_rosetube_track[i] = new rosetube::ItemTrack_rosetube(i, SECTION_FOR_MORE_POPUP___PLAYLIST, tidal::AbstractItem::ImageSizeMode::Ractangle_284x157, true);
+                QCoreApplication::processEvents();
+            }
+
+            for(int i = start_index; i < this->rosetube_draw_cnt; i++){
+                this->viewAll_rosetube_track[i]->setData(this->jsonArr_rosetubePlaylist.at(i).toObject());
+                QCoreApplication::processEvents();
+            }
+
+            for(int i = start_index; i < this->rosetube_draw_cnt; i++){
+                connect(this->viewAll_rosetube_track[i], &rosetube::ItemTrack_rosetube::signal_clicked, this, &RosetubeViewAll::slot_clickedItemPlaylist);
+                this->flowLayout_rosetube->addWidget(this->viewAll_rosetube_track[i]);
+            }
+        }
+
+        ContentLoadingwaitingMsgHide();
+
+        this->flag_rosetube_draw = false;
+    }
+
+    void RosetubeViewAll::slot_applyResult_getRating_track(const QJsonArray &contents){
+
+        if(contents.size() > 0){
+
+            QJsonObject tmpObj = contents.at(0).toObject();
+
+            if(contents.size() > 0){
+
+                QJsonObject tmpObj = contents.at(0).toObject();
+
+                if(tmpObj.value("flagOk").toBool() == true && tmpObj.value("message").toString() == "정상"){
+                    if(this->flag_fav_type == SECTION_FOR_MORE_POPUP___TRACK){
+                        this->viewAll_rosetube_track[this->flag_fav_idx]->setFavorite_btnHeart(this->flag_fav_star == 0 ? false : true, this->flag_fav_star);
+                    }
+                }
+            }
+        }
+
+        ContentLoadingwaitingMsgHide();
+
+
+
+    }
 
     void RosetubeViewAll::slot_responseHttp(const int &p_id, const QJsonObject &p_jsonObj){
 
@@ -158,16 +264,6 @@ namespace rosetube {
             if(p_jsonObj.contains("roseTubeSubCategory")){
 
                 this->slot_applyResult_subCategories(p_jsonObj);
-            }
-            else{
-                ContentLoadingwaitingMsgHide();
-
-                if(this->flowLayout_rosetube->count() == 0){
-                    NoData_Widget *noData_widget = new NoData_Widget(NoData_Widget::NoData_Message::Playlist_NoData);
-                    noData_widget->setFixedSize(1500, 500);
-
-                    this->flowLayout_rosetube->addWidget(noData_widget);
-                }
             }
         }
         else if(p_id == HTTP_CACHE){
@@ -186,9 +282,15 @@ namespace rosetube {
 
         QJsonObject tmpCategory = ProcJsonEasy::getJsonObject(jsonObj, "roseTubeSubCategory");
 
+        int start_index;
+
         QJsonArray trackArr;
         QJsonArray palylistArr;
         if(tmpCategory["listType"].toString() == "TRACK"){
+            start_index = this->jsonArr_rosetubeTrack.size();
+
+            this->list_type = "TRACK";
+
             QJsonObject trackObj = ProcJsonEasy::getJsonObject(tmpCategory, "playlist");
             trackArr = ProcJsonEasy::getJsonArray(trackObj, "tracks");
             ProcJsonEasy::mergeJsonArray(this->jsonArr_rosetubeTrack, trackArr);
@@ -196,6 +298,10 @@ namespace rosetube {
             size = trackArr.size();
         }
         else if(tmpCategory["listType"].toString() == "PLAYLIST"){
+            start_index = this->jsonArr_rosetubePlaylist.size();
+
+            this->list_type = "PLAYLIST";
+
             palylistArr = ProcJsonEasy::getJsonArray(tmpCategory, "playlists");
             ProcJsonEasy::mergeJsonArray(this->jsonArr_rosetubePlaylist, palylistArr);
 
@@ -210,66 +316,112 @@ namespace rosetube {
                 this->rosetube_total_cnt = ProcJsonEasy::getInt(jsonObj, "totalCount");
             }
 
+
             if(tmpCategory["listType"].toString() == "TRACK"){
 
-                int start_index = this->rosetube_draw_cnt;
-                int max_cnt = this->rosetube_draw_cnt + size;
+                if(start_index == 0){
+                    int f_width = this->flowLayout_rosetube->geometry().width();
 
-                for(int i = start_index; i < max_cnt; i++){
-                    this->viewAll_rosetube_track[i] = new rosetube::ItemTrack_rosetube(i, SECTION_FOR_MORE_POPUP___TRACK, tidal::AbstractItem::ImageSizeMode::Ractangle_284x157, true);
-                    connect(this->viewAll_rosetube_track[i], &rosetube::ItemTrack_rosetube::signal_clicked, this, &RosetubeViewAll::slot_clickedItemPlaylist);
-                }
+                    if(this->flowLayout_rosetube->geometry().width() <= 0){
+                        f_width = this->width() - (80 + 63) - 10;
+                    }
 
-                for(int i = start_index; i < max_cnt; i++){
-                    this->viewAll_rosetube_track[i]->setData(trackArr.at(i - start_index).toObject());
+                    int f_wg_cnt = f_width / (this->rosetube_widget_width + this->rosetube_widget_margin);
+                    int f_mod = this->rosetube_draw_cnt % f_wg_cnt;
 
-                    this->flowLayout_rosetube->addWidget(this->viewAll_rosetube_track[i]);
+                    if(f_mod == 0){
+                        this->rosetube_widget_cnt = f_wg_cnt * 10;
+                    }
+                    else{
+                        this->rosetube_widget_cnt = f_wg_cnt * 10 + (f_wg_cnt - f_mod);
+                    }
 
-                    QCoreApplication::processEvents();
-                }
+                    int start_index = this->rosetube_draw_cnt;
+                    int max_cnt = ((this->rosetube_total_cnt - this->rosetube_draw_cnt) > this->rosetube_widget_cnt ) ? this->rosetube_widget_cnt : (this->rosetube_total_cnt - this->rosetube_draw_cnt);
+                    this->rosetube_draw_cnt += max_cnt;
 
-                ContentLoadingwaitingMsgHide();
 
-                this->rosetube_draw_cnt += size;
+                    for(int i = start_index; i < max_cnt; i++){
+                        this->viewAll_rosetube_track[i] = new rosetube::ItemTrack_rosetube(i, SECTION_FOR_MORE_POPUP___TRACK, tidal::AbstractItem::ImageSizeMode::Ractangle_284x157, true);
+                        QCoreApplication::processEvents();
+                    }
 
-                if(this->rosetube_total_cnt > this->rosetube_draw_cnt){
-                    this->flag_lastPage_rosetube = false;
-                    this->flag_rosetube_draw = false;
+                    for(int i = start_index; i < max_cnt; i++){
+                        this->viewAll_rosetube_track[i]->setData(this->jsonArr_rosetubeTrack.at(i).toObject());
+                        QCoreApplication::processEvents();
+                    }
+
+                    for(int i = start_index; i < max_cnt; i++){
+                        connect(this->viewAll_rosetube_track[i], &rosetube::ItemTrack_rosetube::signal_clicked, this, &RosetubeViewAll::slot_clickedItemPlaylist);
+                        this->flowLayout_rosetube->addWidget(this->viewAll_rosetube_track[i]);
+                    }
+
+                    ContentLoadingwaitingMsgHide();
+
+                    if(this->rosetube_total_cnt > this->rosetube_draw_cnt){
+                        this->flag_lastPage_rosetube = false;
+                        this->flag_rosetube_draw = false;
+                    }
+                    else{
+                        this->flag_lastPage_rosetube = true;
+                        this->flag_rosetube_draw = true;
+                    }
                 }
                 else{
-                    this->flag_lastPage_rosetube = true;
-                    this->flag_rosetube_draw = true;
+                    this->request_more_rosetubeDraw();
                 }
             }
             else if(tmpCategory["listType"].toString() == "PLAYLIST"){
 
-                int start_index = this->rosetube_draw_cnt;
-                int max_cnt = this->rosetube_draw_cnt + size;
+                if(start_index == 0){
+                    int f_width = this->flowLayout_rosetube->geometry().width();
 
-                for(int i = start_index; i < max_cnt; i++){
-                    this->viewAll_rosetube_playlist[i] = new rosetube::ItemPlaylist_rosetube(i, SECTION_FOR_MORE_POPUP___PLAYLIST, tidal::AbstractItem::ImageSizeMode::Ractangle_284x157, true);
-                    connect(this->viewAll_rosetube_playlist[i], &rosetube::ItemPlaylist_rosetube::signal_clicked, this, &RosetubeViewAll::slot_clickedItemPlaylist);
-                }
+                    if(this->flowLayout_rosetube->geometry().width() <= 0){
+                        f_width = this->width() - (80 + 63) - 10;
+                    }
 
-                for(int i = start_index; i < max_cnt; i++){
-                    this->viewAll_rosetube_playlist[i]->setData(palylistArr.at(i - start_index).toObject());
+                    int f_wg_cnt = f_width / (this->rosetube_widget_width + this->rosetube_widget_margin);
+                    int f_mod = this->rosetube_draw_cnt % f_wg_cnt;
 
-                    this->flowLayout_rosetube->addWidget(this->viewAll_rosetube_playlist[i]);
+                    if(f_mod == 0){
+                        this->rosetube_widget_cnt = f_wg_cnt * 10;
+                    }
+                    else{
+                        this->rosetube_widget_cnt = f_wg_cnt * 10 + (f_wg_cnt - f_mod);
+                    }
 
-                    QCoreApplication::processEvents();
-                }
+                    int start_index = this->rosetube_draw_cnt;
+                    int max_cnt = ((this->rosetube_total_cnt - this->rosetube_draw_cnt) > this->rosetube_widget_cnt ) ? this->rosetube_widget_cnt : (this->rosetube_total_cnt - this->rosetube_draw_cnt);
+                    this->rosetube_draw_cnt += max_cnt;
 
-                ContentLoadingwaitingMsgHide();
+                    for(int i = start_index; i < max_cnt; i++){
+                        this->viewAll_rosetube_track[i] = new rosetube::ItemTrack_rosetube(i, SECTION_FOR_MORE_POPUP___PLAYLIST, tidal::AbstractItem::ImageSizeMode::Ractangle_284x157, true);
+                        QCoreApplication::processEvents();
+                    }
 
-                this->rosetube_draw_cnt += size;
+                    for(int i = start_index; i < max_cnt; i++){
+                        this->viewAll_rosetube_track[i]->setData(this->jsonArr_rosetubePlaylist.at(i).toObject());
+                        QCoreApplication::processEvents();
+                    }
 
-                if(this->rosetube_total_cnt > this->rosetube_draw_cnt){
-                    this->flag_lastPage_rosetube = false;
-                    this->flag_rosetube_draw = false;
+                    for(int i = start_index; i < max_cnt; i++){
+                        connect(this->viewAll_rosetube_track[i], &rosetube::ItemTrack_rosetube::signal_clicked, this, &RosetubeViewAll::slot_clickedItemPlaylist);
+                        this->flowLayout_rosetube->addWidget(this->viewAll_rosetube_track[i]);
+                    }
+
+                    ContentLoadingwaitingMsgHide();
+
+                    if(this->rosetube_total_cnt > this->rosetube_draw_cnt){
+                        this->flag_lastPage_rosetube = false;
+                        this->flag_rosetube_draw = false;
+                    }
+                    else{
+                        this->flag_lastPage_rosetube = true;
+                        this->flag_rosetube_draw = true;
+                    }
                 }
                 else{
-                    this->flag_lastPage_rosetube = true;
-                    this->flag_rosetube_draw = true;
+                    this->request_more_rosetubeDraw();
                 }
             }
         }
@@ -277,8 +429,16 @@ namespace rosetube {
             ContentLoadingwaitingMsgHide();
 
             if(this->rosetube_draw_cnt <= 0){
-                NoData_Widget *noData_widget = new NoData_Widget(NoData_Widget::NoData_Message::Rosetube_NoData);
-                noData_widget->setFixedSize(1500, 500);
+                // noData widget change - by diskept j230317 start
+                int f_width = this->flowLayout_rosetube->geometry().width();
+
+                if(this->flowLayout_rosetube->geometry().width() <= 0){
+                    f_width = this->width() - (80 + 63) - 10;
+                }
+
+                NoData_Widget *noData_widget = new NoData_Widget(NoData_Widget::NoData_Message::Album_NoData);
+                noData_widget->setFixedSize(f_width, 500);
+                // noData widget change - by diskept j230317 finish
 
                 this->flowLayout_rosetube->addWidget(noData_widget);
             }
@@ -299,42 +459,51 @@ namespace rosetube {
 
         // ClickMode 별로 처리
         if(section == SECTION_FOR_MORE_POPUP___TRACK){
-            if(clickMode == tidal::AbstractItem::ClickMode::FavBtn_Add){
+            if(clickMode == tidal::AbstractItem::ClickMode::FavBtn_Add || clickMode == tidal::AbstractItem::ClickMode::FavBtn_Addx2
+                    || clickMode == tidal::AbstractItem::ClickMode::FavBtn_Addx3 || clickMode == tidal::AbstractItem::ClickMode::FavBtn_Delete){
 
-                /*if(this->flag_check_track == false){
-                        this->track_star_fav = this->home_recently_track[idx]->getFavoritesStars();
-                        this->flag_track_fav = false;
+                bool flag_fav = false;
+                int star_fav = 0;
 
-                        if(this->track_star_fav == 3){
-                            this->track_star_fav = 0;
-                            this->flag_track_fav = false;
-                        }
-                        else if(this->track_star_fav >= 0 && this->track_star_fav < 3){
-                            this->track_star_fav++;
-                            this->flag_track_fav = true;
-                        }
+                if(clickMode == tidal::AbstractItem::ClickMode::FavBtn_Add){
+                    flag_fav = true;
+                    star_fav = 1;
+                }
+                else if(clickMode == tidal::AbstractItem::ClickMode::FavBtn_Addx2){
+                    flag_fav = true;
+                    star_fav = 2;
+                }
+                else if(clickMode == tidal::AbstractItem::ClickMode::FavBtn_Addx3){
+                    flag_fav = true;
+                    star_fav = 3;
+                }
+                else if(clickMode == tidal::AbstractItem::ClickMode::FavBtn_Delete){
+                    flag_fav = true;
+                    star_fav = 0;
+                }
 
-                        this->track_idx_fav = idx;
+                this->flag_fav_idx = index;
+                this->flag_fav_star = star_fav;
+                this->flag_fav_type = SECTION_FOR_MORE_POPUP___TRACK;
 
-                        QJsonObject ratingInfo;
-                        ratingInfo.insert("favorite", this->flag_track_fav);
-                        ratingInfo.insert("star", this->track_star_fav);
-                        ratingInfo.insert("thumbup", false);
-                        ratingInfo.insert("type", );
+                QJsonObject track = this->jsonArr_rosetubeTrack.at(index).toObject();
 
-                        QJsonObject track = this->jsonArr_tracks_toPlay.at(idx).toObject();
+                QJsonObject ratingInfo;
+                ratingInfo.insert("favorite", flag_fav);
+                ratingInfo.insert("star", star_fav);
+                ratingInfo.insert("thumbup", false);
+                ratingInfo.insert("type", "YOUTUBE");
 
-                        QJsonObject json;
-                        json.insert("ratingInfo", ratingInfo);
-                        json.insert("track", track);
+                QJsonObject json;
+                json.insert("track", track);
+                json.insert("ratingInfo", ratingInfo);
 
-                        // request HTTP API - get favorite for Rose Server
-                        roseHome::ProcCommon *proc_fav_track = new roseHome::ProcCommon(this);
-                        connect(proc_fav_track, &roseHome::ProcCommon::completeReq_rating_track, this, &RoseHome::slot_applyResult_getRating_track);
-                        proc_fav_track->request_rose_setRating_Track(json, this->flag_track_fav, this->track_star_fav);
+                // request HTTP API - get favorite for Rose Server
+                roseHome::ProcCommon *proc_fav_track = new roseHome::ProcCommon(this);
+                connect(proc_fav_track, &roseHome::ProcCommon::completeReq_rating_track, this, &RosetubeViewAll::slot_applyResult_getRating_track);
+                proc_fav_track->request_rose_setRating_Track(json, flag_fav, star_fav);
 
-                        this->flag_check_track = true;
-                    }*/
+                ContentLoadingwaitingMsgShow(tr("Content is being loaded. Please wait."));
             }
             else{
 
@@ -651,4 +820,15 @@ namespace rosetube {
             procRosePlay->requestPlayRose_byPlaylistID(ProcJsonEasy::getInt(tmpObj, "id"), playType);
         }
     }
+    /**
+     * @brief 스크롤링에 대해서, get more data 처리
+     * @param event
+     */
+    void RosetubeViewAll::resizeEvent(QResizeEvent *event){
+
+        Q_UNUSED(event);
+
+        this->setFlowLayoutResize(this, this->flowLayout_rosetube, this->rosetube_widget_width, this->rosetube_widget_margin);
+    }
 }
+

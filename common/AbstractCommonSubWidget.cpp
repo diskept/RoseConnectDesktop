@@ -26,6 +26,7 @@
 #include <QClipboard>//c220816
 #include <QLineEdit>//c220816
 #include "roseHome/ProcCommon_forRosehome.h"//c220903_2
+#include <common/sqlitehelper.h>//c230329
 
 namespace common {
 
@@ -85,6 +86,7 @@ namespace common {
     }
 
     void BtnLabel::setStyleSelected(bool p_flagSelected){
+
         if(p_flagSelected==true){
             lb_image->setPixmap(*pixmap_selected);
             lb_image->resize(pixmap_selected->width(), pixmap_selected->height());
@@ -116,15 +118,16 @@ namespace common {
             this->setUIControl_basic_verticalScroll();
             break;
         case VerticalScroll_filter:
+        case VerticalScroll_rosefilter:
+        case VerticalScroll_roseviewAll:
+        case VerticalScroll_musicviewAll:
         case VerticalScroll_viewAll:
         case VerticalScroll_rosetube:
         case VerticalScroll_roseradio:
-            this->setUIControl_filter_verticalScroll();
-            break;
-        case VerticalScroll_rosefilter:
             this->setUIControl_rosefilter_verticalScroll();
             break;
         case NoneScroll_filter:
+        case NoneScroll_viewAll:
         default:
             this->setUIControl_basic_noneScroll();
         }
@@ -168,38 +171,55 @@ namespace common {
          */
     void AbstractCommonSubWidget::setUIControl_basic_noneScroll(){
 
-        box_mainTitle = new QVBoxLayout();
-        box_mainTitle->setSpacing(0);
-        box_mainTitle->setContentsMargins(0,0,0,0);
-        box_mainTitle->setAlignment(Qt::AlignTop);
+        this->box_filter = new QHBoxLayout();
+        this->box_filter->setContentsMargins(0, 0, 0, 0);
+        this->box_filter->setSpacing(0);
+        this->box_filter->setAlignment(Qt::AlignLeft);
 
-        box_contents = new QVBoxLayout();
-        box_contents->setSpacing(0);
-        if(this->curr_mainUIType == AbstractCommonSubWidget::NoneScroll_filter){
-            box_contents->setContentsMargins(0,0,0,0);
+        QWidget *widget_filter = new QWidget();
+        widget_filter->setContentsMargins(0, 0, 0, 0);
+        widget_filter->setStyleSheet("background-color:#212121;");
+        widget_filter->setLayout(this->box_filter);
+
+        QWidget *widget_line = new QWidget();
+        widget_line->setFixedHeight(1);
+        widget_line->setStyleSheet("background-color:#333333;");
+        widget_line->setContentsMargins(0, 0, 0, 0);
+
+        QVBoxLayout *topBox_filter = new QVBoxLayout();
+        topBox_filter->setSpacing(0);
+        topBox_filter->setContentsMargins(80, 0, 80, 0);
+        topBox_filter->addWidget(widget_filter);
+        topBox_filter->addWidget(widget_line);
+
+        this->box_contents = new QVBoxLayout();
+        this->box_contents->setSpacing(0);
+        this->box_contents->setAlignment(Qt::AlignTop);
+        if(this->curr_mainUIType == AbstractCommonSubWidget::NoneScroll_filter || this->curr_mainUIType == AbstractCommonSubWidget::NoneScroll_viewAll){
+            this->box_contents->setContentsMargins(0, 0, 0, 0);
         }
         else{
             box_contents->setContentsMargins(33,10,0,0);
         }
-        //        box_contents->setAlignment(Qt::AlignTop);
+
+        this->box_mainTitle = new QVBoxLayout();
+        this->box_mainTitle->setSpacing(0);
+        this->box_mainTitle->setContentsMargins(0, 0, 0, 0);
+        this->box_mainTitle->setAlignment(Qt::AlignTop);
 
         QVBoxLayout *vBox_main = new QVBoxLayout();
         vBox_main->setSpacing(0);
-        vBox_main->setContentsMargins(0,0,0,0);
-        vBox_main->addLayout(box_mainTitle);
-
-        vBox_main->addLayout(box_contents);
+        vBox_main->setContentsMargins(0, 0, 0, 0);
         vBox_main->setAlignment(Qt::AlignTop);
+        vBox_main->addLayout(this->box_mainTitle);
+        vBox_main->addLayout(topBox_filter);
+        vBox_main->addLayout(this->box_contents);
 
-        setLayout(vBox_main);
+        this->setLayout(vBox_main);
 
         // 시작을 구분 라인 넣어줌
-        QWidget *widget_line = new QWidget();
-        widget_line->setFixedHeight(1);
-        widget_line->setStyleSheet("background-color:#333333;");
-        widget_line->setContentsMargins(0,0,0,0);
-        if(this->curr_mainUIType != AbstractCommonSubWidget::NoneScroll_filter){
-            box_mainTitle->addWidget(widget_line);
+        if(this->curr_mainUIType != AbstractCommonSubWidget::NoneScroll_filter || this->curr_mainUIType == AbstractCommonSubWidget::NoneScroll_viewAll){
+            this->addUIControl_dividedLine_onMain();
         }
     }
 
@@ -209,22 +229,34 @@ namespace common {
      */
     void AbstractCommonSubWidget::setUIControl_basic_verticalScroll(){
 
-        box_contents = new QVBoxLayout();
-        box_contents->setSpacing(0);
-        box_contents->setContentsMargins(0,0,0,0);
-        box_contents->setAlignment(Qt::AlignTop);
+        this->box_contents = new QVBoxLayout();
+        this->box_contents->setContentsMargins(0, 0, 0, 0);
+        this->box_contents->setSpacing(0);
+        this->box_contents->setAlignment(Qt::AlignTop);
 
         QWidget *widget_forBox = new QWidget();
-        widget_forBox->setLayout(box_contents);
-        widget_forBox->setContentsMargins(33,10,0,0);
+        widget_forBox->setLayout(this->box_contents);
+        widget_forBox->setContentsMargins(30, 10, 30, 0);
 
         this->scrollArea_main = new VerticalScrollArea();
         this->scrollArea_main->setWidget(widget_forBox);
         this->scrollArea_main->setWidgetResizable(true);
         this->scrollArea_main->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
-        this->scrollArea_main->setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOn);
+        this->scrollArea_main->setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
         this->scrollArea_main->setStyleSheet("border:0px;");
         this->scrollArea_main->setAlignment(Qt::AlignTop);
+        this->scrollArea_main->verticalScrollBar()->setCursor(Qt::PointingHandCursor);
+        this->scrollArea_main->verticalScrollBar()->setStyleSheet("QScrollBar:vertical {border: none; background-color: transparent; width: 6px; margin: 12px 0px 12px 0px; }"
+                                                                          "QScrollBar::handle:vertical {background-color: #b18658; min-height: 60px; border-radius: 3px; }"
+                                                                          "QScrollBar::add-line:vertical {height: 0px; subcontrol-position: bottom; subcontrol-origin: margin; }"
+                                                                          "QScrollBar::sub-line:vertical {height: 0 px; subcontrol-position: top; subcontrol-origin: margin; }"
+                                                                          "QScrollBar::add-page:vertical, QScrollBar::sub-page:vertical {background: none; }");
+
+        QVBoxLayout *box_scroll = new QVBoxLayout();
+        box_scroll->setSpacing(0);
+        box_scroll->setContentsMargins(0, 0, 10, 0);
+        box_scroll->setAlignment(Qt::AlignTop);
+        box_scroll->addWidget(this->scrollArea_main);
 
         //QVBoxLayout *boxMain_scrollOut = new QVBoxLayout();
         //boxMain_scrollOut->setSpacing(0);
@@ -235,10 +267,10 @@ namespace common {
 
         //----------------------------------------------------------------------
 
-        box_mainTitle = new QVBoxLayout();
-        box_mainTitle->setSpacing(0);
-        box_mainTitle->setContentsMargins(0,0,0,0);
-        box_mainTitle->setAlignment(Qt::AlignTop);
+        this->box_mainTitle = new QVBoxLayout();
+        this->box_mainTitle->setSpacing(0);
+        this->box_mainTitle->setContentsMargins(0,0,0,0);
+        this->box_mainTitle->setAlignment(Qt::AlignTop);
 
 
         //QWidget *tmp_widgetHeader = new QWidget();
@@ -248,17 +280,15 @@ namespace common {
 
         QVBoxLayout *vBox_main = new QVBoxLayout();
         vBox_main->setSpacing(0);
-        vBox_main->setContentsMargins(0,0,0,0);
-        vBox_main->addLayout(box_mainTitle);
-
-
+        vBox_main->setContentsMargins(0, 0, 0, 0);
+        vBox_main->addLayout(this->box_mainTitle);
+        vBox_main->addLayout(box_scroll);
         //vBox_main->addLayout(boxMain_scrollOut);
-        vBox_main->addWidget(this->scrollArea_main);
+        //vBox_main->addWidget(this->scrollArea_main);
         //vBox_main->addWidget(tmp_widgetHeader);
         //vBox_main->addWidget(tmp_widgetBody);
 
         setLayout(vBox_main);
-
 
         // 시작을 구분 라인 넣어줌
         this->addUIControl_dividedLine_onMain();
@@ -449,7 +479,7 @@ namespace common {
         QWidget *widget_forBox = new QWidget();
         widget_forBox->setLayout(box_contents);
         if(this->curr_mainUIType == VerticalScroll_filter){
-            widget_forBox->setContentsMargins(90, 10, 90, 0);
+            widget_forBox->setContentsMargins(85, 10, 85, 0);
         }
         else if(this->curr_mainUIType == VerticalScroll_roseradio){
             widget_forBox->setContentsMargins(80, 10, 60, 0);
@@ -468,33 +498,38 @@ namespace common {
         this->scrollArea_main->setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
         this->scrollArea_main->setStyleSheet("border:0px;");
         this->scrollArea_main->setAlignment(Qt::AlignTop);
-        this->scrollArea_main->verticalScrollBar()->
-                setStyleSheet(QString::fromUtf8("QScrollBar:vertical {"
-                                                "    border: 2px solid #aaaaaa;border-radius:5px;"
-                                                "    background:#777777;"
-                                                "    width:15px;  "
-                                                "    margin: 0px 0px 0px 0px;"
-                                                "}"
-                                                "QScrollBar::handle:vertical {"
-                                                "    background: qlineargradient(x1:0, y1:0, x2:1, y2:0,"
-                                                "    stop: 0 #999999, stop: 0.1 #555555, stop: 0.9 #555555, stop:1 #999999);"
-                                                "    min-height: 50px;"
-                                                "}"
-                                                "QScrollBar::add-page:vertical {"
-                                                "    background: qlineargradient(x1:0, y1:0, x2:1, y2:0,"
-                                                "    stop: 0 #aaaaaa, stop: 0.5 #aaaaaa,  stop:1 #aaaaaa);"
-                                                "    height: 30px;"
-                                                "    subcontrol-position: bottom;"
-                                                "    subcontrol-origin: margin;"
-                                                "}"
-                                                "QScrollBar::sub-page:vertical {"
-                                                "    background: qlineargradient(x1:0, y1:0, x2:1, y2:0,"
-                                                "    stop: 0  ##9facaa, stop: 0.5 ##9facaa,  stop:1 ##9facaa);"
-                                                "    height: 30 px;"
-                                                "    subcontrol-position: top;"
-                                                "    subcontrol-origin: margin;"
-                                                "}"
-                                                ));
+        this->scrollArea_main->verticalScrollBar()->setCursor(Qt::PointingHandCursor);
+        this->scrollArea_main->verticalScrollBar()->setStyleSheet("QScrollBar:vertical {border: none; background-color: transparent; width: 6px; margin: 12px 0px 12px 0px; }"
+                                                                          "QScrollBar::handle:vertical {background-color: #b18658; min-height: 60px; border-radius: 3px; }"
+                                                                          "QScrollBar::add-line:vertical {height: 0px; subcontrol-position: bottom; subcontrol-origin: margin; }"
+                                                                          "QScrollBar::sub-line:vertical {height: 0 px; subcontrol-position: top; subcontrol-origin: margin; }"
+                                                                          "QScrollBar::add-page:vertical, QScrollBar::sub-page:vertical {background: none; }");
+        /*this->scrollArea_main->verticalScrollBar()->
+                        setStyleSheet("QScrollBar:vertical {"
+                                                        "    border: 2px solid #aaaaaa;border-radius:5px;"
+                                                        "    background:#777777;"
+                                                        "    width:15px;  "
+                                                        "    margin: 0px 0px 0px 0px;"
+                                                        "}"
+                                                        "QScrollBar::handle:vertical {"
+                                                        "    background: qlineargradient(x1:0, y1:0, x2:1, y2:0,"
+                                                        "    stop: 0 #999999, stop: 0.1 #555555, stop: 0.9 #555555, stop:1 #999999);"
+                                                        "    min-height: 50px;"
+                                                        "}"
+                                                        "QScrollBar::add-page:vertical {"
+                                                        "    background: qlineargradient(x1:0, y1:0, x2:1, y2:0,"
+                                                        "    stop: 0 #aaaaaa, stop: 0.5 #aaaaaa,  stop:1 #aaaaaa);"
+                                                        "    height: 30px;"
+                                                        "    subcontrol-position: bottom;"
+                                                        "    subcontrol-origin: margin;"
+                                                        "}"
+                                                        "QScrollBar::sub-page:vertical {"
+                                                        "    background: qlineargradient(x1:0, y1:0, x2:1, y2:0,"
+                                                        "    stop: 0  ##9facaa, stop: 0.5 ##9facaa,  stop:1 ##9facaa);"
+                                                        "    height: 30 px;"
+                                                        "    subcontrol-position: top;"
+                                                        "    subcontrol-origin: margin;"
+                                                        "}");*/
         //----------------------------------------------------------------------
 
         this->box_mainTitle = new QVBoxLayout();
@@ -526,92 +561,137 @@ namespace common {
     void AbstractCommonSubWidget::setUIControl_rosefilter_verticalScroll(){
 
         this->box_filter = new QHBoxLayout();
-        this->box_filter->setContentsMargins(0,0,0,0);
+        this->box_filter->setContentsMargins(0, 0, 0, 0);
         this->box_filter->setSpacing(0);
         this->box_filter->setAlignment(Qt::AlignLeft);
 
         QWidget *widget_filter = new QWidget();
-        widget_filter->setContentsMargins(0,0,0,0);
+        widget_filter->setContentsMargins(0, 0, 0, 0);
         widget_filter->setStyleSheet("background-color:#212121;");
         widget_filter->setLayout(this->box_filter);
 
         QWidget *widget_line = new QWidget();
         widget_line->setFixedHeight(1);
         widget_line->setStyleSheet("background-color:#333333;");
-        widget_line->setContentsMargins(0,0,0,0);
+        widget_line->setContentsMargins(0, 0, 0, 0);
 
         QVBoxLayout *topBox_filter = new QVBoxLayout();
         topBox_filter->setSpacing(0);
-        topBox_filter->setContentsMargins(80,0,80,0);
-        topBox_filter->addWidget(widget_filter);
-        topBox_filter->addWidget(widget_line);
+        if(this->curr_mainUIType == VerticalScroll_rosefilter){
+            topBox_filter->setContentsMargins(90, 0, 100 ,0);
+        }
+        else if(this->curr_mainUIType == VerticalScroll_roseviewAll || this->curr_mainUIType == VerticalScroll_musicviewAll){
+            topBox_filter->setContentsMargins(80, 0, 80 ,0);
+        }
+        else if(this->curr_mainUIType == VerticalScroll_rosetube){
+            topBox_filter->setContentsMargins(0, 0, 0, 0);
+        }
+        else if(this->curr_mainUIType == VerticalScroll_roseradio){
+            topBox_filter->setContentsMargins(75, 0, 55 ,0);
+        }
+        else{
+            topBox_filter->setContentsMargins(85, 0, 85, 0);
+        }
+
+        if(this->curr_mainUIType != VerticalScroll_musicviewAll){
+            topBox_filter->addWidget(widget_filter);
+            topBox_filter->addWidget(widget_line);
+        }
 
         this->box_contents = new QVBoxLayout();
         this->box_contents->setSpacing(0);
-        this->box_contents->setContentsMargins(0,0,0,0);
+        this->box_contents->setContentsMargins(0, 0, 0, 0);
         this->box_contents->setAlignment(Qt::AlignTop);
 
         QWidget *widget_forBox = new QWidget();
         widget_forBox->setLayout(box_contents);
-        widget_forBox->setContentsMargins(75,0,75,0);
+        if(this->curr_mainUIType == VerticalScroll_rosefilter){
+            widget_forBox->setContentsMargins(90, 0, 90, 0);
+        }
+        else if(this->curr_mainUIType == VerticalScroll_roseviewAll || this->curr_mainUIType == VerticalScroll_musicviewAll){
+            widget_forBox->setContentsMargins(80, 0, 63, 0);
+        }
+        if(this->curr_mainUIType == VerticalScroll_filter){
+            widget_forBox->setContentsMargins(85, 0, 85, 0);
+        }
+        else if(this->curr_mainUIType == VerticalScroll_viewAll){
+            widget_forBox->setContentsMargins(65, 0, 65, 0);
+        }
+        else if(this->curr_mainUIType == VerticalScroll_rosetube){
+            widget_forBox->setContentsMargins(0, 0, 0, 0);
+        }
+        else if(this->curr_mainUIType == VerticalScroll_roseradio){
+            widget_forBox->setContentsMargins(75, 0, 55, 0);
+        }
 
         this->scrollArea_main = new VerticalScrollArea();
         this->scrollArea_main->setWidget(widget_forBox);
         this->scrollArea_main->setWidgetResizable(true);
         this->scrollArea_main->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
         this->scrollArea_main->setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
-        this->scrollArea_main->setStyleSheet("border:0px;");
+        this->scrollArea_main->setStyleSheet("border: none;");
         this->scrollArea_main->setAlignment(Qt::AlignTop);
-        this->scrollArea_main->verticalScrollBar()->
-                setStyleSheet(QString::fromUtf8("QScrollBar:vertical {"
-                                                        "    border: 2px solid #aaaaaa;"
+        this->scrollArea_main->verticalScrollBar()->setCursor(Qt::PointingHandCursor);
+        this->scrollArea_main->verticalScrollBar()->setStyleSheet("QScrollBar:vertical {border: none; background-color: transparent; width: 6px; margin: 3px 0px 3px 0px; }"
+                                                                    "QScrollBar::handle:vertical {background-color: #b18658; min-height: 60px; border-radius: 3px; }"
+                                                                    "QScrollBar::add-line:vertical {height: 0px; subcontrol-position: bottom; subcontrol-origin: margin; }"
+                                                                    "QScrollBar::sub-line:vertical {height: 0 px; subcontrol-position: top; subcontrol-origin: margin; }"
+                                                                    "QScrollBar::add-page:vertical, QScrollBar::sub-page:vertical {background: none; }");
+
+        QVBoxLayout *box_scroll = new QVBoxLayout();
+        box_scroll->setSpacing(0);
+        box_scroll->setContentsMargins(0, 0, 10, 0);
+        box_scroll->setAlignment(Qt::AlignTop);
+        box_scroll->addWidget(this->scrollArea_main);
+
+        /*this->scrollArea_main->verticalScrollBar()->
+                        setStyleSheet("QScrollBar:vertical {"
+                                                        "    border: 2px solid #aaaaaa;border-radius:5px;"
                                                         "    background:#777777;"
                                                         "    width:15px;  "
                                                         "    margin: 0px 0px 0px 0px;"
                                                         "}"
                                                         "QScrollBar::handle:vertical {"
                                                         "    background: qlineargradient(x1:0, y1:0, x2:1, y2:0,"
-                                                        "    stop: 0 #999999, stop: 0.5 #171717, stop:1 #999999);"
-                                                        "    min-height: 0px;"
+                                                        "    stop: 0 #999999, stop: 0.1 #555555, stop: 0.9 #555555, stop:1 #999999);"
+                                                        "    min-height: 50px;"
                                                         "}"
-                                                        "QScrollBar::add-line:vertical {"
+                                                        "QScrollBar::add-page:vertical {"
                                                         "    background: qlineargradient(x1:0, y1:0, x2:1, y2:0,"
-                                                        "    stop: 0 #171717, stop: 0.5 #171717,  stop:1 #171717);"
-                                                        "    height: 0px;"
+                                                        "    stop: 0 #aaaaaa, stop: 0.5 #aaaaaa,  stop:1 #aaaaaa);"
+                                                        "    height: 30px;"
                                                         "    subcontrol-position: bottom;"
                                                         "    subcontrol-origin: margin;"
                                                         "}"
-                                                        "QScrollBar::sub-line:vertical {"
+                                                        "QScrollBar::sub-page:vertical {"
                                                         "    background: qlineargradient(x1:0, y1:0, x2:1, y2:0,"
-                                                        "    stop: 0  #171717, stop: 0.5 #171717,  stop:1 #171717);"
-                                                        "    height: 0 px;"
+                                                        "    stop: 0  ##9facaa, stop: 0.5 ##9facaa,  stop:1 ##9facaa);"
+                                                        "    height: 30 px;"
                                                         "    subcontrol-position: top;"
                                                         "    subcontrol-origin: margin;"
-                                                        "}"
-                                                        ));
+                                                        "}");*/
         //----------------------------------------------------------------------
 
         this->box_mainTitle = new QVBoxLayout();
         this->box_mainTitle->setSpacing(0);
-        this->box_mainTitle->setContentsMargins(0,0,0,0);
+        this->box_mainTitle->setContentsMargins(0, 0, 0, 0);
         this->box_mainTitle->setAlignment(Qt::AlignTop);
-
 
 
         QVBoxLayout *vBox_main = new QVBoxLayout();
         vBox_main->setSpacing(0);
-        vBox_main->setContentsMargins(0,0,10,0);
+        vBox_main->setContentsMargins(0, 0, 0 ,0);
         vBox_main->addLayout(this->box_mainTitle);
         vBox_main->addLayout(topBox_filter);
-        vBox_main->addSpacing(10);
-        vBox_main->addWidget(this->scrollArea_main);
+        vBox_main->addLayout(box_scroll);
 
         this->setLayout(vBox_main);
         this->setStyleSheet("background-color:#212121;");
 
-
         // 시작을 구분 라인 넣어줌
-        this->addUIControl_dividedLine_onMain();
+        if(this->curr_mainUIType != VerticalScroll_musicviewAll){
+            this->addUIControl_dividedLine_onMain();
+        }
     }
 
 
@@ -641,7 +721,7 @@ namespace common {
         label_mainTitle->setText(mainTitle);
         label_mainTitle->setStyleSheet("font-size:26px; color:#FFFFFF; background-color:#171717;");//
         label_mainTitle->setContentsMargins(33,20,33,19);
-        box_mainTitle->addWidget(label_mainTitle);
+        this->box_mainTitle->addWidget(label_mainTitle);
 
         // 하단에 구분 라인
         this->addUIControl_dividedLine_onMain();
@@ -658,7 +738,7 @@ namespace common {
         label_mainTitle->setText(mainTitle);
         label_mainTitle->setStyleSheet("font-size:26px; color:#FFFFFF; background-color:#171717;");
         label_mainTitle->setContentsMargins(33,20,33,19);
-        box_mainTitle->addWidget(label_mainTitle);
+        this->box_mainTitle->addWidget(label_mainTitle);
 
         // 하단에 구분 라인
         this->addUIControl_dividedLine_onMain();
@@ -824,6 +904,21 @@ namespace common {
         }
 
 
+    }
+
+
+    QWidget* AbstractCommonSubWidget::getWidget_addUIControl_mainTitle(){
+
+        QWidget *widget_title = new QWidget();
+        widget_title->setStyleSheet("background-color:#171717;");
+        //widget_title->setFixedHeight(69);
+
+        this->box_mainTitle->addWidget(widget_title);
+
+        // 하단에 구분 라인
+        this->addUIControl_dividedLine_onMain();
+
+        return widget_title;
     }
 
 
@@ -1247,13 +1342,13 @@ namespace common {
         QWidget *widget_content = new QWidget();
         widget_content->setLayout(flowLayout);
         //        widget_content->setContentsMargins(0,20,33,0);
-        widget_content->setContentsMargins(0,20,5,0);
+        widget_content->setContentsMargins(0, 30, 0, 0);
         widget_content->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
         widget_content->setStyleSheet("background-color:transparent;");
         //----------------------------------------------------------------------------------------------------  BODY : END
 
         // Apply Main Layout with spacing
-        box_contents->addWidget(widget_content, 0, Qt::AlignTop);
+        this->box_contents->addWidget(widget_content, 0, Qt::AlignTop);
         this->addSpacing_forNewPart();
 
         // return
@@ -1786,6 +1881,52 @@ namespace common {
     }
 
 
+    void AbstractCommonSubWidget::setFlowLayoutResize(QWidget *parent, FlowLayout *flowLayout_wg, int width, int mod){ //c230317_1
+
+        print_debug();
+        /// list count check - by diskept j230317 start
+        int f_width = 0;
+        int f_wg_cnt = 0;
+        int f_mod = 0;
+
+        f_width = flowLayout_wg->geometry().width();
+
+        if(f_width <= 0){
+            if(this->curr_mainUIType == VerticalScroll_rosefilter){
+                f_width = parent->width() - (90 + 90) - 10;
+            }
+            else if(this->curr_mainUIType == VerticalScroll_roseviewAll){
+                f_width = parent->width() - (80 + 63) - 10;
+            }
+            else if(this->curr_mainUIType == VerticalScroll_musicviewAll){
+                f_width = parent->width() - (80 + 63) - 10;
+            }
+            if(this->curr_mainUIType == VerticalScroll_filter){
+                f_width = parent->width() - (85 + 85) - 10;
+            }
+            else if(this->curr_mainUIType == VerticalScroll_viewAll){
+                f_width = parent->width() - (65 + 65) - 10;
+            }
+            else if(this->curr_mainUIType == VerticalScroll_rosetube){
+                f_width = parent->width() - (0 + 0) - 10;
+            }
+
+            f_wg_cnt = f_width / (width + mod);
+            f_mod = (f_width % (width + mod)) / f_wg_cnt;
+        }
+        else{
+            f_wg_cnt = f_width / (width + mod);
+            f_mod = (f_width % (width + mod)) / f_wg_cnt;
+        }
+
+        flowLayout_wg->invalidate();
+        flowLayout_wg->setSpacingHV(f_mod, 20);
+        /// list count check - by diskept j230317 finish
+
+        //qDebug() << "[Debug] AbstractCommonSubWidget::setFlowLayoutResize " << f_width << f_wg_cnt << f_mod;
+    }
+
+
     /**
          * @brief HTTP 요청이 있는 경우, 요놈 재정의해서 사용할 것
          * @param p_id
@@ -1960,7 +2101,7 @@ namespace common {
                 param = "ROSE_TOTAL/VIDEO/" + QString("%1").arg(data_header.data_pk);
 
             }else if(menuMode == 106){//artist
-                param = "ROSE_TOTAL/ARTIST/" + QString("%1").arg(data_header.data_pk);
+                param = QString("%1/ARTIST/").arg(data_header.type) + QString("%1").arg(data_header.clientKey);
 
             }else{
             }
@@ -1995,7 +2136,7 @@ namespace common {
         //QString param = "ROSE_TOTAL/PLAYLIST/" + QString("%1").arg(data_header.data_pk);
         roseHome::ProcCommon *proc_link = new roseHome::ProcCommon(this);
         connect(proc_link, &roseHome::ProcCommon::completeReq_share_link, this, &AbstractCommonSubWidget::slot_applyResult_getShareLink);
-        proc_link->request_rose_get_shareLink(data_header.imageUrl  , data_header.sub_title , data_header.main_title, param);
+        proc_link->request_rose_get_shareLink(data_header.imageUrl, data_header.sub_title, data_header.main_title, param);
 
         // OptMorePopup 을 띄운다.
         print_debug();
@@ -2176,140 +2317,112 @@ namespace common {
     }
 
 
-    void AbstractCommonSubWidget::ContentLoadingwaitingMsgShow(QString msg){    //cheontidal
-        print_debug();
+    void AbstractCommonSubWidget::ContentLoadingwaitingMsgShow(QString msg){    //c230308_3
+
         Q_UNUSED(msg);
-        if(!global.window_activate_flag) return;//c220804
-        if(global.powerDialogShowFlag) return;//c220804
+
         print_debug();
-        //----------------------------------------------------
-        //abs_ani_dialog_wait = new QDialog(this) ;//c220616
-        QLabel *lb_Movie = new QLabel();
-        //lb_Movie->setVisible(false);
-        lb_Movie->setStyleSheet("background-color:transparent;");
-        //QMovie *mov = new QMovie("C:/Users/doulz/Rose_Connect-21-12-21-20/images/Spinner-4.2s-200px.gif");
-        //abs_ani_mov = new QMovie(":/images/loading.gif");//":/images/Spinner-4.2s-200px.gif"
-        QMovie *abs_ani_mov = new QMovie(":/images/Spinner-4.2s-200px.gif");//":/images/Spinner-4.2s-200px.gif"//c220616
-
-        lb_Movie->setMovie(abs_ani_mov);
-        //Movie->setGeometry(20, 20, 392, 225);
-        abs_ani_mov->setScaledSize(QSize(120,120));
-        abs_ani_mov->setBackgroundColor("transparent");
-
-        QHBoxLayout *hl_msgBox = new QHBoxLayout();
-        hl_msgBox->setContentsMargins(0,0,0,0);
-        hl_msgBox->setSpacing(0);
-        hl_msgBox->setContentsMargins(35,20,35,15);
-        //hl_msgBox->addStretch(1);
-        //hl_msgBox->addWidget(lb_msg);
-        hl_msgBox->addWidget(lb_Movie);
-        //hl_msgBox->addStretch(1);
-
-        QSettings *settings = new QSettings(rosesettings.ORGANIZATION_NAME, rosesettings.APPLICATION_NAME);
-        int latestWidth = settings->value(rosesettings.SETTINGS_W, 0).toInt();
-        int latestHeight = settings->value(rosesettings.SETTINGS_H, 800).toInt();
-        int left = 0;
-        int top = 0;
-
         if(global.abs_ani_dialog_wait->isHidden() != true){//c220616
-            //ContentLoadingwaitingMsgHide();
             return;
         }
 
-        print_debug();
-        if(global.abs_ani_dialog_wait->layout()==0){//c220616
-            global.abs_ani_dialog_wait->setLayout(hl_msgBox);
-            global.abs_ani_dialog_wait->setModal(true);
-            global.abs_ani_dialog_wait->setWindowFlags( Qt::Tool | Qt::FramelessWindowHint );
-            global.abs_ani_dialog_wait->setAttribute(Qt::WA_TranslucentBackground);
+        if(!global.window_activate_flag) return;//c220804
 
-            //ani_dialog_wait->setFixedSize(300,300);
-
-            //if(global.abs_ani_dialog_wait->layout()==0){//c220616
-              //  global.abs_ani_dialog_wait->setLayout(hl_msgBox);
-            //}
-
-            left = global.left_mainwindow+global.width_mainwindow/2- (global.abs_ani_dialog_wait->sizeHint().width() / 2);//c220804
-            top = global.top_mainwindow+global.height_mainwindow/2- (global.abs_ani_dialog_wait->sizeHint().height() / 2);//c220804
-            //left = (latestWidth / 2) - (global.abs_ani_dialog_wait->sizeHint().width() / 2);//c220804
-            //top = (latestHeight/ 2) - (global.abs_ani_dialog_wait->sizeHint().height() / 2);//c220804
-            global.abs_ani_dialog_wait->move(left, top);//c220804
-
-            //global.abs_ani_dialog_wait->setGeometry(left, top, 0, 0);
-            //return;
-        }
-
-        //ani_dialog_wait->setGeometry(this->width()-400,300,1000,200);
-        global.abs_ani_dialog_wait->show();
-        //ani_dialog_wait->raise();
-
-        abs_ani_mov->start();
-
-        QTimer::singleShot(5000, this, [=](){ContentLoadingwaitingMsgHide();});//c220928_1
-        print_debug();
-    }
+        if(global.powerDialogShowFlag) return;//c220804
 
 
-    void AbstractCommonSubWidget::ContentLoadingwaitingMsgHide(){
+        //----------------------------------------------------
 
-        print_debug();
-        if(global.abs_ani_dialog_wait == nullptr) return;//c221004_3
-        qDebug() << "abs_ani_dialog_wait->isHidden() = " << global.abs_ani_dialog_wait->isHidden();
+        int left = 0;
+        int top = 0;
 
-        if(global.abs_ani_dialog_wait->isHidden() != true){
-            print_debug();
-            //abs_ani_mov->stop();
-            global.abs_ani_dialog_wait->hide(); //cheontidal
-            print_debug();
-        }
+        left = global.left_mainwindow + ((global.width_mainwindow - 120) / 2);
+        top = global.top_mainwindow + ((global.height_mainwindow - 120) / 2);
+
+        global.abs_ani_dialog_wait->move(left, top);//c220804
 
         if(global.enable_section_left == true){
             global.enable_section_left = false;
         }
+
+        global.abs_ani_dialog_wait->show();//c230311
+        global.abs_ani_dialog_wait->raise();//c230311
     }
+
+
+    void AbstractCommonSubWidget::ContentLoadingwaitingMsgHide(){   //c230308_3
+
+        print_debug();
+        //qDebug() << "abs_ani_dialog_wait->isHidden() = " << global.abs_ani_dialog_wait->isHidden();
+        if(global.abs_ani_dialog_wait->isHidden() != true){
+            print_debug();
+            //abs_ani_mov->stop();
+
+            global.abs_ani_dialog_wait->hide(); //cheontidal
+
+        }
+
+        if(global.enable_section_left == false){
+            global.enable_section_left = true;
+        }
+
+        //global.abs_ani_dialog_wait->show();//c230311
+        //QTimer::singleShot(300, global.abs_ani_dialog_wait, SLOT(hide()));//c230311
+        ToastMsg::delay(this,"", tr("delay"), 1000);//c230428_1
+    }
+
 
     void AbstractCommonSubWidget::setUIShare(){//c220823
 
         int dialogWidth = 400;
-        dialog_box_share = new QDialog();
-        dialog_box_share->setModal(true);
-        dialog_box_share->setWindowFlags(Qt::Dialog | Qt::FramelessWindowHint);
-        dialog_box_share->setAttribute(Qt::WA_TranslucentBackground);
-        //dialog_box_share->setFixedSize(250, 350);//200
-        //dialog_box_share->setStyleSheet("background-color:transparent;");
-        dialog_box_share->setStyleSheet("background-color:#444444;");
+        QWidget *widget_box_btn_share = new QWidget();
+        //if(dialog_box_share == nullptr){
+            dialog_box_share = new QDialog();
+            dialog_box_share->setModal(true);
+            dialog_box_share->setWindowFlags(Qt::Dialog | Qt::FramelessWindowHint);
+            dialog_box_share->setAttribute(Qt::WA_TranslucentBackground);
+            //dialog_box_share->setFixedSize(250, 350);//200
+            //dialog_box_share->setStyleSheet("background-color:transparent;");
+            dialog_box_share->setStyleSheet("background-color:#444444;");
+
+            QVBoxLayout *vl_total = new QVBoxLayout();
+            vl_total->setContentsMargins(30,10,0,0);
+            vl_total->setSpacing(30);
+
+            vl_total->addWidget(widget_box_btn_share, 0, Qt::AlignHCenter);
+
+            dialog_box_share->setLayout(vl_total);
+        //}
+            BtnLabel *btn_facebook = new BtnLabel(tr("FaceBook"), "btn_facebook", ":/images/facebook_logo.png", ":/images/facebook_logo.png");
+            //QPushButton *btn_facebook = GSCommon::getUIBtnImg("FaceBook", ":images/facebook_logo.png");
+            //new BtnLabel(tr("FaceBook"), "btn_facebook", ":/images/facebook_logo.png", ":/images/facebook_logo.png");
+            btn_facebook->setFixedSize(80,80);
+            // btn_facebook->setProperty("internalMode", 64);
+            btn_facebook->setProperty("btnNo", 11);
+            btn_facebook->setCursor(Qt::PointingHandCursor);
 
 
-        BtnLabel *btn_facebook = new BtnLabel(tr("FaceBook"), "btn_facebook", ":/images/facebook_logo.png", ":/images/facebook_logo.png");
-        //QPushButton *btn_facebook = GSCommon::getUIBtnImg("FaceBook", ":images/facebook_logo.png");
-                //new BtnLabel(tr("FaceBook"), "btn_facebook", ":/images/facebook_logo.png", ":/images/facebook_logo.png");
-        btn_facebook->setFixedSize(80,80);
-        // btn_facebook->setProperty("internalMode", 64);
-        btn_facebook->setProperty("btnNo", 11);
-        btn_facebook->setCursor(Qt::PointingHandCursor);
+            QLabel *lb_title = new QLabel;
+            lb_title->setText(tr("Share"));//lb_title->setText(tr("클라우드 추가"));
+            lb_title->setStyleSheet("color:#FFFFFF;font-size:22px;");
+            lb_title->setAlignment(Qt::AlignLeft);
+            lb_title->setFixedSize(dialogWidth-80,30);
+
+            QPushButton *btn_close = GSCommon::getUIBtnImg("btn_close", ":images/icon_close_gray.png");
+            btn_close->setCursor(Qt::PointingHandCursor);
+            btn_close->setFixedSize(QSize(20,20));
+            //btn_close->setParent(lb_title);
+            //btn_close->setGeometry(250-70, 0, 70, 70);
+            btn_close->show();
 
 
-        QLabel *lb_title = new QLabel;
-        lb_title->setText(tr("Share"));//lb_title->setText(tr("클라우드 추가"));
-        lb_title->setStyleSheet("color:#FFFFFF;font-size:22px;");
-        lb_title->setAlignment(Qt::AlignLeft);
-        lb_title->setFixedSize(dialogWidth-80,30);
+            QLineEdit *lb_title_link = new QLineEdit;
+            lb_title_link->setStyleSheet("background-color:white;font-size:14px; color:#333333; ");
+            lb_title_link->setMaxLength(200);
+            lb_title_link->setFixedSize(dialogWidth-120,30);
+            lb_title_link->setPlaceholderText(tr(""));
 
-        QPushButton *btn_close = GSCommon::getUIBtnImg("btn_close", ":images/icon_close_gray.png");
-        btn_close->setCursor(Qt::PointingHandCursor);
-        btn_close->setFixedSize(QSize(20,20));
-        //btn_close->setParent(lb_title);
-        //btn_close->setGeometry(250-70, 0, 70, 70);
-        btn_close->show();
-
-
-        QLineEdit *lb_title_link = new QLineEdit;
-        lb_title_link->setStyleSheet("background-color:white;font-size:14px; color:#333333; ");
-        lb_title_link->setMaxLength(200);
-        lb_title_link->setFixedSize(dialogWidth-120,30);
-        lb_title_link->setPlaceholderText(tr(""));
-
-        /*
+            /*
         //lb_title_link->setTextInteractionFlags(Qt::TextSelectableByMouse);
         lb_title_link->setText(tr("https://"));//lb_title->setText(tr("클라우드 추가"));
 
@@ -2319,96 +2432,86 @@ namespace common {
  */
 
 
-        QString btnStyle = "QPushButton{font-size:14px; color:#8E8E8E; padding-left:0px; background-color:transparent; border:1px solid #8E8E8E; border-radius:10px;}";
-        btnStyle += "QPushButton:hover{font-size:14px; color:#777777; padding-left:0px; background-color:#777777; border:1px solid #777777; border-radius:10px;}";
+            QString btnStyle = "QPushButton{font-size:14px; color:#8E8E8E; padding-left:0px; background-color:transparent; border:1px solid #8E8E8E; border-radius:10px;}";
+            btnStyle += "QPushButton:hover{font-size:14px; color:#777777; padding-left:0px; background-color:#777777; border:1px solid #777777; border-radius:10px;}";
 
 
-        QPushButton *btn_title_link_copy = new QPushButton;
-        btn_title_link_copy->setText(tr("Copy"));
-        btn_title_link_copy->setCursor(Qt::PointingHandCursor);
-        btn_title_link_copy->setStyleSheet("font-size:16px;color:#FFFFFF;background-color:#333333;border-radius:15px;");
-        btn_title_link_copy->setFixedSize(60,30);
+            QPushButton *btn_title_link_copy = new QPushButton;
+            btn_title_link_copy->setText(tr("Copy"));
+            btn_title_link_copy->setCursor(Qt::PointingHandCursor);
+            btn_title_link_copy->setStyleSheet("font-size:16px;color:#FFFFFF;background-color:#333333;border-radius:15px;");
+            btn_title_link_copy->setFixedSize(60,30);
 
 
-        QHBoxLayout *hl_btn_link_copy = new QHBoxLayout();
-        hl_btn_link_copy->setContentsMargins(0,0,0,0);
-        hl_btn_link_copy->setSpacing(30);
-        hl_btn_link_copy->addWidget(lb_title_link, 0, Qt::AlignLeft);
-        hl_btn_link_copy->addWidget(btn_title_link_copy, 0, Qt::AlignRight);
-        //-----------------------------------------------------------------------------------
+            QHBoxLayout *hl_btn_link_copy = new QHBoxLayout();
+            hl_btn_link_copy->setContentsMargins(0,0,0,0);
+            hl_btn_link_copy->setSpacing(30);
+            hl_btn_link_copy->addWidget(lb_title_link, 0, Qt::AlignLeft);
+            hl_btn_link_copy->addWidget(btn_title_link_copy, 0, Qt::AlignRight);
+            //-----------------------------------------------------------------------------------
 
-        //----------------------------------------------------------------------------------------
-        QHBoxLayout *hl_btn_title = new QHBoxLayout();
-        hl_btn_title->setContentsMargins(0,0,0,0);
-        hl_btn_title->setSpacing(130);
-        hl_btn_title->addWidget(lb_title, 0, Qt::AlignLeft);
-        hl_btn_title->addWidget(btn_close, 0, Qt::AlignRight);
+            //----------------------------------------------------------------------------------------
+            QHBoxLayout *hl_btn_title = new QHBoxLayout();
+            hl_btn_title->setContentsMargins(0,0,0,0);
+            hl_btn_title->setSpacing(130);
+            hl_btn_title->addWidget(lb_title, 0, Qt::AlignLeft);
+            hl_btn_title->addWidget(btn_close, 0, Qt::AlignRight);
 
-        QWidget *widget_title = new QWidget();
-        widget_title->setFixedHeight(50);
-        widget_title->setLayout(hl_btn_title);
+            QWidget *widget_title = new QWidget();
+            widget_title->setFixedHeight(50);
+            widget_title->setLayout(hl_btn_title);
 
-        BtnLabel *btn_twiter = new BtnLabel(tr("Twiter"), "btn_twiter", ":/images/twiter_logo.png", ":/images/twiter_logo.png");
-        //QPushButton *btn_twiter = GSCommon::getUIBtnImg("Twiter", ":images/twiter_logo.png");
-                //new BtnLabel(tr("Twiter"), "btn_twiter", ":/images/twiter_logo.png", ":/images/twiter_logo.png");
-        btn_twiter->setFixedSize(80,80);
-        // btn_twiter->setProperty("internalMode", 4);
-        btn_twiter->setProperty("btnNo", 12);
-        btn_twiter->setCursor(Qt::PointingHandCursor);
-
-
-        QVBoxLayout *vl_btn_twiter = new QVBoxLayout();
-        vl_btn_twiter->setContentsMargins(0,0,0,0);
-        vl_btn_twiter->setSpacing(0);
-
-        vl_btn_twiter->addWidget(btn_twiter);
-        //----------------------------------------------------------------------------------------
-        QHBoxLayout *hl_btn_share = new QHBoxLayout();
-        hl_btn_share->setContentsMargins(0,0,20,0);
-        hl_btn_share->setSpacing(0);
-        hl_btn_share->addWidget(btn_facebook);//, 0, Qt::AlignLeft);
-        hl_btn_share->addWidget(btn_twiter);//, 0, Qt::AlignLeft);
-        //-----------------------------------------------------------------------------------
-        QWidget *line_bottom_1 = new QWidget();
-        line_bottom_1->setFixedHeight(1);
-        line_bottom_1->setStyleSheet("background-color:#707070;");
-
-        QLabel *msg_box = new QLabel();
-        msg_box->setFixedHeight(50);
-        msg_box->setText("This function is being prepared\n for service!!!");
-        msg_box->setStyleSheet("font-size:20px;color:#ffffff; background-color:transparent;");
-
-        QVBoxLayout *vl_btn_share = new QVBoxLayout();
-        vl_btn_share->setContentsMargins(20,0,20,0);
-        vl_btn_share->addSpacing(5);
-        vl_btn_share->setAlignment(Qt::AlignTop);
-        vl_btn_share->addWidget(widget_title, 0, Qt::AlignLeft);
-        vl_btn_share->addWidget(line_bottom_1);
-        vl_btn_share->addSpacing(15);
-        vl_btn_share->addWidget(msg_box);
-        vl_btn_share->addLayout(hl_btn_share);
-        vl_btn_share->addSpacing(15);
-        vl_btn_share->addLayout(hl_btn_link_copy);
-
-        msg_box->hide();
+            BtnLabel *btn_twiter = new BtnLabel(tr("Twiter"), "btn_twiter", ":/images/twiter_logo.png", ":/images/twiter_logo.png");
+            //QPushButton *btn_twiter = GSCommon::getUIBtnImg("Twiter", ":images/twiter_logo.png");
+            //new BtnLabel(tr("Twiter"), "btn_twiter", ":/images/twiter_logo.png", ":/images/twiter_logo.png");
+            btn_twiter->setFixedSize(80,80);
+            // btn_twiter->setProperty("internalMode", 4);
+            btn_twiter->setProperty("btnNo", 12);
+            btn_twiter->setCursor(Qt::PointingHandCursor);
 
 
-        QWidget *widget_box_btn_share = new QWidget();
-        widget_box_btn_share->setObjectName("widget_box_internal_out");
-        widget_box_btn_share->setFixedSize(dialogWidth, 260);//200
-        // widget_box_btn_share->setStyleSheet("#widget_box_btn_share { border:1px solid #707070; }");
-        widget_box_btn_share->setLayout(vl_btn_share);
-        //---------------------------------------------------------------------------
+            QVBoxLayout *vl_btn_twiter = new QVBoxLayout();
+            vl_btn_twiter->setContentsMargins(0,0,0,0);
+            vl_btn_twiter->setSpacing(0);
+
+            vl_btn_twiter->addWidget(btn_twiter);
+            //----------------------------------------------------------------------------------------
+            QHBoxLayout *hl_btn_share = new QHBoxLayout();
+            hl_btn_share->setContentsMargins(0,0,20,0);
+            hl_btn_share->setSpacing(0);
+            hl_btn_share->addWidget(btn_facebook);//, 0, Qt::AlignLeft);
+            hl_btn_share->addWidget(btn_twiter);//, 0, Qt::AlignLeft);
+            //-----------------------------------------------------------------------------------
+            QWidget *line_bottom_1 = new QWidget();
+            line_bottom_1->setFixedHeight(1);
+            line_bottom_1->setStyleSheet("background-color:#707070;");
+
+            QLabel *msg_box = new QLabel();
+            msg_box->setFixedHeight(50);
+            msg_box->setText("This function is being prepared\n for service!!!");
+            msg_box->setStyleSheet("font-size:20px;color:#ffffff; background-color:transparent;");
+
+            QVBoxLayout *vl_btn_share = new QVBoxLayout();
+            vl_btn_share->setContentsMargins(20,0,20,0);
+            vl_btn_share->addSpacing(5);
+            vl_btn_share->setAlignment(Qt::AlignTop);
+            vl_btn_share->addWidget(widget_title, 0, Qt::AlignLeft);
+            vl_btn_share->addWidget(line_bottom_1);
+            vl_btn_share->addSpacing(15);
+            vl_btn_share->addWidget(msg_box);
+            vl_btn_share->addLayout(hl_btn_share);
+            vl_btn_share->addSpacing(15);
+            vl_btn_share->addLayout(hl_btn_link_copy);
+
+            msg_box->hide();
 
 
-        QVBoxLayout *vl_total = new QVBoxLayout();
-        vl_total->setContentsMargins(30,10,0,0);
-        vl_total->setSpacing(30);
 
-        vl_total->addWidget(widget_box_btn_share, 0, Qt::AlignHCenter);
-
-        dialog_box_share->setLayout(vl_total);
-
+            widget_box_btn_share->setObjectName("widget_box_internal_out");
+            widget_box_btn_share->setFixedSize(dialogWidth, 260);//200
+            // widget_box_btn_share->setStyleSheet("#widget_box_btn_share { border:1px solid #707070; }");
+            widget_box_btn_share->setLayout(vl_btn_share);
+            //---------------------------------------------------------------------------
 
         QString tmpStr = this->shareLink;
         QStringList tmpLink = tmpStr.split("?");
@@ -2474,6 +2577,70 @@ namespace common {
         QDesktopServices::openUrl(QUrl(link));
         dialog_box_share->hide();//c220820
 
+    }
+
+    bool AbstractCommonSubWidget::menuTableCheck_ForFilter(QString menu_Name)//c230329
+    {
+        //--------------//  start
+
+        SqliteHelper *sqliteHelper = new SqliteHelper();
+        QSqlError err = sqliteHelper->addConnectionLocal();
+
+        // SELECT 처리
+        const QString QUERY_SEL = "SELECT * FROM Leftmenu";
+        QVariantList *list = new QVariantList();
+        //sqliteHelper->exec(QUERY_DEL, *list);
+        sqliteHelper->exec(QUERY_SEL, *list);
+
+        // SELECT 처리
+        //QVariantList *list = new QVariantList();
+        list->clear();
+        sqliteHelper->exec(QUERY_SEL, *list);
+
+        if(err.type() == QSqlError::NoError){
+            print_debug();
+            qDebug() << "list->size()=" << list->size();
+            foreach(QVariant val, *list){
+                QMap<QString, QVariant> map = val.toMap();
+                int idx = map["idx"].toInt();
+                int sel = map["menu"].toInt();
+                qDebug() << "idx = " << idx << " ,menu=" << sel << "menu_Name" << menu_Name;
+                if(menu_Name == "Tidal" || menu_Name == "TIDAL" || menu_Name =="타이달"){
+                    if(idx == 1){
+                        if(sel == 1){
+                            sqliteHelper->close();
+                            return true;
+                        }else{
+                            sqliteHelper->close();
+                            return false;
+                        }
+                    }
+                }else if(menu_Name == "Bugs" || menu_Name == "BUGS" || menu_Name == "벅스"){
+                    if(idx == 3){
+                        if(sel == 1){
+                            sqliteHelper->close();
+                            return true;
+                        }else{
+                            sqliteHelper->close();
+                            return false;
+                        }
+                    }
+                }else if(menu_Name == "Qobuz" || menu_Name == "QOBUZ" || menu_Name == "코부즈"){
+                    if(idx == 2){
+                        if(sel == 1){
+                            sqliteHelper->close();
+                            return true;
+                        }else{
+                            sqliteHelper->close();
+                            return false;
+                        }
+                    }
+                }
+            }
+        }
+        return true;
+        sqliteHelper->close();
+        //---------//
     }
 
 

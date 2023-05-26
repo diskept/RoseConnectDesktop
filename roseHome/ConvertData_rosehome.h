@@ -58,15 +58,23 @@ namespace roseHome {
         static QJsonObject getObjectJson_albumData(const roseHome::AlbumItemData &data);
         static roseHome::AlbumItemData convertData_albumData(const QJsonObject &jsonObj);
 
+        // about ArtistItemData
+        static QJsonObject getObjectJson_artistData(const roseHome::ArtistItemData &data);
+        static roseHome::ArtistItemData convertData_artistData(const QJsonObject &jsonObj);
+
         // about TrackItemData
         static QJsonObject getObjectJson_trackData(const roseHome::TrackItemData &data);
         static roseHome::TrackItemData convertData_trackItemData(const QJsonObject &jsonObj);
+
+        // about HistoryItemData
+        static QJsonObject getObjectJson_historyData(const roseHome::HistoryItemData &data);
+        static roseHome::HistoryItemData converData_historyItemData(const QJsonObject &jsonObj);
 
         // convert ItemData to OptMorePopup::HeaderData
         static OptMorePopup::HeaderData getConvertOptHeaderData(const roseHome::AlbumItemData &data);
         static OptMorePopup::HeaderData getConvertOptHeaderData(const roseHome::PlaylistItemData &data);
         static OptMorePopup::HeaderData getConvertOptHeaderData(const roseHome::TrackItemData &data);
-        //static OptMorePopup::HeaderData getConvertOptHeaderData(const roseHome::ArtistItemData &data);
+        static OptMorePopup::HeaderData getConvertOptHeaderData(const roseHome::ArtistItemData &data);
         //static OptMorePopup::HeaderData getConvertOptHeaderData(const roseHome::VideoItemData &data);
 
 
@@ -86,6 +94,14 @@ namespace roseHome {
         // about PageInfo_trackAllView
         static QJsonObject getObjectJson_pageInfo_trackAllView(const roseHome::PageInfo_TrackAllView &data);
         static roseHome::PageInfo_TrackAllView convertData_pageInfo_trackAllView(const QJsonObject &jsonObj);
+
+        // about PageInfo_artistAllView
+        static QJsonObject getObjectJson_pageInfo_artistAllView(const roseHome::PageInfo_ArtistAllView &data);
+        static roseHome::PageInfo_ArtistAllView convertData_pageInfo_artistAllView(const QJsonObject &jsonObj);
+
+        // about PageInfo_HistoryAllView
+        static QJsonObject getObjectJson_pageInfo_historyAllView(const roseHome::PageInfo_HistoryAllView &data);
+        static roseHome::PageInfo_HistoryAllView convertData_pageInfo_historyAllView(const QJsonObject &jsonObj);
 
         static QJsonObject getObjectJson_pageInfo_radioAllView(const roseHome::PageInfo_RadioAllView &data);
         static roseHome::PageInfo_RadioAllView convertData_pageInfo_radioAllView(const QJsonObject &jsonObj);

@@ -12,6 +12,7 @@
 #include <QRadioButton>
 #include <QDebug>
 #include <QMessageBox>
+#include <QMovie>
 
 #define print_debug() qDebug() << "\n" << "file_name: " << __FILE__ << "function_name: " << __FUNCTION__ << "line: " << __LINE__ << "\n";
 
@@ -39,7 +40,7 @@ void dialogsetting_hdmi_150::setInit(){
     this->setModal(true);
     this->setWindowFlags(Qt::Dialog | Qt::FramelessWindowHint);
     this->setAttribute(Qt::WA_TranslucentBackground);
-    this->setFixedSize(DLG_WIDTH, DLG_HEIGHT+100);
+    this->setFixedSize(DLG_WIDTH, DLG_HEIGHT);
     this->setStyleSheet("background-color:transparent;");
    // HdmiDetailData = new QJsonObject();
 }
@@ -48,6 +49,8 @@ void dialogsetting_hdmi_150::setInit(){
  * @brief DialogSelect_Cloud::setUIControl : UI 세팅
  */
 void dialogsetting_hdmi_150::setUIControl(){
+
+    this->loding_ani_init();
 
     QJsonObject tmp_hdmisettingval = get_settingOfHdmiDetail();
     dlgConfirmHdmi = new DialogConfirm(this);
@@ -145,6 +148,8 @@ void dialogsetting_hdmi_150::setUIControl(){
     comboBoxHdmiPCM->addItem(tr(" 96 kHz"), 4);//cheon01_src
     comboBoxHdmiPCM->addItem(tr(" 176.4 kHz"), 5);//cheon01_src
     comboBoxHdmiPCM->addItem(tr(" 192 kHz"), 6);//cheon01_src
+    comboBoxHdmiPCM->addItem(tr(" 352.8 kHz"), 6);//cheon01_src
+    comboBoxHdmiPCM->addItem(tr(" 384 kHz"), 6);//cheon01_src
 
     QLabel *lb_PCM = new QLabel(tr("PCM Resampling Frequency"));
     lb_PCM->setStyleSheet("color:#E5E5E4");
@@ -172,6 +177,7 @@ void dialogsetting_hdmi_150::setUIControl(){
     comboBoxHdmiPCM_Max->addItem(tr(" 48 kHz"), 1);//cheon01_src
     comboBoxHdmiPCM_Max->addItem(tr(" 96 kHz"), 2);//cheon01_src
     comboBoxHdmiPCM_Max->addItem(tr(" 192 kHz"), 3);//cheon01_src
+    comboBoxHdmiPCM_Max->addItem(tr(" 384 kHz"), 3);//cheon01_src
 
 
     QLabel *lb_PCM_Max = new QLabel(tr("PCM Resampling Frequency"));
@@ -254,7 +260,7 @@ void dialogsetting_hdmi_150::setUIControl(){
 
     comboBoxHdmiDSD->addItem(tr("Native DSD(Not suported)"), 0);//c220511
     comboBoxHdmiDSD->addItem(tr("DSD over PCM(Not suported)"), 1);//c220511
-    comboBoxHdmiDSD->addItem(tr("DSD to PCM(upto DSD128)"), 2);//c220511
+    comboBoxHdmiDSD->addItem(tr("DSD to PCM(upto DSD512)"), 2);//c220511
 
     QPushButton *btn_questionDSD;
     btn_questionDSD =  GSCommon::getUIBtnImg("question", ":images/setting/201/tip_icon.png");
@@ -371,23 +377,23 @@ void dialogsetting_hdmi_150::setUIControl(){
     vl_total_32->addWidget(this->getUIControlOption_bit32(tr("The low 8bits of a 32 bit sound sources will have correct")));//print_debug();
     //onOff[1]->setValue(tmp_hdmisettingval["isClearLowerBit"].toBool());
 
-    QVBoxLayout *vl_total_mqagain = new QVBoxLayout();
-    vl_total_mqagain->setContentsMargins(0,0,0,0);
-    vl_total_mqagain->setSpacing(0);
-    vl_total_mqagain->setAlignment(Qt::AlignTop);
+//    QVBoxLayout *vl_total_mqagain = new QVBoxLayout();
+//    vl_total_mqagain->setContentsMargins(0,0,0,0);
+//    vl_total_mqagain->setSpacing(0);
+//    vl_total_mqagain->setAlignment(Qt::AlignTop);
 
-    mqadBData = tmp_hdmisettingval["mqaRelplayGain"].toInt();
-    QWidget *widget_mqaGain = this->getPlusMinusUIControlOption(tr("MQA Replay Gain"),0, mqadBData);
-    vl_total_mqagain->addWidget(widget_mqaGain);
+//    mqadBData = tmp_hdmisettingval["mqaRelplayGain"].toInt();
+//    QWidget *widget_mqaGain = this->getPlusMinusUIControlOption(tr("MQA Replay Gain"),0, mqadBData);
+//    vl_total_mqagain->addWidget(widget_mqaGain);
 
-    QVBoxLayout *vl_total_outputgain = new QVBoxLayout();
-    vl_total_outputgain->setContentsMargins(0,0,0,0);
-    vl_total_outputgain->setSpacing(0);
-    vl_total_outputgain->setAlignment(Qt::AlignTop);
+//    QVBoxLayout *vl_total_outputgain = new QVBoxLayout();
+//    vl_total_outputgain->setContentsMargins(0,0,0,0);
+//    vl_total_outputgain->setSpacing(0);
+//    vl_total_outputgain->setAlignment(Qt::AlignTop);
 
-    outputdBData = tmp_hdmisettingval["outputGain"].toInt();
-    QWidget *widget_outputGain = this->getPlusMinusUIControlOption(tr("Output Gain"), 1,outputdBData);
-    vl_total_outputgain->addWidget(widget_outputGain);
+//    outputdBData = tmp_hdmisettingval["outputGain"].toInt();
+//    QWidget *widget_outputGain = this->getPlusMinusUIControlOption(tr("Output Gain"), 1,outputdBData);
+//    vl_total_outputgain->addWidget(widget_outputGain);
 
     // 하단 버튼
     QPushButton *btn_ok = new QPushButton;
@@ -436,7 +442,7 @@ void dialogsetting_hdmi_150::setUIControl(){
     vl_total2->addLayout(vl_total1);
     vl_total2->addLayout(vl_total_Pass);//print_debug();
     vl_total2->addLayout(vl_total_32);
-    vl_total2->addLayout(vl_total_outputgain);
+    //vl_total2->addLayout(vl_total_outputgain);
   //  vl_total2->addWidget(widget_box_notice);//print_debug();
     vl_total2->addSpacing(30);//200
 
@@ -471,13 +477,13 @@ print_debug();
     connect(comboBoxHdmiRoon, SIGNAL(currentIndexChanged(int)), this, SLOT(slot_changedIndexHdmi(int)));
 
     //connect(lb_onOfftitle, SIGNAL(clicked()), this, SLOT(slot_clickedHdmipassGain()));
-    connect(lb_gain[0], SIGNAL(clicked()), this, SLOT(slot_clickedHdmimqaGain()));
-    connect(lb_gain[1], SIGNAL(clicked()), this, SLOT(slot_clickedHdmioutputGain()));
+//    connect(lb_gain[0], SIGNAL(clicked()), this, SLOT(slot_clickedHdmimqaGain()));
+//    connect(lb_gain[1], SIGNAL(clicked()), this, SLOT(slot_clickedHdmioutputGain()));
 
-    connect(btn_gain_add[0], SIGNAL(clicked()), this, SLOT(slot_clickedHdmiaddmqaGain()));
-    connect(btn_gain_sub[0], SIGNAL(clicked()), this, SLOT(slot_clickedHdmisubmqaGain()));
-    connect(btn_gain_add[1], SIGNAL(clicked()), this, SLOT(slot_clickedHdmiaddoutputGain()));
-    connect(btn_gain_sub[1], SIGNAL(clicked()), this, SLOT(slot_clickedHdmisuboutputGain()));
+//    connect(btn_gain_add[0], SIGNAL(clicked()), this, SLOT(slot_clickedHdmiaddmqaGain()));
+//    connect(btn_gain_sub[0], SIGNAL(clicked()), this, SLOT(slot_clickedHdmisubmqaGain()));
+//    connect(btn_gain_add[1], SIGNAL(clicked()), this, SLOT(slot_clickedHdmiaddoutputGain()));
+//    connect(btn_gain_sub[1], SIGNAL(clicked()), this, SLOT(slot_clickedHdmisuboutputGain()));
 
     connect(btn_close, SIGNAL(clicked()), this, SLOT(close()));
     connect(btn_cancel, SIGNAL(clicked()), this, SLOT(close()));//print_debug();
@@ -491,7 +497,8 @@ void dialogsetting_hdmi_150::slot_clickedDSDquestion(){//c220511
     dlgConfirmHdmi->setTitle(tr("DSD Mode"));
     dlgConfirmHdmi->setText(tr("Determines the transmission format (Native, DOP, PCM) of audio samples to be transmitted to the DAC when playing DSD sound sources. \n For HDMI output, only DSD to PCM is available."));
 
-    dlgConfirmHdmi->setGeometry((DLG_WIDTH + 80), (350 + 100), 350, 500);
+    dlgConfirmHdmi->setTextHeight(180);
+    dlgConfirmHdmi->setGeometry((this->geometry().left() + (DLG_WIDTH - 660) / 2), this->geometry().top() + (DLG_HEIGHT - dlgConfirmHdmi->sizeHint().height()) / 2, 0, 0);
     dlgConfirmHdmi->setAlertMode();
     dlgConfirmHdmi->setProperty("flagShown",false);
 
@@ -508,9 +515,10 @@ void dialogsetting_hdmi_150::slot_clickedDSDquestion(){//c220511
 void dialogsetting_hdmi_150::slot_clickedPCMquestion(){//c220511
     print_debug();
     dlgConfirmHdmi->setTitle(tr("PCM Resampling Frequency"));
-    dlgConfirmHdmi->setText(tr("This is The menu to set sampling frequecy. if you want to output the original sound as it is, select the Original Sampling Rate, and if want to use the resampling function, select the desired sampling rate (48kHz, 96Khz, 192Khz, etc), MQA, Native DSD, DOP, Video, Bluetooth and Airplay are not supported."));
+    dlgConfirmHdmi->setText(tr("This is The menu to set sampling frequecy. if you want to output the original sound as it is, select the Original Sampling Rate, and if want to use the resampling function, select the desired sampling rate (48kHz, 96Khz, 192Khz, etc), MQA, Native DSD, DOP, Video, Bluetooth and Airplay, Roon Ready are not supported."));
 
-    dlgConfirmHdmi->setGeometry((DLG_WIDTH + 80), (350 + 100), 350, 500);
+    dlgConfirmHdmi->setTextHeight(200);
+    dlgConfirmHdmi->setGeometry((this->geometry().left() + (DLG_WIDTH - 660) / 2), this->geometry().top() + (DLG_HEIGHT - dlgConfirmHdmi->sizeHint().height()) / 2, 0, 0);
     dlgConfirmHdmi->setAlertMode();
     dlgConfirmHdmi->setProperty("flagShown",false);
 
@@ -529,7 +537,8 @@ void dialogsetting_hdmi_150::slot_clickedPassquestion(){//c220511
     dlgConfirmHdmi->setTitle(tr("HDMI Passthough"));
     dlgConfirmHdmi->setText(tr("it bypasses HD audio formats such as surround sound sources to the audio reciever though HDMI without decording."));
 
-    dlgConfirmHdmi->setGeometry((DLG_WIDTH + 80), (350 + 100), 350, 500);
+    dlgConfirmHdmi->setTextHeight(120);
+    dlgConfirmHdmi->setGeometry((this->geometry().left() + (DLG_WIDTH - 660) / 2), this->geometry().top() + (DLG_HEIGHT - dlgConfirmHdmi->sizeHint().height()) / 2, 0, 0);
     dlgConfirmHdmi->setAlertMode();
     dlgConfirmHdmi->setProperty("flagShown",false);
 
@@ -548,12 +557,13 @@ void dialogsetting_hdmi_150::slot_clickedbit32question(){//c220511
     print_debug();
     dlgConfirmHdmi->setAlignment(Qt::AlignLeft);
     //dlgConfirmHdmi->setTitle(tr("Headphone Output Impedance"));
-    //dlgConfirmHdmi->setText(tr("This is a menu to set the Headphone Output Impedace.\nIf you select the output (16 Ohm, 32 Ohm, 50 Ohm, 100 Ohm) that matches your headphone specifications, you can enjoy better sound."));
+    //dlgConfirmHdmi->setText(tr("This is a menu to set the Headphone Output Impedace.\nIf you select the output (16 Ohm, 32 Ohm, 50 Ohm, 100 Ohm) that fits your headphone specifications, you can hear better sound quality."));
     dlgConfirmHdmi->setAlignment(Qt::AlignLeft);
     dlgConfirmHdmi->setTitle(tr("The low 8bits of a 32 bit sound sources\n will have correct"));
     dlgConfirmHdmi->setText(tr("Some DACs may generate noise when playing a 32-bit sound source with a high sampling rate.\nIn this case, it is used to reduce noise by correcting the lower 8 bits."));
 
-    dlgConfirmHdmi->setGeometry((DLG_WIDTH + 80), (350 + 100), 350, 500);
+    dlgConfirmHdmi->setTextHeight(120);
+    dlgConfirmHdmi->setGeometry((this->geometry().left() + (DLG_WIDTH - 660) / 2), this->geometry().top() + (DLG_HEIGHT - dlgConfirmHdmi->sizeHint().height()) / 2, 0, 0);
     dlgConfirmHdmi->setAlertMode();
     dlgConfirmHdmi->setProperty("flagShown",false);
 
@@ -570,10 +580,10 @@ void dialogsetting_hdmi_150::slot_clickedbit32question(){//c220511
 void dialogsetting_hdmi_150::slot_clickedRoonquestion(){//c220511
     print_debug();
     dlgConfirmHdmi->setTitle(tr("Software Volume Control"));
-    dlgConfirmHdmi->setText(tr("Adjust the playback volume of digital audio data using the Rose volume control software.\nCaution 1. It cannot be used in Native DSD or DSD over PCM mode. It is applied after changing to DSD to PCM(upto DSD128) mode.\nCaution 2. For digital output. MQA Stream is supported only when the volume is MAX. If it is less than MAX. MQA Stream is not supported."));
-    dlgConfirmHdmi->setTextHeight(250);
+    dlgConfirmHdmi->setText(tr("Adjust the playback volume of digital audio data using the Rose volume control software.\n\nCaution 1. It cannot be used in Native DSD or DSD over PCM mode. It is applied after changing to DSD to PCM(upto DSD128) mode.\nCaution 2. For digital output. MQA Stream is supported only when the volume is MAX. If it is less than MAX. MQA Stream is not supported."));
     dlgConfirmHdmi->setAlignment(Qt::AlignLeft);
-    dlgConfirmHdmi->setGeometry((DLG_WIDTH + 80), (350 + 100), 350, 500);
+    dlgConfirmHdmi->setTextHeight(270);
+    dlgConfirmHdmi->setGeometry((this->geometry().left() + (DLG_WIDTH - 660) / 2), this->geometry().top() + (DLG_HEIGHT - dlgConfirmHdmi->sizeHint().height()) / 2, 0, 0);
     dlgConfirmHdmi->setAlertMode();
     dlgConfirmHdmi->setProperty("flagShown",false);
 
@@ -804,7 +814,7 @@ QWidget* dialogsetting_hdmi_150::getUIControlOption_Pass(QString p_title){
     connect(btn_question, SIGNAL(clicked()), this, SLOT(slot_clickedPassquestion()));
 
     //connect(lb_onOfftitle, SIGNAL(clicked()), this, SLOT(slot_modeOnOff()));
-    connect(btn_onOffHover, SIGNAL(clicked()), this, SLOT(slot_modeOnOff_drc()));
+    connect(btn_onOffHover, SIGNAL(clicked()), this, SLOT(slot_modeOnOff_Pass()));
     return widget_total;
 
 }
@@ -1084,16 +1094,16 @@ void dialogsetting_hdmi_150::slot_modeOnOff_Pass(){
 
     int ispass = !this->onOff_Pass->getCurrentValue();
     if(ispass) {
-        HdmiDetailData.insert("isClearLowerBit", true);
+        HdmiDetailData.insert("isHdmiPassThrough", true);
         this->onOff_Pass->setValue(true);
 
     }else{
-        HdmiDetailData.insert("isClearLowerBit", false);
+        HdmiDetailData.insert("isHdmiPassThrough", false);
         this->onOff_Pass->setValue(false);
 
     }
 
-    QTimer::singleShot(500, this, SLOT(slot_showDlgOfHdmiNotice()));
+//    QTimer::singleShot(500, this, SLOT(slot_showDlgOfHdmiNotice()));
 
 
       // notice_msg = tr("It bypasses HD audio formats such as surround sound sources to the audio receiver through HDMI without decoding.");
@@ -1118,7 +1128,7 @@ void dialogsetting_hdmi_150::slot_modeOnOff_32(){
 
        }
 
-       QTimer::singleShot(500, this, SLOT(slot_clickedbit32question()));
+//       QTimer::singleShot(500, this, SLOT(slot_clickedbit32question()));
 
        QJsonDocument doc(HdmiDetailData);  QString strJson(doc.toJson(QJsonDocument::Compact));  qDebug() << "slot_modeOnOff()-slot_modeOnOff_32 =: " << strJson;
 
@@ -1160,6 +1170,8 @@ void dialogsetting_hdmi_150::getHdmiInOutSettingOfsetting(){
 void dialogsetting_hdmi_150::slot_clickedHdmiChangeSet(){
     print_debug();
 
+    this->loding_ani_show();
+
    NetworkHttp *network = new NetworkHttp;
    QJsonObject tmp_json = get_settingOfHdmiDetail();
    QJsonObject tmp_json_set;
@@ -1190,8 +1202,8 @@ void dialogsetting_hdmi_150::setDialogHdmi_show(){
     //lb_text[0]->setText(QString("%1").arg(mqadBData) + tr("           ") + tr("dB"));
     //qDebug() << "setCurrentIndex_mqaRelplayGain :" <<  HdmiDetailData["mqaRelplayGain"].toInt();
 
-    outputdBData = HdmiDetailData["outputGain"].toInt();
-    lb_text[1]->setText(QString("%1").arg(outputdBData) + tr("           ") + tr("dB"));
+//    outputdBData = HdmiDetailData["outputGain"].toInt();
+//    lb_text[1]->setText(QString("%1").arg(outputdBData) + tr("           ") + tr("dB"));
 
     onOff_Pass->setValue(HdmiDetailData["isHdmiPassThrough"].toBool());
     onOff_32->setValue(HdmiDetailData["isClearLowerBit"].toBool());
@@ -1340,6 +1352,8 @@ void dialogsetting_hdmi_150::slot_responseHttp(const int &p_id, const QJsonObjec
         }else if( deviceType == "RS350"){
 
         }
+
+        this->loding_ani_hide();
         break;
     }
     sender()->deleteLater();
@@ -1358,4 +1372,69 @@ void dialogsetting_hdmi_150::setTextName(QString usbstr){
 
 void dialogsetting_hdmi_150::setPropertyName(QString usbstr){
     this->radio_UsbName->setProperty(PROPERTY_NAME_READABLE, usbstr);
+}
+
+void dialogsetting_hdmi_150::loding_ani_init(){
+
+    int left = 0;
+    int top = 0;
+
+    this->loding_ani_dialog = new QDialog();
+
+    QMovie *abs_ani_mov = new QMovie(":/images/Spinner-4.2s-200px.gif");
+    abs_ani_mov->setScaledSize(QSize(120, 120));
+    abs_ani_mov->setBackgroundColor("transparent");
+
+    QLabel *lb_Movie = new QLabel();
+    lb_Movie->setStyleSheet("background-color:transparent;");
+    lb_Movie->setMovie(abs_ani_mov);
+
+    QHBoxLayout *hl_msgBox = new QHBoxLayout();
+    hl_msgBox->setContentsMargins(0, 0, 0, 0);
+    hl_msgBox->setSpacing(0);
+    hl_msgBox->addWidget(lb_Movie);
+
+    this->loding_ani_dialog->setLayout(hl_msgBox);
+    this->loding_ani_dialog->setModal(true);
+    this->loding_ani_dialog->setWindowFlags(Qt::Dialog | Qt::FramelessWindowHint);
+    this->loding_ani_dialog->setAttribute(Qt::WA_TranslucentBackground);
+
+    left = global.left_mainwindow + ((global.width_mainwindow - 120) / 2);
+    top = global.top_mainwindow + ((global.height_mainwindow - 120) / 2);
+
+    this->loding_ani_dialog->move(left, top);
+
+    abs_ani_mov->start();
+    this->loding_ani_dialog->hide();
+}
+
+
+void dialogsetting_hdmi_150::loding_ani_show(){
+
+    if(this->loding_ani_dialog->isHidden() != true){
+        return;
+    }
+
+    //if(!global.window_activate_flag) return;
+
+    if(global.powerDialogShowFlag) return;
+
+    int left = 0;
+    int top = 0;
+
+    left = global.left_mainwindow + ((global.width_mainwindow - 120) / 2);
+    top = global.top_mainwindow + ((global.height_mainwindow - 120) / 2);
+
+    this->loding_ani_dialog->move(left, top);
+
+    this->loding_ani_dialog->show();
+    this->loding_ani_dialog->raise();
+}
+
+
+void dialogsetting_hdmi_150::loding_ani_hide(){
+
+    if(this->loding_ani_dialog->isHidden() != true){
+        this->loding_ani_dialog->hide();
+    }
 }

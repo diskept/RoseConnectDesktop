@@ -69,9 +69,12 @@ namespace qobuz {
 
             this->flag_artist_draw = false;
 
-            ContentLoadingwaitingMsgShow(tr("Content is being loaded. Please wait."));
+            print_debug();ContentLoadingwaitingMsgShow(tr("Content is being loaded. Please wait."));
 
             this->request_more_artistData();
+        }
+        else{
+            print_debug();ContentLoadingwaitingMsgHide();   //j230328
         }
     }
 
@@ -123,7 +126,7 @@ namespace qobuz {
 
             this->flag_artist_draw = true;
 
-            ContentLoadingwaitingMsgShow(tr("Content is being loaded. Please wait."));
+            print_debug();ContentLoadingwaitingMsgShow(tr("Content is being loaded. Please wait."));
 
             this->request_more_artistDraw();
         }
@@ -241,12 +244,11 @@ namespace qobuz {
 
                     QCoreApplication::processEvents();
                 }
+                ContentLoadingwaitingMsgHide();
 
                 this->flag_flow_draw = true;
                 this->flag_artist_draw = false;
             }
-
-            ContentLoadingwaitingMsgHide();
             this->request_more_artistData();
         }
         else{

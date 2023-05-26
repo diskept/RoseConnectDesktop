@@ -30,6 +30,7 @@ PlaylistImageDetailInfo_RHV::PlaylistImageDetailInfo_RHV(ContentsUIType p_Conten
 
 PlaylistImageDetailInfo_RHV::~PlaylistImageDetailInfo_RHV(){
 
+    this->deleteLater();
 }
 
 /**
@@ -328,6 +329,10 @@ void PlaylistImageDetailInfo_RHV::setData_fromQobuzData(const qobuz::PlaylistIte
                 this->label_titleUp->setText(tmp_title_line1);
                 if(hires_left >= 950){
                     this->label_titleDown->setText(GSCommon::getTextCutFromLabelWidth(tmp_title_total, hires_left - 10, this->label_titleDown->font()));
+                    if(this->label_titleDown->text().contains("…")){
+                        this->label_titleDown->setToolTip(tmp_title_total);//c230321
+                        this->label_titleDown->setToolTipDuration(2000);//c230321
+                    }
                 }
                 else{
                     this->label_titleDown->setText(tmp_title_total);
@@ -589,6 +594,10 @@ void PlaylistImageDetailInfo_RHV::setData_fromRoseData(const roseHome::PlaylistI
                 this->label_titleUp->setText(tmp_title_line1);
                 if(hires_left >= 950){
                     this->label_titleDown->setText(GSCommon::getTextCutFromLabelWidth(tmp_title_total, hires_left - 10, this->label_titleDown->font()));
+                    if(this->label_titleDown->text().contains("…")){
+                        this->label_titleDown->setToolTip(tmp_title_total);//c230321
+                        this->label_titleDown->setToolTipDuration(2000);//c230321
+                    }
                 }
                 else{
                     this->label_titleDown->setText(tmp_title_total);

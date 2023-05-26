@@ -17,7 +17,7 @@
 #include "tidal/ProcTidal_forOuter.h"
 #include "tidal/Dialog_ChoosePlaylist_forTidal.h"
 
-// for Qobuz Added Jeon 15/12/2020
+// for Qobuz Added diskept 15/12/2020
 #include "qobuz/ProcQobuz_forOuter.h"
 #include "qobuz/Dialog_ChoosePlaylist_forQobuz.h"
 
@@ -31,6 +31,7 @@
 #include <QJsonObject>
 #include <QJsonArray>
 #include <QPainter>
+#include <QPainterPath>
 #include <QJsonDocument>
 #include <QScrollArea>
 #include <QMetaEnum>
@@ -104,7 +105,6 @@ const int SECTION_FOR_MORE_POPUP___BUGS_video = 4;
 const int SECTION_FOR_MORE_POPUP___QOBUZ_track = 5;
 const int SECTION_FOR_MORE_POPUP___QOBUZ_video = 6;
 const int SECTION_FOR_MORE_POPUP___APPLE_track = 7;
-
 
 
 /**
@@ -187,15 +187,20 @@ void OptionPopupVideoDisplay::setCurrDisplayIndex(int p_index){
 void OptionPopupVideoDisplay::slot_setSettingValue(){
 
     int tmp_displayIndex = sender()->property("displayIndex").toInt();
-    if(global.device.getDeviceIP()!=""){
-        NetworkHttp *network = new NetworkHttp;
-        connect(network, SIGNAL(response(int, QJsonObject)), SLOT(slot_responseHttp(int, QJsonObject)));
+
+    if(global.device.getDeviceIP() != ""){
         QJsonObject tmp_json;
         tmp_json.insert("curDisplaySize", tmp_displayIndex);
         tmp_json.insert("settingType", "VIDEO_DISPLAY");
+
+        NetworkHttp *network = new NetworkHttp;
+        connect(network, SIGNAL(response(int, QJsonObject)), SLOT(slot_responseHttp(int, QJsonObject)));
         network->request(HTTP_SET_VIDEO_SETTING_DISPLAY, QString("http://%1:%2/set_video_setting_value").arg(global.device.getDeviceIP()).arg(global.port), tmp_json, true, true);
     }
 }
+
+
+
 
 
 /**
@@ -208,6 +213,7 @@ PlayFullScreenRelation::PlayFullScreenRelation(QWidget *parent) : QWidget(parent
     setUIControl();
 }
 
+
 PlayFullScreenRelation::~PlayFullScreenRelation(){
 
     this->filedownloader->deleteLater();
@@ -215,14 +221,12 @@ PlayFullScreenRelation::~PlayFullScreenRelation(){
 }
 
 
-
 /**
  * @brief PlayFullScreenRelation::setInit : 초기 세팅
  */
 void PlayFullScreenRelation::setInit(){
 
-
-    linker = Linker::getInstance();
+    this->linker = Linker::getInstance();
 
     // [비디오] 디스플레이 설정 팝업
     this->optionPopupVideoDisplay = new OptionPopupVideoDisplay();
@@ -244,7 +248,6 @@ void PlayFullScreenRelation::setInit(){
 
     list_dataPopup = new QList<DataPopup*>();
 
-
     // 로즈튜브 즐겨찾기 담기 Dlg
     proc_addPlaylist_RoseTube = new Proc_AddRosetubeInPlayList(this);
     connect(proc_addPlaylist_RoseTube, SIGNAL(signal_playlistClicked(int)), this, SLOT(slot_playlistClicked_Rosetube(int)));
@@ -262,16 +265,16 @@ void PlayFullScreenRelation::setUIControl(){
     lb_fileInfo->setStyleSheet("font-size:12px;color:#FFFFFF;");
     lb_artistName->setStyleSheet("font-size:20px;color:#999999;");
 
-    lb_title = new TextLongAnimation(IMG_W_MAX, IMG_W_MIN, 30);
+    lb_title = new TextLongAnimation(IMG_W_MAX, IMG_W_MIN, 32);
     lb_title->setStyleSheet("font-size:26px;color:#FFFFFF;");
 
     lb_albumThumb->setMinimumSize(IMG_W_MIN, IMG_W_MIN);
 
     // TV hdmi 버튼
-    btn_hdmi = GSCommon::getUIBtnImg("btn_hdmi", ":/images/playfullscreen/hdmi_off.png", this->lb_albumThumb);
-    btn_hdmi->setCursor(Qt::PointingHandCursor);
-    btn_hdmi->setFixedSize(60,60);
-    btn_hdmi->setVisible(false);
+    this->btn_hdmi = GSCommon::getUIBtnImg("btn_hdmi", ":/images/playfullscreen/hdmi_off.png", this->lb_albumThumb);
+    this->btn_hdmi->setCursor(Qt::PointingHandCursor);
+    this->btn_hdmi->setFixedSize(60,60);
+    this->btn_hdmi->setVisible(false);
 
     QHBoxLayout *hl_star = new QHBoxLayout();
     hl_star->setContentsMargins(0,0,0,0);
@@ -279,12 +282,13 @@ void PlayFullScreenRelation::setUIControl(){
     hl_star->setAlignment(Qt::AlignLeft);
 
     this->list_lb_star = new QList<ClickableLabel*>();
-    for(int i=0; i<5; i++){
+
+    /*for(int i = 0; i < 5; i++){
         this->list_lb_star->append(new ClickableLabel());
         this->list_lb_star->at(i)->setCursor(Qt::PointingHandCursor);
         hl_star->addWidget(this->list_lb_star->at(i));
         connect(this->list_lb_star->at(i), SIGNAL(signal_clicked()), this, SLOT(slot_clickedStar()));
-    }
+    }*/
 
     this->widget_starOnly = new QWidget();
     this->widget_starOnly->setLayout(hl_star);
@@ -439,25 +443,67 @@ void PlayFullScreenRelation::slot_loadImage()
     int tmp_size = 0;
     if(tmp_w <= tmp_h){
        tmp_size = tmp_w;
-    }else{
+    }
+    else{
        tmp_size = tmp_h;
     }
-    if(tmp_w>this->lb_albumThumb->sizeHint().width()){ // 가로가 커지는 경우...
-        tmp_size = tmp_w;
-    }
-    if(tmp_size<IMG_W_MIN){ tmp_size = IMG_W_MIN; }
-    if(tmp_size>IMG_W_MAX){ tmp_size = IMG_W_MAX; }
 
+    //if(tmp_w > this->lb_albumThumb->sizeHint().width()){ // 가로가 커지는 경우...
+    //    tmp_size = tmp_w;
+    //}
+
+    //if(tmp_size < IMG_W_MIN){ tmp_size = IMG_W_MIN; }
+    //if(tmp_size > IMG_W_MAX){ tmp_size = IMG_W_MAX; }
+
+    //bool flagLoad = this->pixmap_albumImg->loadFromData(this->filedownloader->downloadedData());
     //QImage image;
-    bool flagLoad = this->pixmap_albumImg->loadFromData(this->filedownloader->downloadedData());
+    //bool flagLoad = image.loadFromData(this->filedownloader->downloadedData());
+    bool flagLoad = this->image_buf.loadFromData(this->filedownloader->downloadedData());
 
-    if(flagLoad){
-        /*QPixmap pixmapIMG = QPixmap(QSize(IMG_W_MAX, IMG_W_MAX));
+    if(!flagLoad){
+        this->image_buf.load(":/images/def_mus_550.png");
+    }
+    else{
+        this->pixmap_albumImg->loadFromData(this->filedownloader->downloadedData());
+    }
+
+    QPixmap pixmapIMG = QPixmap(QSize(tmp_size, tmp_size));
+    pixmapIMG.fill(Qt::transparent);
+
+    QPixmap tmp_pixmap;
+    tmp_pixmap = tmp_pixmap.fromImage(this->image_buf);
+    tmp_pixmap = tmp_pixmap.scaled(tmp_size, tmp_size, Qt::KeepAspectRatio, Qt::SmoothTransformation);
+
+    QPainter painter (&pixmapIMG);
+    painter.setRenderHint(QPainter::Antialiasing, true);
+    painter.setRenderHint(QPainter::HighQualityAntialiasing, true);
+    painter.setRenderHint(QPainter::SmoothPixmapTransform, true);
+
+    QPainterPath path;
+    path.addRoundedRect(0, 0, tmp_size, tmp_size, 8, 8);
+
+    int leftValue = (tmp_size - tmp_pixmap.width()) / 2;
+    int topValue = (tmp_size - tmp_pixmap.height()) / 2;
+
+    if(leftValue > 0 || topValue > 0){
+        pixmapIMG.fill(Qt::black);
+    }
+
+    painter.setClipPath(path);
+    painter.drawPixmap(leftValue, topValue, tmp_pixmap);
+    painter.end();
+
+
+
+    this->lb_albumThumb->setPixmap(pixmapIMG);
+
+    /*if(flagLoad){
+        QPixmap pixmapIMG = QPixmap(QSize(tmp_size, tmp_size));
         pixmapIMG.fill(Qt::transparent);
 
         QPixmap tmp_pixmap;
-        tmp_pixmap = tmp_pixmap.fromImage(image);
-        tmp_pixmap = tmp_pixmap.scaled(IMG_W_MAX, IMG_W_MAX, Qt::IgnoreAspectRatio, Qt::SmoothTransformation);
+        tmp_pixmap = tmp_pixmap.fromImage(this->image_buf);
+        tmp_pixmap = tmp_pixmap.scaled(tmp_size, tmp_size, Qt::KeepAspectRatio, Qt::SmoothTransformation);
 
         QPainter painter (&pixmapIMG);
         painter.setRenderHint(QPainter::Antialiasing, true);
@@ -465,31 +511,52 @@ void PlayFullScreenRelation::slot_loadImage()
         painter.setRenderHint(QPainter::SmoothPixmapTransform, true);
 
         QPainterPath path;
-        path.addRoundedRect(0, 0, IMG_W_MAX, IMG_W_MAX, 2, 2);
-        painter.setClipPath(path);
+        path.addRoundedRect(0, 0, tmp_size, tmp_size, 8, 8);
 
-        painter.drawPixmap(0, 0, tmp_pixmap);
+        int leftValue = (tmp_size - tmp_pixmap.width()) / 2;
+        int topValue = (tmp_size - tmp_pixmap.height()) / 2;
+
+        if(leftValue > 0 || topValue > 0){
+            pixmapIMG.fill(Qt::black);
+        }
+
+        painter.setClipPath(path);
+        painter.drawPixmap(leftValue, topValue, tmp_pixmap);
         painter.end();
 
-        this->lb_albumThumb->setPixmap(pixmapIMG);*/
+        this->lb_albumThumb->setPixmap(pixmapIMG);
     }
     else{
-        this->pixmap_albumImg = GSCommon::getUIPixmapImg(":/images/def_mus_550.png");
-        this->lb_albumThumb->setPixmap(*this->pixmap_albumImg);
-    }
+        this->image_buf.load(":/images/def_mus_550.png");
 
-    QPixmap tmp_pixmap = this->pixmap_albumImg->scaled(tmp_size, tmp_size, Qt::IgnoreAspectRatio, Qt::SmoothTransformation);
+        QPixmap pixmapIMG = QPixmap(QSize(tmp_size, tmp_size));
+        pixmapIMG.fill(Qt::transparent);
 
-    // 빈 Pixmap
-    QPixmap pixmap_painter = QPixmap(QSize(tmp_size,tmp_size));
-    pixmap_painter.fill(Qt::transparent);
+        QPixmap tmp_pixmap;
+        tmp_pixmap = tmp_pixmap.fromImage(this->image_buf);
+        tmp_pixmap = tmp_pixmap.scaled(tmp_size, tmp_size, Qt::KeepAspectRatio, Qt::SmoothTransformation);
 
-    QPainter painter (&pixmap_painter);
-    painter.setRenderHint(QPainter::Antialiasing, true);
-    QBrush brush = QBrush(tmp_pixmap);
-    painter.setBrush(brush);
-    painter.drawRoundedRect(0, 0, tmp_size, tmp_size, 8, 8);    // border-radius:8px
-    this->lb_albumThumb->setPixmap(pixmap_painter);
+        QPainter painter (&pixmapIMG);
+        painter.setRenderHint(QPainter::Antialiasing, true);
+        painter.setRenderHint(QPainter::HighQualityAntialiasing, true);
+        painter.setRenderHint(QPainter::SmoothPixmapTransform, true);
+
+        QPainterPath path;
+        path.addRoundedRect(0, 0, tmp_size, tmp_size, 8, 8);
+
+        int leftValue = (tmp_size - tmp_pixmap.width()) / 2;
+        int topValue = (tmp_size - tmp_pixmap.height()) / 2;
+
+        if(leftValue > 0 || topValue > 0){
+            pixmapIMG.fill(Qt::black);
+        }
+
+        painter.setClipPath(path);
+        painter.drawPixmap(leftValue, topValue, tmp_pixmap);
+        painter.end();
+
+        this->lb_albumThumb->setPixmap(pixmapIMG);
+    }*/
 
     this->btn_hdmi->setGeometry(tmp_size-btn_hdmi->width(), -1, this->btn_hdmi->width(), this->btn_hdmi->height());
 
@@ -502,8 +569,11 @@ void PlayFullScreenRelation::slot_loadImage()
  * @param p_jsonData
  */
 void PlayFullScreenRelation::setDataJson(const QJsonObject &p_jsonData){
-print_debug();
-//qDebug() << "p_jsonData=" << p_jsonData;//c220904_1
+
+//    QJsonDocument doc(p_jsonData);
+//    QString strJson(doc.toJson(QJsonDocument::Compact));
+//    qDebug() << "[Debug]" << __FUNCTION__ << __LINE__ << strJson;
+
     // 초기화
     this->path = "";
     this->playType = "";
@@ -532,8 +602,8 @@ print_debug();
         QJsonObject tmp_data = p_jsonData["data"].toObject();
         if(tmp_data.contains("playType")){
             this->playType = tmp_data["playType"].toString();
-            print_debug();
-            qDebug() << "this->playType=" << this->playType;
+            //print_debug();
+            //qDebug() << "this->playType=" << this->playType;
         }
         if(tmp_data.contains("albumName")){
             this->albumName = tmp_data["albumName"].toString();
@@ -578,7 +648,7 @@ print_debug();
                 //      이 필드로 처리하는 구조임
                 this->isFavorite = ProcJsonEasy::getBool(tmp_data, "isFavorite");
             }
-            else if(this->playType == PLAYTYPE_QOBUZ_VIDEO)     // TODO :: Added Jeon 15/12/2020
+            else if(this->playType == PLAYTYPE_QOBUZ_VIDEO)     // TODO :: Added diskept 15/12/2020
             {
                 this->isFavorite = ProcJsonEasy::getBool(tmp_data, "isFavorite");
             }
@@ -654,6 +724,7 @@ print_debug();
         if(tmp_data.contains("trackInfo")){
             this->lb_fileInfo->setText(tmp_data["trackInfo"].toString());
         }
+
     }
 }
 
@@ -666,13 +737,15 @@ void PlayFullScreenRelation::setUIfromData(){
     this->listWidget_relation->clear();
     if(playType==PLAYTYPE_ROSETUBE){
         listWidget_relation->setItemDelegate(delegate);
-    }else{
+    }
+    else{
         listWidget_relation->setItemDelegate(delegateMusic);
     }
 
-    if(this->isHdmiOn==true){
+    if(this->isHdmiOn == true){
         this->btn_hdmi->setStyleSheet(this->btn_hdmi->styleSheet().replace("hdmi_off.png", "hdmi_on.png"));
-    }else{
+    }
+    else{
         this->btn_hdmi->setStyleSheet(this->btn_hdmi->styleSheet().replace("hdmi_on.png", "hdmi_off.png"));
     }
 
@@ -725,18 +798,32 @@ void PlayFullScreenRelation::setUIfromData(){
         //this->widget_relationList->setVisible(true);
         //this->setDataRelationFromDB_music();
     }else if(this->playType==PLAYTYPE_VIDEO){
+        if(this->thumbnail.contains("jpg") || this->thumbnail.contains("jpeg")){
+            if(this->thumbnail.startsWith("http")==false){
+                tmp_imgURL = QString("http://%1:%2%3").arg(global.device.getDeviceIP()).arg(global.port_img).arg(this->thumbnail);
+            }else{
+                tmp_imgURL = this->thumbnail;
+            }
+        }
+        else{
+            tmp_imgURL = "";
+        }
+
+        this->widget_starOnly->setVisible(true);
         this->btn_hdmi->setVisible(true);
     }else if(this->playType==PLAYTYPE_FM_TUNER){
         tmp_imgURL = QString("%1").arg(this->thumbnail);
         this->btn_hdmi->setVisible(false);
+
     }else if(this->playType==PLAYTYPE_RADIO || this->playType==PLAYTYPE_ROSE_RADIO){
         tmp_imgURL = QString("%1").arg(this->thumbnail);
+
     }else if(this->playType==PLAYTYPE_ROSETUBE){
 
         tmp_imgURL = QString("%1").arg(this->thumbnail);
-        QStringList tmp_strListPath = tmp_imgURL.split(".jpg");
+        /*QStringList tmp_strListPath = tmp_imgURL.split(".jpg");
         QString tmp_imgType = tmp_strListPath.at(0).split("/").last();
-        tmp_imgURL.replace(tmp_imgType+".jpg","sddefault.jpg");
+        tmp_imgURL.replace(tmp_imgType+".jpg","sddefault.jpg");*/
 
         this->btn_hdmi->setVisible(true);
         this->widget_starOnly->setVisible(true);
@@ -817,13 +904,18 @@ void PlayFullScreenRelation::setUIfromData(){
     }
 
     this->lb_albumThumbText->hide();
-    if(this->thumbnail!=""){
+    if(!this->thumbnail.isEmpty()){
         qDebug() << "tmp_imgURL=" << tmp_imgURL;
         if(this->playType==PLAYTYPE_CD){
-            CommonGetRedirectUrl *redirectUrl = new CommonGetRedirectUrl("CD", tmp_imgURL);
-            connect(redirectUrl, &CommonGetRedirectUrl::signal_redirectUrl, this, &PlayFullScreenRelation::slot_redirectUrl);   //j220903 twitter
+            if(this->thumbnail.contains(global.device.getDeviceIP())){
+                this->filedownloader->setImageURL(QUrl(tmp_imgURL));
+            }
+            else{
+                CommonGetRedirectUrl *redirectUrl = new CommonGetRedirectUrl("CD", tmp_imgURL);
+                connect(redirectUrl, &CommonGetRedirectUrl::signal_redirectUrl, this, &PlayFullScreenRelation::slot_redirectUrl);   //j220903 twitter
 
-            this->pixmap_albumImg = GSCommon::getUIPixmapImg(":/images/cd/cd_thum_1500.png");
+                this->pixmap_albumImg = GSCommon::getUIPixmapImg(":/images/cd/cd_thum_1500.png");
+            }
         }
         else{
             this->filedownloader->setImageURL(QUrl(tmp_imgURL));
@@ -845,18 +937,113 @@ void PlayFullScreenRelation::setUIfromData(){
             this->pixmap_albumImg = GSCommon::getUIPixmapImg(":/images/def_mus_550.png");
         }
 
+        if(this->playType == "INOUT"){//bj230518
+
+            int tmp_page_w = this->width();
+            int tmp_size = IMG_W_MIN * tmp_page_w / PAGE_W_MIN;
+
+            if(tmp_size > IMG_W_MAX){
+                tmp_size = IMG_W_MAX;
+            }
+            else if(tmp_size < IMG_W_MIN){
+                tmp_size = IMG_W_MIN;
+            }
+
+            // 640x640 크기의 QPixmap 생성
+            this->pixmap_albumImg = new QPixmap(tmp_size,tmp_size);
+            pixmap_albumImg->fill(Qt::black); // 투명색으로 채우기
+
+            // QPainter를 사용하여 그라데이션 효과 추가
+            QPainter painter(pixmap_albumImg);
+            QLinearGradient gradient;
+            gradient.setStart(0, pixmap_albumImg->height());         // 그라데이션 시작점 (왼쪽 아래)
+            gradient.setFinalStop(pixmap_albumImg->width(), 0);      // 그라데이션 끝점 (오른쪽 위)
+            gradient.setColorAt(0, QColor(0, 0, 0));                    // 그라데이션 시작 색상 (검정색)
+            gradient.setColorAt(1, QColor(38, 38, 46, 145));            // 그라데이션 중간 색상 (회색, 알파 145)
+            gradient.setColorAt(2, QColor(0, 212, 255));                // 그라데이션 끝 색상 (파란색)
+            painter.setBrush(gradient);
+            painter.drawRect(0, 0, pixmap_albumImg->width(), pixmap_albumImg->height());
+
+            QPixmap roundedPixmap(pixmap_albumImg->size());
+            roundedPixmap.fill(Qt::transparent);  // 투명색으로 채우기
+
+            painter.setRenderHint(QPainter::Antialiasing, true);  // 안티앨리어싱 활성화
+
+            QPen borderPen(Qt::gray);
+            borderPen.setWidth(1);  // 테두리의 두께 설정
+
+            QPainterPath roundedRectPath;
+            int cornerRadius = 10;  // 굴곡의 반지름 설정
+            roundedRectPath.addRoundedRect(
+                pixmap_albumImg->rect().adjusted(1, 1, -1, -1),
+                cornerRadius, cornerRadius
+            );
+
+            painter.setPen(borderPen);
+            painter.fillPath(roundedRectPath, *pixmap_albumImg);
+            painter.drawPath(roundedRectPath);
+
+            // pixmap_albumImg에 굴곡과 테두리가 있는 이미지 적용
+            *pixmap_albumImg = roundedPixmap;
+
+            if(this->titleName == "LINE IN"){
+
+                QImage centerImage(":/images/inout_line_in_x3.png");  // 중앙에 그릴 이미지 로드
+
+                int x = (pixmap_albumImg->width() - centerImage.width()) / 2;
+                int y = (pixmap_albumImg->height() - centerImage.height()) / 2;
+                painter.drawImage(x, y, centerImage);
+
+            }
+            else if(this->titleName == "COAXIAL IN"){
+                QImage centerImage(":/images/inout_coax_x3.png");  // 중앙에 그릴 이미지 로드
+
+                int x = (pixmap_albumImg->width() - centerImage.width()) / 2;
+                int y = (pixmap_albumImg->height() - centerImage.height()) / 2;
+                painter.drawImage(x, y, centerImage);
+            }
+            else if(this->titleName == "OPTICAL IN"){
+                QImage centerImage(":/images/inout_opt_x3.png");  // 중앙에 그릴 이미지 로드
+
+                int x = (pixmap_albumImg->width() - centerImage.width()) / 2;
+                int y = (pixmap_albumImg->height() - centerImage.height()) / 2;
+                painter.drawImage(x, y, centerImage);
+            }
+            else if(this->titleName == "USB IN"){
+                QImage centerImage(":/images/inout_USB_IN_x3.png");  // 중앙에 그릴 이미지 로드
+
+                int x = (pixmap_albumImg->width() - centerImage.width()) / 2;
+                int y = (pixmap_albumImg->height() - centerImage.height()) / 2;
+                painter.drawImage(x, y, centerImage);
+            }
+            else if(this->titleName == "ARC IN" || this->titleName == "eARC IN"){
+                QImage centerImage(":/images/inout_HDMI_ARC_IN_x3.png");  // 중앙에 그릴 이미지 로드
+
+                int x = (pixmap_albumImg->width() - centerImage.width()) / 2;
+                int y = (pixmap_albumImg->height() - centerImage.height()) / 2;
+                painter.drawImage(x, y, centerImage);
+            }
+            else if(this->titleName == "AES/EBU IN"){
+                QImage centerImage(":/images/inout_balanced_x2.png");  // 중앙에 그릴 이미지 로드
+
+                int height = centerImage.height();
+                height -= 50;
+                int x = (pixmap_albumImg->width() - centerImage.width()) / 2;
+                int y = (pixmap_albumImg->height() - height) / 2;
+                painter.drawImage(x, y, centerImage);
+            }
+        }
+
         // 앨범 이미지
         this->lb_albumThumb->setPixmap(*this->pixmap_albumImg);
+
         // 배경
         this->setBackgroundAlbumImg();
     }
 
     this->repaintStarUI();
-    //print_debug();
     this->repaintHearUI();
-    //print_debug();
     this->repaintSubscribeUI();
-    //print_debug();
 }
 
 /**
@@ -913,6 +1100,7 @@ void PlayFullScreenRelation::repaintHearUI(){
         btn_list_fav_icon->setStyleSheet(btn_list_fav_icon->styleSheet().replace("list_fav_icon_on.png", "list_fav_icon.png"));
     }
 }
+
 /**
  * @brief PlayFullScreenRelation::repaintSubscribeUI 구독 UI 갱신
  */
@@ -929,6 +1117,7 @@ void PlayFullScreenRelation::repaintSubscribeUI(){
  * @param p_data
  */
 void PlayFullScreenRelation::setDataPlayFullScreen(const QJsonObject &p_jsonData){
+
     try {
         // 1> JSON 풀어서 멤버변수에 데이터 세팅
         this->setDataJson(p_jsonData);
@@ -947,7 +1136,24 @@ void PlayFullScreenRelation::setDataPlayFullScreen(const QJsonObject &p_jsonData
 
         // 6> [API 호출] 구독 정보 GET
         this->requestGetSubInfo();
-    } catch (...) {
+    }
+    catch (...) {
+    }
+}
+
+
+void PlayFullScreenRelation::setDataHDMIStateChange(const bool flag){
+
+    try {
+        this->isHdmiOn = flag;
+        if(this->isHdmiOn == true){
+            this->btn_hdmi->setStyleSheet(this->btn_hdmi->styleSheet().replace("hdmi_off.png", "hdmi_on.png"));
+        }
+        else{
+            this->btn_hdmi->setStyleSheet(this->btn_hdmi->styleSheet().replace("hdmi_on.png", "hdmi_off.png"));
+        }
+    }
+    catch (...) {
     }
 }
 
@@ -1157,7 +1363,7 @@ void PlayFullScreenRelation::requestGetHartInfo(){
 
 
     }else if(this->playType==PLAYTYPE_QOBUZ){
-        // QOBUZ > Track : flagFav 정보 요청    Added Jeon 15/12/2020
+        // QOBUZ > Track : flagFav 정보 요청    Added diskept 15/12/2020
         qobuz::ProcQobuz_forOuter *proc = new qobuz::ProcQobuz_forOuter(this);
         connect(proc, &qobuz::ProcQobuz_forOuter::completeReq_flagFav_onTrack, this, &PlayFullScreenRelation::slot_completeReq_flagFav_onTrack);
         proc->request_flagFav_ofTrack(this->jsonObj_subAppCurrentData);
@@ -1300,20 +1506,21 @@ void PlayFullScreenRelation::slot_clickedVideoProp(){
  */
 void PlayFullScreenRelation::slot_clickedHDMI(){
 
-        this->isHdmiOn = !this->isHdmiOn;
-        if(this->isHdmiOn==true){
-            this->btn_hdmi->setStyleSheet(this->btn_hdmi->styleSheet().replace("hdmi_off.png", "hdmi_on.png"));
-        }else{
-            this->btn_hdmi->setStyleSheet(this->btn_hdmi->styleSheet().replace("hdmi_on.png", "hdmi_off.png"));
-        }
+    if(global.device.getDeviceIP()!= ""){
+        NetworkHttp *network = new NetworkHttp;
+        connect(network, SIGNAL(response(int, QJsonObject)), SLOT(slot_responseHttp(int, QJsonObject)));
+        QJsonObject tmp_json;
+        tmp_json.insert("roseToken", global.device.getDeviceRoseToken());
+        network->request(HTTP_HDMI_ON_OFF, QString("http://%1:%2/hdmi_on_off").arg(global.device.getDeviceIP()).arg(global.port), tmp_json, true, false);
+    }
 
-        if(global.device.getDeviceIP()!=""){
-            NetworkHttp *network = new NetworkHttp;
-            connect(network, SIGNAL(response(int, QJsonObject)), SLOT(slot_responseHttp(int, QJsonObject)));
-            QJsonObject tmp_json;
-            tmp_json.insert("roseToken", global.device.getDeviceRoseToken());
-            network->request(HTTP_HDMI_ON_OFF, QString("http://%1:%2/hdmi_on_off").arg(global.device.getDeviceIP()).arg(global.port), tmp_json, true, false);
-        }
+//    this->isHdmiOn = !this->isHdmiOn;
+//    if(this->isHdmiOn == true){
+//        this->btn_hdmi->setStyleSheet(this->btn_hdmi->styleSheet().replace("hdmi_off.png", "hdmi_on.png"));
+//    }
+//    else{
+//        this->btn_hdmi->setStyleSheet(this->btn_hdmi->styleSheet().replace("hdmi_on.png", "hdmi_off.png"));
+//    }
 }
 
 /**
@@ -1332,7 +1539,7 @@ void PlayFullScreenRelation::slot_clickedBtn_sub(){
             connect(network, SIGNAL(response(int, QJsonObject)), SLOT(slot_responseHttp(int, QJsonObject)));
             QUrlQuery params;
             params.addQueryItem("channel_id",  this->rosetueChannelId);
-            params.addQueryItem("username",global.user.getUsername());
+            params.addQueryItem("username", global.user.getUsername());
             QString tmp_url;
             if(!this->isSubscribe){
                 tmp_url = QString("%1/%2").arg(global.legacy_mod_api).arg("user/subscribe/cancel");
@@ -1710,8 +1917,8 @@ void PlayFullScreenRelation::setDataRelationFromDB_youtube(){
     if(!rosetubeVideoId.isEmpty()){
         requestRelationVideo_youtube(rosetubeVideoId);
     }
-
 }
+
 
 /**
  * @brief PlayFullScreenRelation::requestRelationVideo_youtube
@@ -1733,10 +1940,9 @@ void PlayFullScreenRelation::requestRelationVideo_youtube(const QString &p_video
                          .arg(global.device.getDeviceIP())
                          .arg(global.port)
                          , jsonParams, false);
-
-
     }
 }
+
 
 /**
  * @brief PlayFullScreenRelation::appendMusicTrack : 음악 연관컨텐츠 트랙 정보 추가
@@ -1795,30 +2001,144 @@ void PlayFullScreenRelation::setBackgroundAlbumImg(){
 void PlayFullScreenRelation::resizeEvent(QResizeEvent* event)
 {
     Q_UNUSED(event);
+
     int tmp_page_w = this->width();
-    int tmp_size = IMG_W_MIN*tmp_page_w/PAGE_W_MIN;
+    int tmp_size = IMG_W_MIN * tmp_page_w / PAGE_W_MIN;
+
     if(tmp_size > IMG_W_MAX){
         tmp_size = IMG_W_MAX;
     }
     else if(tmp_size < IMG_W_MIN){
         tmp_size = IMG_W_MIN;
     }
-    QPixmap tmp_pixmap;
-    if(this->pixmap_albumImg->isNull()==false){
-        tmp_pixmap = this->pixmap_albumImg->scaled(tmp_size, tmp_size, Qt::IgnoreAspectRatio, Qt::SmoothTransformation);
+
+    if(this->playType == "INOUT"){//bj230518
+        // 640x640 크기의 QPixmap 생성
+        this->pixmap_albumImg = new QPixmap(tmp_size,tmp_size);
+        pixmap_albumImg->fill(Qt::black); // 투명색으로 채우기
+
+        // QPainter를 사용하여 그라데이션 효과 추가
+        QPainter painter(pixmap_albumImg);
+        QLinearGradient gradient;
+        gradient.setStart(0, pixmap_albumImg->height());         // 그라데이션 시작점 (왼쪽 아래)
+        gradient.setFinalStop(pixmap_albumImg->width(), 0);      // 그라데이션 끝점 (오른쪽 위)
+        gradient.setColorAt(0, QColor(0, 0, 0));                    // 그라데이션 시작 색상 (검정색)
+        gradient.setColorAt(1, QColor(38, 38, 46, 145));            // 그라데이션 중간 색상 (회색, 알파 145)
+        gradient.setColorAt(2, QColor(0, 212, 255));                // 그라데이션 끝 색상 (파란색)
+        painter.setBrush(gradient);
+        painter.drawRect(0, 0, pixmap_albumImg->width(), pixmap_albumImg->height());
+
+        QPixmap roundedPixmap(pixmap_albumImg->size());
+        roundedPixmap.fill(Qt::transparent);  // 투명색으로 채우기
+
+        painter.setRenderHint(QPainter::Antialiasing, true);  // 안티앨리어싱 활성화
+
+        QPen borderPen(Qt::gray);
+        borderPen.setWidth(1);  // 테두리의 두께 설정
+
+        QPainterPath roundedRectPath;
+        int cornerRadius = 10;  // 굴곡의 반지름 설정
+        roundedRectPath.addRoundedRect(
+            pixmap_albumImg->rect().adjusted(1, 1, -1, -1),
+            cornerRadius, cornerRadius
+        );
+
+        painter.setPen(borderPen);
+        painter.fillPath(roundedRectPath, *pixmap_albumImg);
+        painter.drawPath(roundedRectPath);
+
+        // pixmap_albumImg에 굴곡과 테두리가 있는 이미지 적용
+        *pixmap_albumImg = roundedPixmap;
+
+        if(this->titleName == "LINE IN"){
+
+            QImage centerImage(":/images/inout_line_in_x3.png");  // 중앙에 그릴 이미지 로드
+
+            int x = (pixmap_albumImg->width() - centerImage.width()) / 2;
+            int y = (pixmap_albumImg->height() - centerImage.height()) / 2;
+            painter.drawImage(x, y, centerImage);
+
+        }
+        else if(this->titleName == "COAXIAL IN"){
+            QImage centerImage(":/images/inout_coax_x3.png");  // 중앙에 그릴 이미지 로드
+
+            int x = (pixmap_albumImg->width() - centerImage.width()) / 2;
+            int y = (pixmap_albumImg->height() - centerImage.height()) / 2;
+            painter.drawImage(x, y, centerImage);
+        }
+        else if(this->titleName == "OPTICAL IN"){
+            QImage centerImage(":/images/inout_opt_x3.png");  // 중앙에 그릴 이미지 로드
+
+            int x = (pixmap_albumImg->width() - centerImage.width()) / 2;
+            int y = (pixmap_albumImg->height() - centerImage.height()) / 2;
+            painter.drawImage(x, y, centerImage);
+        }
+        else if(this->titleName == "USB IN"){
+            QImage centerImage(":/images/inout_USB_IN_x3.png");  // 중앙에 그릴 이미지 로드
+
+            int x = (pixmap_albumImg->width() - centerImage.width()) / 2;
+            int y = (pixmap_albumImg->height() - centerImage.height()) / 2;
+            painter.drawImage(x, y, centerImage);
+        }
+        else if(this->titleName == "ARC IN" || this->titleName == "eARC IN"){
+            QImage centerImage(":/images/inout_HDMI_ARC_IN_x3.png");  // 중앙에 그릴 이미지 로드
+
+            int x = (pixmap_albumImg->width() - centerImage.width()) / 2;
+            int y = (pixmap_albumImg->height() - centerImage.height()) / 2;
+            painter.drawImage(x, y, centerImage);
+        }
+        else if(this->titleName == "AES/EBU IN"){
+            QImage centerImage(":/images/inout_balanced_x2.png");  // 중앙에 그릴 이미지 로드
+
+            int height = centerImage.height();
+            height -= 50;
+            int x = (pixmap_albumImg->width() - centerImage.width()) / 2;
+            int y = (pixmap_albumImg->height() - height) / 2;
+            painter.drawImage(x, y, centerImage);
+        }
+
+        this->lb_albumThumb->setPixmap(*pixmap_albumImg);
     }
+    else{
+        // 빈 Pixmap
+        QPixmap pixmap_painter = QPixmap(QSize(tmp_size,tmp_size));
+        pixmap_painter.fill(Qt::transparent);
 
-    // 빈 Pixmap
-    QPixmap pixmap_painter = QPixmap(QSize(tmp_size,tmp_size));
-    pixmap_painter.fill(Qt::transparent);
+        QPixmap tmp_pixmap;
+        if(this->image_buf.isNull() == false){
+            tmp_pixmap = tmp_pixmap.fromImage(this->image_buf);
+            tmp_pixmap = tmp_pixmap.scaled(tmp_size, tmp_size, Qt::KeepAspectRatio, Qt::SmoothTransformation);
+        }
+        else{
+            QImage img;
+            if(img.load(":/images/def_mus_550.png")){
+                tmp_pixmap = QPixmap::fromImage(img);                                        //이미지를 버퍼에 옮긴다
+                tmp_pixmap = tmp_pixmap.scaled(tmp_size, tmp_size, Qt::KeepAspectRatioByExpanding, Qt::SmoothTransformation);
+            }
+        }
 
-    QPainter painter (&pixmap_painter);
-    painter.setRenderHint(QPainter::Antialiasing, true);
-    QBrush brush = QBrush(tmp_pixmap);
-    painter.setBrush(brush);
-    painter.drawRoundedRect(0, 0, tmp_size, tmp_size, 8, 8);    // border-radius:8px
+        QPainter painter (&pixmap_painter);
+        painter.setRenderHint(QPainter::Antialiasing, true);
+        painter.setRenderHint(QPainter::HighQualityAntialiasing, true);
+        painter.setRenderHint(QPainter::SmoothPixmapTransform, true);
 
-    this->lb_albumThumb->setPixmap(pixmap_painter);
+        QPainterPath path = QPainterPath();
+        path.addRoundedRect(0, 0, tmp_size, tmp_size, 8, 8);
+
+        int leftValue = (tmp_size - tmp_pixmap.width()) / 2;
+        int topValue = (tmp_size - tmp_pixmap.height()) / 2;
+
+        if(leftValue > 0 || topValue > 0){
+            pixmap_painter.fill(Qt::black);
+        }
+
+        painter.setClipPath(path);
+        painter.drawPixmap(leftValue, topValue, tmp_pixmap);
+        painter.end();
+
+
+        this->lb_albumThumb->setPixmap(pixmap_painter);
+    }
     this->widget_playInfo->setFixedWidth(tmp_size);
 
     this->btn_hdmi->setGeometry(tmp_size-btn_hdmi->width(), -1, this->btn_hdmi->width(), this->btn_hdmi->height());
@@ -1926,7 +2246,7 @@ void PlayFullScreenRelation::appendRosetubeTrack_NEW(const QJsonObject &p_jsonDa
     QString tmp_thumbnail = p_jsonData["thumbnailUrl"].toString();
     QStringList tmp_strListPath = tmp_thumbnail.split(".jpg");
     QString tmp_imgType = tmp_strListPath.at(0).split("/").last();
-    tmp_thumbnail.replace(tmp_imgType+".jpg","hqdefault.jpg");
+    //tmp_thumbnail.replace(tmp_imgType+".jpg","hqdefault.jpg");
 
 
     if(!tmp_imgType.endsWith("_live")){
@@ -2116,6 +2436,7 @@ void PlayFullScreenRelation::slot_delegateClicked_roseTube(const int &p_index, c
     QString tmp_channelID = map["rose_channel_id"].toString();
     QString tmp_title = map["title"].toString();
     QString tmp_videoID = getVideoIdFromUrl(tmp_url);
+    QString tmp_duration = map["duration"].toString();
 
 
     if(p_btnType == RoseTubeRelationDelegate::BtnType::etc){
@@ -2128,6 +2449,7 @@ void PlayFullScreenRelation::slot_delegateClicked_roseTube(const int &p_index, c
         jsonTracks.insert("channelName", tmp_channel);
         jsonTracks.insert("thumbnailUrl", tmp_imgPath);
         jsonTracks.insert("title", tmp_title);
+        jsonTracks.insert("duration", tmp_duration);
         jsonArr.append(jsonTracks);
 
         // 로즈튜브 재생
@@ -2151,25 +2473,26 @@ void PlayFullScreenRelation::slot_delegateClicked_roseTube(const int &p_index, c
         dataPopup->setChannelName(tmp_channel);
         dataPopup->setData(tmp_url);
         dataPopup->setThumbnailUrl(tmp_imgPath);
+        dataPopup->setstrDuration(tmp_duration);
 
         jsonArr.append(dataPopup->getJsonData());
 
         QJsonObject jsonData;
-        jsonData.insert(KEY_OP_TITLE_MAIN, "");
-        jsonData.insert(KEY_OP_TITLE_SUB, "");
+        jsonData.insert(KEY_OP_TITLE_MAIN, tmp_title);
+        jsonData.insert(KEY_OP_TITLE_SUB, tmp_channel);
         jsonData.insert(KEY_OP_TYPE, OptionPopup::TypeMenu::RoseTube_Etc_RelationVideo);
         jsonData.insert(KEY_OP_albumImg,  tmp_imgPath);
         jsonData.insert(KEY_OP_cntStar, 0);
         jsonData.insert(KEY_OP_DATA, jsonArr);
         jsonData.insert(KEY_MAIN_CODE, GSCommon::MainMenuCode::RoseTubeList);
         jsonData.insert(KEY_PAGE_CODE, PAGECODE_OP_PLAYLISTINFO);
+
         QJsonObject jsonData_sub;
         jsonData_sub.insert("channel_id", tmp_channelID);
         jsonData_sub.insert("title", tmp_title);
         jsonData.insert(KEY_DATA, jsonData_sub);                // for 구독정보
 
         emit linker->signal_clickedHoverItem(HOVER_CODE_MORE, jsonData);
-
     }
 }
 
@@ -2218,15 +2541,17 @@ void PlayFullScreenRelation::requestPlayRosetube(QJsonArray jsonPlayList){
 void PlayFullScreenRelation::requestGetRosetubeTrackFavorite(const int &p_index, const QString &p_playUrl){
 
     if(!global.user.getUsername().isEmpty()){
-        NetworkHttp *network = new NetworkHttp;
-        network->setProperty("index", p_index);
-        connect(network, SIGNAL(response(int, QJsonObject)), SLOT(slot_responseHttp(int, QJsonObject)));
+        //bj230515
 
-        QUrlQuery params;
-        params.addQueryItem("playurl", p_playUrl);
-        params.addQueryItem("username", global.user.getUsername());
-        network->request(HTTP_NETWORK_TRACK_HEART_GET, QString("%1/playlist/track/get")
-                         .arg(global.legacy_mod_api), params, true,true);
+//        NetworkHttp *network = new NetworkHttp;
+//        network->setProperty("index", p_index);
+//        connect(network, SIGNAL(response(int, QJsonObject)), SLOT(slot_responseHttp(int, QJsonObject)));
+
+//        QUrlQuery params;
+//        params.addQueryItem("playurl", p_playUrl);
+//        params.addQueryItem("username", global.user.getUsername());
+//        network->request(HTTP_NETWORK_TRACK_HEART_GET, QString("%1/playlist/track/get")
+//                         .arg(global.legacy_mod_api), params, true,true);
     }else{
         ToastMsg::show(this,"",tr("Loin is required."));
         //ToastMsg::show(this,"",tr("로그인이 필요합니다."));
@@ -2344,10 +2669,15 @@ void PlayFullScreenRelation::setResultOfGetRelationVideoList(const QJsonObject &
  */
 void PlayFullScreenRelation::slot_responseHttp(const int &p_id, const QJsonObject &p_jsonData){
 
+//    QJsonDocument doc(p_jsonData);
+//    QString strJson(doc.toJson(QJsonDocument::Compact));
+//    qDebug() << "[Debug]" << __FUNCTION__ << __LINE__ << strJson;
+
     try{
         if(p_id == HTTP_GET_VIDEO_SETTING_DISPLAY){
             this->setShowHideBtnVideoSettingUI(p_jsonData);
-        }else if(p_id == HTTP_GET_ROSETUBE_SUBSCRIBE){
+        }
+        else if(p_id == HTTP_GET_ROSETUBE_SUBSCRIBE){
             if(p_jsonData.contains("array")){
                 QJsonArray jsonArray = p_jsonData["array"].toArray();
                 if(jsonArray.size() > 0){
@@ -2355,33 +2685,36 @@ void PlayFullScreenRelation::slot_responseHttp(const int &p_id, const QJsonObjec
                     this->repaintSubscribeUI();
                 }
             }
-        }else if(p_id == HTTP_SET_HEART_MUSIC_ADD){
+        }
+        else if(p_id == HTTP_SET_HEART_MUSIC_ADD){
             if(p_jsonData.contains("status")){
                 if(p_jsonData["status"]=="OK"){
                     this->isFavorite = true;
                     this->repaintHearUI();
                 }
             }
-        }else if(p_id == HTTP_SET_HEART_MUSIC_DELETE){
+        }
+        else if(p_id == HTTP_SET_HEART_MUSIC_DELETE){
             if(p_jsonData.contains("status")){
                 if(p_jsonData["status"]=="OK"){
                     this->isFavorite = false;
                     this->repaintHearUI();
                 }
             }
-        }else if(p_id == HTTP_GET_HEART_MUSIC){
+        }
+        else if(p_id == HTTP_GET_HEART_MUSIC){
             if(p_jsonData.contains("favorite")){
                 this->isFavorite = p_jsonData["favorite"].toBool();
                 this->repaintHearUI();
             }
-        }else if(p_id == HTTP_GET_STAR_MUSIC){
+        }
+        else if(p_id == HTTP_GET_STAR_MUSIC){
             if(p_jsonData.contains("starRate")){
                 this->cntStar = p_jsonData["starRate"].toInt();
                 this->repaintStarUI();
             }
-
-
-        }else if(p_id == HTTP_GET_HEART_RADIO){
+        }
+        else if(p_id == HTTP_GET_HEART_RADIO){
             if(p_jsonData.contains("arr")){
                 QJsonArray tmp_arr = p_jsonData["arr"].toArray();
                 for(int i=0; i<tmp_arr.count(); i++){
@@ -2400,19 +2733,21 @@ void PlayFullScreenRelation::slot_responseHttp(const int &p_id, const QJsonObjec
                     }
                 }
             }
-
-        }else if(p_id == HTTP_GET_HEART_ROSETUBE){
+        }
+        else if(p_id == HTTP_GET_HEART_ROSETUBE){
             if(p_jsonData.contains("favorites")){
                 QString tmp_favorites = p_jsonData["favorites"].toString();
                 this->isFavorite = tmp_favorites=="1" ? true : false;
                 this->repaintHearUI();
             }
-        }else if(p_id == HTTP_GET_STAR_ROSETUBE_TRACK){
+        }
+        else if(p_id == HTTP_GET_STAR_ROSETUBE_TRACK){
             if(p_jsonData.contains("star")){
                 this->cntStar = p_jsonData["star"].toInt();
                 this->repaintStarUI();
             }
-        }else if(p_id == HTTP_NETWORK_TRACK_HEART_SET){
+        }
+        else if(p_id == HTTP_NETWORK_TRACK_HEART_SET){
             setResultOfSetRosetubeTrackFavorites(sender()->property("index").toInt(), p_jsonData);
         }
         else if(p_id == HTTP_NETWORK_TRACK_HEART_GET){
@@ -2428,15 +2763,15 @@ void PlayFullScreenRelation::slot_responseHttp(const int &p_id, const QJsonObjec
             setResultOfGetRelationVideoList(p_jsonData);
         }
         else if(p_id == HTTP_HDMI_ON_OFF){
-
+//            QJsonDocument doc(p_jsonData);
+//            QString strJson(doc.toJson(QJsonDocument::Compact));
+//            qDebug() << "[Debug]" << __FUNCTION__ << __LINE__ << strJson;
         }
 
         sender()->deleteLater();
-
-    } catch (...) {
-
+    }
+    catch (...) {
         sender()->deleteLater();
-
     }
 }
 
@@ -2472,7 +2807,7 @@ void PlayFullScreenRelation::slot_completeReq_flagFav_onTrack(const int track_id
             this->repaintHearUI();
         }
     }
-    // Qobuz Track 인지, track_id 가 맞는지 체크 필요함. signal-slot 처리가 async이므로, 처리 도중에 컨텐츠가 바뀌었을 수 있음.  Added Jeon 15/12/2020
+    // Qobuz Track 인지, track_id 가 맞는지 체크 필요함. signal-slot 처리가 async이므로, 처리 도중에 컨텐츠가 바뀌었을 수 있음.  Added diskept 15/12/2020
     else if(this->playType==PLAYTYPE_QOBUZ){
         int curr_track_id = qobuz::ProcQobuz_forOuter::extract_track_id_onTrackData(this->jsonObj_subAppCurrentData);
         if(curr_track_id == track_id){

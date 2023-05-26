@@ -15,7 +15,8 @@
 namespace roseHome {
 
     /**
-     * @brief RoseHomeAlbum 곸꽭붾㈃ 대옒     */
+     * @brief RoseHomeAlbum 상세보기 화면
+     */
     class RoseHomeAlbumDetail : public AbstractRoseHomeSubWidget
     {
         Q_OBJECT

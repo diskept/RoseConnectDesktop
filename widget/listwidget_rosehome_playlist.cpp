@@ -1,8 +1,14 @@
+#include "listwidget_rosehome_playlist.h"
 
 #include "common/global.h"
-#include "listwidget_rosehome_playlist.h"
+
 #include <QDrag>
 #include <QMimeData>
+
+#include <QGraphicsScene>
+#include <QGraphicsPixmapItem>
+#include <QGraphicsView>
+#include <QPixmap>
 //#include <QDropEvent>
 //#include <QDropEvent>
 //#include <QDragEnterEvent>
@@ -54,10 +60,8 @@ ListWidget_Rosehome_Playlist::ListWidget_Rosehome_Playlist(QWidget* parent)
     linker = Linker::getInstance();
 
 }
-#include <QGraphicsScene>
-#include <QGraphicsPixmapItem>
-#include <QGraphicsView>
-#include <QPixmap>
+
+
 void ListWidget_Rosehome_Playlist::dropEvent(QDropEvent *event)
 {
     print_debug();
@@ -103,10 +107,10 @@ void ListWidget_Rosehome_Playlist::startDrag(Qt::DropActions supportedActions){
         pen.setWidth(300);
         moveCnt = selectedIndexes().count();
         for(QModelIndex index: selectedIndexes()){
-            QListWidgetItem* item2 = item(index.row());
-            QWidget *ww = itemWidget(item2);
-            ww->setStyleSheet(ww->styleSheet().replace("#333333","#9c9c9c"));//e6e1a5
-            ww->setStyleSheet(ww->styleSheet().replace("#e6e1a5","#9c9c9c"));//e6e1a5
+            //QListWidgetItem* item2 = item(index.row());
+            //QWidget *ww = itemWidget(item2);
+            //ww->setStyleSheet(ww->styleSheet().replace("#333333","#9c9c9c"));//e6e1a5
+            //ww->setStyleSheet(ww->styleSheet().replace("#e6e1a5","#9c9c9c"));//e6e1a5
 
             painter.drawPixmap(visualRect(index), viewport()->grab(visualRect(index)));
             painter.drawRect(visualRect(index));
@@ -195,15 +199,13 @@ void ListWidget_Rosehome_Playlist::dragMoveEvent(QDragMoveEvent *event)
 
     }
 */
-
-
 }
+
 
 QRectF ListWidget_Rosehome_Playlist::boundingRectFor( const QRectF& sourceRect ) const {
-    return sourceRect.adjusted(-2,-2,2,2);
 
+    return sourceRect.adjusted(-2, -2, 2, 2);
 }
-
 
 /*
 if(supportedActions & Qt::MoveAction){

@@ -14,6 +14,7 @@
 #include <QPushButton>
 #include <QRegExpValidator>
 #include <QProgressDialog>
+#include "widget/toastmsg.h"//c221026
 
 
 const int MAXIMUM_REQ_COUNT = 255;
@@ -117,16 +118,20 @@ void SearchDeviceWidget::setUIControl(){
     this->le_search_ip->setMaxLength(15);
     this->le_search_ip->setValidator(new QRegExpValidator(QRegExp("^(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\\.){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$"), this->le_search_ip));
     this->le_search_ip->setSizePolicy(QSizePolicy::Ignored, QSizePolicy::Expanding);
-    this->le_search_ip->setStyleSheet("font-size:16px; color:#FFFFFF; border:0px; margin-bottom:2px; background-color:transparent");
+    this->le_search_ip->setStyleSheet("font-size:16px; color:#FFFFFF; border:0px; margin-bottom:2px; background-color:transparent;");
     this->le_search_ip->setPlaceholderText(tr("Search rose device IP"));
     this->le_search_ip->setGeometry(50, 0, 298, 50);
 
-    QPushButton *btn_refresh_ico = GSCommon::getUIBtnImg("btn_refresh", ":/images/icon_refresh.png", widget_search);
-    btn_refresh_ico->setCursor(Qt::PointingHandCursor);
-    btn_refresh_ico->setGeometry(348, 0, 50, 50);
+    QPalette palette = this->le_search_ip->palette();
+    palette.setColor(QPalette::PlaceholderText, Qt::lightGray);
+    this->le_search_ip->setPalette(palette);
+
+    this->btn_refresh_ico = GSCommon::getUIBtnImg("btn_refresh", ":/images/icon_refresh.png", widget_search);
+    this->btn_refresh_ico->setCursor(Qt::PointingHandCursor);
+    this->btn_refresh_ico->setGeometry(348, 0, 50, 50);
 
     connect(this->le_search_ip, SIGNAL(returnPressed()), btn_refresh_ico, SIGNAL(clicked()));
-    connect(btn_refresh_ico, SIGNAL(clicked()), SLOT(searchDeviceIP()));
+    connect(this->btn_refresh_ico, SIGNAL(clicked()), SLOT(searchDeviceIP()));
 
     this->progress_searchBar = new QProgressBar(widget_search);
     this->progress_searchBar->setStyleSheet("QProgressBar {font-size:16px;color:#FFFFFF;background-color:#4d4d4d;border:2px solid #666666;padding-top:2px;padding-right:0px;} QProgressBar::chunk{ background-color:#B18658; }");
@@ -186,7 +191,14 @@ void SearchDeviceWidget::setUIControl(){
 
     this->setLayout(vbox_search_device);
 
-    this->searchDeviceIP();
+
+
+
+
+
+    //this->searchDeviceIP();
+
+    //buttonTimer->start(); //c230405
 }
 
 
@@ -241,6 +253,8 @@ void SearchDeviceWidget::clearDeviceList(){
 void SearchDeviceWidget::searchDevice(QString p_ip){
 
     this->cntWaitingResponse = 0;   //c211213
+    this->le_search_ip->hide();
+    this->btn_refresh_ico->hide();
     this->progress_searchBar->show();
 
     // 전체 검색
@@ -264,19 +278,63 @@ void SearchDeviceWidget::searchDevice(QString p_ip){
                 for(int i = 0 ; i < 255; i++){
                     disconnect(sereachConID[i]);
                 }
+                print_debug();
+                if(buttonTimer==nullptr){//c230405
+                    buttonTimer = new QTimer(this);
+                    buttonTimer->setInterval(1000);
+                    connect(buttonTimer, &QTimer::timeout, this, [=](){//
 
+                        print_debug();
+
+                        if(sectTerm < 5){
+                            this->progress_searchBar->setValue(254*((sectTerm)/5.0));//
+                            qDebug() << "254*((iii)/5.0)=" << 254*((sectTerm)/5.0);
+                        }
+                        if(sectTerm == 5){
+                            this->progress_searchBar->setValue(254);//
+                        }
+                        if(sectTerm > 6){
+                            buttonTimer->stop();
+                            for(int i = 0 ; i < 255; i++){//c230428_1
+                                disconnect(sereachConID[i]);
+                            }
+                            this->progress_searchBar->hide();
+                            this->le_search_ip->show();
+                            this->btn_refresh_ico->show();
+                            sectTerm = 0;
+                            this->progress_searchBar->setValue(sectTerm);//
+                        }
+                        sectTerm++;
+
+                    });
+                }
+                if(buttonTimer!=nullptr){//c230405
+                    buttonTimer->start();
+                }
                 for(int i = 0 ; i < 255; i++){
-                    this->progress_searchBar->setValue(i);
+                    //QThread::msleep(100);
+                    for(quint64 i = 0; i < 3000000; i++){
+
+                    }
+                    //this->progress_searchBar->setValue(i);//c230403
 
                     NetworkHttp *network = new NetworkHttp(this);
                     this->sereachConID[i] = connect(network, SIGNAL(response(int,QJsonObject)), SLOT(responseHttp(int,QJsonObject)));//c211213
+
 
                     network->request(HTTP_DEVICE_NAME, QString("http://%1%2:9283/device_name")
                                      .arg(ipPrefix)
                                      .arg(QString::number(i+1)), QJsonObject(), true);
                 }
 
+
                 this->cntWaitingResponse += 255;
+
+print_debug();
+
+                //buttonTimer->start(); // disable button for 1 second
+
+
             }
         }
         else{
@@ -313,12 +371,12 @@ void SearchDeviceWidget::searchDevice(QString p_ip){
 void SearchDeviceWidget::responseHttp(const int &p_id, const QJsonObject &p_jsonObject){
 
     //QJsonDocument doc(p_jsonObject);  QString strJson(doc.toJson(QJsonDocument::Compact));  qDebug() << "SearchDeviceWidget::responseHttp---" << strJson;//cheon210831-network
-
     if(p_id == HTTP_DEVICE_NAME){
 
         if(!this->flagReqUseIP){
             this->cntResponse++;
 
+            //this->progress_searchBar->setValue(this->cntResponse);//c230403
             this->cntWaitingResponse--;
             this->setResultOfDeviceList(p_jsonObject);
 
@@ -326,12 +384,21 @@ void SearchDeviceWidget::responseHttp(const int &p_id, const QJsonObject &p_json
 
                 if(this->vbox_searchDevice->count() == 0){
                     this->showStatusMsg(QString(tr("Device not found.")));
-                }else{
-                    this->progress_searchBar->setValue(this->cntResponse);
+                }
+                else{
+                    //this->progress_searchBar->setValue(this->cntResponse);//c230403
+                    //qDebug() << "[Debug]" << __FUNCTION__ << " line::" << __LINE__ << this->cntResponse;
                 }
 
-                this->progress_searchBar->hide();
+                //this->progress_searchBar->hide();
+                //this->le_search_ip->show();
+                //this->btn_refresh_ico->show();
             }
+            //c230405
+            //this->progress_searchBar->hide();
+            //this->le_search_ip->show();
+            //this->btn_refresh_ico->show();
+
         }
     }
     else if(p_id == HTTP_DEVICE_NAME_IP){
@@ -344,6 +411,8 @@ void SearchDeviceWidget::responseHttp(const int &p_id, const QJsonObject &p_json
             }
 
             this->progress_searchBar->hide();
+            this->le_search_ip->show();
+            this->btn_refresh_ico->show();
         }
     }
 
@@ -363,7 +432,11 @@ void SearchDeviceWidget::appendDeviceWidget(const int &p_index, const QString &p
     QString tmp_deviceImg_off = "";
     QString tmp_deviceImg = "";
 
-    if(p_deviceType == "RS150" || p_deviceType == "RS150B"){
+    if(p_deviceType == "RS130"){//c230427
+        tmp_deviceImg_on = ":/images/rs130_on_s.png";
+        tmp_deviceImg_off = ":/images/rs130_off_s.png";
+    }
+    else if(p_deviceType == "RS150" || p_deviceType == "RS150B"){
         tmp_deviceImg_on = ":/images/rs150_on_s.png";
         tmp_deviceImg_off = ":/images/rs150_off_s.png";
     }
@@ -406,7 +479,7 @@ void SearchDeviceWidget::appendDeviceWidget(const int &p_index, const QString &p
     lb_device_img->setScaledContents(true);
 
     QLabel *lb_device_name = new QLabel(widget_device_info);
-    lb_device_name->setFixedSize(140, 22);
+    lb_device_name->setFixedSize(140, 26);
     lb_device_name->setGeometry(235, 22, 0, 0);
     lb_device_name->setStyleSheet("background-color:transparent; font-size:20px; color:#E6E6E6");
     lb_device_name->setAlignment(Qt::AlignLeft);
@@ -538,7 +611,10 @@ void SearchDeviceWidget::slot_selectedDevice(){//c220625
         QLabel *lb_type = this->vbox_searchDevice->itemAt(selectedIndex)->widget()->findChild<QLabel*>("deviceType");
         QLabel *lb_check = this->vbox_searchDevice->itemAt(selectedIndex)->widget()->findChild<QLabel*>("deviceCheck");
 
-        if(lb_type->text()=="RS150" || lb_type->text() == "RS150B"){
+        if(lb_type->text()=="RS130"){//c230427
+            lb_img->setPixmap(*GSCommon::getUIPixmapImg(":/images/rs130_off_s.png"));
+        }
+        else if(lb_type->text()=="RS150" || lb_type->text() == "RS150B"){
             lb_img->setPixmap(*GSCommon::getUIPixmapImg(":/images/rs150_off_s.png"));
         }
         if(lb_type->text()=="RS201"){
@@ -547,7 +623,7 @@ void SearchDeviceWidget::slot_selectedDevice(){//c220625
         else if(lb_type->text()=="RS250" || lb_type->text()=="RS250A"){
             lb_img->setPixmap(*GSCommon::getUIPixmapImg(":/images/rs250_off_s.png"));
         }
-        if(lb_type->text()=="RS520"){
+        else if(lb_type->text()=="RS520"){
             lb_img->setPixmap(*GSCommon::getUIPixmapImg(":/images/rs520_off_s.png"));
         }
 
@@ -560,7 +636,10 @@ void SearchDeviceWidget::slot_selectedDevice(){//c220625
     QLabel *lb_type = sender()->findChild<QLabel*>("deviceType");
     QLabel *lb_check = sender()->findChild<QLabel*>("deviceCheck");
 
-    if(lb_type->text()=="RS150" || lb_type->text() == "RS150B"){
+    if(lb_type->text()=="RS130"){
+        lb_img->setPixmap(*GSCommon::getUIPixmapImg(":/images/rs130_on_s.png"));
+    }
+    else if(lb_type->text()=="RS150" || lb_type->text() == "RS150B"){
         lb_img->setPixmap(*GSCommon::getUIPixmapImg(":/images/rs150_on_s.png"));
     }
     else if(lb_type->text()=="RS201"){
@@ -586,6 +665,7 @@ void SearchDeviceWidget::slot_selectedDevice(){//c220625
         emit linker->signal_searchBarFocusChanged(false);//c220804
 
         DialogConfirm *selectedDevice_dlgConfirm = new DialogConfirm(this);//c220625
+        print_debug();
         selectedDevice_dlgConfirm->setAlertMode();
         //selectedDevice_dlgConfirm->setProperty("flagShown", false);
         selectedDevice_dlgConfirm->setTitle(tr("Selected device notice"));
@@ -593,10 +673,13 @@ void SearchDeviceWidget::slot_selectedDevice(){//c220625
         selectedDevice_dlgConfirm->setTextHeight(200);
 
         int result = selectedDevice_dlgConfirm->exec();
+        print_debug();
         selectedDevice_dlgConfirm->raise();
         if(result == QDialog::Accepted){
 
+
             emit signal_selectedDevice(selectedIP);
+            print_debug();//c230416
             emit linker->signal_connected();//c220901_1
             this->selectedIndex = tmp_index;
 
@@ -604,12 +687,19 @@ void SearchDeviceWidget::slot_selectedDevice(){//c220625
                 this->flag_adjust = false;
                 this->slot_searchWidget_adjust();
             }
+
+            QTimer::singleShot(4000,this,[=](){emit linker->signal_checknetwork();});//c230424
+            //QTimer::singleShot(4000,this,[=](){emit linker->signal_RoseHome_movePage(QString(GSCommon::MainMenuCode::RoseHome));});//c230423
+            //emit linker->signal_RoseHome_movePage(QString(GSCommon::MainMenuCode::RoseHome));//c230423
+            //ToastMsg::show(this,"", tr("DB is downloading from music folder."), 2000, 0);//c230423
+
         }else if(result == QDialog::Rejected){
             lb_check->hide();
             print_debug();
         }
 
     }
+    sender()->deleteLater();//c230423
 }
 
 
@@ -618,7 +708,8 @@ void SearchDeviceWidget::slot_selectedDevice(){//c220625
  * @details IP 값을 이용해 연결가능한 장치 정보를 가져온다.
  */
 void SearchDeviceWidget::searchDeviceIP(){
-
+    ToastMsg::delay(this,"", tr("delay"), 4000);//c230403
+    print_debug();
     this->searchDevice(this->le_search_ip->text());
 }
 

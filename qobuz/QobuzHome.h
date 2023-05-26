@@ -9,9 +9,13 @@
 
 #include "roseHome/ItemAlbum_rosehome.h"
 #include "roseHome/ItemPlaylist_rosehome.h"
+#include "roseHome/ItemArtist_rosehome.h"
+#include "roseHome/ItemHistory_rosehome.h"
 
 #include "widget/AbstractPlaylistTrackDetailInfo_RHV.h"
 #include "widget/myqwidget.h"//c220729
+
+#include <QCoreApplication>
 
 
 #define  print_qobuz_func() qDebug() << "[QOBUZ][FILE][INFO]" << "file_name: " << __FILE__ << "function_name: " << __FUNCTION__ << "line: " << __LINE__ << "\n";
@@ -36,6 +40,7 @@ namespace qobuz {
     protected slots:
         // about Item
         void slot_clickedItemAlbum(const tidal::AbstractItem::ClickMode clickMode) override;
+        void slot_clickedItemArtist(const tidal::AbstractItem::ClickMode clickMode) override;
         void slot_clickedItemPlaylist(const tidal::AbstractItem::ClickMode clickMode) override;
         void slot_clickedItemTrack_inList(const int idx, const PlaylistTrackDetailInfo_RHV::ClickMode clickMode) override;
 
@@ -46,6 +51,7 @@ namespace qobuz {
         void resizeEvent(QResizeEvent *event) override;
 
     private slots:
+        void slot_gotoRoseHome();//c230322_3
         void slot_time_out();
         void slot_hide_msg();
 
@@ -60,12 +66,24 @@ namespace qobuz {
         void slot_applyResult_recentlyAlbum(const QList<roseHome::AlbumItemData>&, const QJsonArray&, const bool);
         void slot_applyResult_recentlyPlaylist(const QList<roseHome::PlaylistItemData>&, const QJsonArray&, const bool);
         void slot_applyResult_recentlyTrack(const QList<roseHome::TrackItemData>&, const QJsonArray&, const bool);
+        void slot_applyResult_recentlyArtist(const QList<roseHome::ArtistItemData>&, const QJsonArray&, const bool);
+        void slot_applyResult_historylist(const QList<roseHome::HistoryItemData>&, const QJsonArray&);
         void slot_applyResult_myPlaylist(const QList<roseHome::PlaylistItemData>&, const QJsonArray&, const bool);
         void slot_applyResult_userPlaylist(const QList<roseHome::PlaylistItemData>&, const QJsonArray&, const bool);
 
+        void slot_applyResult_recentlyAlbumCheck(const QList<roseHome::AlbumItemData>&, const QJsonArray&, const bool);
+        void slot_applyResult_recentlyPlaylistCheck(const QList<roseHome::PlaylistItemData>&, const QJsonArray&, const bool);
+        void slot_applyResult_recentlyTrackCheck(const QList<roseHome::TrackItemData>&, const QJsonArray&, const bool);
+        void slot_applyResult_recentlyArtistCheck(const QList<roseHome::ArtistItemData>&, const QJsonArray&, const bool);
+        void slot_applyResult_myPlaylistCheck(const QList<roseHome::PlaylistItemData>&, const QJsonArray&, const bool);
+
         void slot_applyResult_getShareLink(const QString &link);//c220818
 
+        void slot_applyResult_myPlaylistDelete(const QJsonObject&);
+
         void slot_applyResult_getRating_track(const QJsonArray&);
+
+        void slot_qobuz_completeReq_listAll_myFavoritesIds(const QJsonObject&);
 
         // about clicks
         void slot_clickBtn_Filter();
@@ -86,6 +104,8 @@ namespace qobuz {
         void setUIControl_requestRose();
 
         void setUIControl_appendWidget_rose();
+        void setUIControl_checkWidget_rose();
+
         void setUIControl_appendWidget();
 
         //void setUIControl_initialized_rose();
@@ -138,6 +158,8 @@ namespace qobuz {
 
         roseHome::ItemAlbum_rosehome *home_recently_album[15];
         roseHome::ItemPlaylist_rosehome *home_recently_playlist[15];
+        roseHome::ItemArtist_rosehome *home_recently_artist[15];
+        roseHome::ItemHistory_rosehome *home_historylist[15];
         roseHome::ItemPlaylist_rosehome *home_myPlaylist[15];
         roseHome::ItemPlaylist_rosehome *home_userPlaylist[15];
 
@@ -148,18 +170,29 @@ namespace qobuz {
 
         QWidget *widget_recentPlay;
         QWidget *widget_recentlyTrack;
+        QWidget *widget_recentArtist;
+        QWidget *widget_historylist;
         QWidget *widget_myPlaylist;
         QWidget *widget_userPlaylist;
 
         QVBoxLayout *vBox_recentlyPlay;
         QVBoxLayout *vBox_recentlyTrack;
+        QVBoxLayout *vBox_recentlyArtist;
+        QVBoxLayout *vBox_historylist;
         QVBoxLayout *vBox_myPlaylist;
         QVBoxLayout *vBox_userPlaylist;
 
         QHBoxLayout *hBox_recentlyAlbum;
         QHBoxLayout *hBox_recentlyPlaylist;
+        QHBoxLayout *hBox_recentlyArtist;
+        QHBoxLayout *hBox_historylist;
         QHBoxLayout *hBox_myPlaylist;
         QHBoxLayout *hBox_userPlaylist;
+
+        QVBoxLayout *vBox_recentlyTrack_info;
+
+        QScrollArea *album_scrollArea;
+        QScrollArea *playlist_scrollArea;
 
         QJsonArray jsonArr_tracks_toPlay;
 
@@ -167,15 +200,24 @@ namespace qobuz {
         QList<roseHome::AlbumItemData> *list_recentlyAlbum;
         QList<roseHome::PlaylistItemData> *list_recentlyPlaylist;
         QList<roseHome::TrackItemData> *list_recentlytrack;
+        QList<roseHome::ArtistItemData> *list_recentlyArtist;
+        QList<roseHome::HistoryItemData> *list_Historylist;
         QList<roseHome::PlaylistItemData> *list_myPlaylist;
         QList<roseHome::PlaylistItemData> *list_userPlaylist;
-
 
         bool flag_album[2] = {false, false};
         bool flag_playlist[2] = {false, false};
         bool flag_track[2] = {false, false};
+        bool flag_artist[2] = {false, false};
+        bool flag_historylist[2] = {false, false};
         bool flag_myPlaylist[2] = {false, false};
         bool flag_userPlaylist[2] = {false, false};
+
+        bool flag_recentAlbum_check[2] = {false, false};
+        bool flag_recentPlaylist_check[2] = {false, false};
+        bool flag_recentTrack_check[2] = {false, false};
+        bool flag_recentArtist_check[2] = {false, false};
+        bool flag_myPlaylist_check[2] = {false, false};
 
         //===============================================================================
         qobuz::ItemAlbum_qobuz *home_newReleases[15];
@@ -224,6 +266,7 @@ namespace qobuz {
         bool flag_ideal[2] = {false, false};
         bool flag_qobuz[2] = {false, false};
 
+        int track_id_fav = 0;
         int track_idx_fav = 0;
         int track_star_fav = 0;
 

@@ -19,38 +19,41 @@ SettingAppInfo::SettingAppInfo(QWidget *parent) : QWidget(parent)
     this->setUIControl();
     this->readFileLicense();
     this->readFileReadme();
-    this->readFileUpdatelist();
+    //this->readFileUpdatelist();
 }
+
+
 /**
  * @brief SettingAppInfo::setUIControl UI 세팅
  */
 void SettingAppInfo::setUIControl(){
 
-    lb_licese = new QLabel();
-    lb_licese->setContentsMargins(33,26,33,40);
-    lb_licese->setAlignment(Qt::AlignTop);
-    lb_licese->setWordWrap(true);
-    lb_licese->setStyleSheet("font-size:14px;color:#919191;background-color:#000000;");
+    this->lb_licese = new QLabel();
+    this->lb_licese->setContentsMargins(33,26,33,40);
+    this->lb_licese->setAlignment(Qt::AlignTop);
+    this->lb_licese->setWordWrap(true);
+    this->lb_licese->setStyleSheet("font-size:14px;color:#919191;background-color:#000000;");
 
-    lb_readme = new QLabel();
-    lb_readme->setContentsMargins(33,26,33,40);
-    lb_readme->setAlignment(Qt::AlignTop);
-    lb_readme->setWordWrap(true);
-    lb_readme->setStyleSheet("font-size:14px;color:#919191;background-color:#000000;");
+    this->lb_readme = new QLabel();
+    this->lb_readme->setContentsMargins(33,26,33,40);
+    this->lb_readme->setAlignment(Qt::AlignTop);
+    this->lb_readme->setWordWrap(true);
+    this->lb_readme->setStyleSheet("font-size:14px;color:#919191;background-color:#000000;");
 
-    lb_updatelist = new QLabel();
-    lb_updatelist->setContentsMargins(33,26,33,40);
-    lb_updatelist->setAlignment(Qt::AlignTop);
-    lb_updatelist->setWordWrap(true);
-    lb_updatelist->setStyleSheet("font-size:14px;color:#919191;background-color:#000000;");
+    this->lb_updatelist = new QLabel();
+    this->lb_updatelist->setContentsMargins(33,26,33,40);
+    this->lb_updatelist->setAlignment(Qt::AlignTop);
+    this->lb_updatelist->setWordWrap(true);
+    this->lb_updatelist->setStyleSheet("font-size:14px;color:#919191;background-color:#000000;");
 
-    lb_newfeature = new QLabel();
-    lb_newfeature->setContentsMargins(33,26,33,40);
-    lb_newfeature->setAlignment(Qt::AlignTop);
-    lb_newfeature->setWordWrap(true);
-    lb_newfeature->setStyleSheet("font-size:14px;color:#919191;background-color:#000000;");
+    this->lb_newfeature = new QLabel();
+    this->lb_newfeature->setContentsMargins(33,26,33,40);
+    this->lb_newfeature->setAlignment(Qt::AlignTop);
+    this->lb_newfeature->setWordWrap(true);
+    this->lb_newfeature->setStyleSheet("font-size:14px;color:#919191;background-color:#000000;");
 
-    QString ver = QString(" (%1)").arg(QDate::currentDate().toString("yyMMdd").replace(" ", ""));
+    //QString ver = QString(" (%1)").arg(QDate::currentDate().toString("yyMMdd").replace(" ", ""));
+    QString ver = QString(" (%1)").arg(rosesettings.APPLICATION_BUILD_DATE);
 
     // 전체
     QVBoxLayout *vl_total = new QVBoxLayout();
@@ -60,23 +63,23 @@ void SettingAppInfo::setUIControl(){
     vl_total->addWidget(GSCommon::getUIControlTitleForSetting(tr("Rose Connect app Info")));
     vl_total->addWidget(this->getUIControlTitleSub(tr("Rose Connect app version"), rosesettings.APPLICATION_VERSION + ver));
     vl_total->addWidget(this->getUIControlTitleSub(global.device.getDeviceName(), global.device.getDeviceVersion()));
-    btn_license = this->getUIControlTitleSubClick(tr("Open Source License"));
-    vl_total->addWidget(btn_license);
-    btn_readme = this->getUIControlTitleSubClick(tr("ReadMe"));
-    vl_total->addWidget(btn_readme);
-    btn_updatelist = this->getUIControlTitleSubClick(tr("Update List"));
-    vl_total->addWidget(btn_updatelist);
-    btn_newfeature = this->getUIControlTitleSubClick(tr("Update New feature mp4"));
-    vl_total->addWidget(btn_newfeature);
+    this->btn_license = this->getUIControlTitleSubClick(tr("Open Source License"));
+    vl_total->addWidget(this->btn_license);
+    vl_total->addWidget(this->lb_licese);
+    this->btn_readme = this->getUIControlTitleSubClick_readme(tr("ReadMe"));
+    vl_total->addWidget(this->btn_readme);
+    vl_total->addWidget(this->lb_readme);
+    //btn_updatelist = this->getUIControlTitleSubClick_updatelist(tr("Update List"));
+    //vl_total->addWidget(btn_updatelist);
+    //btn_newfeature = this->getUIControlTitleSubClick_newfeature(tr("Update New feature mp4"));
+    //vl_total->addWidget(btn_newfeature);
     /*
      *     vl_total->addWidget(GSCommon::getUIControlTitleForSetting(tr("로즈커넥트 앱 정보")));
     vl_total->addWidget(this->getUIControlTitleSub(tr("로즈 커넥트 앱 버전"), rosesettings.APPLICATION_VERSION));
     vl_total->addWidget(this->getUIControlTitleSub(global.device.getDeviceName(), global.device.getDeviceVersion()));
     vl_total->addWidget(this->getUIControlTitleSubClick(tr("오픈소스 라이센스")));
     */
-    vl_total->addWidget(lb_licese);
-    vl_total->addWidget(lb_readme);
-    vl_total->addWidget(lb_updatelist);
+    //vl_total->addWidget(lb_updatelist);
     vl_total->addSpacing(50);
 
     // 스크롤
@@ -104,14 +107,13 @@ void SettingAppInfo::setUIControl(){
     // 커넥션
     connect(btn_license, SIGNAL(clicked()), this, SLOT(slot_showHideLicese()));
     connect(btn_readme, SIGNAL(clicked()), this, SLOT(slot_showHideReadme()));
-    connect(btn_updatelist, SIGNAL(clicked()), this, SLOT(slot_showHideUpdatelist()));
-    connect(btn_newfeature, SIGNAL(clicked()), this, SLOT(slot_showHideNewfeatureMoive()));
+    //connect(btn_updatelist, SIGNAL(clicked()), this, SLOT(slot_showHideUpdatelist()));
+    //connect(btn_newfeature, SIGNAL(clicked()), this, SLOT(slot_showHideNewfeatureMoive()));
+
     this->lb_licese->setVisible(false);
     this->lb_readme->setVisible(false);
-    this->lb_updatelist->setVisible(false);
+    //this->lb_updatelist->setVisible(false);
 }
-
-
 
 
 /**
@@ -160,6 +162,7 @@ QWidget* SettingAppInfo::getUIControlTitleSub(QString p_title, QString p_version
 
     return widget_title;
 }
+
 
 /**
  * @brief SettingAppInfo::getUIControlTitleSubClick
@@ -212,49 +215,199 @@ QPushButton* SettingAppInfo::getUIControlTitleSubClick(QString p_title){
     return btn_license;
 }
 
+
+QPushButton* SettingAppInfo::getUIControlTitleSubClick_readme(QString p_title){
+
+    // Text
+    QLabel *lb_title = new QLabel(p_title);
+    lb_title->setStyleSheet("color:#E5E5E4;font-size:18px;");
+
+    pixmap_icon_show_read = GSCommon::getUIPixmapImg(":/images/icon_open_w.png");
+    pixmap_icon_hide_read = GSCommon::getUIPixmapImg(":/images/icon_hide_w.png");
+
+    lb_icon_arrow_read = new QLabel();
+    lb_icon_arrow_read->setPixmap(*pixmap_icon_show_read);
+    lb_icon_arrow_read->resize(pixmap_icon_show_read->width(), pixmap_icon_show_read->height());
+
+    QHBoxLayout *hl_lb = new QHBoxLayout();
+    hl_lb->setContentsMargins(33,15,47,15);
+    hl_lb->setSpacing(0);
+    hl_lb->addWidget(lb_title);
+    hl_lb->addWidget(lb_icon_arrow_read, 0, Qt::AlignRight);
+
+    QWidget *widget_bar = new QWidget();
+    widget_bar->setObjectName("widget_bar");
+    widget_bar->setFixedHeight(1);
+    widget_bar->setStyleSheet("#widget_bar { background-color:#060606 } ");
+    QWidget *widget_bar2 = new QWidget();
+    widget_bar2->setObjectName("widget_bar2");
+    widget_bar2->setFixedHeight(1);
+    widget_bar2->setStyleSheet("#widget_bar2 { background-color:#303030 } ");
+
+    QVBoxLayout *vlayout = new QVBoxLayout();
+    vlayout->setContentsMargins(0,0,0,0);
+    vlayout->setSpacing(0);
+    vlayout->addLayout(hl_lb);
+    vlayout->addWidget(widget_bar);
+    vlayout->addWidget(widget_bar2);
+
+    QPushButton *btn_license = new QPushButton();
+    btn_license->setObjectName("widget_titleSub");
+    btn_license->setContentsMargins(0,0,0,0);
+    btn_license->setLayout(vlayout);
+    btn_license->setStyleSheet("#widget_titleSub { border:0px;border-left:1px solid #303030; }");
+    btn_license->setFixedHeight(70);
+    btn_license->setCursor(Qt::PointingHandCursor);
+
+    return btn_license;
+}
+
+
+QPushButton* SettingAppInfo::getUIControlTitleSubClick_updatelist(QString p_title){
+
+    // Text
+    QLabel *lb_title = new QLabel(p_title);
+    lb_title->setStyleSheet("color:#E5E5E4;font-size:18px;");
+
+    pixmap_icon_show_up = GSCommon::getUIPixmapImg(":/images/icon_open_w.png");
+    pixmap_icon_hide_up = GSCommon::getUIPixmapImg(":/images/icon_hide_w.png");
+
+    lb_icon_arrow_up = new QLabel();
+    lb_icon_arrow_up->setPixmap(*pixmap_icon_show_up);
+    lb_icon_arrow_up->resize(pixmap_icon_show_up->width(), pixmap_icon_show_up->height());
+
+    QHBoxLayout *hl_lb = new QHBoxLayout();
+    hl_lb->setContentsMargins(33,15,47,15);
+    hl_lb->setSpacing(0);
+    hl_lb->addWidget(lb_title);
+    hl_lb->addWidget(lb_icon_arrow_up, 0, Qt::AlignRight);
+
+    QWidget *widget_bar = new QWidget();
+    widget_bar->setObjectName("widget_bar");
+    widget_bar->setFixedHeight(1);
+    widget_bar->setStyleSheet("#widget_bar { background-color:#060606 } ");
+    QWidget *widget_bar2 = new QWidget();
+    widget_bar2->setObjectName("widget_bar2");
+    widget_bar2->setFixedHeight(1);
+    widget_bar2->setStyleSheet("#widget_bar2 { background-color:#303030 } ");
+
+    QVBoxLayout *vlayout = new QVBoxLayout();
+    vlayout->setContentsMargins(0,0,0,0);
+    vlayout->setSpacing(0);
+    vlayout->addLayout(hl_lb);
+    vlayout->addWidget(widget_bar);
+    vlayout->addWidget(widget_bar2);
+
+    QPushButton *btn_license = new QPushButton();
+    btn_license->setObjectName("widget_titleSub");
+    btn_license->setContentsMargins(0,0,0,0);
+    btn_license->setLayout(vlayout);
+    btn_license->setStyleSheet("#widget_titleSub { border:0px;border-left:1px solid #303030; }");
+    btn_license->setFixedHeight(70);
+    btn_license->setCursor(Qt::PointingHandCursor);
+
+    return btn_license;
+}
+
+
+QPushButton* SettingAppInfo::getUIControlTitleSubClick_newfeature(QString p_title){
+
+    // Text
+    QLabel *lb_title = new QLabel(p_title);
+    lb_title->setStyleSheet("color:#E5E5E4;font-size:18px;");
+
+
+    QHBoxLayout *hl_lb = new QHBoxLayout();
+    hl_lb->setContentsMargins(33,15,47,15);
+    hl_lb->setSpacing(0);
+    hl_lb->addWidget(lb_title);
+
+    QWidget *widget_bar = new QWidget();
+    widget_bar->setObjectName("widget_bar");
+    widget_bar->setFixedHeight(1);
+    widget_bar->setStyleSheet("#widget_bar { background-color:#060606 } ");
+    QWidget *widget_bar2 = new QWidget();
+    widget_bar2->setObjectName("widget_bar2");
+    widget_bar2->setFixedHeight(1);
+    widget_bar2->setStyleSheet("#widget_bar2 { background-color:#303030 } ");
+
+    QVBoxLayout *vlayout = new QVBoxLayout();
+    vlayout->setContentsMargins(0,0,0,0);
+    vlayout->setSpacing(0);
+    vlayout->addLayout(hl_lb);
+    vlayout->addWidget(widget_bar);
+    vlayout->addWidget(widget_bar2);
+
+    QPushButton *btn_license = new QPushButton();
+    btn_license->setObjectName("widget_titleSub");
+    btn_license->setContentsMargins(0,0,0,0);
+    btn_license->setLayout(vlayout);
+    btn_license->setStyleSheet("#widget_titleSub { border:0px;border-left:1px solid #303030; }");
+    btn_license->setFixedHeight(70);
+    btn_license->setCursor(Qt::PointingHandCursor);
+
+    return btn_license;
+}
+
+
 /**
  * @brief SettingAppInfo::slot_showHideLicese [SLOT]
  */
 void SettingAppInfo::slot_showHideLicese(){
 
     if(this->lb_licese->isVisible()==false){
+        /*if(this->lb_readme->isVisible() == true){
+            this->lb_readme->setVisible(false);
+            lb_icon_arrow_read->setPixmap(*pixmap_icon_show_read);
+            lb_icon_arrow_read->resize(pixmap_icon_show_read->width(), pixmap_icon_show_read->height());
+        }*/
         this->lb_licese->setVisible(true);
         lb_icon_arrow->setPixmap(*pixmap_icon_hide);
         lb_icon_arrow->resize(pixmap_icon_hide->width(), pixmap_icon_hide->height());
 
-    }else{
+    }
+    else{
         this->lb_licese->setVisible(false);
         lb_icon_arrow->setPixmap(*pixmap_icon_show);
         lb_icon_arrow->resize(pixmap_icon_show->width(), pixmap_icon_show->height());
     }
 }
+
+
 void SettingAppInfo::slot_showHideReadme(){
-
     if(this->lb_readme->isVisible()==false){
+        /*if(lb_licese->isVisible() == true){
+            this->lb_licese->setVisible(false);
+            lb_icon_arrow->setPixmap(*pixmap_icon_show);
+            lb_icon_arrow->resize(pixmap_icon_show->width(), pixmap_icon_show->height());
+        }*/
         this->lb_readme->setVisible(true);
-        lb_icon_arrow->setPixmap(*pixmap_icon_hide);
-        lb_icon_arrow->resize(pixmap_icon_hide->width(), pixmap_icon_hide->height());
-
-    }else{
+        lb_icon_arrow_read->setPixmap(*pixmap_icon_hide_read);
+        lb_icon_arrow_read->resize(pixmap_icon_hide_read->width(), pixmap_icon_hide_read->height());
+    }
+    else{
         this->lb_readme->setVisible(false);
-        lb_icon_arrow->setPixmap(*pixmap_icon_show);
-        lb_icon_arrow->resize(pixmap_icon_show->width(), pixmap_icon_show->height());
+        lb_icon_arrow_read->setPixmap(*pixmap_icon_show_read);
+        lb_icon_arrow_read->resize(pixmap_icon_show_read->width(), pixmap_icon_show_read->height());
     }
 }
+
 
 void SettingAppInfo::slot_showHideUpdatelist(){
 
     if(this->lb_updatelist->isVisible()==false){
         this->lb_updatelist->setVisible(true);
-        lb_icon_arrow->setPixmap(*pixmap_icon_hide);
-        lb_icon_arrow->resize(pixmap_icon_hide->width(), pixmap_icon_hide->height());
+        lb_icon_arrow_up->setPixmap(*pixmap_icon_hide_up);
+        lb_icon_arrow_up->resize(pixmap_icon_hide_up->width(), pixmap_icon_hide_up->height());
 
     }else{
         this->lb_updatelist->setVisible(false);
-        lb_icon_arrow->setPixmap(*pixmap_icon_show);
-        lb_icon_arrow->resize(pixmap_icon_show->width(), pixmap_icon_show->height());
+        lb_icon_arrow_up->setPixmap(*pixmap_icon_show_up);
+        lb_icon_arrow_up->resize(pixmap_icon_show_up->width(), pixmap_icon_show_up->height());
     }
 }
+
+
 void SettingAppInfo::slot_showHideNewfeatureMoive(){
 
     print_debug();
@@ -269,6 +422,7 @@ void SettingAppInfo::slot_showHideNewfeatureMoive(){
     }
     QDesktopServices::openUrl( QUrl::fromLocalFile(shareFilePath) );
 }
+
 
 /**
  * @brief SettingAppInfo::readFileLicense 오픈소스 라이센스 txt 파일 읽어서 세팅한다.
@@ -288,6 +442,8 @@ void SettingAppInfo::readFileLicense(){
     file.close();
 
 }
+
+
 void SettingAppInfo::readFileReadme(){
 
     //QString filename = ":/opensource_license.txt";
@@ -309,6 +465,8 @@ void SettingAppInfo::readFileReadme(){
     file.close();
 
 }
+
+
 void SettingAppInfo::readFileUpdatelist(){
 
     //QString filename = ":/opensource_license.txt";
@@ -328,5 +486,4 @@ void SettingAppInfo::readFileUpdatelist(){
     //qDebug() << "myText=" << myText;
     this->lb_updatelist->setText(myText);
     file.close();
-
 }

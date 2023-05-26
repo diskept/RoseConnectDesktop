@@ -157,6 +157,8 @@ namespace qobuz {
         QList<int> list_artist_albums_count;
         QList<int> list_artist_id;              // Artist 연결을 위해
         QList<QString> list_artist_name;        // Artist 연결을 위해
+
+        bool parental_warning = false;
     };
 
 
@@ -169,8 +171,8 @@ namespace qobuz {
         //int id = 0;        
         //int numberOfTracks = 0;         ///< 트랙 수
 
-        // Added Jeon 28/12/2020 redefine struct
-        QString id = "";                        // Qobuz의 Album id는 String Type     Added Jeon 27/12/2020
+        // Added diskept 28/12/2020 redefine struct
+        QString id = "";                        // Qobuz의 Album id는 String Type     Added diskept 27/12/2020
 
         int artist_albums_count = 0;
         int artist_id = 0;
@@ -224,7 +226,7 @@ namespace qobuz {
 
     /**
      * @brief Qobuz의 Artist 아이템
-     * Added Jeon 28/12/2020
+     * Added diskept 28/12/2020
      */
     struct ArtistItemData {
         //QString image = "";

@@ -33,15 +33,21 @@ namespace roseHome {
         this->flagNeedReload = true;
 
         this->streamType = ProcJsonEasy::getString(jsonObj, "type");
+        this->viewType = ProcJsonEasy::getString(jsonObj, "view_type");
 
         this->dataSend_jsonObj = QJsonObject();
         this->dataSend_jsonObj.insert("tracks", ProcJsonEasy::getJsonArray(jsonObj, "tracks"));
-        this->dataSend_jsonObj.insert("view_type", ProcJsonEasy::getString(jsonObj, "view_type"));
+        this->dataSend_jsonObj.insert("view_type", this->viewType);
 
-        ContentLoadingwaitingMsgShow(tr("Content is being loaded. Please wait."));
+        if(jsonObj.contains("playlistInfo")){
+             this->dataSend_jsonObj.insert("playlistInfo", ProcJsonEasy::getJsonObject(jsonObj, "playlistInfo"));
+        }
+
+        if(jsonObj.contains("playlist_id")){
+            this->dataSend_jsonObj.insert("playlist_id", ProcJsonEasy::getInt(jsonObj, "playlist_id"));
+        }
 
         this->setUIControl_basic();
-
     }
 
 
@@ -55,24 +61,29 @@ namespace roseHome {
         AbstractRoseHomeSubWidget::setActivePage();
 
         if(this->flagNeedReload){
-            if(this->streamType == "TIDAL"){
+            if(this->streamType == "ROSETUBE"){
+                this->addPlaylist_Rosetube->setJsonObject_forData(this->dataSend_jsonObj);
+                this->addPlaylist_Rosetube->setActivePage();
+            }
+            else if(this->streamType == "TIDAL"){
                 this->addPlaylist_Tidal->setJsonObject_forData(this->dataSend_jsonObj);
                 this->addPlaylist_Tidal->setActivePage();
             }
             else if(this->streamType == "BUGS"){
-
+                this->addPlaylist_Bugs->setJsonObject_forData(this->dataSend_jsonObj);
+                this->addPlaylist_Bugs->setActivePage();
             }
             else if(this->streamType == "QOBUZ"){
                 this->addPlaylist_Qobuz->setJsonObject_forData(this->dataSend_jsonObj);
                 this->addPlaylist_Qobuz->setActivePage();
             }
+            else if(this->streamType == "ROSE"){
+                this->editPlaylist_Rose->setJsonObject_forData(this->dataSend_jsonObj);
+                this->editPlaylist_Rose->setActivePage();
+            }
             else{
 
             }
-
-            //if(abs_ani_dialog_wait->isHidden() != true){
-                ContentLoadingwaitingMsgHide();
-            //}
         }
     }
 
@@ -89,7 +100,14 @@ namespace roseHome {
     void RoseHomeAddPlaylist::setUIControl_basic(){
 
         // playlist add page
-        if(this->streamType == "TIDAL"){
+        if(this->streamType == "ROSETUBE"){
+            this->addPlaylist_Rosetube = new rosetube::RoseTubeAddPlaylist();
+
+            GSCommon::clearLayout(this->box_contents);
+            this->box_contents->setAlignment(Qt::AlignTop);
+            this->box_contents->addWidget(this->addPlaylist_Rosetube);
+        }
+        else if(this->streamType == "TIDAL"){
             this->addPlaylist_Tidal = new tidal::TidalAddPlaylist();
 
             GSCommon::clearLayout(this->box_contents);
@@ -97,7 +115,11 @@ namespace roseHome {
             this->box_contents->addWidget(this->addPlaylist_Tidal);
         }
         else if(this->streamType == "BUGS"){
+            this->addPlaylist_Bugs = new bugs::BugsAddPlaylist();
 
+            GSCommon::clearLayout(this->box_contents);
+            this->box_contents->setAlignment(Qt::AlignTop);
+            this->box_contents->addWidget(this->addPlaylist_Bugs);
         }
         else if(this->streamType == "QOBUZ"){
 
@@ -106,6 +128,14 @@ namespace roseHome {
             GSCommon::clearLayout(this->box_contents);
             this->box_contents->setAlignment(Qt::AlignTop);
             this->box_contents->addWidget(this->addPlaylist_Qobuz);
+        }
+        else if(this->streamType == "ROSE"){
+
+            this->editPlaylist_Rose = new roseHome::RoseHomeEidtPlaylist();
+
+            GSCommon::clearLayout(this->box_contents);
+            this->box_contents->setAlignment(Qt::AlignTop);
+            this->box_contents->addWidget(this->editPlaylist_Rose);
         }
         else{
 

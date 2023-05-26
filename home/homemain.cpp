@@ -42,8 +42,7 @@
 #include <QPixmapCache>
 #include <QMainWindow>//cheon211008
 
-
-const int FOOTER_H = 110;//c220526
+const int FOOTER_H = 95;//c220526
 const int REMOTE_W = 953;
 const int REMOTE_H = 806;   //767;
 const int TOP_NAVIBAR_H = 70;
@@ -80,9 +79,12 @@ HomeMain::HomeMain(QWidget *parent)
     : QWidget(parent)
 {
 
+    //global.dialog_delay = new QDialog(parent);//c230317
+
+
     //c220408  start (to 77 line)
     print_debug();
-
+    //global.dialog_delay = new QDialog(this);//c230331
     QString debugCHK = rosesettings.APPLICATION_VERSION;
     qDebug() << "debugCHK = " << debugCHK;
     QStringList debuglist = debugCHK.split(".");
@@ -93,51 +95,99 @@ HomeMain::HomeMain(QWidget *parent)
     global.legacy_radio = (global.debugCHK > 3) ? "https://dev.api.roseaudio.kr/radio/v2" : "https://api.roseaudio.kr/radio/v2";
     global.rosehome_userpick = (global.debugCHK > 3) ? "https://dev.api.roseaudio.kr/v1/member/playlist/userpick/all" : "https://api.roseaudio.kr/v1/member/playlist/userpick/all";
 
+    global.dialog_delay = nullptr;//c230305
+
     this->flagRoseRadio = false;
 
-    setInit();
-
+    //setUIControl();
     if(global.device.getDeviceIP().isEmpty() == true){
         //slot_showDlgOfDisconnect();
         print_debug();
         //QTimer::singleShot(10000, this, SLOT(slot_showDlgOfDisconnect()));//c221004_3
     }
-    else{
-        this->requestGetRoseUserInfo();         // Rose Login check
-        this->requestGetShazamInfo();           // Rose External Token check
-        this->checkTidalLogin();                // Tidal login check -> added by sunnyfish -> fixed by jeon
-        this->checkBugsLogin();                 // Bugs Login check -> added by jeon
-        this->checkQobuzLogin();                // Qobuz Login check -> added by jeon
-        this->checkAppleLogin();                // Apple Musci Login check -> added by jeon
+    else{//c230302_3
+        this->requestGetRoseUserInfo();    //c230302_3     // Rose Login check
+        this->requestGetShazamInfo();    //c230302_3        // Rose External Token check
+/*//c230304
+        this->checkTidalLogin();      //          // Tidal login check -> added by sunnyfish -> fixed by jeon
+        this->checkBugsLogin();       //          // Bugs Login check -> added by jeon
+        this->checkQobuzLogin();       //         // Qobuz Login check -> added by jeon
+        this->checkAppleLogin();       //         // Apple Musci Login check -> added by jeon
+*/
     }
 
-    setUIControl();
+    global.media.clear();//c230516
+    global.mediaTypeList.clear();//c230516
+    global.media << "" << "UNITED" << "MUSIC" << "YOUTUBE" << "TIDAL" << "BUGS" << "QOBUZ" << "APPLE_MUSIC";//c230516
+    global.mediaTypeList << tr("All Music") << tr("Mix") << tr("Music") << tr("RoseTube") << tr("Tidal") << tr("Bugs") << tr("Qobuz") << tr("Apple Music"); //c230516     // << "VIDEO" << "SPOTIFY";
 
-    //
+    setInit();//
+    setUIControl();//
 
-    /*if(global.user.isValid()){
-        slot_changedLoginInfo();
-    }*/
+    if(global.device.getDeviceIP().isEmpty() == true){//c230304
+        print_debug();
+    }
+    else{//c230424
+        print_debug();
 
-    // default : 첫번째 메인 메뉴 선택
-    print_debug();
-    this->sectionLeft->clickedMenu(QString(GSCommon::MainMenuCode::RoseHome));
+        print_debug();ContentLoadingwaitingMsgShow(tr("Content is being loaded. Please wait."));//
+
+        global.user_forTidal.setLogout();
+        global.user_forTidal.set_logoutState();
+
+        print_debug();
+        tidal::ProcCommon *proc_dbClear1 = new tidal::ProcCommon(this);
+        proc_dbClear1->clearTablesInfo_tidalDB();
+        print_debug();
+
+        print_debug();this->checkTidalLogin();
+        global.user_forBugs.set_logoutState();
+
+        bugs::ProcBugsAPI *proc_dbClear2 = new bugs::ProcBugsAPI(this);
+        proc_dbClear2->clearTablesInfo_bugsDB();
+
+        this->checkBugsLogin();
+        global.user_forQobuz.setLogout();
+
+        qobuz::ProcCommon *proc_dbClear3 = new qobuz::ProcCommon(this);
+        proc_dbClear3->clearTablesInfo_qobuzDB();
+
+        this->checkQobuzLogin();
+
+
+        /*
+        print_debug();this->checkTidalLogin();      //          // Tidal login check -> added by sunnyfish -> fixed by jeon
+        this->checkBugsLogin();       //          // Bugs Login check -> added by jeon
+        this->checkQobuzLogin();       //         // Qobuz Login check -> added by jeon
+        this->checkAppleLogin();       //         // Apple Musci Login check -> added by jeon
+        */
+
+    }
+    this->queueplaylist = new QueuePlayList(this);//
+
+    global.enable_section_left = true;//c230308_3
+
+
+    this->sectionLeft->clickedMenu(QString(GSCommon::MainMenuCode::RoseHome));//
+
+
 }
 
 
 /**
  * @brief homeMain::~homeMain : 소멸자
  */
-HomeMain::~HomeMain(){//c220609
+HomeMain::~HomeMain(){//c230302_1
 
     print_debug();
     global.music_player->stop();
-    /*
-    Dt_thread->quit();//c220609
-    Dt_thread->deleteLater();//c220609
-    */
+    global.abs_ani_dialog_wait->close();//c230215
     delete findIp;
+
+    this->fileDownLoader->deleteLater();
+
     this->deleteLater();
+    qApp->exit();//
 }
 
 
@@ -179,19 +229,21 @@ void HomeMain::setInit(){
     connect(linker, SIGNAL(signal_clickedMovePageQobuzSearch()), this, SLOT(slot_clickedMovePageQobuzSearch()));
 
     connect(linker, SIGNAL(signal_checknetwork()), this, SLOT(slot_rebooting()));//c220624_1
+    connect(linker, SIGNAL(signal_musicDbProcess()), this, SLOT(slot_process_notice()));
+    connect(linker, SIGNAL(signal_connect_reset_notice()), this, SLOT(slot_connect_reset_notice()));//c230326
 
-
+    connect(linker, SIGNAL(signal_successLoginQobuz()), this, SLOT(slot_completeReq_getqLoginInfoQobuz()));//c230422
 
 
     connect(linker, SIGNAL(signal_clickedMovePageSearch_share(QString)), this, SLOT(slot_clickedMovePageSearch_share(QString)));//c220818
 
-
+    //global.abs_ani_dialog_wait = new QDialog(this) ;//c230323
     //c221006_1
-      //  print_debug();
-      //  QJsonObject tmp_json;
-      //  NetworkHttp *network = new NetworkHttp;
-      //  connect(network, SIGNAL(response(int,QJsonObject)), SLOT(slot_responseHttp_deviceIOState(int, QJsonObject)));
-      //  network->request(3333, QString("http://%1:%2/%3").arg(global.device.getDeviceIP()).arg(global.port).arg("in.out.mode.get"), tmp_json, true);
+    //  print_debug();
+    //  QJsonObject tmp_json;
+    //  NetworkHttp *network = new NetworkHttp;
+    //  connect(network, SIGNAL(response(int,QJsonObject)), SLOT(slot_responseHttp_deviceIOState(int, QJsonObject)));
+    //  network->request(3333, QString("http://%1:%2/%3").arg(global.device.getDeviceIP()).arg(global.port).arg("in.out.mode.get"), tmp_json, true);
     //c221006_1
 
 
@@ -208,8 +260,54 @@ void HomeMain::setInit(){
 
 }
 
+void HomeMain::slot_process_notice(){//c230326
+    print_debug();
+    QTimer *timer = new QTimer();//c230423
+    timer->setInterval(1000); // 1초 1000 -> 500
+    connect(timer, SIGNAL(timeout()), SLOT(slot_musicDbdownloadingValue()));
+    timer->start();
+    //this->progress_pop->show();
+    //this->progress_pop->hideText();
+    this->progress->hide();//c230409
+    dlgConfirmMusicDbDownloadingNotice = new DialogConfirm(this);
+    dlgConfirmMusicDbDownloadingNotice->setAlignment(Qt::AlignLeft);
+    dlgConfirmMusicDbDownloadingNotice->setTitle(tr("Music DB file Notice!"));
+    dlgConfirmMusicDbDownloadingNotice->setText(QString(tr("DB is downloading from Rose-device. Please wait. \nDuring downloading,\n use other menus besides the music and video menus.\n     - Current progress :     %1 %")).arg(global.musicDB_DownloadingState));
 
+    dlgConfirmMusicDbDownloadingNotice->setTextHeight(200);
+  /*  QVBoxLayout *vl_progress = new QVBoxLayout();
+    vl_progress->setSpacing(30);
+    vl_progress->setContentsMargins(0, 0, 0, 0);
+    vl_progress->addWidget(this->progress_pop);
+*/
+    int left = global.left_mainwindow + ((global.width_mainwindow - 350) / 2);
+    int top = global.top_mainwindow + ((global.height_mainwindow - 400) / 2);
 
+    dlgConfirmMusicDbDownloadingNotice->setGeometry(left, top, 350, 600);
+    dlgConfirmMusicDbDownloadingNotice->setAlertMode();
+
+    //dlgConfirmMusicDbDownloadingNotice->setLayoutMy_withText(vl_progress);
+    //this->progress_pop->raise();
+    if(dlgConfirmMusicDbDownloadingNotice->property("flagShown").toBool()==false){
+        dlgConfirmMusicDbDownloadingNotice->setProperty("flagShown",true);
+
+        int result = dlgConfirmMusicDbDownloadingNotice->exec();
+        timer->stop();//c230423
+        timer->deleteLater();//c230423
+        dlgConfirmMusicDbDownloadingNotice->setProperty("flagShown",false);
+        if(result == QDialog::Accepted){
+            dlgConfirmMusicDbDownloadingNotice->hide();
+            this->activateWindow();
+            this->raise();
+            print_debug();
+        }
+    }
+}
+
+void HomeMain::slot_musicDbdownloadingValue(){
+    dlgConfirmMusicDbDownloadingNotice->setText(QString(tr("DB is downloading from Rose-device. Please wait. \nDuring downloading,\n use other menus besides the music and video menus.\n     - Current progress :     %1 %")).arg(global.musicDB_DownloadingState));
+
+}
 
 void HomeMain::slot_responseHttp_deviceIOState(const int &p_id, const QJsonObject &p_jsonObject){
 
@@ -218,8 +316,8 @@ void HomeMain::slot_responseHttp_deviceIOState(const int &p_id, const QJsonObjec
     qDebug() << "requestInputOutputMode()start-deviceType : " << deviceType  << ", global.device.getDeviceIP() : " << global.device.getDeviceIP();
     QJsonDocument doc(p_jsonObject);  QString strJson(doc.toJson(QJsonDocument::Compact));  qDebug() << "slot_responseHttp =: " << strJson;//cheon12_io
     if(p_jsonObject.contains("outputMode")){
-            global.device_outputMode = p_jsonObject["outputMode"].toInt(); //cheon09_io
-            qDebug() << "global.device_outputMode : " << global.device_outputMode;
+        global.device_outputMode = p_jsonObject["outputMode"].toInt(); //cheon09_io
+        qDebug() << "global.device_outputMode : " << global.device_outputMode;
     }
 
 }
@@ -264,9 +362,9 @@ void HomeMain::slot_showDlgOfDisconnect_hide(){//c221004_2
             if(global.user.getAccess_token().isEmpty()){
                 //print_debug();
                 //if(!this->reboot_flag){
-                   // this->reboot_flag = true;
-                    global.user.setDataUser(QJsonObject());
-                   // qApp->exit( MainWindow::EXIT_CODE_REBOOT );
+                // this->reboot_flag = true;
+                global.user.setDataUser(QJsonObject());
+                // qApp->exit( MainWindow::EXIT_CODE_REBOOT );
                 //}
 
             }
@@ -404,8 +502,9 @@ void HomeMain::mousePressEvent(QMouseEvent *event){
     Q_UNUSED(event);
     // 띄워진 객체 모두 hide
     print_debug();
-    emit linker->signal_clickListBtn();//c220802
+
     this->unRaiseAllWidget();
+    emit linker->signal_clickListBtn();//c230331
 }
 
 
@@ -457,8 +556,10 @@ void HomeMain::unRaiseAllWidget(bool p_unRaiseRemote, bool p_unRaiseQueue, bool 
  */
 void HomeMain::setUIControl(){
 
+    ToastMsg::delay(this,"", tr("delay"), 500);//c230430
     // 메인 레이아웃 구성
     this->sectionLeft = new SectionLeft(this);
+
     this->sectionBottom = new SectionBottom(this);
     this->sectionBottom->setFixedHeight(FOOTER_H);
 
@@ -477,8 +578,12 @@ void HomeMain::setUIControl(){
     vlayout->setSpacing(0);
     vlayout->addLayout(hlayout);
     vlayout->addWidget(this->sectionBottom);
-    this->setLayout(vlayout);
 
+    this->setLayout(vlayout);
+    //global.dialog_delay = new QDialog();//c230430
+
+    delay_ani_init();//c230302_1
+print_debug();
     // 리모콘 UI
     this->remoteWidget = new RemoteWidget(this);
     this->remoteWidget->setStyleSheet("background-color:#333333; border-top-left-radius:20px; border-bottom-left-radius:20px;");
@@ -490,14 +595,19 @@ void HomeMain::setUIControl(){
     //settingTrackOption = new SettingTrackOption();
     //this->settingTrackOption->getSettingInfo();
     // 재생목록 큐
-    this->queueplaylist = new QueuePlayList(this);//c220430
+    //this->queueplaylist = new QueuePlayList(this);//c230303
     //this->queueplaylist_copy = new QueuePlayList(this);
     this->volumnControl = new VolumnControl(this);
 
     // DB 다운로드 프로그레스
     this->progress = new DownloadProgress(100, this);
+    global.pr = this->progress;//c230415
     //this->progress->setGeometry(400,7,500,55);
     this->progress->hide();
+
+    //this->progress_pop = new DownloadProgress(100, this);
+    //this->progress->setGeometry(400,7,500,55);
+    //this->progress_pop->hide();
 
 
     // 커넥트 관련
@@ -507,14 +617,17 @@ void HomeMain::setUIControl(){
     connect(this->sectionBottom, SIGNAL(clickedVolumn(bool)), this, SLOT(slot_clickedBottomVolumn(bool)));
     connect(this->sectionBottom, SIGNAL(signal_showPlayFullScreen(QJsonObject)), this, SLOT(slot_showPlayFullScreen(QJsonObject)));
     connect(this->sectionBottom, SIGNAL(signal_changedCurrPlayTrack(QJsonObject)), this, SLOT(slot_changedCurrPlayTrack(QJsonObject)));
+    connect(this->sectionBottom, SIGNAL(signal_changedCurrHDMI(bool)), this, SLOT(slot_changedCurrHDMI(bool)));
     connect(this->remoteWidget, SIGNAL(clickedRemoteVU()), this, SLOT(slot_changedPageSetting_VU()));
     connect(this->remoteWidget, SIGNAL(clickedRemoteEXTE()), this, SLOT(slot_changedPageSetting_InputOutput()));
     connect(this->remoteWidget, SIGNAL(clickedRemoteEXTH()), this, SLOT(slot_changedPageSetting_HDMI()));   //cheon01
     connect(this->remoteWidget, SIGNAL(clickedRemoteEXTT()), this, SLOT(slot_changedPageSetting_Timer()));  //cheon01
     connect(this->remoteWidget, SIGNAL(connectNewDevice(QString)), this, SLOT(connectDevice(QString)));
     connect(this->progress, SIGNAL(signal_clickedRefresh()), this, SLOT(slot_clickedDBRefreshBtn()));
+    //connect(this->progress_pop, SIGNAL(signal_clickedRefresh()), this, SLOT(slot_clickedDBRefreshBtn()));
 
     connect(linker, SIGNAL(signal_clickListBtn()), this, SLOT(slot_searchBarClear()));//c220628
+    connect(linker, SIGNAL(clickedQueuePlayListHide(bool)), this, SLOT(clickedBottomQueueIconHide(bool)));//c230428
 
 
     // -------------------------------------
@@ -525,7 +638,7 @@ void HomeMain::setUIControl(){
     dlgConfirm->setProperty("flagShown", false);
     dlgConfirm->setTitle(tr("ROSE equipment connection failure"));
     dlgConfirm->setText(QString(tr("Plase activate the network connection of the purchased ROSE device.\n\n- Rose Device Name : %1\n- Rose Device IP : %2\n- My Desktop IP : %3")).arg(global.device.getDeviceName()).arg(global.device.getDeviceIP()).arg(findIp->getMyIP()));//c220609
-    dlgConfirm->setTextHeight(200);
+    dlgConfirm->setTextHeight(250);//c230409
 
     //Dt_thread = new DesktopMediaPlayerThread(p_fileInfo_filePath, this);
 
@@ -561,12 +674,82 @@ void HomeMain::setUIControl(){
             });
 */
 
-    global.abs_ani_dialog_wait = new QDialog(this) ;//c220616
+    //global.abs_ani_dialog_wait = new QDialog(this) ;//c220616
 
     //c220609   end
     //dlgConfirmReadmeNotice = new DialogConfirm(this);
     //dlgConfirmReadmeNotice->setFixedWidth(800);
     //dlgConfirmReadmeNotice->setFixedHeight(1100);
+}
+
+
+void HomeMain::delay_ani_init(){//c230302_1
+print_debug();
+    int left = 0;
+    int top = 0;
+    global.abs_ani_dialog_wait = new QDialog(); //c230409
+    //----------------------------------------------------
+    //QMovie *mov = new QMovie("C:/Users/doulz/Rose_Connect-21-12-21-20/images/Spinner-4.2s-200px.gif");
+    //abs_ani_mov = new QMovie(":/images/loading.gif");//":/images/Spinner-4.2s-200px.gif"
+
+    QMovie *abs_ani_mov = new QMovie(":/images/Spinner-4.2s-200px.gif");//":/images/Spinner-4.2s-200px.gif"//c220616
+    abs_ani_mov->setScaledSize(QSize(120, 120));
+    abs_ani_mov->setBackgroundColor("transparent");
+
+    QLabel *lb_Movie = new QLabel();
+    lb_Movie->setStyleSheet("background-color:transparent;");
+    lb_Movie->setMovie(abs_ani_mov);
+    //lb_Movie->setGeometry(20, 20, 392, 225);
+print_debug();
+    QHBoxLayout *hl_msgBox = new QHBoxLayout();
+    hl_msgBox->setContentsMargins(0, 0, 0, 0); //hl_msgBox->setContentsMargins(35,20,35,15);
+    hl_msgBox->setSpacing(0);
+    hl_msgBox->addWidget(lb_Movie);
+
+    global.abs_ani_dialog_wait->setLayout(hl_msgBox);
+    global.abs_ani_dialog_wait->setModal(true);
+    global.abs_ani_dialog_wait->setWindowFlags(Qt::Tool | Qt::FramelessWindowHint);
+    global.abs_ani_dialog_wait->setAttribute(Qt::WA_TranslucentBackground);
+print_debug();
+    /*QSettings *settings = new QSettings(rosesettings.ORGANIZATION_NAME, rosesettings.APPLICATION_NAME);
+    int latestWidth = settings->value(rosesettings.SETTINGS_W, 0).toInt();
+    int latestHeight = settings->value(rosesettings.SETTINGS_H, 800).toInt();*/
+
+    left = global.left_mainwindow + ((global.width_mainwindow - 120) / 2);
+    top = global.top_mainwindow + ((global.height_mainwindow - 120) / 2);
+
+    global.abs_ani_dialog_wait->move(left, top);//c220804
+    //global.abs_ani_dialog_wait->hide();//c230426
+
+    abs_ani_mov->start();
+    global.abs_ani_dialog_wait->hide();//c230426
+print_debug();
+    /*print_debug();
+    //if(global.abs_ani_dialog_wait->layout()==0){//c220616
+        print_debug();
+        global.abs_ani_dialog_wait->setLayout(hl_msgBox);
+        print_debug();
+        global.abs_ani_dialog_wait->setModal(true);
+        global.abs_ani_dialog_wait->setWindowFlags( Qt::Tool | Qt::FramelessWindowHint );
+        global.abs_ani_dialog_wait->setAttribute(Qt::WA_TranslucentBackground);
+print_debug();
+
+        left = global.left_mainwindow + ((latestWidth - 120) / 2);
+        top = global.top_mainwindow + ((latestHeight - 120) / 2);
+
+        global.abs_ani_dialog_wait->move(left, top);//c220804
+
+        //global.abs_ani_dialog_wait->setGeometry(left, top, 0, 0);
+        //return;
+    //}else{
+     //   global.abs_ani_dialog_wait->move(left, top);
+        global.abs_ani_dialog_wait->hide();
+    //}
+print_debug();
+
+
+    abs_ani_mov->start();
+    print_debug();*/
 }
 
 
@@ -587,6 +770,8 @@ void HomeMain::nextSongPlay(){//c220705
 
 void HomeMain::slot_queue_hide(){
     print_debug();
+    //ToastMsg::delay(this,"", tr("delay"), 2000);//c230326
+    emit linker->signal_checkQueue(14, "");//c221115
     if(!this->queueplaylist->isHidden()){
         print_debug();
         global.queueTimerFlag = false;//c211213
@@ -604,6 +789,40 @@ void HomeMain::slot_httpservermsg_menu_flag(){//c220418
     //this->queueplaylist->hide();
 }
 
+void HomeMain::slot_connect_reset_notice(){//c230326
+    print_debug();
+
+    if( dlgConfirmConnect_resetNotice ==  nullptr){
+        dlgConfirmConnect_resetNotice = new DialogConfirm(this);//c230326
+    }
+    if( dlgConfirmConnect_resetNotice !=  nullptr){
+        dlgConfirmConnect_resetNotice->setAlignment(Qt::AlignLeft);
+        dlgConfirmConnect_resetNotice->setTitle(tr("Music Storage divice Notice!"));
+        dlgConfirmConnect_resetNotice->setText(QString(tr("The current song cannot be played.\n The music storage device's network connection have been reset.\n Connect the network folder in the music menu.")));
+
+        dlgConfirmConnect_resetNotice->setTextHeight(200);
+
+        int left = global.left_mainwindow + ((global.width_mainwindow - 350) / 2);
+        int top = global.top_mainwindow + ((global.height_mainwindow - 400) / 2);
+
+        dlgConfirmConnect_resetNotice->setGeometry(left, top, 350, 400);
+        dlgConfirmConnect_resetNotice->setAlertMode();
+        //dlgConfirmMusicDbDownloadingNotice->setLayoutMy_withText(vl_progress);
+        //this->progress_pop->raise();
+        if(dlgConfirmConnect_resetNotice->property("flagShown").toBool()==false){
+            dlgConfirmConnect_resetNotice->setProperty("flagShown",true);
+
+            int result = dlgConfirmConnect_resetNotice->exec();
+
+            dlgConfirmConnect_resetNotice->setProperty("flagShown",false);
+            if(result == QDialog::Accepted){
+                dlgConfirmConnect_resetNotice->hide();
+                print_debug();
+            }
+
+        }
+    }
+}
 
 void HomeMain::slot_httpservermsg(const QJsonObject &p_jsonObject){         //c220402
 
@@ -647,7 +866,7 @@ void HomeMain::slot_httpservermsg(const QJsonObject &p_jsonObject){         //c2
             //QJsonDocument doc(tmp_json);  QString strJson(doc.toJson(QJsonDocument::Compact));  qDebug() <<"MediaFileTree::playMusic---" << strJson;
             //QJsonObject tmp_json;
 
-            dialog_comfirmCD();//c220711
+            //this->dialog_comfirmCD();//c220711
         }
     }
     else {//cheon211203
@@ -688,6 +907,8 @@ void HomeMain::slot_httpservermsg(const QJsonObject &p_jsonObject){         //c2
 
                 this->checkAppleLogin();
             }
+
+            QTimer::singleShot(4000,this,[=](){emit linker->signal_RoseHome_movePage(QString(GSCommon::MainMenuCode::RoseHome));});//c230426
         }
         else if(messageType == "user_login_noti" || messageType == "user_logout_noti"){
             global.user.setDeviceChange(true);
@@ -705,6 +926,8 @@ void HomeMain::slot_httpservermsg(const QJsonObject &p_jsonObject){         //c2
             }
 
             this->checkUserLogin();
+
+            QTimer::singleShot(4000,this,[=](){emit linker->signal_RoseHome_movePage(QString(GSCommon::MainMenuCode::RoseHome));});//c230426
         }
         else if(messageType == "music_play_type_change"){
 
@@ -712,13 +935,14 @@ void HomeMain::slot_httpservermsg(const QJsonObject &p_jsonObject){         //c2
 
 
             NetworkHttp *network = new NetworkHttp;
-            connect(network, SIGNAL(response(int,QJsonObject)), SLOT(slot_responseHttp(int,QJsonObject)));
+            connect(network, SIGNAL(response(int,QJsoSnObject)), SLOT(slot_responseHttp(int,QJsonObject)));
             network->request(HTTP_DEVICE_GET_INFO, QString("http://%1:%2/%3").arg(global.device.getDeviceIP()).arg(global.port).arg("get.music.play.type"), json, true, true);
 
         }
         else if(messageType == "show_toast_noti"){
 
-        }else if(messageType == "state_check"){//c220521
+        }
+        else if(messageType == "state_check"){//c220521
             print_debug();
             qDebug() << "global.device.getDeviceIP() = " << global.device.getDeviceIP();
             connectDevice(global.device.getDeviceIP());
@@ -728,32 +952,32 @@ void HomeMain::slot_httpservermsg(const QJsonObject &p_jsonObject){         //c2
 
 
 void HomeMain::dialog_comfirmCD(){      //c220711
-print_debug();
+    print_debug();
     DialogConfirm *dlgConfirmCD = new DialogConfirm(this);//c220714
     dlgConfirmCD->setTitle(tr("CD PLAY Notice!"));
     dlgConfirmCD->setTextHeight(150);
     dlgConfirmCD->setText(tr("Stops the currently playing CDPLAY immediately. \nPlease select(click) a song again."));
-    //dlgConfirmCD->setGeometry(this->width()/3,this->height()/2, 350,400);//c221007_1
-    int left = global.left_mainwindow+global.width_mainwindow/4;//c221007_1
-    int top = global.top_mainwindow+global.height_mainwindow/4;//c221007_1
-    dlgConfirmCD->setGeometry(left,top, 350,400);//c221007_1
     dlgConfirmCD->setAlertMode();
-
+    //dlgConfirmCD->setGeometry(this->width()/3,this->height()/2, 350,400);//c221007_1
+    int left = global.left_mainwindow + ((global.width_mainwindow - 350) / 2);  //global.width_mainwindow/4;//c221007_1
+    int top = global.top_mainwindow + ((global.height_mainwindow - 400) / 2);   //global.height_mainwindow/4;//c221007_1
+    dlgConfirmCD->setGeometry(left, top, 350, 400);//c221007_1
 
     //if(dlgConfirmCD->property("flagShown").toBool()==false){
-        dlgConfirmCD->setProperty("flagShown",true);
+    dlgConfirmCD->setProperty("flagShown", true);
 
-        int result = dlgConfirmCD->exec();
+    int result = dlgConfirmCD->exec();
 
-        if(result == QDialog::Accepted){
-            print_debug();
-            QJsonObject tmp_json;
-            NetworkHttp *network = new NetworkHttp;
-            connect(network, SIGNAL(response(int,QJsonObject)), SLOT(slot_responseHttp(int,QJsonObject)));
-            network->request(HTTP_NETWORK_PLAY, QString("http://%1:%2/%3").arg(global.device.getDeviceIP()).arg(global.port).arg("cd.play.stop"), tmp_json, true, true);
-
-        }
-        dlgConfirmCD->setProperty("flagShown",false);
+    if(result == QDialog::Accepted){
+        print_debug();
+        QJsonObject tmp_json;
+        NetworkHttp *network = new NetworkHttp;
+        connect(network, SIGNAL(response(int,QJsonObject)), SLOT(slot_responseHttp(int,QJsonObject)));
+        network->request(HTTP_NETWORK_PLAY, QString("http://%1:%2/%3").arg(global.device.getDeviceIP()).arg(global.port).arg("cd.play.stop"), tmp_json, true, true);
+        print_debug();
+    }
+    dlgConfirmCD->setProperty("flagShown", false);
+    print_debug();
 
     //}
 
@@ -798,7 +1022,7 @@ void HomeMain::checkUserInfo(){
     QString strQuery_insert = "INSERT INTO User (email, pw, user_name, token_type, access_token, refresh_token) ";
     strQuery_insert += " VALUES ";
     strQuery_insert += " ('" + global.user.getEmail() + "','" + "" + "','" + global.user.getUsername() + "','"
-                    + global.user.getToken_type() + "','" + global.user.getAccess_token() + "','" + global.user.getRefresh_token() + "'";
+            + global.user.getToken_type() + "','" + global.user.getAccess_token() + "','" + global.user.getRefresh_token() + "'";
     strQuery_insert += ") ";
     sqliteHelper->exec(strQuery_insert);
 }
@@ -951,8 +1175,11 @@ void HomeMain::checkUserLogin(){
         sqliteHelper->close();
         delete sqliteHelper;
     }
+    if(!global.user.isValid()){//c221116
+        print_debug();
+        this->requestGetRoseUserInfo();
+    }
 
-    this->requestGetRoseUserInfo();
 }
 
 
@@ -968,6 +1195,8 @@ void HomeMain::checkTidalLogin(){
     if(!tidal_userLoginInfo.email.isEmpty() && !global.user_forTidal.getUsername().isEmpty()){
         global.user_forTidal.setLogin(tidal_userLoginInfo.access_token, "", 0, tidal_userLoginInfo.email, true);
         global.user_forTidal.set_loginState(tidal_userLoginInfo.access_token, tidal_userLoginInfo.refresh_token, "", 0, 0, tidal_userLoginInfo.email);
+    }else{//
+        // return;
     }
 
     global.user_forTidal.flag_login_wait = true;
@@ -975,6 +1204,7 @@ void HomeMain::checkTidalLogin(){
     // Rose에게 정보를 요청함
     tidal::ProcRosePlay_withTidal *procRose = new tidal::ProcRosePlay_withTidal(this);
     connect(procRose, &tidal::ProcRosePlay_withTidal::signal_completeReq_get_session_info, this, &HomeMain::slot_completeReq_get_tsession_info);
+    print_debug();
     procRose->request_get_session_info();
 }
 
@@ -1250,11 +1480,16 @@ void HomeMain::slot_completeReq_getSubscription(const QString errorMsg, const QJ
 // BUGS ----------------------------------------- START
 void HomeMain::checkBugsLogin(){
 
+
     bugs::ProcBugsAPI *procBugs = new bugs::ProcBugsAPI(this);
     bugs::BugsTokenInfo bugs_TokenInfo = procBugs->getTokenInfo_bugsDB();
 
     if(!bugs_TokenInfo.access_token.isEmpty() && !global.user_forBugs.get_access_token().isEmpty()){//c220618
+        print_debug();
         global.user_forBugs.set_loginState(bugs_TokenInfo.access_token, bugs_TokenInfo.refresh_token);
+    }else{//
+        print_debug();
+        // return;
     }
 
     global.user_forBugs.flag_login_wait = true;
@@ -1262,9 +1497,72 @@ void HomeMain::checkBugsLogin(){
     // Rose 장비로부터 Session 정보를 요청
     bugs::ProcRoseAPI_withBugs *procRose = new bugs::ProcRoseAPI_withBugs(this);
     connect(procRose, &bugs::ProcRoseAPI_withBugs::signal_completeReq_get_session_info, this, &HomeMain::slot_completeReq_get_bsession_info);
+    print_debug();
     procRose->request_get_session_info();
+
+
 }
 
+
+
+
+
+void HomeMain::slot_completeReq_get_bsession_info(const bugs::RoseSessionInfo_forBugs& sessionInfo){
+
+    this->flag_bget_session = true;
+
+    if(sessionInfo.BUGS_AccessToken.isEmpty() && sessionInfo.BUGS_Nickname.isEmpty()){
+        print_debug();
+        global.user_forBugs.flag_login_wait = false;
+        global.user_forBugs.set_logoutState();
+
+        if(global.user.isChanged() && (global.user_forBugs.isLogined() == false)){
+            print_debug();
+            emit linker->signal_change_device_state(SIGNAL_CATEGORY_BUGS);
+        }
+    }
+    else if(sessionInfo.BUGS_AccessToken.isEmpty() && !global.user_forBugs.get_access_token().isEmpty()){
+        print_debug();
+        global.user_forBugs.flag_login_wait = true;
+
+        // BUGS Session 정보를 요청함
+        bugs::ProcRoseAPI_withBugs *procBugs = new bugs::ProcRoseAPI_withBugs(this);
+        connect(procBugs, &bugs::ProcRoseAPI_withBugs::signal_completeReq_get_session_info, this, &HomeMain::slot_completeReq_get_bsession_info);
+        procBugs->request_get_session_info();
+    }
+    else if(!sessionInfo.BUGS_AccessToken.isEmpty() && global.user_forBugs.get_access_token().isEmpty()){
+        print_debug();
+        global.user_forBugs.flag_login_wait = true;
+
+        // Rose 정보로 로그인 정보를 업데이트함
+        global.user_forBugs.set_loginState(sessionInfo.BUGS_AccessToken, sessionInfo.BUGS_RefreshToken);
+        global.user_forBugs.setNickName(sessionInfo.BUGS_Nickname);
+        global.user_forBugs.setProductName(sessionInfo.BUGS_ProductName);
+
+        this->slot_completeReq_getbLoginInfo();
+    }
+    else if((!sessionInfo.BUGS_AccessToken.isEmpty() && !global.user_forBugs.get_access_token().isEmpty()) && (sessionInfo.BUGS_AccessToken != global.user_forBugs.get_access_token())){
+        print_debug();
+        global.user_forBugs.flag_login_wait = false;
+
+        // Rose 정보로 로그인 정보를 업데이트함
+        global.user_forBugs.set_loginState(sessionInfo.BUGS_AccessToken, sessionInfo.BUGS_RefreshToken);
+        global.user_forBugs.setNickName(sessionInfo.BUGS_Nickname);
+        global.user_forBugs.setProductName(sessionInfo.BUGS_ProductName);
+
+        this->slot_completeReq_getbLoginInfo();
+    }
+    else if((!sessionInfo.BUGS_AccessToken.isEmpty() && !global.user_forBugs.get_access_token().isEmpty()) && (sessionInfo.BUGS_AccessToken == global.user_forBugs.get_access_token())){
+        print_debug();
+        global.user_forBugs.flag_login_wait = false;
+
+        global.user_forBugs.set_loginState(sessionInfo.BUGS_AccessToken, sessionInfo.BUGS_RefreshToken);
+        global.user_forBugs.setNickName(sessionInfo.BUGS_Nickname);
+        global.user_forBugs.setProductName(sessionInfo.BUGS_ProductName);
+
+        this->slot_completeReq_getbLoginInfo();
+    }
+}
 
 void HomeMain::slot_incompleteReq_get_bsession_info(){
 
@@ -1278,6 +1576,7 @@ void HomeMain::slot_incompleteReq_get_bsession_info(){
         // BUGS Session 정보를 요청함
         bugs::ProcRoseAPI_withBugs *procBugs = new bugs::ProcRoseAPI_withBugs(this);
         connect(procBugs, &bugs::ProcRoseAPI_withBugs::signal_completeReq_get_session_info, this, &HomeMain::slot_completeReq_get_bsession_info);
+        print_debug();
         procBugs->request_get_session_info();
     }
     else if(this->flag_bget_session == false)
@@ -1286,60 +1585,6 @@ void HomeMain::slot_incompleteReq_get_bsession_info(){
         global.user_forBugs.set_logoutState();
     }
 }
-
-
-void HomeMain::slot_completeReq_get_bsession_info(const bugs::RoseSessionInfo_forBugs& sessionInfo){
-
-    this->flag_bget_session = true;
-
-    if(sessionInfo.BUGS_AccessToken.isEmpty() && sessionInfo.BUGS_Nickname.isEmpty()){
-        global.user_forBugs.flag_login_wait = false;
-        global.user_forBugs.set_logoutState();
-
-        if(global.user.isChanged() && (global.user_forBugs.isLogined() == false)){
-            emit linker->signal_change_device_state(SIGNAL_CATEGORY_BUGS);
-        }
-    }
-    else if(sessionInfo.BUGS_AccessToken.isEmpty() && !global.user_forBugs.get_access_token().isEmpty()){
-        global.user_forBugs.flag_login_wait = true;
-
-        // BUGS Session 정보를 요청함
-        bugs::ProcRoseAPI_withBugs *procBugs = new bugs::ProcRoseAPI_withBugs(this);
-        connect(procBugs, &bugs::ProcRoseAPI_withBugs::signal_completeReq_get_session_info, this, &HomeMain::slot_completeReq_get_bsession_info);
-        procBugs->request_get_session_info();
-    }
-    else if(!sessionInfo.BUGS_AccessToken.isEmpty() && global.user_forBugs.get_access_token().isEmpty()){
-        global.user_forBugs.flag_login_wait = true;
-
-        // Rose 정보로 로그인 정보를 업데이트함
-        global.user_forBugs.set_loginState(sessionInfo.BUGS_AccessToken, sessionInfo.BUGS_RefreshToken);
-        global.user_forBugs.setNickName(sessionInfo.BUGS_Nickname);
-        global.user_forBugs.setProductName(sessionInfo.BUGS_ProductName);
-
-        this->slot_completeReq_getbLoginInfo();
-    }
-    else if((!sessionInfo.BUGS_AccessToken.isEmpty() && !global.user_forBugs.get_access_token().isEmpty()) && (sessionInfo.BUGS_AccessToken != global.user_forBugs.get_access_token())){
-        global.user_forBugs.flag_login_wait = false;
-
-        // Rose 정보로 로그인 정보를 업데이트함
-        global.user_forBugs.set_loginState(sessionInfo.BUGS_AccessToken, sessionInfo.BUGS_RefreshToken);
-        global.user_forBugs.setNickName(sessionInfo.BUGS_Nickname);
-        global.user_forBugs.setProductName(sessionInfo.BUGS_ProductName);
-
-        this->slot_completeReq_getbLoginInfo();
-    }
-    else if((!sessionInfo.BUGS_AccessToken.isEmpty() && !global.user_forBugs.get_access_token().isEmpty()) && (sessionInfo.BUGS_AccessToken == global.user_forBugs.get_access_token())){
-        global.user_forBugs.flag_login_wait = false;
-
-        global.user_forBugs.set_loginState(sessionInfo.BUGS_AccessToken, sessionInfo.BUGS_RefreshToken);
-        global.user_forBugs.setNickName(sessionInfo.BUGS_Nickname);
-        global.user_forBugs.setProductName(sessionInfo.BUGS_ProductName);
-
-        this->slot_completeReq_getbLoginInfo();
-    }
-}
-
-
 void HomeMain::slot_completeReq_getbLoginInfo(){
 
     global.user_forBugs.flag_login_wait = false;
@@ -1366,6 +1611,8 @@ void HomeMain::checkQobuzLogin(){
 
     if(!qobuz_userLoginInfo.username.isEmpty() && !global.user_forQobuz.getUsername().isEmpty()){//c220618
         global.user_forQobuz.setLogin(qobuz_userLoginInfo.auth_token, qobuz_userLoginInfo.username, qobuz_userLoginInfo.user_id, true);
+    }else{//
+        //return;
     }
 
     global.user_forQobuz.flag_login_wait = true;
@@ -1373,6 +1620,7 @@ void HomeMain::checkQobuzLogin(){
     // Rose에게 정보를 요청함
     qobuz::ProcRosePlay_withQobuz *procRose = new qobuz::ProcRosePlay_withQobuz(this);
     connect(procRose, &qobuz::ProcRosePlay_withQobuz::signal_completeReq_get_session_info, this, &HomeMain::slot_completeReq_get_qsession_info);
+    print_debug();
     procRose->request_get_session_info();
 }
 
@@ -1476,6 +1724,27 @@ void HomeMain::slot_completeReq_getqLoginInfo(){
 }
 
 
+void HomeMain::slot_completeReq_getqLoginInfoQobuz(){//c230422
+
+    global.user_forQobuz.flag_login_wait = false;
+
+    //print_home_func();
+    int data_length = qobuz::ProcCommon::getCount_listGenreInfo();
+    if((data_length == 0) && (global.user_forQobuz.isLogined() == true)){
+        //emit linker->signal_leftmenuLogined(10);//
+        // Genre 종류 요청 (Qobuz 공통사용)
+        qobuz::ProcCommon *procQobuz = new qobuz::ProcCommon(this);
+        connect(procQobuz, &qobuz::ProcCommon::successLogin, this, &HomeMain::slot_completeReq_getQobuzGenre);
+        procQobuz->request_qobuz_getListGenres();
+    }
+    else{
+        if(global.user.isChanged()){
+            emit linker->signal_change_device_state(SIGNAL_CATEGORY_QOBUZ);
+        }
+    }
+}
+
+
 void HomeMain::slot_completeReq_getQobuzGenre(){
 
     int data_length = qobuz::ProcCommon::getCount_listGenreInfo();
@@ -1506,6 +1775,7 @@ void HomeMain::checkAppleLogin(){
     // Rose에게 정보를 요청함
     apple::ProcRosePlay_withApple *procRose = new apple::ProcRosePlay_withApple(this);
     connect(procRose, &apple::ProcRosePlay_withApple::signal_completeReq_get_session_info, this, &HomeMain::slot_completeReq_get_asession_info);
+    print_debug();
     procRose->request_get_session_info();
 }
 
@@ -1761,20 +2031,38 @@ void HomeMain::slot_sectionleft_active(){
  */
 void HomeMain::changedLeftMainMenu(QString p_menuCode){
 
-    if(this->currMainMenuCode != p_menuCode){
-        this->currMainMenuCode = p_menuCode;
+    print_debug();
+    qDebug() << "p_menuCode=" << p_menuCode;
+    qDebug() << "this->currMainMenuCode=" << this->currMainMenuCode;
+    if(global.abs_ani_dialog_wait->isHidden() != true ) return;//c230308_3
 
+    if(this->currMainMenuCode != p_menuCode){
+        print_debug();
+        global.curMenuCode = p_menuCode;//c230423
+        //ToastMsg::delay(this,"", tr("delay"), 2000);//c230314_1
+        this->currMainMenuCode = p_menuCode;
+        if(global.enable_section_left == true){
+            print_debug();
+            global.enable_section_left = false;//c230308_3
+        }
+        print_debug();
+
+
+        //this->sectionBottom->setInitUIQueueIcon();//c230309
         // 메인메뉴 컨텐츠를 교체한다.
         AbstractMainContent *tmp_ABMainContent = nullptr;
         if(p_menuCode == QString(GSCommon::MainMenuCode::RoseHome)){
 
+
             tmp_ABMainContent = new roseHome::roseHomeMain(this);
+            ToastMsg::delay(this,"", tr("delay"), 500);//c230316
+
             read_noticeDBTable();
             if(global.notice == 0){//cheon211008   start
                 QMainWindow *full = new QMainWindow();
-                 print_debug();
+                print_debug();
                 full->showFullScreen();
-                 print_debug();
+                print_debug();
 
                 int fwidth = full->geometry().width();
                 //int fheigth = full->geometry().height();
@@ -1786,8 +2074,8 @@ void HomeMain::changedLeftMainMenu(QString p_menuCode){
             }
         }else if(p_menuCode == QString(GSCommon::MainMenuCode::Music)){
             tmp_ABMainContent = new music::MusicMain(this);
-        //}else if(p_menuCode == QString(GSCommon::MainMenuCode::Music_2)){
-        //    tmp_ABMainContent = new music::MusicMain_2(this);
+            //}else if(p_menuCode == QString(GSCommon::MainMenuCode::Music_2)){
+            //    tmp_ABMainContent = new music::MusicMain_2(this);
         }else if(p_menuCode == QString(GSCommon::MainMenuCode::Video)){
             tmp_ABMainContent = new video::VideoMain(this);
         }else if(p_menuCode == QString(GSCommon::MainMenuCode::Radio)){
@@ -1797,7 +2085,7 @@ void HomeMain::changedLeftMainMenu(QString p_menuCode){
         }else if(p_menuCode == QString(GSCommon::MainMenuCode::RoseFM)){
             tmp_ABMainContent = new RoseFmMain(this);
         }else if(p_menuCode == QString(GSCommon::MainMenuCode::RoseTube)){
-            tmp_ABMainContent = new RoseTubeMain(this);
+            tmp_ABMainContent = new rosetube::RoseTubeMain(this);
         }else if(p_menuCode == QString(GSCommon::MainMenuCode::PodCast)){
             tmp_ABMainContent = new podcast::PodCastMain(this);
         }else if(p_menuCode == QString(GSCommon::MainMenuCode::CDplay)){
@@ -1815,7 +2103,7 @@ void HomeMain::changedLeftMainMenu(QString p_menuCode){
         }else if(p_menuCode == QString(GSCommon::MainMenuCode::Setting)){
             tmp_ABMainContent = new SettingMain(this);
         }
-
+        print_debug();
         if(curr_absMainContent!=nullptr){
             this->curr_absMainContent->disconnect();
         }
@@ -1824,7 +2112,7 @@ void HomeMain::changedLeftMainMenu(QString p_menuCode){
 
         this->curr_absMainContent = nullptr;
         this->hlayout_content->addWidget(tmp_ABMainContent);
-
+        print_debug();
         //tmp_ABMainContent->disconnect();
         connect(tmp_ABMainContent, SIGNAL(showRemoteWidget(bool)), this, SLOT(showRemote(bool)));
         connect(tmp_ABMainContent, SIGNAL(signal_changeMyInfo()), this, SLOT(slot_changedLoginInfo()));
@@ -1837,12 +2125,13 @@ void HomeMain::changedLeftMainMenu(QString p_menuCode){
 
         // 띄워진 객체 모두 hide
         this->unRaiseAllWidget();
-
+        print_debug();
         // 하단 PlayBar 관련 초기화
         this->sectionBottom->setInitUIQueueIcon();
 
         // DB 다운로드 프로그레스 raise
-        if((p_menuCode == QString(GSCommon::MainMenuCode::Music)) || (p_menuCode == QString(GSCommon::MainMenuCode::Setting))){
+        //if((p_menuCode == QString(GSCommon::MainMenuCode::Music)) || (p_menuCode == QString(GSCommon::MainMenuCode::Setting))){
+        if( (p_menuCode == QString(GSCommon::MainMenuCode::Setting))){//c230413
             this->progress->raise();
         }
 
@@ -1893,6 +2182,7 @@ void HomeMain::changedLeftMainMenu(QString p_menuCode){
         }
     }
     else{
+
         if(global.enable_section_left == true){
             global.enable_section_left = false;
         }
@@ -1949,7 +2239,7 @@ void HomeMain::changedLeftMainMenu_search(QString p_menuCode){//cheon211008
     print_debug();
     qDebug() << "HomeMain::changedLeftMainMenu_search------p_menuCode=" << p_menuCode;
     if(this->currMainMenuCode != p_menuCode){
-
+        ToastMsg::delay(this,"", tr("delay"), 400);//c230313
         this->currMainMenuCode = p_menuCode;
 
         // 메인메뉴 컨텐츠를 교체한다.
@@ -1974,8 +2264,9 @@ void HomeMain::changedLeftMainMenu_search(QString p_menuCode){//cheon211008
         }else if(p_menuCode == QString(GSCommon::MainMenuCode::Music)){
             tmp_ABMainContent = new music::MusicMain(this);
             this->progress->show();//c220826_2
-        //}else if(p_menuCode == QString(GSCommon::MainMenuCode::Music_2)){
-        //    tmp_ABMainContent = new music::MusicMain_2(this);
+            //this->progress_pop->show();
+            //}else if(p_menuCode == QString(GSCommon::MainMenuCode::Music_2)){
+            //    tmp_ABMainContent = new music::MusicMain_2(this);
         }else if(p_menuCode == QString(GSCommon::MainMenuCode::Video)){
             tmp_ABMainContent = new video::VideoMain(this);
         }else if(p_menuCode == QString(GSCommon::MainMenuCode::Radio)){
@@ -1985,7 +2276,7 @@ void HomeMain::changedLeftMainMenu_search(QString p_menuCode){//cheon211008
         }else if(p_menuCode == QString(GSCommon::MainMenuCode::RoseFM)){
             tmp_ABMainContent = new RoseFmMain(this);
         }else if(p_menuCode == QString(GSCommon::MainMenuCode::RoseTube)){
-            tmp_ABMainContent = new RoseTubeMain(this);
+            tmp_ABMainContent = new rosetube::RoseTubeMain(this);
         }else if(p_menuCode == QString(GSCommon::MainMenuCode::PodCast)){
             tmp_ABMainContent = new podcast::PodCastMain(this);
         }else if(p_menuCode == QString(GSCommon::MainMenuCode::CDplay)){
@@ -2031,7 +2322,8 @@ void HomeMain::changedLeftMainMenu_search(QString p_menuCode){//cheon211008
         this->sectionBottom->setInitUIQueueIcon();
 
         // DB 다운로드 프로그레스 raise
-        if((p_menuCode == QString(GSCommon::MainMenuCode::Music)) || (p_menuCode == QString(GSCommon::MainMenuCode::Setting))){
+        //if((p_menuCode == QString(GSCommon::MainMenuCode::Music)) || (p_menuCode == QString(GSCommon::MainMenuCode::Setting))){
+        if( (p_menuCode == QString(GSCommon::MainMenuCode::Setting))){//c230413
             this->progress->raise();
         }
 
@@ -2130,6 +2422,51 @@ void HomeMain::clickedBottomQueueIcon(bool p_flagShow){//cheon211120-3
         global.queulistLeftPosion = (this->width()-QUEUEPLAY_W);//cheon211203
         this->queueplaylist->setGeometry((this->width()-QUEUEPLAY_W), TOP_NAVIBAR_H,  QUEUEPLAY_W, QUEUEPLAY_H);
         this->queueplaylist->show();
+        //this->queueplaylist->hide();
+        this->queueplaylist->raise();
+        this->sectionBottom->raise();   // 큐보다 하단이 더 먼저 올라오게
+
+    }
+
+    /*
+     * this->queueplaylist->hide();
+    this->unRaiseAllWidget(true, false, true);
+
+    if(p_flagShow){
+        this->queueplaylist->islistOpen = true;
+        this->queueplaylist->setGeometry((this->width()-QUEUEPLAY_W), TOP_NAVIBAR_H,  QUEUEPLAY_W, QUEUEPLAY_H);
+        this->queueplaylist->show();
+        this->queueplaylist->raise();
+        this->sectionBottom->raise();   // 큐보다 하단이 더 먼저 올라오게
+    }
+    */
+}
+void HomeMain::clickedBottomQueueIconHide(bool p_flagShow){//c230428
+    print_debug();
+    qDebug() << "p_flagShow = " << p_flagShow;
+
+    if(p_flagShow){
+        global.queueTimerFlag = true;//c211213
+        //this->queueplaylist_copy->hide();
+        //this->queueplaylist_copy = this->queueplaylist;
+
+    }else{
+        //this->queueplaylist = this->queueplaylist_copy;
+        global.queueTimerFlag = false;//c211213
+        this->queueplaylist->hide();
+        this->unRaiseAllWidget(true, false, true);
+
+    }
+
+    if(p_flagShow){
+        this->unRaiseAllWidget(true, false, true);
+        //this->queueplaylist->hide();
+        //this->queueplaylist = this->queueplaylist_copy;
+        this->queueplaylist->islistOpen = true;
+        global.queulistLeftPosion = (this->width()-QUEUEPLAY_W);//cheon211203
+        this->queueplaylist->setGeometry((this->width()-QUEUEPLAY_W), TOP_NAVIBAR_H,  QUEUEPLAY_W, QUEUEPLAY_H);
+        this->queueplaylist->show();
+        this->queueplaylist->hide();
         this->queueplaylist->raise();
         this->sectionBottom->raise();   // 큐보다 하단이 더 먼저 올라오게
 
@@ -2195,6 +2532,14 @@ void HomeMain::slot_changedCurrPlayTrack(const QJsonObject &p_jsonData){
 }
 
 
+void HomeMain::slot_changedCurrHDMI(const bool flag){
+
+    if(this->curr_absMainContent!=nullptr){
+        this->curr_absMainContent->changeCurrHdmiData(flag);
+    }
+}
+
+
 /**
  * @brief HomeMain::slot_searchBarFocusChanged [SLOT] 검색바 포커스 변경
  * @param p_flagHasFocus
@@ -2219,15 +2564,23 @@ void HomeMain::slot_searchBarFocusChanged(bool p_flagHasFocus){
  */
 void HomeMain::showRemote(bool p_flagShow){
 
-    if(!db_downloadComplete_flag) {//c220707
+    /*//c230409
+    if(!global.db_downloadComplete_flag) {//c220707
         print_debug();
-        qDebug() << "db_downloadComplete_flag=" << db_downloadComplete_flag;
+        qDebug() << "global.db_downloadComplete_flag=" << global.db_downloadComplete_flag;
         ToastMsg::show(this,"", tr("DB is downloading from Rose-device. Please wait."), 3000, 0);
 
         return;
     }
+    */
+
+    if(!global.flagConnected){//c230417
+        emit linker->signal_connected();//c230417
+        ToastMsg::show(this,"", tr("Currently waiting for a response from the connected Rose Device."), 2000, 0);
+    }
+
     print_debug();
-    qDebug() << "db_downloadComplete_flag=" << db_downloadComplete_flag;
+    qDebug() << "global.db_downloadComplete_flag=" << global.db_downloadComplete_flag;
     this->unRaiseAllWidget(false, true, true);
     this->remoteWidget->hide();
 
@@ -2289,7 +2642,7 @@ void HomeMain::slot_changedPageSetting_HDMI(){//cheon29_src
 
     // 설정 메인메뉴 이동
     if(this->currMainMenuCode!=QString(GSCommon::MainMenuCode::Setting)){
-         print_debug();
+        print_debug();
         this->sectionLeft->clickedMenu(QString(GSCommon::MainMenuCode::Setting));
     }
     // 입출력 페이지 변경
@@ -2307,7 +2660,7 @@ void HomeMain::slot_changedPageSetting_Timer(){//cheon01_src
 
     // 설정 메인메뉴 이동
     if(this->currMainMenuCode!=QString(GSCommon::MainMenuCode::Setting)){
-         print_debug();
+        print_debug();
         this->sectionLeft->clickedMenu(QString(GSCommon::MainMenuCode::Setting));
     }
     // 입출력 페이지 변경
@@ -2350,13 +2703,14 @@ void HomeMain::reSize(const int &p_width){
         global.LmtCnt = p_width - 80;
         this->sectionLeft->setSmallSize();
         //this->sectionLeft->setFixedWidth(MENU_W_MIN);
-    }else{
+    }
+    else{
         global.LmtCnt = p_width - 240;
         this->sectionLeft->setBigSize();
         //this->sectionLeft->setFixedWidth(MENU_W_MAX);
     }
 
-    if(this->size().height() < 1000){
+    if(this->size().height() < 1024){
         this->remoteWidget->setGeometry((this->width()-REMOTE_W), TOP_NAVIBAR_H,  REMOTE_W, this->size().height() - this->sectionBottom->height() - 80);
     }
     else{
@@ -2367,6 +2721,8 @@ void HomeMain::reSize(const int &p_width){
     this->suggestionBar->setGeometry(this->width()-577, TOP_NAVIBAR_H, 500, this->height()-TOP_NAVIBAR_H-115);
     this->queueplaylist->setGeometry((this->width()-QUEUEPLAY_W), TOP_NAVIBAR_H, QUEUEPLAY_W, QUEUEPLAY_H);
     this->volumnControl->setGeometry((this->width()-VOLUMN_W), (this->height()-VOLUMN_H-110), VOLUMN_W, VOLUMN_H);
+
+    QCoreApplication::processEvents(QEventLoop::ExcludeUserInputEvents);
 }
 
 
@@ -2443,7 +2799,7 @@ void HomeMain::saveCurrentDeviceData(DataDevice &p_data){
  */
 void HomeMain::setResultOfCurrDevice(const QJsonObject &p_jsonObject){
 
-    //print_debug();
+    print_debug();
     //QJsonDocument doc(p_jsonObject);  QString strJson(doc.toJson(QJsonDocument::Compact));  qDebug() <<"HomeMain::setResultOfCurrDevice---" << strJson;
 
     bool flagConnected = false;
@@ -2461,6 +2817,7 @@ void HomeMain::setResultOfCurrDevice(const QJsonObject &p_jsonObject){
             //if(jsonStatus.contains(jsonKey_outs) && jsonStatus[jsonKey_outs].toString().toLower()=="ok"){
             if(p_jsonObject.contains(jsonKey_data)){
 
+                this->unRaiseAllWidget(true, true, true);
                 //dlgConfirm->setProperty("flagShown", true);
                 if(dlgConfirm->isVisible()){
                     print_debug();
@@ -2473,58 +2830,61 @@ void HomeMain::setResultOfCurrDevice(const QJsonObject &p_jsonObject){
 
                 flagConnected = true;
 
+                QString old_deviceId = global.device.getDeviceID();
+
                 global.device.setData(jsonData);
                 global.flagConnected = true;
 
                 long tmp_oldDbSize = getOldDbFileSize();
 
-
+                //if(!global.user.isValid()){
+                this->requestGetRoseUserInfo();//c230228
+                this->requestGetShazamInfo();
+                //}
+                saveCurrentDeviceData(global.device);//c230423
                 QString tmp_dir = QStandardPaths::writableLocation(QStandardPaths::AppConfigLocation);
                 QDir dir(tmp_dir);
                 //QFile file(QString("%1%2").arg(dir.path()).arg("/rose.db"));
                 QString tmp_path = dir.path() + "/rose.db";
                 QFile file(tmp_path);
                 // print_debug();
-                 //qDebug() << "1-db_downloadCompleting_flag= " << db_downloadCompleting_flag;//c220826_2
-                 //qDebug() << "1-db_downloadComplete_flag= " << db_downloadComplete_flag;//c220826_2
-                if(tmp_oldDbSize != global.device.getDbFileSize() || !file.exists() || file.size()==0){//c220426_2
+                qDebug() << "file.exists()= " << file.exists();//c220826_2
+                qDebug() << "file.size()= " << file.size();//c220826_2
+                qDebug() << "tmp_oldDbSize= " << tmp_oldDbSize;//c220826_2
+                qDebug() << "global.device.getDbFileSize()= " << global.device.getDbFileSize();//c220826_2
+                if(((tmp_oldDbSize != global.device.getDbFileSize())) ||!file.exists() || ( ( file.size()==0) && global.device.getDbFileSize()!=0)){//c220426_2
                     print_debug();
 
-                    global.signal_selectedDevice_flag = true;//c220826_2
+                    qDebug() << "***************************************************************************************************************************************************************************************";
+#if defined(Q_OS_WINDOWS)
+                    QTimer::singleShot(2000, this, SLOT(slot_startDownloadDB()));
+#endif
+#if defined(Q_OS_MAC)
                     slot_startDownloadDB();
+#endif
+
+                }else{
+                    print_debug();
 
                 }
+                if(old_deviceId != global.device.getDeviceID()){
+                    print_debug();
+                    global.signal_selectedDevice_flag = true;
+                    QTimer::singleShot(2000, this, [=](){//
+                        print_debug();
+                        ToastMsg::show(this, "", QString(tr("RoseDevice has been changed.")));
+                        });
 
-                saveCurrentDeviceData(global.device);
-
-                // DB 파일 존재하는 경우
-                if(file.exists() && file.size() > 0){
-                    // 장치연결 시그널 중계
-                    //print_debug();
-                    //qDebug() << "global.signal_device_connect_flag =" << global.signal_device_connect_flag;
-                    //qDebug() << "global.user.isChanged() =" << global.user.isChanged();
-                    //qDebug() << "oldDeviceID =" << oldDeviceID;
-
-                    emit linker->signal_connected();
-
-                    // 자동로그인 확인 및 실행
-                    //requestGetRoseUserInfo();
-                    //(global.user.isChanged() ) ||
-                    if(( (oldDeviceID == "" || !global.user.isChanged()) ) || oldDeviceID != global.device.getDeviceID()){//c220525
-
-                        //print_debug();
-                        global.user.setDeviceChange(true);
-
-                        this->requestGetRoseUserInfo();         // Rose Login check
-                        this->requestGetShazamInfo();           // Rose External Token check
-                        this->checkTidalLogin();                // Tidal login check -> added by sunnyfish -> fixed by jeon
-                        this->checkBugsLogin();                 // Bugs Login check -> added by jeon
-                        this->checkQobuzLogin();                // Qobuz Login check -> added by jeon
-                        this->checkAppleLogin();                // Apple Musci Login check -> added by jeon
-                    }
-                    global.signal_device_connect_flag = true;
+                }else{
+                    print_debug();
+                    global.signal_selectedDevice_flag = false;
                 }
-                oldDeviceID = global.device.getDeviceID();
+                print_debug();//c230416
+                emit linker->signal_connected();
+
+
+            }else{//
+                print_debug();
             }
             //}
         }
@@ -2942,6 +3302,7 @@ void HomeMain::requestSetRoseUserInfo(){
  */
 void HomeMain::requestGetRoseUserInfo(){
 
+    print_debug();
     NetworkHttp *network = new NetworkHttp(this);
     connect(network, SIGNAL(response(int,QJsonObject)), SLOT(slot_responseHttp(int,QJsonObject)));
 
@@ -3062,10 +3423,10 @@ void HomeMain::slot_responseHttp(const int &p_id, const QJsonObject &p_jsonObjec
                 else if(tmp_code =="G0000"&& tmp_codeOk){
                     print_debug();
 
-                            //emit signal_isoplay(false);
-                            //QTimer::singleShot(2000, this, SLOT(slot_iso_play()));
-                            //global.isoflag = false;
-                           ToastMsg::show(this, "", tr("CD PLAY has stoped. \nPlaese Select a song again to play CD PLAY."),3000);//cheon210812-iso
+                    //emit signal_isoplay(false);
+                    //QTimer::singleShot(2000, this, SLOT(slot_iso_play()));
+                    //global.isoflag = false;
+                    ToastMsg::show(this, "", tr("CD PLAY has stoped. \nPlaese Select a song again to play CD PLAY."),3000);//cheon210812-iso
 
                 }
 
@@ -3089,13 +3450,18 @@ void HomeMain::slot_responseHttp(const int &p_id, const QJsonObject &p_jsonObjec
         else if(p_id==HTTP_DEVICE_USER_INFO){
             print_debug();
             //c221006_1
-              //  print_debug();
+            //  print_debug();
+            /*//c220127
                 QJsonObject tmp_json;
                 NetworkHttp *network = new NetworkHttp;
                 connect(network, SIGNAL(response(int,QJsonObject)), SLOT(slot_responseHttp_deviceIOState(int, QJsonObject)));
                 network->request(3333, QString("http://%1:%2/%3").arg(global.device.getDeviceIP()).arg(global.port).arg("in.out.mode.get"), tmp_json, true);
+                */
             //c221006_1
             setResultOfGetRoseUserInfo(p_jsonObject);
+            this->checkTidalLogin();
+            this->checkBugsLogin();
+            this->checkQobuzLogin();
         }
         else if(p_id==HTTP_DEVICE_GET_INFO){
             print_debug();
@@ -3162,7 +3528,7 @@ void HomeMain::slot_responseHttp(const int &p_id, const QJsonObject &p_jsonObjec
         }
         print_debug();
 
-       // QTimer::singleShot(1000, this, SLOT(slot_showDlgOfDisconnect()));//c221006_1
+        // QTimer::singleShot(1000, this, SLOT(slot_showDlgOfDisconnect()));//c221006_1
     }
 
     sender()->deleteLater();
@@ -3173,33 +3539,58 @@ void HomeMain::slot_responseHttp(const int &p_id, const QJsonObject &p_jsonObjec
 /**
  * @brief MainWindow::downloadDB : DB Download
  */
-void HomeMain::slot_startDownloadDB(){//c220826_2
+void HomeMain::slot_startDownloadDB(){//c230409
     this->p_preByte = 0;
-
-    this->unRaiseAllWidget();//c220715
-
+    global.db_downloadComplete_flag = false;
+    //this->unRaiseAllWidget();//c230228
+    //emit linker->signal_searchBar_clearfocus();
+    ToastMsg::show(this, "", tr("Start downloading the music information file. \nIf you want to check, click on the music menu."),3000, 0,2);
     print_debug();
     qDebug()<<"++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++";
+
+    QString tmp_dir = QStandardPaths::writableLocation(QStandardPaths::AppConfigLocation);
+    QDir dir(tmp_dir);
+    //QFile file(QString("%1%2").arg(dir.path()).arg("/rose.db"));
+    QString tmp_path = dir.path() + "/rose.db";
+    QFile file(tmp_path);
+    file.remove();
+
     //emit linker->signal_RoseHome_movePage(QString(GSCommon::MainMenuCode::RoseHome));//c220826_2
     //emit linker->signal_clickedRemoteEXTE();//c220715
     //c220826_2
-    //if(db_downloadCompleting_flag||(this->currMainMenuCode == QString(GSCommon::MainMenuCode::Music)) || (this->currMainMenuCode == QString(GSCommon::MainMenuCode::Setting))){
-    if((this->currMainMenuCode == QString(GSCommon::MainMenuCode::Music)) || (this->currMainMenuCode == QString(GSCommon::MainMenuCode::Setting))){
+    //if(db_downloadCompleting_flag||(this->currMainMenuCode == QString(GSCommon::MainMenuCode::Music))  (this->currMainMenuCode == QString(GSCommon::MainMenuCode::Setting))){
+    //if((this->currMainMenuCode == QString(GSCommon::MainMenuCode::Music))  (this->currMainMenuCode == QString(GSCommon::MainMenuCode::Setting))){
+    if( (this->currMainMenuCode == QString(GSCommon::MainMenuCode::Setting))){//c230409
         print_debug();
-        this->progress->show();
+        this->progress->show();//
+        //this->progress_pop->show();
     }
 
     // 대용량 테스트용
     //FileDownloader *fileDownLoader = new FileDownloader(QString("http://inkeldev2.seye.co.kr/admin/soskim/external.db"), this);
-    FileDownloader *fileDownLoader = new FileDownloader(QString("http://%1:9286/media.provider.get").arg(global.device.getDeviceIP()), this);
+    if(this->fileDownLoader == nullptr){
+        print_debug();
+        this->fileDownLoader = new FileDownloader(QString("http://%1:9286/media.provider.get").arg(global.device.getDeviceIP()), this);//c230228
+        print_debug();
 
-    connect(fileDownLoader, SIGNAL(signal_downloading(qint64, qint64)), this, SLOT(downloadingDB(qint64,qint64)));
-    connect(fileDownLoader, SIGNAL(downloaded()), this, SLOT(downloadedDB()));
+    }else{
+        print_debug();
+        disconnect(this->fileDownLoader, SIGNAL(signal_downloading(qint64, qint64)), this, SLOT(downloadingDB(qint64,qint64)));
+        disconnect(this->fileDownLoader, SIGNAL(downloaded()), this, SLOT(downloadedDB()));
+        delete this->fileDownLoader;
+        this->fileDownLoader = nullptr;
+        this->fileDownLoader = new FileDownloader(QString("http://%1:9286/media.provider.get").arg(global.device.getDeviceIP()), this);
+
+        print_debug();
+    }
+
+    connect(this->fileDownLoader, SIGNAL(signal_downloading(qint64, qint64)), this, SLOT(downloadingDB(qint64,qint64)));
+    connect(this->fileDownLoader, SIGNAL(downloaded()), this, SLOT(downloadedDB()));
     global.device.setIsDbScanning(true);
     db_downloadCompleting_flag = true;//c220826_2
-    db_downloadComplete_flag = false;;//c220826_2
+    global.db_downloadComplete_flag = false;;//c220826_2
     print_debug();
-    qDebug() << "++++++++++++++++++++++++++++++++++++++++++++++++++++db_downloadComplete_flag=" << db_downloadComplete_flag;
+    qDebug() << "++++++++++++++++++++++++++++++++++++++++++++++++++++global.db_downloadComplete_flag=" << global.db_downloadComplete_flag;
 }
 
 
@@ -3211,15 +3602,25 @@ void HomeMain::slot_startDownloadDB(){//c220826_2
 void HomeMain::downloadingDB(qint64 p_currByte, qint64 p_totalByte){//c220826_2
 
 
+    global.db_downloadComplete_flag = false;
+    //qDebug() << "p_currByte=" << p_currByte;
+    //qDebug() << "p_totalByte=" << p_totalByte;
+    global.musicDB_DownloadingState = ((float)p_currByte/(float)p_totalByte) *100.0;
     if( this->currMainMenuCode == QString(GSCommon::MainMenuCode::Music) || (this->currMainMenuCode == QString(GSCommon::MainMenuCode::Setting))){
         if(p_currByte > this->p_preByte){
             this->progress->setCurrentValue(p_currByte, p_totalByte);
+            //this->progress_pop->setCurrentValue(p_currByte, p_totalByte);
+
             this->p_preByte = p_currByte;
             if(this->progress->isHidden()){
                 this->progress->show();
             }
+            //if(this->progress_pop->isHidden()){
+            //this->progress_pop->show();
+            //this->progress_pop->raise();
+            //}
         }else{
-           // db_downloadComplete_flag = true;;//c220826_1
+            // global.db_downloadComplete_flag = true;;//c220826_1
         }
     }
 }
@@ -3233,9 +3634,10 @@ void HomeMain::downloadingDB(qint64 p_currByte, qint64 p_totalByte){//c220826_2
  * (메모리 DB 미사용으로 ROSE 가 전달한 DB 파일의 가상테이블 쿼리속도 낮음)
  */
 void HomeMain::downloadedDB(){
+
     this->p_preByte = 0;
-    FileDownloader *fileDownloader = qobject_cast<FileDownloader*>(sender());
-    QByteArray byteArray = fileDownloader->downloadedData();
+    //FileDownloader *fileDownloader = qobject_cast<FileDownloader*>(sender());//c230228
+    QByteArray byteArray = this->fileDownLoader->downloadedData();//c230228
 
     // Dir 확인 및 생성
     /*
@@ -3244,31 +3646,97 @@ void HomeMain::downloadedDB(){
         dir.mkpath(qApp->applicationDirPath()+"/config");
     }
     */
-
+    //saveCurrentDeviceData(global.device);//c230423
+    oldDeviceID = global.device.getDeviceID();
     QString tmp_dirPath = QStandardPaths::writableLocation(QStandardPaths::AppConfigLocation);
     QDir dir(tmp_dirPath);
     //qDebug() << dir.path() << "\n";
 
+    //c230414_start -----------------------------------------------
+    QDialog *dialog = new QDialog();
+    if(global.window_activate_flag) {//c221001_1
+        if(global.powerDialogShowFlag) return;
+        //print_debug();
+        QLabel *lb_msg = new QLabel();
+        lb_msg->setText("The current Music DB file is being changed.\n Pleasure wait a minute.");
+        lb_msg->setAlignment(Qt::AlignCenter);
+
+        QHBoxLayout *hl_msgBox = new QHBoxLayout();
+        hl_msgBox->setContentsMargins(0,0,0,0);
+        hl_msgBox->setSpacing(0);
+        hl_msgBox->setContentsMargins(35,20,35,15);
+        hl_msgBox->addStretch(1);
+        hl_msgBox->addWidget(lb_msg);
+        hl_msgBox->addStretch(1);
+        QWidget *widget_msgBox = new QWidget();
+        widget_msgBox->setStyleSheet("background-color:#B18658;color:#FFFFFF;font-size:20px;border-radius:5px;");
+        widget_msgBox->setLayout(hl_msgBox);
+
+        QVBoxLayout *vl_total = new QVBoxLayout();
+        vl_total->setContentsMargins(0,0,0,0);
+        vl_total->setSpacing(0);
+        vl_total->addWidget(widget_msgBox, 0, Qt::AlignCenter);
+
+
+
+        dialog->setModal(true);
+        dialog->setStyleSheet("background-color:#55FF0000;border-radius:20px;");
+        dialog->setWindowFlags(Qt::Tool | Qt::FramelessWindowHint);//c221001_1
+        dialog->setAttribute(Qt::WA_TranslucentBackground);
+        dialog->setLayout(vl_total);
+        dialog->show();
+        //dialog->raise();
+        int left = global.left_mainwindow+global.width_mainwindow/2- (dialog->sizeHint().width() / 2);//c220804
+        int top = global.top_mainwindow+global.height_mainwindow/2 ;//- (dialog->sizeHint().height() / 2);//c220804
+        dialog->move(left, top);//c220804
+    }
+    //c230414_end -----------------------------------------------------------
+
     // 파일 저장
     QFile file(QString("%1%2").arg(dir.path()).arg("/tmp_rose.db"));
-    file.open(QIODevice::WriteOnly);
-    file.write(byteArray);
-    file.close();
+    if(file.open(QIODevice::WriteOnly))
+    {
+        file.write(byteArray);
+        file.close();
+    }
+    else{
+        print_debug();
+        qDebug() << "Error opening file:" << file.errorString();
+        ToastMsg::show(this, "", QString(tr("Error opening file : tmp_rose.db.")));//c221028
+    }
 
+//    QFile file(QString("%1%2").arg(dir.path()).arg("/tmp_rose.db"));
+//    file.open(QIODevice::WriteOnly);
+//    file.write(byteArray);
+//    print_debug();
+//    file.close();
+//    print_debug();
 
+    dialog->hide();//c230414
 
-    db_downloadCompleting_flag = false;//c220826_2
-    global.signal_selectedDevice_flag = false;//c220826_2
-    db_downloadComplete_flag = true;//c220826_2
-    print_debug();
-    qDebug() << "db_downloadComplete_flag=" << db_downloadComplete_flag;
-    qDebug() << "3-db_downloadCompleting_flag=" << db_downloadCompleting_flag;
+   // ToastMsg::show(this, "", QString(tr("DB download complete.")));//c221028
+
     // View TO Table
     SqliteViewToTable *viewToTable = new SqliteViewToTable();
     connect(viewToTable, SIGNAL(signal_finished()), SLOT(slot_completedViewToTable()));
     emit viewToTable->signal_viewToTable();
+
+    db_downloadCompleting_flag = false;//c220826_2
+    global.signal_selectedDevice_flag = false;//c220826_2
+    global.db_downloadComplete_flag = true;//c220826_2
     print_debug();
-    sender()->deleteLater();
+    qDebug() << "global.db_downloadComplete_flag=" << global.db_downloadComplete_flag;
+    qDebug() << "3-db_downloadCompleting_flag=" << db_downloadCompleting_flag;
+
+    if(dlgConfirmMusicDbDownloadingNotice != nullptr){//7777
+        if(!dlgConfirmMusicDbDownloadingNotice->isHidden()){
+            dlgConfirmMusicDbDownloadingNotice->accept();
+        }
+    }
+
+    //saveCurrentDeviceData(global.device);//
+    print_debug();
+    //this->fileDownLoader->deleteLater();//c230228
     print_debug();
 }
 
@@ -3276,26 +3744,37 @@ void HomeMain::downloadedDB(){
 /**
  * @brief HomeMain::slot_completedViewToTable:[슬롯]DB View To Table
  */
-void HomeMain::slot_completedViewToTable(){
+void HomeMain::slot_completedViewToTable(){//c230118
 
     sender()->deleteLater();
-
+    print_debug();
     QString tmp_dirPath = QStandardPaths::writableLocation(QStandardPaths::AppConfigLocation);
     QDir dir(tmp_dirPath);
     QFile file(QString("%1%2").arg(dir.path()).arg("/rose.db"));
 
     if(!file.exists() || file.size() == 0){
+        print_debug();
         file.close();
         this->progress->hide();
+        //this->progress_pop->hide();
         slot_clickedDBRefreshBtn();
 
         // 자동로그인 확인 및 실행
-        requestGetRoseUserInfo();
+        if(!global.user.isValid()){//c221116
+            //   this->requestGetRoseUserInfo();//c221116
+        }
 
+        if(this->currMainMenuCode == QString(GSCommon::MainMenuCode::Music)){
+            this->currMainMenuCode = nullptr;
+            changedLeftMainMenu(QString(GSCommon::MainMenuCode::Music));
+        }
         emit linker->signal_finishedViewToTable();
     }
     else{
+        //c230118
+        print_debug();
         this->progress->showRefreshBtn();
+        //this->progress_pop->showRefreshBtn();
     }
 }
 
@@ -3303,7 +3782,8 @@ void HomeMain::slot_completedViewToTable(){
 void HomeMain::resizeEvent(QResizeEvent *event){
 
     Q_UNUSED(event);
-    this->queueplaylist->setFixedHeight(this->size().height()-this->sectionBottom->height()-80);
+
+    this->queueplaylist->setFixedHeight(this->size().height() - this->sectionBottom->height() - 80);
 
     // DB 프로그레스 geometry 조정
     /*int tmp_progressWidth = 500;
@@ -3649,9 +4129,16 @@ void HomeMain::slot_clickedMovePageQobuzSearch(){//cheon211008-search-----------
 
 void HomeMain::slot_msg(){
 
-    global.window_activate_flag = true;
-    //ToastMsg::show(this, "", tr("Drag and drop the title at the bottom of the link and drop it on the screen."),3000);//c220824_4
-    ToastMsg::show(this, "", tr("This function is being prepared for service."),3000);//c220824_4
+    if(!global.window_activate_flag){//c230127
+        global.window_activate_flag = true;
+        //ToastMsg::show(this, "", tr("Drag and drop the title at the bottom of the link and drop it on the screen."),3000);//c220824_4
+        ToastMsg::show(this, "", tr("This function is being prepared for service."),3000);//c220824_4
+        global.window_activate_flag = false;
+    }else{
+        ToastMsg::show(this, "", tr("This function is being prepared for service."),3000);//c220824_4
+
+    }
+
 
 }
 
@@ -3739,7 +4226,7 @@ void HomeMain::slot_clickedMovePageSearch_share(QString link){//c220823
         if(link.contains("ALBUM")){
             print_debug();
             if(global.search_text.size() >= 2){
-/*
+                /*
                 global.user.flag_rosetube = true;
 
                 global.user.rosetube_obj = QJsonObject();
@@ -4261,7 +4748,8 @@ void HomeMain::slot_MovePageSearchRadio(){//cheon211008-search------------------
 
 void HomeMain::slot_MovePageRoseHomeTo(const QString leftmenu){
 
-     print_debug();
+    print_debug();
+    //this->unRaiseAllWidget();//c230228
     this->sectionLeft->clickedMenu(leftmenu);
 }
 
@@ -4278,13 +4766,20 @@ void HomeMain::slot_changedLoginInfo(){
 /**
  * @brief HomeMain::slot_changedDevicePower [슬롯] 장치 전원상태 변경
  */
-void HomeMain::slot_changedDevicePower(){
+void HomeMain::slot_changedDevicePower(){//c221115
 
+    //print_debug();
+    //emit linker->signal_checknetwork();
+    slot_rebooting();
+
+    /*emit linker->signal_searchBar_clearfocus();//c230220
     requestGetRoseUserInfo();
 
     this->checkTidalLogin();
     this->checkBugsLogin();
     this->checkQobuzLogin();
+    this->checkAppleLogin();       //c221116         // Apple Musci Login check -> added by jeon
+    */
 }
 
 
@@ -4320,7 +4815,7 @@ void HomeMain::slot_changePagePlayList(const QJsonObject &p_jsonObject){
 
     // 1) 메인메뉴 선택..
     if(this->currMainMenuCode!=changedMainMenuCode){
-         print_debug();
+        print_debug();
         this->sectionLeft->clickedMenu(changedMainMenuCode);
     }
 
@@ -4341,7 +4836,7 @@ void HomeMain::slot_changedMainMenuAndMovePage(int p_mainMenuCode, const QJsonOb
 
     // 해당 메인메뉴 이동
     if(this->currMainMenuCode!=QString(p_mainMenuCode)){
-         print_debug();
+        print_debug();
         this->sectionLeft->clickedMenu(QString(p_mainMenuCode));
     }
 
@@ -4374,6 +4869,46 @@ void HomeMain::slot_clickedDBRefreshBtn(){
     }
 
     */
+    //c230414_start -----------------------------------------------
+    QDialog *dialog = new QDialog();
+    if(global.window_activate_flag) {//c221001_1
+        if(global.powerDialogShowFlag) return;
+        //print_debug();
+        QLabel *lb_msg = new QLabel();
+        lb_msg->setText("The current Music DB file is being changed.\n Pleasure wait a minute.");
+        lb_msg->setAlignment(Qt::AlignCenter);
+
+        QHBoxLayout *hl_msgBox = new QHBoxLayout();
+        hl_msgBox->setContentsMargins(0,0,0,0);
+        hl_msgBox->setSpacing(0);
+        hl_msgBox->setContentsMargins(35,20,35,15);
+        hl_msgBox->addStretch(1);
+        hl_msgBox->addWidget(lb_msg);
+        hl_msgBox->addStretch(1);
+        QWidget *widget_msgBox = new QWidget();
+        widget_msgBox->setStyleSheet("background-color:#B18658;color:#FFFFFF;font-size:20px;border-radius:5px;");
+        widget_msgBox->setLayout(hl_msgBox);
+
+        QVBoxLayout *vl_total = new QVBoxLayout();
+        vl_total->setContentsMargins(0,0,0,0);
+        vl_total->setSpacing(0);
+        vl_total->addWidget(widget_msgBox, 0, Qt::AlignCenter);
+
+
+
+        dialog->setModal(true);
+        dialog->setStyleSheet("background-color:#55FF0000;border-radius:20px;");
+        dialog->setWindowFlags(Qt::Tool | Qt::FramelessWindowHint);//c221001_1
+        dialog->setAttribute(Qt::WA_TranslucentBackground);
+        dialog->setLayout(vl_total);
+        dialog->show();
+        //dialog->raise();
+        int left = global.left_mainwindow+global.width_mainwindow/2- (dialog->sizeHint().width() / 2);//c220804
+        int top = global.top_mainwindow+global.height_mainwindow/2 ;//- (dialog->sizeHint().height() / 2);//c220804
+        dialog->move(left, top);//c220804
+    }
+    //c230414_end -----------------------------------------------------------
+
     QString tmp_dirPath = QStandardPaths::writableLocation(QStandardPaths::AppConfigLocation);
     QDir dir(tmp_dirPath);
     QFile file_old(QString("%1%2").arg(dir.path()).arg("/rose.db"));
@@ -4382,17 +4917,35 @@ void HomeMain::slot_clickedDBRefreshBtn(){
         file_old.remove();
     }
 
-
+    file_old.close();//c230413
+    print_debug();
     QFile file_new(QString("%1%2").arg(dir.path()).arg("/tmp_rose.db"));
     file_new.open(QIODevice::ReadWrite);
     if(file_new.exists()){
         file_new.copy(dir.path()+"/rose.db");
-        file_new.remove();
+        //QCoreApplication::processEvents();//c230428_1
+        //file_new.remove();//c230415
     }
-
-    file_old.close();
+    print_debug();
+    //file_old.close();//c230415
+    file_new.remove();//c230415
     file_new.close();
+    dialog->hide();//c230414
+
+//print_debug();
+//    QFile file_new(QString("%1%2").arg(dir.path()).arg("/tmp_rose.db"));
+//    file_new.open(QIODevice::ReadWrite);
+//    if(file_new.exists()){
+//        file_new.copy(dir.path()+"/rose.db");
+//        file_new.remove();
+//    }
+//print_debug();
+
+//    //file_old.close();//c230413
+//    file_new.close();
+//    dialog->hide();//c230414
     this->progress->hide();
+    //this->progress_pop->hide();
 
     //QJsonObject tmp_data;
     //tmp_data[KEY_PAGE_CODE] = PAGECODE_M_HOME;
@@ -4400,14 +4953,14 @@ void HomeMain::slot_clickedDBRefreshBtn(){
     //slot_changedMainMenuAndMovePage()
 
     // 장치연결 시그널 중계
-    ToastMsg::show(this, "", QString(tr("DB download complete.")));
+    ToastMsg::show(this, "", QString(tr("DB download complete.")));//c221028
     if(global.signal_selectedDevice_flag){//c220826_2
-        db_downloadComplete_flag = false;//c220826_2
+        global.db_downloadComplete_flag = false;//c220826_2
         db_downloadCompleting_flag = false;//c220826_2
         print_debug();
 
     }
-    emit linker->signal_connected();
+    //emit linker->signal_connected();//c230428_1
     emit linker->signal_completeDownloadDB();
     global.device.setIsDbScanning(false);
 }
@@ -4485,26 +5038,26 @@ void HomeMain::dlgNotice_Readme(){
 
     this->dlgConfirmReadmeNotice->setTitle(tr("ReadMe Notice!!!"));
     this->dlgConfirmReadmeNotice->setText(tr("Nice to meet you!\n"
-    "\n"
-    "Beyong Audio, HiFi 'Rose_Connect' If you have any problems\n"
-    "or errors while using the PC/Mac App,\n"
-    "please send the problem to the email below.\n"
-    "\n"
-    "- When installing for the first time, the basic English version is operated.\n"
-    "- To use Korean, you can set up/language options/English-Korean in the menu. \n"
-    "  After setting once, the program runs again and operates with the changed language version.\n"
-    "\n"
-    "(- 처음 인스톨 설치시에는 기본 영문 버변으로 동작합니다.\n"
-    "- 한글 사용을 위해서는 메뉴에서 설정/언어옵션/영어-한글 설정을 할 수 있으며, \n"
-    "  한번의 설정후 프로그램이 다시 실행되며 바뀐 언어 버젼으로 동작합니다.)\n"
-    "\n"
-    "\n"
-    "This file is in the Rose_Connect/readme folder on your PC.\n"
-    "\n"
-    "    2021.02.10\n"
-    "\n"
-    "\n"
-    "kevin@citech.kr(made in South Korea)"));
+                                             "\n"
+                                             "Beyong Audio, HiFi 'Rose_Connect' If you have any problems\n"
+                                             "or errors while using the PC/Mac App,\n"
+                                             "please send the problem to the email below.\n"
+                                             "\n"
+                                             "- When installing for the first time, the basic English version is operated.\n"
+                                             "- To use Korean, you can set up/language options/English-Korean in the menu. \n"
+                                             "  After setting once, the program runs again and operates with the changed language version.\n"
+                                             "\n"
+                                             "(- 처음 인스톨 설치시에는 기본 영문 버변으로 동작합니다.\n"
+                                             "- 한글 사용을 위해서는 메뉴에서 설정/언어옵션/영어-한글 설정을 할 수 있으며, \n"
+                                             "  한번의 설정후 프로그램이 다시 실행되며 바뀐 언어 버젼으로 동작합니다.)\n"
+                                             "\n"
+                                             "\n"
+                                             "This file is in the Rose_Connect/readme folder on your PC.\n"
+                                             "\n"
+                                             "    2021.02.10\n"
+                                             "\n"
+                                             "\n"
+                                             "kevin@citech.kr(made in South Korea)"));
 }
 
 
@@ -4577,4 +5130,65 @@ void HomeMain::changedIndexNotice(int index){
     delete sqliteHelper;
 
     qDebug() << "select data -> idx : " << idx << ", sel : " << sel;
+}
+
+
+void HomeMain::ContentLoadingwaitingMsgShow(QString msg){    //c230409
+
+    Q_UNUSED(msg);
+
+    print_debug();
+    if(global.abs_ani_dialog_wait->isHidden() != true){//c220616
+        return;
+    }
+
+    print_debug();
+    if(!global.window_activate_flag) return;//c220804
+
+    if(global.powerDialogShowFlag) return;//c220804
+
+    print_debug();
+
+    //----------------------------------------------------
+
+    int left = 0;
+    int top = 0;
+
+    left = global.left_mainwindow + ((global.width_mainwindow - 120) / 2);
+    top = global.top_mainwindow + ((global.height_mainwindow - 120) / 2);
+
+    print_debug();
+    global.abs_ani_dialog_wait->move(left, top);//c220804
+
+    print_debug();
+    if(global.enable_section_left == true){
+        global.enable_section_left = false;
+    }
+
+    print_debug();
+    global.abs_ani_dialog_wait->show();//c230311
+    global.abs_ani_dialog_wait->raise();//c230311
+    print_debug();
+}
+
+
+void HomeMain::ContentLoadingwaitingMsgHide(){   //c230409
+
+    print_debug();
+    //qDebug() << "abs_ani_dialog_wait->isHidden() = " << global.abs_ani_dialog_wait->isHidden();
+    if(global.abs_ani_dialog_wait->isHidden() != true){
+        print_debug();
+        //abs_ani_mov->stop();
+
+        global.abs_ani_dialog_wait->hide(); //cheontidal
+
+    }
+
+    if(global.enable_section_left == false){
+        global.enable_section_left = true;
+    }
+
+    //global.abs_ani_dialog_wait->show();//c230311
+    //QTimer::singleShot(300, global.abs_ani_dialog_wait, SLOT(hide()));//c230311
+    ToastMsg::delay(this,"", tr("delay"), 400);//c230323
 }

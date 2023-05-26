@@ -32,16 +32,13 @@ const int HTTP_REQ_PLAY = 98;
      * @note 사용자채널에만 존재하던 새로고침, 방송채널 추가 전 메뉴 추가요청<br>
      * 공통 Widget화 하지 않고 Copy하여 처리단만 다르게 함.
      */
-    RadioHome::RadioHome(QWidget *parent) : roseHome::AbstractRoseHomeSubWidget(VerticalScroll_rosetube, parent)
+    RadioHome::RadioHome(QWidget *parent) : roseHome::AbstractRoseHomeSubWidget(VerticalScroll_roseviewAll, parent)
     {
+        global.isDrawingMainContent = false;
 
         setInit();
         setUIControl();
         setTopUIControl(parent);
-
-        if(global.enable_section_left == true){
-            global.enable_section_left = false;
-        }
     }
 
 
@@ -112,19 +109,10 @@ const int HTTP_REQ_PLAY = 98;
         this->box_contents->setAlignment(Qt::AlignTop);
         this->scrollArea_main->setVerticalScrollBarPolicy(Qt::ScrollBarAsNeeded);
 
-        // layout for items
-        this->flowLayout_radio = new FlowLayout(0, 0, 0);
-        this->flowLayout_radio->setSizeConstraint(QLayout::SetMinimumSize);
-        this->flowLayout_radio->setContentsMargins(70, 50, 70, 30);
+        this->radio_widget_width = 200;
+        this->radio_widget_margin = 20;
 
-        GSCommon::clearLayout(this->flowLayout_radio);
-
-        this->widget_radio = new QWidget();
-        this->widget_radio->setLayout(this->flowLayout_radio);
-        this->widget_radio->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
-        this->widget_radio->setStyleSheet("background-color:transparent;");
-
-        this->box_contents->addWidget(this->widget_radio);
+        this->flowLayout_radio = this->get_addUIControl_flowLayout(0, 20);
     }
 
 
@@ -186,6 +174,12 @@ const int HTTP_REQ_PLAY = 98;
      */
     void RadioHome::requestData(){
 
+        print_debug();ContentLoadingwaitingMsgShow(tr("Content is being loaded. Please wait."));//c230322_3
+
+        if(this->width()-(this->radio_widget_width + this->radio_widget_margin) >= 0){
+            this->setFlowLayoutResize(this, this->flowLayout_radio, this->radio_widget_width, this->radio_widget_margin);
+        }
+
         // 임시 :: 데이터 수가 0인경우에만 요청
         if(dataList.size() == 0){
             clearChannelList();
@@ -201,6 +195,8 @@ const int HTTP_REQ_PLAY = 98;
                                  , json, true);
             }
         }
+
+        print_debug();ContentLoadingwaitingMsgHide();//c230322_3
     }
 
     /**
@@ -272,6 +268,8 @@ const int HTTP_REQ_PLAY = 98;
      */
     void RadioHome::setResultOfChannelList(const QJsonObject &p_jsonObject){
 
+        print_debug();ContentLoadingwaitingMsgShow(tr("Content is being loaded. Please wait."));//c230322_3
+
         const QString jsonKey_flagOk = "flagOk";
         const QString jsonKey_status = "status";
         const QString jsonKey_outs = "outs";
@@ -298,9 +296,8 @@ const int HTTP_REQ_PLAY = 98;
             }
         }
 
-        if(global.enable_section_left == true){
-            global.enable_section_left = false;
-        }
+        global.isDrawingMainContent = true;
+        print_debug();ContentLoadingwaitingMsgHide();//c230322_3
     }
 
     /**
@@ -364,5 +361,15 @@ const int HTTP_REQ_PLAY = 98;
             //clearChannelList();
             //requestData();
         }
+    }
+    /**
+     * @brief RadioHome::resizeEvent
+     * @param event
+     */
+    void RadioHome::resizeEvent(QResizeEvent *event){//c230223
+
+        Q_UNUSED(event);
+        widget_topContrl->setGeometry((this->width()-this->widget_topContrl->sizeHint().width()), 0,  this->widget_topContrl->sizeHint().width(), this->widget_topContrl->sizeHint().height());
+        this->setFlowLayoutResize(this, this->flowLayout_radio, this->radio_widget_width, this->radio_widget_margin);
     }
 }

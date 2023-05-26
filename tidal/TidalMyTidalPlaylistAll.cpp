@@ -41,30 +41,48 @@ namespace tidal {
     }
 
 
+    void TidalMyTidalPlaylistAll::setJsonObject_forData(const QJsonObject &jsonObj){
+
+        QString curr_api_subPath = ProcJsonEasy::getString(jsonObj, "pageCode");
+        this->flagNeedReload = false;
+
+        if(curr_api_subPath != this->api_subPath){
+            this->flagNeedReload = true;
+
+            this->api_subPath = curr_api_subPath;
+        }
+        else{
+            print_debug();ContentLoadingwaitingMsgHide();   //j230328
+        }
+    }
+
+
     /**
      * @brief 페이지 활성화를 처리하는 함수임.
      * HTTP API 호출한다.
      */
     void TidalMyTidalPlaylistAll::setActivePage(){
 
-        // 항상 부모클래스의 함수 먼저 호출
-        AbstractTidalSubWidget::setActivePage();
+        if(this->flagNeedReload == true){
+            // 항상 부모클래스의 함수 먼저 호출
+            AbstractTidalSubWidget::setActivePage();
 
-        // init
-        this->initAll();
-        this->chooseFilterOpt->hideFilterBox();
+            // init
+            this->initAll();
+            this->chooseFilterOpt->hideFilterBox();
 
-        // init Data
-        this->selected_filterCode = this->list_filterOpt_sort.first().opt_code;         // default
+            // init Data
+            this->selected_filterCode = this->list_filterOpt_sort.first().opt_code;         // default
 
-        QString def_code = this->list_filterOpt_sort.first().opt_code.toString();
-        QString def_name = this->list_filterOpt_sort.first().opt_name;
-        this->filterWidget->clear_filter();
-        this->filterWidget->add_filter(def_code, def_name);
+            QString def_code = this->list_filterOpt_sort.first().opt_code.toString();
+            QString def_name = this->list_filterOpt_sort.first().opt_name;
+            this->filterWidget->clear_filter();
+            this->filterWidget->add_filter(def_code, def_name);
 
-        ContentLoadingwaitingMsgShow(tr("Content is being loaded. Please wait."));
+            print_debug();ContentLoadingwaitingMsgShow(tr("Content is being loaded. Please wait."));
 
-        this->request_more_playlistData();
+            this->request_more_playlistData();
+        }
     }
 
 
@@ -76,7 +94,7 @@ namespace tidal {
         this->addUIControl_mainTitle(tr("Playlist by TIDAL"));
 
         // filtering
-        this->setUiControl_filter();
+        this->setUIControl_filter();
 
         // layout for items
         this->flowLayout_playlists = this->get_addUIControl_flowLayout(0, 20);
@@ -90,9 +108,9 @@ namespace tidal {
 
 
     /**
-     * @brief TidalMyTidalPlaylistAll::setUiControl_filter
+     * @brief TidalMyTidalPlaylistAll::setUIControl_filter
      */
-    void TidalMyTidalPlaylistAll::setUiControl_filter(){
+    void TidalMyTidalPlaylistAll::setUIControl_filter(){
 
         // 필터링 부분
         this->filterWidget = new FilterWidget();
@@ -156,7 +174,7 @@ namespace tidal {
 
             this->flag_playlist_draw = true;
 
-            ContentLoadingwaitingMsgShow(tr("Content is being loaded. Please wait."));
+            print_debug();ContentLoadingwaitingMsgShow(tr("Content is being loaded. Please wait."));
 
             this->request_more_playlistDraw();
         }
@@ -181,10 +199,32 @@ namespace tidal {
      * @brief 스크롤링에 대해서, get more data 처리
      * @param event
      */
-    void TidalMyTidalPlaylistAll::resizeEvent(QResizeEvent *event){
+    void TidalMyTidalPlaylistAll::resizeEvent(QResizeEvent *event){//c230223
 
         AbstractTidalSubWidget::resizeEvent(event);
 
+        print_debug();
+        //qDebug() << flowLayout_playlists->sizeHint();
+        //qDebug() << this->box_contents->sizeHint();
+
+        //int w = flowLayout_playlists->sizeHint().width();
+        int w = 217, l = 80, r = 60, scrollbarW = 0;
+
+        int mod_nn = (global.LmtCnt-l-r-scrollbarW)%(w+0);
+        //qDebug() << "mod_nn=" << mod_nn;
+        int i = 0;
+        while(1){
+
+            mod_nn = (global.LmtCnt-l-r-scrollbarW)%(w+0+i);
+            if(mod_nn > 20){
+
+                mod_nn = (global.LmtCnt-l-r-scrollbarW)%(w+(0+(i++)));
+            }else{
+                break;
+            }
+        }
+
+        flowLayout_playlists->setSpacingHV(0+i,20);
         // BugsChooseFilterOpt 위젯의 사이즈를 업데이트 해줘야함
         if(this->chooseFilterOpt != nullptr){
             this->chooseFilterOpt->setFixedSize(event->size());
@@ -249,7 +289,12 @@ namespace tidal {
             this->flagReqMore_playlist = true;
 
             // j220913 list count check
-            int width_cnt = global.LmtCnt / 220;
+            int width_cnt;//c230223
+            if(flowLayout_playlists->sizeHint().width() < 0) {//c230223
+                width_cnt = global.LmtCnt / 217;
+            }else{
+                width_cnt = global.LmtCnt / flowLayout_playlists->sizeHint().width();//
+            }
             int mod = this->playlist_draw_cnt % width_cnt;
             int height_cnt = 0;
 
@@ -296,7 +341,7 @@ namespace tidal {
     void TidalMyTidalPlaylistAll::request_more_playlistDraw(){
 
         // j220913 list count check
-        int width_cnt = global.LmtCnt / 220;
+        int width_cnt = global.LmtCnt / flowLayout_playlists->sizeHint().width();//c230223
         int mod = this->playlist_draw_cnt % width_cnt;
         int height_cnt = 0;
 
@@ -391,12 +436,45 @@ namespace tidal {
                     QCoreApplication::processEvents();
                 }
 
+                //c230306_1-start
+                int w = flowLayout_playlists->sizeHint().width();
+                int l = 80, r = 60, scrollbarW = 10, mod = 0;
+
+                int mod_nn = (global.LmtCnt-l-r-scrollbarW)%(w + mod);
+                int nn = (global.LmtCnt-l-r-scrollbarW)/(w + mod);
+                //qDebug() << "global.LmtCnt=" << global.LmtCnt;
+                //qDebug() << "this->width()=" << this->width();
+                //qDebug() << "nn=" << nn;
+                //qDebug() << "mod_nn=" << mod_nn;
+
+
+                int i = 0;
+                while(1){
+
+                    mod_nn = (global.LmtCnt-l-r-scrollbarW)%(w + mod + i);
+                    if(mod_nn > 20){
+
+                        mod_nn = (global.LmtCnt-l-r-scrollbarW)%(w + ( mod +(i++)));
+                    }else{
+                        break;
+                    }
+                }
+                //print_debug();
+                //qDebug() << "w=" << w;
+                //qDebug() << "i=" << i;
+                //qDebug() << "this->width()=" << this->width();
+                //this->resize(this->width()+1, this->height());
+                flowLayout_playlists->setSpacingHV(mod+i,20);
+                //c230306_1-end
+                ContentLoadingwaitingMsgHide();
+
                 this->flag_flow_draw = true;
                 this->flag_playlist_draw = false;
             }
 
-            ContentLoadingwaitingMsgHide();
-            this->request_more_playlistData();
+            if(this->flag_lastPage_playlist == false){
+                this->request_more_playlistData();
+            }
         }
         else{
             ContentLoadingwaitingMsgHide();

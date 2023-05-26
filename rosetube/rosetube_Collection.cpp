@@ -23,7 +23,8 @@ namespace rosetube {
     const int HTTP_CACHING_LOCK = 0;
     const int HTTP_CACHING_CONTENTS = 1;
     const int HTTP_CACHING_LOCK_ITEM = 2;
-    const int HTTP_CACHING_DELETE_ITEM = 3;
+    const int HTTP_CACHING_LOCK_ROSE = 3;
+    const int HTTP_CACHING_DELETE_ITEM = 4;
 
     const int HTTP_SET_QUEUE = 99;
 
@@ -41,8 +42,10 @@ namespace rosetube {
     RoseTube_Collection::RoseTube_Collection(QWidget *parent) : roseHome::AbstractRoseHomeSubWidget(MainUIType::VerticalScroll_rosefilter, parent){
 
         this->linker = Linker::getInstance();
-        connect(linker, SIGNAL(signal_logined()), SLOT(slot_getMyInfo_loginAfter()));
-        connect(linker, SIGNAL(signal_change_device_state(QString)), SLOT(slot_change_device_state(QString)));
+        connect(this->linker, SIGNAL(signal_logined()), SLOT(slot_getMyInfo_loginAfter()));
+        connect(this->linker, SIGNAL(signal_change_device_state(QString)), SLOT(slot_change_device_state(QString)));
+        connect(this->linker, SIGNAL(signal_cacheState_change()), SLOT(slot_change_cache_state()));
+        connect(this->linker, SIGNAL(signal_cacheList_change()), SLOT(slot_change_cache_list()));
 
         this->list_MyPlaylist = new QList<roseHome::PlaylistItemData>();
         this->list_MyFavorite = new QList<roseHome::TrackItemData>();
@@ -71,6 +74,7 @@ namespace rosetube {
 
             this->jsonArr_myFavorite = QJsonArray();
             this->jsonArr_myCaching = QJsonArray();
+            this->jsonArr_myCachLock = QJsonArray();
             this->jsonObj_CacheLock = QJsonObject();
 
             this->flag_myFavorite[0] = false;
@@ -84,9 +88,23 @@ namespace rosetube {
             this->flag_page_reload = false;
         }
         else{
+            this->flag_myFavorite_check[0] = false;
+            this->flag_myPlaylist_check[0] = false;
+
+            this->flag_myFavorite_check[1] = false;
+            this->flag_myPlaylist_check[1] = false;
+
             this->flag_page_reload = true;
 
-            ContentLoadingwaitingMsgShow(tr("Content is being loaded. Please wait."));
+            print_debug();ContentLoadingwaitingMsgShow(tr("Content is being loaded. Please wait."));
+
+            roseHome::ProcCommon *proc_myPlaylist = new roseHome::ProcCommon(this);
+            connect(proc_myPlaylist, &roseHome::ProcCommon::completeReq_list_myplaylists, this, &RoseTube_Collection::slot_applyResult_MyPlaylistCheck);
+            proc_myPlaylist->request_rose_getList_myPlaylists("member/playlist" , "YOUTUBE", 0, 15);
+
+            roseHome::ProcCommon *proc_myFavorite = new roseHome::ProcCommon(this);
+            connect(proc_myFavorite, &roseHome::ProcCommon::completeReq_list_tracks, this, &RoseTube_Collection::slot_applyResult_favoriteTracksCheck);
+            proc_myFavorite->request_rose_getList_favoriteTracks("TRACK_RECENT", "YOUTUBE", 0, 15);
 
             QJsonObject json;
 
@@ -131,7 +149,7 @@ namespace rosetube {
                 this->stackedWidget_Contents->addWidget(this->widget_rose_contents);
                 this->stackedWidget_Contents->addWidget(this->widget_login_contents);
 
-                this->box_contents->addWidget(this->stackedWidget_Contents);
+                this->box_contents->addWidget(this->stackedWidget_Contents, 0, Qt::AlignTop);
                 this->scrollArea_main->setVerticalScrollBarPolicy(Qt::ScrollBarAsNeeded);
 
                 // init UI
@@ -159,22 +177,19 @@ namespace rosetube {
 
                 for(int i = 0; i < 15; i++){
                     this->collection_myPlaylist[i] = new roseHome::ItemPlaylist_rosehome(i, SECTION_FOR_MORE_POPUP___MyPlaylists, tidal::AbstractItem::ImageSizeMode::Square_200x200, 5, true);
-                    connect(this->collection_myPlaylist[i], &roseHome::ItemPlaylist_rosehome::signal_clicked, this, &RoseTube_Collection::slot_clickedItemPlaylist);
                 }
 
                 for(int i = 0; i < 15; i++){
                     this->collection_myFavorite[i] = new rosetube::ItemTrack_rosetube(i, SECTION_FOR_MORE_POPUP___MyFavorites, tidal::AbstractItem::ImageSizeMode::Ractangle_360x200, true);
-                    connect(this->collection_myFavorite[i], &rosetube::ItemTrack_rosetube::signal_clicked, this, &RoseTube_Collection::slot_clickedItemPlaylist);
                 }
 
                 for(int i = 0; i < 15; i++){
                     this->collection_myCaching[i] = new rosetube::ItemTrack_rosetube(i, SECTION_FOR_MORE_POPUP___MyCaching, tidal::AbstractItem::ImageSizeMode::Ractangle_360x200, true);
-                    connect(this->collection_myCaching[i], &rosetube::ItemTrack_rosetube::signal_clicked, this, &RoseTube_Collection::slot_clickedItemPlaylist);
                 }
 
                 if(!global.user.getAccess_token().isEmpty()){
 
-                    ContentLoadingwaitingMsgShow(tr("Content is being loaded. Please wait."));              //cheon211114-01//c1223
+                    print_debug();ContentLoadingwaitingMsgShow(tr("Content is being loaded. Please wait."));              //cheon211114-01//c1223
 
                     this->setUIControl_requestRose();
 
@@ -279,6 +294,7 @@ namespace rosetube {
         if(this->flag_myPlaylist[0] == true && this->flag_myFavorite[0] == true && this->flag_myCaching[0] == true){
 
             if(this->flag_myPlaylist[0] == true){
+                this->flag_myPlaylist[0] = false;
 
                 this->widget_myPlaylist = new QWidget();
                 QString subTitle = tr("My playlists");
@@ -291,31 +307,33 @@ namespace rosetube {
 
                 this->vBox_myPlaylist->addSpacing(10);
 
+                //----------------------------------------------------------------------------------------------------  BODY : START
+                this->hBox_myPlaylist->setSpacing(0);
+                this->hBox_myPlaylist->setContentsMargins(0, 0, 0, 0);
+                this->hBox_myPlaylist->setAlignment(Qt::AlignTop);
+                this->hBox_myPlaylist->setSizeConstraint(QLayout::SetFixedSize);
+
+                QWidget *widget_content = new QWidget;
+                widget_content->setLayout(this->hBox_myPlaylist);
+                widget_content->setContentsMargins(0, 0, 0, 0);
+
+                QScrollArea *playlist_scrollArea = new QScrollArea();
+                playlist_scrollArea->setWidget(widget_content);
+                playlist_scrollArea->setWidgetResizable(false);
+                playlist_scrollArea->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
+                playlist_scrollArea->setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
+                playlist_scrollArea->setStyleSheet("background-color:transparent; border:0px;");
+                playlist_scrollArea->setContentsMargins(0, 0, 0, 0);
+                playlist_scrollArea->setFixedHeight(311);
+
+                QScroller::grabGesture(playlist_scrollArea, QScroller::LeftMouseButtonGesture);
+                //----------------------------------------------------------------------------------------------------  BODY : END
+
+                // Apply Main Layout with spacing
+                this->vBox_myPlaylist->addWidget(playlist_scrollArea);
+
                 if(this->flag_myPlaylist[1] == true){
-                    //----------------------------------------------------------------------------------------------------  BODY : START
-                    this->hBox_myPlaylist->setSpacing(0);
-                    this->hBox_myPlaylist->setContentsMargins(0, 0, 0, 0);
-                    this->hBox_myPlaylist->setAlignment(Qt::AlignTop);
-                    this->hBox_myPlaylist->setSizeConstraint(QLayout::SetFixedSize);
-
-                    QWidget *widget_content = new QWidget;
-                    widget_content->setLayout(this->hBox_myPlaylist);
-                    widget_content->setContentsMargins(0, 0, 0, 0);
-
-                    QScrollArea *playlist_scrollArea = new QScrollArea();
-                    playlist_scrollArea->setWidget(widget_content);
-                    playlist_scrollArea->setWidgetResizable(false);
-                    playlist_scrollArea->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
-                    playlist_scrollArea->setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
-                    playlist_scrollArea->setStyleSheet("background-color:transparent; border:0px;");
-                    playlist_scrollArea->setContentsMargins(0, 0, 0, 0);
-                    playlist_scrollArea->setFixedHeight(310);
-
-                    QScroller::grabGesture(playlist_scrollArea, QScroller::LeftMouseButtonGesture);
-                    //----------------------------------------------------------------------------------------------------  BODY : END
-
-                    // Apply Main Layout with spacing
-                    this->vBox_myPlaylist->addWidget(playlist_scrollArea);
+                    this->flag_myPlaylist[1] = false;
 
                     int maxCount = 0;
                     if(this->list_MyPlaylist->size() > 15){
@@ -327,14 +345,20 @@ namespace rosetube {
 
                     for(int i = 0; i < maxCount; i++){
                         this->collection_myPlaylist[i]->setData(this->list_MyPlaylist->at(i));
+                        QCoreApplication::processEvents();
+                    }
+
+                    for(int i = 0; i < maxCount; i++){
+                        connect(this->collection_myPlaylist[i], &roseHome::ItemPlaylist_rosehome::signal_clicked, this, &RoseTube_Collection::slot_clickedItemPlaylist);
                         this->hBox_myPlaylist->addWidget(this->collection_myPlaylist[i]);
                     }
                 }
                 else{
                     NoData_Widget *noData_widget = new NoData_Widget(NoData_Widget::NoData_Message::Playlist_NoData);
-                    noData_widget->setFixedSize(1500, 310);
+                    noData_widget->setFixedSize(1500, 311);
+                    noData_widget->setObjectName("Nodata");
 
-                    this->vBox_myPlaylist->addWidget(noData_widget);
+                    this->hBox_myPlaylist->addWidget(noData_widget);
                 }
 
                 this->box_rose_contents->addLayout(this->vBox_myPlaylist);
@@ -342,6 +366,7 @@ namespace rosetube {
             }
 
             if(this->flag_myFavorite[0] == true){
+                this->flag_myFavorite[0] = false;
 
                 this->widget_myFavorite = new QWidget();
                 QString subTitle = tr("Favorites");
@@ -354,31 +379,33 @@ namespace rosetube {
 
                 this->vBox_myFavorite->addSpacing(10);
 
+                //----------------------------------------------------------------------------------------------------  BODY : START
+                this->hBox_myFavorite->setSpacing(0);
+                this->hBox_myFavorite->setContentsMargins(0, 0, 0, 0);
+                this->hBox_myFavorite->setAlignment(Qt::AlignTop);
+                this->hBox_myFavorite->setSizeConstraint(QLayout::SetFixedSize);
+
+                QWidget *widget_content = new QWidget;
+                widget_content->setLayout(this->hBox_myFavorite);
+                widget_content->setContentsMargins(0, 0, 0, 0);
+
+                QScrollArea *playlist_scrollArea = new QScrollArea();
+                playlist_scrollArea->setWidget(widget_content);
+                playlist_scrollArea->setWidgetResizable(false);
+                playlist_scrollArea->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
+                playlist_scrollArea->setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
+                playlist_scrollArea->setStyleSheet("background-color:transparent; border:0px;");
+                playlist_scrollArea->setContentsMargins(0, 0, 0, 0);
+                playlist_scrollArea->setFixedHeight(308);
+
+                QScroller::grabGesture(playlist_scrollArea, QScroller::LeftMouseButtonGesture);
+                //----------------------------------------------------------------------------------------------------  BODY : END
+
+                // Apply Main Layout with spacing
+                this->vBox_myFavorite->addWidget(playlist_scrollArea, 0, Qt::AlignTop);
+
                 if(this->flag_myFavorite[1] == true){
-                    //----------------------------------------------------------------------------------------------------  BODY : START
-                    this->hBox_myFavorite->setSpacing(0);
-                    this->hBox_myFavorite->setContentsMargins(0, 0, 0, 0);
-                    this->hBox_myFavorite->setAlignment(Qt::AlignTop);
-                    this->hBox_myFavorite->setSizeConstraint(QLayout::SetFixedSize);
-
-                    QWidget *widget_content = new QWidget;
-                    widget_content->setLayout(this->hBox_myFavorite);
-                    widget_content->setContentsMargins(0, 0, 0, 0);
-
-                    QScrollArea *playlist_scrollArea = new QScrollArea();
-                    playlist_scrollArea->setWidget(widget_content);
-                    playlist_scrollArea->setWidgetResizable(false);
-                    playlist_scrollArea->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
-                    playlist_scrollArea->setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
-                    playlist_scrollArea->setStyleSheet("background-color:transparent; border:0px;");
-                    playlist_scrollArea->setContentsMargins(0, 0, 0, 0);
-                    playlist_scrollArea->setFixedHeight(300);
-
-                    QScroller::grabGesture(playlist_scrollArea, QScroller::LeftMouseButtonGesture);
-                    //----------------------------------------------------------------------------------------------------  BODY : END
-
-                    // Apply Main Layout with spacing
-                    this->vBox_myFavorite->addWidget(playlist_scrollArea, 0, Qt::AlignTop);
+                    this->flag_myFavorite[1] = false;
 
                     int maxCount = 0;
                     if(this->list_MyFavorite->size() > 15){
@@ -390,14 +417,20 @@ namespace rosetube {
 
                     for(int i = 0; i < maxCount; i++){
                         this->collection_myFavorite[i]->setData(this->jsonArr_myFavorite.at(i).toObject());
+                        QCoreApplication::processEvents();
+                    }
+
+                    for(int i = 0; i < maxCount; i++){
+                        connect(this->collection_myFavorite[i], &rosetube::ItemTrack_rosetube::signal_clicked, this, &RoseTube_Collection::slot_clickedItemPlaylist);
                         this->hBox_myFavorite->addWidget(this->collection_myFavorite[i]);
                     }
                 }
                 else{
-                    NoData_Widget *noData_widget = new NoData_Widget(NoData_Widget::NoData_Message::Track_NoData);
-                    noData_widget->setFixedSize(1500, 300);
+                    NoData_Widget *noData_widget = new NoData_Widget(NoData_Widget::NoData_Message::Rosetube_NoData);
+                    noData_widget->setFixedSize(1500, 308);
+                    noData_widget->setObjectName("NoData");
 
-                    this->vBox_myFavorite->addWidget(noData_widget);
+                    this->hBox_myFavorite->addWidget(noData_widget);
                 }
 
                 this->box_rose_contents->addLayout(this->vBox_myFavorite);
@@ -405,6 +438,7 @@ namespace rosetube {
             }
 
             if(this->flag_myCaching[0] == true){
+                this->flag_myCaching[0] = false;
 
                 this->widget_myCaching = new QWidget();
                 QString subTitle = tr("Cached Contents");
@@ -412,31 +446,33 @@ namespace rosetube {
 
                 this->vBox_myCaching->addSpacing(10);
 
+                //----------------------------------------------------------------------------------------------------  BODY : START
+                this->hBox_myCaching->setSpacing(0);
+                this->hBox_myCaching->setContentsMargins(0, 0, 0, 0);
+                this->hBox_myCaching->setAlignment(Qt::AlignTop);
+                this->hBox_myCaching->setSizeConstraint(QLayout::SetFixedSize);
+
+                QWidget *widget_content = new QWidget;
+                widget_content->setLayout(this->hBox_myCaching);
+                widget_content->setContentsMargins(0, 0, 0, 0);
+
+                QScrollArea *playlist_scrollArea = new QScrollArea();
+                playlist_scrollArea->setWidget(widget_content);
+                playlist_scrollArea->setWidgetResizable(false);
+                playlist_scrollArea->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
+                playlist_scrollArea->setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
+                playlist_scrollArea->setStyleSheet("background-color:transparent; border:0px;");
+                playlist_scrollArea->setContentsMargins(0, 0, 0, 0);
+                playlist_scrollArea->setFixedHeight(308);
+
+                QScroller::grabGesture(playlist_scrollArea, QScroller::LeftMouseButtonGesture);
+                //----------------------------------------------------------------------------------------------------  BODY : END
+
+                // Apply Main Layout with spacing
+                this->vBox_myCaching->addWidget(playlist_scrollArea, 0, Qt::AlignTop);
+
                 if(this->flag_myCaching[1] == true){
-                    //----------------------------------------------------------------------------------------------------  BODY : START
-                    this->hBox_myCaching->setSpacing(0);
-                    this->hBox_myCaching->setContentsMargins(0, 0, 0, 0);
-                    this->hBox_myCaching->setAlignment(Qt::AlignTop);
-                    this->hBox_myCaching->setSizeConstraint(QLayout::SetFixedSize);
-
-                    QWidget *widget_content = new QWidget;
-                    widget_content->setLayout(this->hBox_myCaching);
-                    widget_content->setContentsMargins(0, 0, 0, 0);
-
-                    QScrollArea *playlist_scrollArea = new QScrollArea();
-                    playlist_scrollArea->setWidget(widget_content);
-                    playlist_scrollArea->setWidgetResizable(false);
-                    playlist_scrollArea->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
-                    playlist_scrollArea->setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
-                    playlist_scrollArea->setStyleSheet("background-color:transparent; border:0px;");
-                    playlist_scrollArea->setContentsMargins(0, 0, 0, 0);
-                    playlist_scrollArea->setFixedHeight(300);
-
-                    QScroller::grabGesture(playlist_scrollArea, QScroller::LeftMouseButtonGesture);
-                    //----------------------------------------------------------------------------------------------------  BODY : END
-
-                    // Apply Main Layout with spacing
-                    this->vBox_myCaching->addWidget(playlist_scrollArea, 0, Qt::AlignTop);
+                    this->flag_myCaching[1] = false;
 
                     int maxCount = 0;
                     if(this->jsonArr_myCaching.size() > 15){
@@ -448,40 +484,179 @@ namespace rosetube {
 
                     for(int i = 0; i < maxCount; i++){
                         QJsonObject tmpCaching = this->jsonArr_myCaching.at(i).toObject();
+                        tmpCaching.insert("favorite_view", false);
 
                         QString trackId = ProcJsonEasy::getString(tmpCaching, "id");
 
                         if(this->jsonObj_CacheLock.contains(trackId)){
                             tmpCaching.insert("flag_lock", true);
+
+                            this->jsonArr_myCachLock.append(true);
+                        }
+                        else{
+                            tmpCaching.insert("flag_lock", false);
+
+                            this->jsonArr_myCachLock.append(false);
                         }
 
                         this->collection_myCaching[i]->setData(tmpCaching);
+                        QCoreApplication::processEvents();
+                    }
+
+                    for(int i = 0; i < maxCount; i++){
+                        connect(this->collection_myCaching[i], &rosetube::ItemTrack_rosetube::signal_clicked, this, &RoseTube_Collection::slot_clickedItemPlaylist);
                         this->hBox_myCaching->addWidget(this->collection_myCaching[i]);
                     }
                 }
                 else{
-                    NoData_Widget *noData_widget = new NoData_Widget(NoData_Widget::NoData_Message::Track_NoData);
-                    noData_widget->setFixedSize(1500, 300);
+                    NoData_Widget *noData_widget = new NoData_Widget(NoData_Widget::NoData_Message::Rosetube_NoData);
+                    noData_widget->setFixedSize(1500, 308);
+                    noData_widget->setObjectName("NoData");
 
-                    this->vBox_myCaching->addWidget(noData_widget);
+                    this->hBox_myCaching->addWidget(noData_widget);
                 }
 
                 this->box_rose_contents->addLayout(this->vBox_myCaching);
                 this->box_rose_contents->addSpacing(30);
             }
 
-            this->slot_hide_msg();
+            ContentLoadingwaitingMsgHide();
+        }
+    }
+
+
+    void RoseTube_Collection::setUIControl_checkWidget_rose(){
+
+        if(this->flag_myPlaylist_check[0] == true && this->flag_myFavorite_check[0] == true){
+
+            if(this->flag_myPlaylist_check[1] == true){
+                this->flag_myPlaylist_check[0] = false;
+                this->flag_myPlaylist_check[1] = false;
+
+                QString subTitle = tr("My playlists");
+                if(this->list_MyPlaylist->size() > 0){
+                    this->lb_subTitle[BTN_IDX_SUBTITLE_MyPlaylists]->setText(subTitle + QString(" (%1)").arg(this->list_MyPlaylist->at(0).totalCount));
+                }
+                else{
+                    this->lb_subTitle[BTN_IDX_SUBTITLE_MyPlaylists]->setText(subTitle + QString(" (0)"));
+                }
+
+                QWidget *tmpWidget = this->hBox_myPlaylist->itemAt(0)->widget();
+                //qDebug() << this->hBox_myPlaylist->count() << tmpWidget->objectName();
+
+                if(tmpWidget->objectName() != "NoData"){
+                    for(int i = 0; i < this->hBox_myPlaylist->count(); i++){
+                        this->collection_myPlaylist[i]->hide();
+                        this->collection_myPlaylist[i]->disconnect();
+                        this->hBox_myPlaylist->removeWidget(this->collection_myPlaylist[i]);
+                    }
+                }
+                GSCommon::clearLayout(this->hBox_myPlaylist);
+
+                int maxCount = 0;
+                if(this->list_MyPlaylist->size() > 15){
+                    maxCount = 15;
+                }
+                else{
+                    maxCount = this->list_MyPlaylist->size();
+                }
+
+                if(maxCount > 0){
+                    for(int i = 0; i < maxCount; i++){
+                        this->collection_myPlaylist[i] = new roseHome::ItemPlaylist_rosehome(i, SECTION_FOR_MORE_POPUP___MyPlaylists, tidal::AbstractItem::ImageSizeMode::Square_200x200, 5, true);
+                    }
+
+                    for(int i = 0; i < maxCount; i++){
+                        this->collection_myPlaylist[i]->setData(this->list_MyPlaylist->at(i));
+                        QCoreApplication::processEvents();
+                    }
+
+                    for(int i = 0; i < maxCount; i++){
+                        connect(this->collection_myPlaylist[i], &roseHome::ItemPlaylist_rosehome::signal_clicked, this, &RoseTube_Collection::slot_clickedItemPlaylist);
+                        this->hBox_myPlaylist->addWidget(this->collection_myPlaylist[i]);
+                    }
+                }
+                else{
+                    NoData_Widget *noData_widget = new NoData_Widget(NoData_Widget::NoData_Message::Playlist_NoData);
+                    noData_widget->setFixedSize(1500, 311);
+                    noData_widget->setObjectName("Nodata");
+
+                    this->hBox_myPlaylist->addWidget(noData_widget);
+                }
+            }
+
+            if(this->flag_myFavorite_check[1] == true){
+                this->flag_myFavorite_check[0] = false;
+                this->flag_myFavorite_check[1] = false;
+
+                QString subTitle = tr("Favorites");
+                if(this->list_MyFavorite->size() > 0){
+                    this->lb_subTitle[BTN_IDX_SUBTITLE_MyFavorites]->setText(subTitle + QString(" (%1)").arg(this->list_MyFavorite->at(0).totalCount));
+                }
+                else{
+                    this->lb_subTitle[BTN_IDX_SUBTITLE_MyFavorites]->setText(subTitle + QString(" (0)"));
+                }
+
+                QWidget *tmpWidget = this->hBox_myFavorite->itemAt(0)->widget();
+                //qDebug() << this->hBox_myFavorite->count() << tmpWidget->objectName();
+
+                if(tmpWidget->objectName() != "NoData"){
+                    for(int i = 0; i < this->hBox_myFavorite->count(); i++){
+                        this->collection_myFavorite[i]->hide();
+                        this->collection_myFavorite[i]->disconnect();
+                        this->hBox_myFavorite->removeWidget(this->collection_myFavorite[i]);
+                    }
+                }
+                GSCommon::clearLayout(this->hBox_myFavorite);
+
+                int maxCount = 0;
+                if(this->list_MyFavorite->size() > 15){
+                    maxCount = 15;
+                }
+                else{
+                    maxCount = this->list_MyFavorite->size();
+                }
+
+                if(maxCount > 0){
+                    for(int i = 0; i < maxCount; i++){
+                        this->collection_myFavorite[i] = new rosetube::ItemTrack_rosetube(i, BTN_IDX_SUBTITLE_MyFavorites, tidal::AbstractItem::ImageSizeMode::Ractangle_360x200, true);
+                    }
+
+                    for(int i = 0; i < maxCount; i++){
+                        this->collection_myFavorite[i]->setData(this->jsonArr_myFavorite.at(i).toObject());
+                        QCoreApplication::processEvents();
+                    }
+
+                    for(int i = 0; i < maxCount; i++){
+                        connect(this->collection_myFavorite[i], &rosetube::ItemTrack_rosetube::signal_clicked, this, &RoseTube_Collection::slot_clickedItemPlaylist);
+                        this->hBox_myFavorite->addWidget(this->collection_myFavorite[i]);
+                    }
+                }
+                else{
+                    NoData_Widget *noData_widget = new NoData_Widget(NoData_Widget::NoData_Message::Rosetube_NoData);
+                    noData_widget->setFixedSize(1500, 308);
+                    noData_widget->setObjectName("Nodata");
+
+                    this->hBox_myFavorite->addWidget(noData_widget);
+                }
+            }
+
+            ContentLoadingwaitingMsgHide();
         }
     }
 
 
     void RoseTube_Collection::setUIControl_appendWidget_Delete(){
 
-        int max_cnt = this->hBox_myCaching->count();
-        for(int i = 0; i < max_cnt; i++){
-            this->collection_myCaching[i]->hide();
-            this->collection_myCaching[i]->disconnect();
-            this->hBox_myCaching->removeWidget(this->collection_myCaching[i]);
+        QWidget *tmpWidget = this->hBox_myCaching->itemAt(0)->widget();
+        //qDebug() << this->hBox_myPlaylist->count() << tmpWidget->objectName();
+
+        if(tmpWidget->objectName() != "NoData"){
+            for(int i = 0; i < this->hBox_myCaching->count(); i++){
+                this->collection_myCaching[i]->hide();
+                this->collection_myCaching[i]->disconnect();
+                this->hBox_myCaching->removeWidget(this->collection_myCaching[i]);
+            }
         }
         GSCommon::clearLayout(this->hBox_myCaching);
 
@@ -496,40 +671,43 @@ namespace rosetube {
         if(maxCount > 0){
             for(int i = 0; i < maxCount; i++){
                 this->collection_myCaching[i] = new rosetube::ItemTrack_rosetube(i, SECTION_FOR_MORE_POPUP___MyCaching, tidal::AbstractItem::ImageSizeMode::Ractangle_360x200, true);
-                connect(this->collection_myCaching[i], &rosetube::ItemTrack_rosetube::signal_clicked, this, &RoseTube_Collection::slot_clickedItemPlaylist);
             }
 
             for(int i = 0; i < maxCount; i++){
                 QJsonObject tmpCaching = this->jsonArr_myCaching.at(i).toObject();
+                tmpCaching.insert("favorite_view", false);
 
                 QString trackId = ProcJsonEasy::getString(tmpCaching, "id");
 
                 if(this->jsonObj_CacheLock.contains(trackId)){
                     tmpCaching.insert("flag_lock", true);
+
+                    this->jsonArr_myCachLock.append(true);
+                }
+                else{
+                    tmpCaching.insert("flag_lock", false);
+
+                    this->jsonArr_myCachLock.append(false);
                 }
 
                 this->collection_myCaching[i]->setData(tmpCaching);
+                QCoreApplication::processEvents();
+            }
+
+            for(int i = 0; i < maxCount; i++){
+                connect(this->collection_myCaching[i], &rosetube::ItemTrack_rosetube::signal_clicked, this, &RoseTube_Collection::slot_clickedItemPlaylist);
                 this->hBox_myCaching->addWidget(this->collection_myCaching[i]);
             }
         }
         else{            
-            this->widget_myCaching->disconnect();
-            this->vBox_myCaching->removeWidget(this->widget_myCaching);
-            GSCommon::clearLayout(this->vBox_myCaching);
+            NoData_Widget *noData_widget = new NoData_Widget(NoData_Widget::NoData_Message::Rosetube_NoData);
+            noData_widget->setFixedSize(1500, 308);
+            noData_widget->setObjectName("Nodata");
 
-            this->widget_myCaching = new QWidget();
-            QString subTitle = tr("Cache content");
-            this->widget_myCaching = this->setUIControl_subTitle_withSideBtn(subTitle, "View All", BTN_IDX_SUBTITLE_MyCaching, this->vBox_myCaching);
-
-            this->vBox_myCaching->addSpacing(10);
-
-            NoData_Widget *noData_widget = new NoData_Widget(NoData_Widget::NoData_Message::Track_NoData);
-            noData_widget->setFixedSize(1500, 290);
-
-            this->vBox_myCaching->addWidget(noData_widget);
+            this->hBox_myCaching->addWidget(noData_widget);
         }
 
-        this->slot_hide_msg();
+        ContentLoadingwaitingMsgHide();
     }
 
 
@@ -605,6 +783,123 @@ namespace rosetube {
     }
 
 
+    void RoseTube_Collection::slot_applyResult_MyPlaylistCheck(const QList<roseHome::PlaylistItemData> &list_data, const QJsonArray &jsonArr_dataToPlay, const bool flag_lastPage){
+
+        Q_UNUSED(jsonArr_dataToPlay);
+        Q_UNUSED(flag_lastPage);
+
+        int change_flag = 0;
+
+        if(list_data.size() > 0){
+            if(this->list_MyPlaylist->count() == 0){
+                this->list_MyPlaylist->clear();
+                this->list_MyPlaylist->append(list_data);
+
+                this->flag_myPlaylist_check[1] = true;
+            }
+            else{
+                int maxCount = (list_data.count() > this->list_MyPlaylist->count()) ? this->list_MyPlaylist->count() : list_data.count();
+
+                for(int i = 0; i < maxCount; i++){
+                    if((list_data.at(i).id != this->list_MyPlaylist->at(i).id) || (list_data.at(i).title != this->list_MyPlaylist->at(i).title) || (list_data.at(i).star != this->list_MyPlaylist->at(i).star)){
+                        change_flag++;
+                    }
+                }
+
+                if((list_data.at(0).totalCount != this->list_MyPlaylist->at(0).totalCount) || (change_flag > 0)){
+                    this->list_MyPlaylist->clear();
+                    this->list_MyPlaylist->append(list_data);
+
+                    this->flag_myPlaylist_check[1] = true;
+                }
+            }
+        }
+        else if(list_data.size() == 0 && this->list_MyPlaylist->size() != 0){
+            this->list_MyPlaylist->clear();
+
+            this->flag_myPlaylist_check[1] = true;
+        }
+
+        this->flag_myPlaylist_check[0] = true;
+        this->setUIControl_checkWidget_rose();
+    }
+
+
+    void RoseTube_Collection::slot_applyResult_favoriteTracksCheck(const QList<roseHome::TrackItemData> &list_data, const QJsonArray &jsonArr_dataToPlay, const bool flag_lastPage){
+
+        Q_UNUSED(flag_lastPage);
+
+        int change_flag = 0;
+
+        if(list_data.size() > 0){
+            if(this->list_MyFavorite->count() == 0){
+                this->list_MyFavorite->clear();
+                this->jsonArr_myFavorite = QJsonArray();
+
+                this->list_MyFavorite->append(list_data);
+                this->jsonArr_myFavorite = jsonArr_dataToPlay;
+
+                this->flag_myFavorite_check[1] = true;
+            }
+            else{
+                int maxCount = (list_data.count() > this->list_MyFavorite->count()) ? this->list_MyFavorite->count() : list_data.count();
+
+                for(int i = 0; i < maxCount; i++){
+                    if(jsonArr_dataToPlay.at(i) != this->jsonArr_myFavorite.at(i)){
+                        change_flag++;
+                    }
+                }
+
+                if((list_data.at(0).totalCount != this->list_MyFavorite->at(0).totalCount) || (change_flag > 0)){
+                    this->list_MyFavorite->clear();
+                    this->jsonArr_myFavorite = QJsonArray();
+
+                    this->list_MyFavorite->append(list_data);
+                    this->jsonArr_myFavorite = jsonArr_dataToPlay;
+
+                    this->flag_myFavorite_check[1] = true;
+                }
+            }
+        }
+        else if(list_data.size() == 0 && this->list_MyFavorite->count() != 0){
+            this->list_MyFavorite->clear();
+
+            this->flag_myFavorite_check[1] = true;
+        }
+
+        this->flag_myFavorite_check[0] = true;
+        this->setUIControl_checkWidget_rose();
+    }
+
+
+    void RoseTube_Collection::slot_applyResult_getRating_track(const QJsonArray &contents){
+
+        if(contents.size() > 0){
+
+            QJsonObject tmpObj = contents.at(0).toObject();
+
+            if(tmpObj.value("flagOk").toBool() == true && tmpObj.value("message").toString() == "정상"){
+                if(this->flag_fav_type == SECTION_FOR_MORE_POPUP___MyFavorites){
+                    this->collection_myFavorite[this->flag_fav_idx]->setFavorite_btnHeart(this->flag_fav_star == 0 ? false : true, this->flag_fav_star);
+                }
+                else if(this->flag_fav_type == SECTION_FOR_MORE_POPUP___MyCaching){
+                    this->collection_myCaching[this->flag_fav_idx]->setFavorite_btnHeart(this->flag_fav_star == 0 ? false : true, this->flag_fav_star);
+                }
+            }
+        }
+
+        ContentLoadingwaitingMsgHide();
+
+        if(contents.size() > 0 && this->flag_fav_star == 0){
+            roseHome::ProcCommon *proc_myFavorite = new roseHome::ProcCommon(this);
+            connect(proc_myFavorite, &roseHome::ProcCommon::completeReq_list_tracks, this, &RoseTube_Collection::slot_applyResult_favoriteTracksCheck);
+            proc_myFavorite->request_rose_getList_favoriteTracks("TRACK_RECENT", "YOUTUBE", 0, 15);
+
+            print_debug();ContentLoadingwaitingMsgShow(tr("Content is being loaded. Please wait."));
+        }
+    }
+
+
     void RoseTube_Collection::slot_responseHttp(const int& p_id, const QJsonObject& p_jsonObj){
 
         if(p_id == HTTP_CACHING_LOCK){
@@ -616,6 +911,8 @@ namespace rosetube {
             if(this->flag_cache_lock_send == true){
                 this->flag_cache_lock_send = false;
                 this->collection_myCaching[this->cache_lock_index]->setCacheImgShow(this->cache_lock_state);
+
+                this->jsonArr_myCachLock.replace(this->cache_lock_index, this->cache_lock_state);
             }
             else{
                 QJsonObject json;
@@ -657,7 +954,7 @@ namespace rosetube {
                     if(this->jsonArr_myCaching == compareArr){
                         this->flag_page_reload = false;
 
-                        this->slot_hide_msg();
+                        ContentLoadingwaitingMsgHide();
 
                         return;
                     }
@@ -710,6 +1007,26 @@ namespace rosetube {
                                  true);
             }
         }
+        else if(p_id == HTTP_CACHING_LOCK_ROSE){
+
+            if(p_jsonObj.contains("lock")){
+                QJsonObject tmpLock = ProcJsonEasy::getJsonObject(p_jsonObj, "lock");
+
+                for(int i = 0; i < this->jsonArr_myCaching.count(); i++){
+                    QJsonObject tmpId = this->jsonArr_myCaching.at(i).toObject();
+                    QString cacheId = ProcJsonEasy::getString(tmpId, "id");
+
+                    if(tmpLock.contains(cacheId) == true){
+                        this->jsonArr_myCachLock.replace(i, true);
+                        this->collection_myCaching[i]->setCacheImgShow(true);
+                    }
+                    else{
+                        this->jsonArr_myCachLock.replace(i, false);
+                        this->collection_myCaching[i]->setCacheImgShow(false);
+                    }
+                }
+            }
+        }
         else if(p_id == HTTP_CACHING_DELETE_ITEM){
 
             if(p_jsonObj.contains("code") && (p_jsonObj.value("code").toString() == "G0000")){
@@ -728,12 +1045,6 @@ namespace rosetube {
         }
 
         sender()->deleteLater();
-    }
-
-
-    void RoseTube_Collection::slot_hide_msg(){
-
-        ContentLoadingwaitingMsgHide();
     }
 
 
@@ -771,6 +1082,40 @@ namespace rosetube {
             this->setJsonObject_forData(tmpCode);
             this->setActivePage();
         }
+    }
+
+
+    void RoseTube_Collection::slot_change_cache_state(){
+
+        NetworkHttp *network = new NetworkHttp();
+        connect(network, SIGNAL(response(int,QJsonObject)), SLOT(slot_responseHttp(int,QJsonObject)));
+
+        QString Url = "http://" + global.device.getDeviceIP() + ":" + global.port + "/tube_cache_lock";
+        QJsonObject json;
+        network->request(HTTP_CACHING_LOCK_ROSE,
+                         Url,
+                         json,
+                         true,
+                         true);
+    }
+
+
+    void RoseTube_Collection::slot_change_cache_list(){
+
+        this->flag_cache_delete_send = true;
+
+        QJsonObject json;
+        json.insert("page", 0);
+
+        NetworkHttp *network = new NetworkHttp();
+        connect(network, SIGNAL(response(int,QJsonObject)), SLOT(slot_responseHttp(int,QJsonObject)));
+
+        QString Url = "http://" + global.device.getDeviceIP() + ":" +global.port + "/tube_cache_contents_get";
+        network->request(HTTP_CACHING_CONTENTS,
+                         Url,
+                         json,
+                         true,
+                         true);
     }
 
 
@@ -853,8 +1198,51 @@ namespace rosetube {
         }
         else if(section == SECTION_FOR_MORE_POPUP___MyFavorites){
 
-            if(clickMode == tidal::AbstractItem::ClickMode::FavBtn_Add){
+            if(clickMode == tidal::AbstractItem::ClickMode::FavBtn_Add || clickMode == tidal::AbstractItem::ClickMode::FavBtn_Addx2
+                    || clickMode == tidal::AbstractItem::ClickMode::FavBtn_Addx3 || clickMode == tidal::AbstractItem::ClickMode::FavBtn_Delete){
 
+                bool flag_fav = false;
+                int star_fav = 0;
+
+                if(clickMode == tidal::AbstractItem::ClickMode::FavBtn_Add){
+                    flag_fav = true;
+                    star_fav = 1;
+                }
+                else if(clickMode == tidal::AbstractItem::ClickMode::FavBtn_Addx2){
+                    flag_fav = true;
+                    star_fav = 2;
+                }
+                else if(clickMode == tidal::AbstractItem::ClickMode::FavBtn_Addx3){
+                    flag_fav = true;
+                    star_fav = 3;
+                }
+                else if(clickMode == tidal::AbstractItem::ClickMode::FavBtn_Delete){
+                    flag_fav = true;
+                    star_fav = 0;
+                }
+
+                this->flag_fav_idx = index;
+                this->flag_fav_star = star_fav;
+                this->flag_fav_type = SECTION_FOR_MORE_POPUP___MyFavorites;
+
+                QJsonObject track = this->jsonArr_myFavorite.at(index).toObject();
+
+                QJsonObject ratingInfo;
+                ratingInfo.insert("favorite", flag_fav);
+                ratingInfo.insert("star", star_fav);
+                ratingInfo.insert("thumbup", false);
+                ratingInfo.insert("type", "YOUTUBE");
+
+                QJsonObject json;
+                json.insert("track", track);
+                json.insert("ratingInfo", ratingInfo);
+
+                // request HTTP API - get favorite for Rose Server
+                roseHome::ProcCommon *proc_fav_track = new roseHome::ProcCommon(this);
+                connect(proc_fav_track, &roseHome::ProcCommon::completeReq_rating_track, this, &RoseTube_Collection::slot_applyResult_getRating_track);
+                proc_fav_track->request_rose_setRating_Track(json, flag_fav, star_fav);
+
+                print_debug();ContentLoadingwaitingMsgShow(tr("Content is being loaded. Please wait."));
             }
             else{
 
@@ -918,8 +1306,51 @@ namespace rosetube {
         }
         else if(section == SECTION_FOR_MORE_POPUP___MyCaching){
 
-            if(clickMode == tidal::AbstractItem::ClickMode::FavBtn_Add){
+            if(clickMode == tidal::AbstractItem::ClickMode::FavBtn_Add || clickMode == tidal::AbstractItem::ClickMode::FavBtn_Addx2
+                    || clickMode == tidal::AbstractItem::ClickMode::FavBtn_Addx3 || clickMode == tidal::AbstractItem::ClickMode::FavBtn_Delete){
 
+                bool flag_fav = false;
+                int star_fav = 0;
+
+                if(clickMode == tidal::AbstractItem::ClickMode::FavBtn_Add){
+                    flag_fav = true;
+                    star_fav = 1;
+                }
+                else if(clickMode == tidal::AbstractItem::ClickMode::FavBtn_Addx2){
+                    flag_fav = true;
+                    star_fav = 2;
+                }
+                else if(clickMode == tidal::AbstractItem::ClickMode::FavBtn_Addx3){
+                    flag_fav = true;
+                    star_fav = 3;
+                }
+                else if(clickMode == tidal::AbstractItem::ClickMode::FavBtn_Delete){
+                    flag_fav = true;
+                    star_fav = 0;
+                }
+
+                this->flag_fav_idx = index;
+                this->flag_fav_star = star_fav;
+                this->flag_fav_type = SECTION_FOR_MORE_POPUP___MyCaching;
+
+                QJsonObject track = this->jsonArr_myCaching.at(index).toObject();
+
+                QJsonObject ratingInfo;
+                ratingInfo.insert("favorite", flag_fav);
+                ratingInfo.insert("star", star_fav);
+                ratingInfo.insert("thumbup", false);
+                ratingInfo.insert("type", "YOUTUBE");
+
+                QJsonObject json;
+                json.insert("track", track);
+                json.insert("ratingInfo", ratingInfo);
+
+                // request HTTP API - get favorite for Rose Server
+                roseHome::ProcCommon *proc_fav_track = new roseHome::ProcCommon(this);
+                connect(proc_fav_track, &roseHome::ProcCommon::completeReq_rating_track, this, &RoseTube_Collection::slot_applyResult_getRating_track);
+                proc_fav_track->request_rose_setRating_Track(json, flag_fav, star_fav);
+
+                print_debug();ContentLoadingwaitingMsgShow(tr("Content is being loaded. Please wait."));
             }
             else{
 
@@ -985,15 +1416,9 @@ namespace rosetube {
                     data_header.imageUrl = ProcJsonEasy::getString(tmpObj, "thumbnailUrl");
                     data_header.data_pk = "https://youtu.be/" + ProcJsonEasy::getString(tmpObj, "id");
                     data_header.type = "YOUTUBE";      //j220906 share link
+                    data_header.cache_lock = this->jsonArr_myCachLock.at(index).toBool();
                     data_header.flagProcStar = false;
                     data_header.isShare = true;      //j220906 share link
-
-                    if(this->jsonObj_CacheLock.contains(data_header.data_pk)){
-                        data_header.cache_lock = true;
-                    }
-                    else{
-                        data_header.cache_lock = false;
-                    }
 
                     // OptMorePopup 띄우기 필요
                     this->makeObj_optMorePopup(OptMorePopup::Rosetube_Caching, data_header, index, section);
@@ -1006,7 +1431,24 @@ namespace rosetube {
     void RoseTube_Collection::slot_optMorePopup_menuClicked(const OptMorePopup::ClickMode clickMode, const int index, const int section){
 
         if(section == SECTION_FOR_MORE_POPUP___MyPlaylists){
-            this->proc_clicked_optMorePopup_fromPlaylist(this->list_MyPlaylist, index, SECTION_FOR_MORE_POPUP___MyPlaylists, clickMode);
+            if(clickMode == OptMorePopup::ClickMode::Edit){
+                QString view_type = "edit";
+
+                QJsonObject data;
+                data.insert("view_type", view_type);
+                data.insert("playlist_id", this->list_MyPlaylist->at(index).id);
+                data.insert("type", "ROSE");
+
+                QJsonObject jsonObj_move;
+                jsonObj_move.insert("data", data);
+
+                jsonObj_move.insert(KEY_PAGE_CODE, PAGECODE_RT_ADDPLAYLIST);
+
+                emit linker->signal_clickedMovePage(jsonObj_move);
+            }
+            else{
+                this->proc_clicked_optMorePopup_fromPlaylist(this->list_MyPlaylist, index, SECTION_FOR_MORE_POPUP___MyPlaylists, clickMode);
+            }
         }
         else if(section == SECTION_FOR_MORE_POPUP___MyFavorites){
             if(clickMode == OptMorePopup::ClickMode::Share){//c220823
@@ -1164,7 +1606,7 @@ namespace rosetube {
 
                     this->flag_cache_delete_send = true;
 
-                    ContentLoadingwaitingMsgShow(tr("Content is being loaded. Please wait."));
+                    print_debug();ContentLoadingwaitingMsgShow(tr("Content is being loaded. Please wait."));
                 }
             }
         }

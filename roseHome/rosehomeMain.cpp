@@ -1,18 +1,17 @@
-#include "rosehomeMain.h"
+#include "roseHome/rosehomeMain.h"
+
+#include "common/gscommon.h"
+#include "common/networkhttp.h"
+#include "common/ProcJsonEasy.h"
+#include "common/global.h"
+
+#include "widget/toastmsg.h"
 
 #include <QDebug>
 #include <QGraphicsDropShadowEffect>
 #include <QMetaObject>
 #include <QResizeEvent>
 
-#include <common/gscommon.h>
-#include "widget/toastmsg.h"
-
-#include <common/networkhttp.h>
-#include "common/ProcJsonEasy.h"
-#include "common/global.h"
-
-#include "common/common_struct.h"
 
 namespace roseHome {
 
@@ -24,12 +23,12 @@ namespace roseHome {
      */
     roseHomeMain::roseHomeMain(QWidget *parent) : AbstractMainContent(parent){
 
-        linker = Linker::getInstance();
-        connect(linker, &Linker::signal_clicked_movePage, this, &roseHomeMain::goToMoveNewOrderPage);
-        connect(linker, SIGNAL(signal_dragEnterEvent_hide_show(bool)), SLOT(slot_dragEnterEvent_hide_show(bool)));//c220730
-        connect(linker, SIGNAL(signal_dropEvent_hide_show(bool)), SLOT(slot_dropEvent_hide_show(bool)));//c220730
+        this->linker = Linker::getInstance();
+        connect(this->linker, &Linker::signal_clicked_movePage, this, &roseHomeMain::goToMoveNewOrderPage);
+        connect(this->linker, SIGNAL(signal_dragEnterEvent_hide_show(bool)), SLOT(slot_dragEnterEvent_hide_show(bool)));//c220730
+        connect(this->linker, SIGNAL(signal_dropEvent_hide_show(bool)), SLOT(slot_dropEvent_hide_show(bool)));//c220730
 
-        make_CustomLineEdit();//c220730
+        this->make_CustomLineEdit();//c220730
 
         //this->le_search_back->setFixedSize(global.width_mainwindow-200,global.height_mainwindow);
         //make_CustomLineEdit();//c220730
@@ -50,13 +49,14 @@ namespace roseHome {
         this->le_search_back->hide();*/
 
         this->setUIControl();
-
     }
+
 
     roseHomeMain::~roseHomeMain(){
 
-        //this->deleteLater();
+        this->deleteLater();
     }
+
 
     void roseHomeMain::slot_overrideSigalSearch(bool b){//c220728
         print_debug();
@@ -66,8 +66,8 @@ namespace roseHome {
             slot_dragEnterEvent_hide_show(false);
             emit linker->signal_checkQueue(30, "");//c220729
         }
-
     }
+
 
     void roseHomeMain::slot_dragEnterEvent_hide_show(bool show){//c220826_1
         print_debug();
@@ -202,7 +202,6 @@ namespace roseHome {
         qDebug() << "pageCode=" << pageCode;
         // 서브 메뉴페이지에 대한 처리
         if(pageCode == PAGECODE_RH_HOME){
-
             this->sub_home = this->procCommon_showSubPage<roseHome::RoseHome>(true, this->sub_home, data);
         }        
         else if(pageCode == PAGECODE_RH_FAVORITE){
@@ -219,22 +218,28 @@ namespace roseHome {
         }
         else if(pageCode == PAGECODE_RH_FRIEND){//cheon211018
             this->sub_friend = this->procCommon_showSubPage<roseHome::RoseHomeFriend>(true, this->sub_friend, data);
-
         }
 
         else if(pageCode == PAGECODE_RH_ALBUM_DETAIL){
-
             sub_albumDetail = this->procCommon_showSubPage<roseHome::RoseHomeAlbumDetail>(false, this->sub_albumDetail, data);
         }
         else if(pageCode == PAGECODE_RH_ALBUM_LIST_ALL_VIEW){
             this->sub_albumAll = this->procCommon_showSubPage<roseHome::RoseHomeAlbumListAll>(false, this->sub_albumAll, data);
         }
+        else if(pageCode == PAGECODE_RH_ARTIST_DETAIL){
+            this->sub_artistDetail = this->procCommon_showSubPage<roseHome::RoseHomeArtistDetail>(false, this->sub_artistDetail, data);
+        }
+        else if(pageCode == PAGECODE_RH_ARTIIST_LIST_ALL_VIEW){
+            this->sub_artistAll = this->procCommon_showSubPage<roseHome::RoseHomeArtistListAll>(false, this->sub_artistAll, data);
+        }
         else if(pageCode == PAGECODE_RH_PLAYLIST_DETAIL){
-
             this->sub_playlistDetail = this->procCommon_showSubPage<roseHome::RoseHomePlaylistDetail>(false, this->sub_playlistDetail, data);
         }
         else if(pageCode == PAGECODE_RH_PLAYLIST_ROSE_DETAIL){
             this->sub_playlistDetail_rose = this->procCommon_showSubPage<roseHome::RoseHomePlaylistDetail_Rose>(false, this->sub_playlistDetail_rose, data);
+        }
+        else if(pageCode == PAGECODE_RH_HISTORY_DETAIL){
+            this->sub_historyDetail = this->procCommon_showSubPage<roseHome::RoseHomeHisotryDetail>(false, this->sub_historyDetail, data);
         }
         else if(pageCode == PAGECODE_RH_PLAYLIST_LIST_ALL_VIEW){
             this->sub_playlistAll = this->procCommon_showSubPage<roseHome::RoseHomePlaylistListAll>(false, this->sub_playlistAll, data);
@@ -242,11 +247,29 @@ namespace roseHome {
         else if(pageCode == PAGECODE_RH_TRACK_LIST_ALL_VIEW){
             this->sub_tracklistAll = this->procCommon_showSubPage<roseHome::RoseHomeTrackListAll>(false, this->sub_tracklistAll, data);
         }
+        else if(pageCode == PAGECODE_RH_RECENTLY_LIST_DELETE){
+            this->sub_roseRecentlyDelete = this->procCommon_showSubPage<roseHome::RoseHomeRecentlyListDelete>(false, this->sub_roseRecentlyDelete, data);
+        }
         else if(pageCode == PAGECODE_RH_TRACK_SHARE_LIST_ALL_VIEW){
             this->sub_tracklistAll_share = this->procCommon_showSubPage<roseHome::RoseHomeTrackListAll_Share>(false, this->sub_tracklistAll_share, data);
         }
         else if(pageCode == PAGECODE_RH_ROSETUBE_LIST_ALL_VIEW){
             this->sub_rosetubeAll = this->procCommon_showSubPage<roseHome::RoseHomeRosetubeListAll>(false, this->sub_rosetubeAll, data);
+        }
+        else if(pageCode == PAGECODE_RH_PLAYLIST_HISTORY_ALL_VIEW){
+            this->sub_playlistHistoryAll = this->procCommon_showSubPage<roseHome::RoseHomePlaylistHistoryAll>(false, this->sub_playlistHistoryAll, data);
+        }
+        else if(pageCode == PAGECODE_RH_ALBUM_HISTORY_ALL_VIEW){
+            this->sub_albumHistoryAll = this->procCommon_showSubPage<roseHome::RoseHomeAlbumHistoryAll>(false, this->sub_albumHistoryAll, data);
+        }
+        else if(pageCode == PAGECODE_RH_TRACK_HISTORY_ALL_VIEW){
+            this->sub_trackHistroyAll = this->procCommon_showSubPage<roseHome::RoseHomeTrackHistoryAll>(false, this->sub_trackHistroyAll, data);
+        }
+        else if(pageCode == PAGECODE_RH_ARTIST_HISTORY_ALL_VIEW){
+            this->sub_artistHistroyAll = this->procCommon_showSubPage<roseHome::RoseHomeArtistHistoryAll>(false, this->sub_artistHistroyAll, data);
+        }
+        else if(pageCode == PAGECODE_RH_HISTORY_LIST_VIEW){
+            this->sub_historyAll = this->procCommon_showSubPage<roseHome::RoseHomeHisotryListAll>(false, this->sub_historyAll, data);
         }
         else if(pageCode == PAGECODE_RH_ADD_PLAYLIST){
             this->sub_roseAddPlaylist = this->procCommon_showSubPage<roseHome::RoseHomeAddPlaylist>(false, this->sub_roseAddPlaylist, data);
@@ -259,10 +282,10 @@ namespace roseHome {
      * @param sub_widget
      */
     template<typename T_roseHomeSub> T_roseHomeSub* roseHomeMain::procCommon_showSubPage(const bool flagShow_topBar, T_roseHomeSub* sub_widget, const QJsonObject &jsonObj_data){
-        this->topMenuBar->setVisible(flagShow_topBar);
-        print_debug();
 
-        if(sub_widget == nullptr){
+        this->topMenuBar->setVisible(flagShow_topBar);
+
+        if(sub_widget == nullptr || ProcJsonEasy::getString(jsonObj_data, "pageCode") == PAGECODE_RH_ARTIST_DETAIL){        //  || ProcJsonEasy::getString(jsonObj_data, "pageCode") ==  PAGECODE_RH_RECENTLY_LIST_DELETE
             print_debug();
             sub_widget = new T_roseHomeSub();
             this->stackedWidget_content->addWidget(sub_widget);
@@ -270,8 +293,10 @@ namespace roseHome {
             sub_widget->setConnectSiganl_toMovePage(this, SLOT(slot_clickedMoveSubPage(const QJsonObject&)));
         }
 
+        QString tmpPageCode = ProcJsonEasy::getString(jsonObj_data, "pageCode");
+
         stackedWidget_content->setCurrentWidget(sub_widget);
-        if(ProcJsonEasy::getString(jsonObj_data, "pageCode") == PAGECODE_RH_FAVORITE){
+        if(tmpPageCode == PAGECODE_RH_FAVORITE){
             sub_widget->setJsonObject_forData(jsonObj_data);
         }
         else{

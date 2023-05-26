@@ -130,7 +130,7 @@ void dialogsetting_internal_150::setUIControl(){
 
     QWidget *widget_total_MQA = new QWidget();
     widget_total_MQA->setObjectName("widget_total");
-    widget_total_MQA->setStyleSheet("#widget_total { border_top:1px solid #707070;border-bottom:1px solid #707070; } ");
+    widget_total_MQA->setStyleSheet("#widget_total { border-top:1px solid #707070;border-bottom:1px solid #707070; } ");
     widget_total_MQA->setLayout(hl_lb_MQA);
 
     print_debug();
@@ -174,7 +174,7 @@ void dialogsetting_internal_150::setUIControl(){
 
     QWidget *widget_total_PCM = new QWidget();
     widget_total_PCM->setObjectName("widget_total");
-    widget_total_PCM->setStyleSheet("#widget_total { border_top:1px solid #707070;border-bottom:1px solid #707070; } ");
+    widget_total_PCM->setStyleSheet("#widget_total { border-top:1px solid #707070;border-bottom:1px solid #707070; } ");
     widget_total_PCM->setLayout(hl_lb_PCM);
 
 

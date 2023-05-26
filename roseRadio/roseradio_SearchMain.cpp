@@ -15,7 +15,7 @@
 
 namespace roseRadio {
 
-    const QString tmp_btnStyle      = "padding:10px;border:1px solid #707070;color:#CCCCCC;font-size:18px;";//cheon211008
+    const QString tmp_btnStyle      = "padding:8px;border:1px solid #707070;color:#CCCCCC;font-size:16px;";//cheon211008
     //const QString tmp_btnStyleHover = "background-color:#B18658;color:#FFFFFF;";//cheon211115-01
     const QString tmp_btnStyleHover = "background-color:#CCCCCC;color:#FFFFFF;";//cheon211115-01
     const QString tmp_btnStyleHover_selected = "background-color:#B18658;color:#FFFFFF;";//cheon211115-01
@@ -66,6 +66,9 @@ namespace roseRadio {
 
             this->data_search = common::ConvertData_common::convertData_searchData(jsonObj);
             this->label_mainTitle->setText(QString("'%1' ").arg(this->data_search.search_word) + tr("Search result"));
+        }
+        else{
+            print_debug();ContentLoadingwaitingMsgHide();   //j230328
         }
     }
 
@@ -157,9 +160,9 @@ namespace roseRadio {
             this->jsonArr_region = QJsonArray();
             this->jsonArr_language = QJsonArray();
 
-            ContentLoadingwaitingMsgShow(tr("Content is being loaded. Please wait."));
+            print_debug();ContentLoadingwaitingMsgShow(tr("Content is being loaded. Please wait."));
 
-            this->setUIControl_Filter();
+            this->setUIControl_filter();
 
             this->list_genreInfo->clear();
             for(int i = 0; i < global.user_forRoseRadio.getGenreInfo()->size(); i++){
@@ -285,7 +288,7 @@ namespace roseRadio {
     }
 
 
-    void roseRadioSearchMain::setUIControl_Filter(){
+    void roseRadioSearchMain::setUIControl_filter(){
 
         if(this->flag_flow_draw == true){
             if(this->search_filter_cnt > 0){
@@ -371,7 +374,7 @@ namespace roseRadio {
             else{
                 this->next_offset++;
 
-                ContentLoadingwaitingMsgShow(tr("Content is being loaded. Please wait."));
+                print_debug();ContentLoadingwaitingMsgShow(tr("Content is being loaded. Please wait."));
             }
 
             // request HTTP API
@@ -931,7 +934,7 @@ namespace roseRadio {
 
         this->box_contents->addWidget(this->widget_search);
 
-        ContentLoadingwaitingMsgShow(tr("Content is being loaded. Please wait."));
+        print_debug();ContentLoadingwaitingMsgShow(tr("Content is being loaded. Please wait."));
 
         // request HTTP API
         this->request_more_searchData();

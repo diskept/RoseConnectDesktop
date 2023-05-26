@@ -15,7 +15,7 @@
 
 namespace qobuz {
 
-    const QString tmp_btnStyle      = "padding:10px;border:1px solid #707070;color:#CCCCCC;font-size:18px;";//cheon211008
+    const QString tmp_btnStyle      = "padding:8px;border:1px solid #707070;color:#CCCCCC;font-size:16px;";//cheon211008
     //const QString tmp_btnStyleHover = "background-color:#B18658;color:#FFFFFF;";//cheon211115-01
     const QString tmp_btnStyleHover = "background-color:#CCCCCC;color:#FFFFFF;";//cheon211115-01
     const QString tmp_btnStyleHover_selected = "background-color:#B18658;color:#FFFFFF;";//cheon211115-01
@@ -138,7 +138,7 @@ namespace qobuz {
             this->flag_track[1] = false;
             this->flag_playlist[1] = false;
 
-            ContentLoadingwaitingMsgShow(tr("Content is being loaded. Please wait."));
+            print_debug();ContentLoadingwaitingMsgShow(tr("Content is being loaded. Please wait."));
 
             this->data_search.search_keyword = this->data_search.search_word;
 
@@ -202,6 +202,9 @@ namespace qobuz {
             proc->request_qobuz_searchAllItems(this->data_search.search_word, 15, 0, ProcCommon::QobuzSearch_ContentType::Playlists);
             */
         }
+        else{
+            print_debug();ContentLoadingwaitingMsgHide();   //j230328
+        }
     }
 
 
@@ -214,6 +217,15 @@ namespace qobuz {
 
             // 항상 부모클래스의 함수 먼저 호출
             AbstractQobuzSubWidget::setActivePage();
+
+            // j230407 Removing ghosting effect start
+            if(this->widget_main_contents != nullptr){
+                this->widget_main_contents->hide();
+                this->box_contents->removeWidget(this->widget_main_contents);
+
+                delete this->widget_main_contents;
+            }
+            // j230407 Removing ghosting effect finish
 
             this->box_contents->removeWidget(this->widget_main_contents);
             GSCommon::clearLayout(this->box_contents);
@@ -299,7 +311,7 @@ namespace qobuz {
         // 상단 필터
         this->widget_btnFilter = new QWidget();
         this->widget_btnFilter->setObjectName("widget_btnFilter");
-        this->widget_btnFilter->setStyleSheet("#widget_btnFilter { background-color:#171717; }");
+        this->widget_btnFilter->setStyleSheet("#widget_btnFilter { background-color: transparent; }");
         this->widget_btnFilter->setFixedSize(global.LmtCnt, 75);//c220805
 
         this->btn_filter_ico = GSCommon::getUIBtnImg("btn_filter",":/images/ico_filter.png", this->widget_btnFilter);
@@ -771,7 +783,7 @@ namespace qobuz {
         tmp_scrollArea->setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
         tmp_scrollArea->setStyleSheet("background-color:transparent; border:0px;");
         tmp_scrollArea->setContentsMargins(0,0,0,0);
-        tmp_scrollArea->setFixedHeight(275);
+        tmp_scrollArea->setFixedHeight(285);
 
         QScroller::grabGesture(tmp_scrollArea, QScroller::LeftMouseButtonGesture);
         //----------------------------------------------------------------------------------------------------  BODY : END
@@ -804,7 +816,7 @@ namespace qobuz {
         tmp_scrollArea->setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
         tmp_scrollArea->setStyleSheet("background-color:transparent; border:0px;");
         tmp_scrollArea->setContentsMargins(0,0,0,0);
-        tmp_scrollArea->setFixedHeight(250);
+        tmp_scrollArea->setFixedHeight(260);
 
         QScroller::grabGesture(tmp_scrollArea, QScroller::LeftMouseButtonGesture);
         //----------------------------------------------------------------------------------------------------  BODY : END
@@ -844,7 +856,7 @@ namespace qobuz {
         tmp_scrollArea->setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
         tmp_scrollArea->setStyleSheet("background-color:transparent; border:0px;");
         tmp_scrollArea->setContentsMargins(0,0,0,0);
-        tmp_scrollArea->setFixedHeight(291);
+        tmp_scrollArea->setFixedHeight(303);
 
         QScroller::grabGesture(tmp_scrollArea, QScroller::LeftMouseButtonGesture);
         //----------------------------------------------------------------------------------------------------
@@ -1201,23 +1213,23 @@ namespace qobuz {
 
     void QobuzSearchMain::slot_qobuz_completeReq_listAll_myFavoritesIds(const QJsonObject& p_jsonObj){
         // Favorite 정보를 전달해줌. 알아서 처리하라고. => OptMorePopup 에서 하라고, 가려줌
-        if(p_jsonObj.contains("flagOk") && ProcJsonEasy::get_flagOk(p_jsonObj)){
-            bool status  = ProcJsonEasy::getBool(p_jsonObj, "status");
+//        if(p_jsonObj.contains("flagOk") && ProcJsonEasy::get_flagOk(p_jsonObj)){
+//            bool status  = ProcJsonEasy::getBool(p_jsonObj, "status");
 
-            // Qobuz favorite toggle check
-            if(this->flag_send_track == true){
-                if((status == true && this->flag_track_fav == false) || (status == false && this->flag_track_fav == true)){
-                    // Qobuz Favorite toggle
-                    ProcCommon *proc = new ProcCommon(this);
-                    connect(proc, &qobuz::ProcCommon::completeReq_listAll_myFavoritesIds, this, &QobuzSearchMain::slot_qobuz_completeReq_listAll_myFavoritesIds);
-                    proc->request_qobuz_set_favorite("track", QString("%1").arg(this->track_id_fav), this->flag_track_fav);
-                }
-                this->flag_send_track = false;
-            }
-            else{
+//            // Qobuz favorite toggle check
+//            if(this->flag_send_track == true){
+//                if((status == true && this->flag_track_fav == false) || (status == false && this->flag_track_fav == true)){
+//                    // Qobuz Favorite toggle
+//                    ProcCommon *proc = new ProcCommon(this);
+//                    connect(proc, &qobuz::ProcCommon::completeReq_listAll_myFavoritesIds, this, &QobuzSearchMain::slot_qobuz_completeReq_listAll_myFavoritesIds);
+//                    proc->request_qobuz_set_favorite("track", QString("%1").arg(this->track_id_fav), this->flag_track_fav);
+//                }
+//                this->flag_send_track = false;
+//            }
+//            else{
 
-            }
-        }
+//            }
+//        }
     }
 
 

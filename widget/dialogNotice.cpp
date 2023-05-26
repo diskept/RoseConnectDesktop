@@ -8,6 +8,7 @@
 #include <QPainter>
 #include <QPainterPath>
 #include <QPixmap>
+#include <QScrollBar>
 
 
 const int DLG_WIDTH = 820;
@@ -54,19 +55,19 @@ void DialogNotice::setUIControl(){
 
     this->box_total = new QVBoxLayout();
 
-    if(this->confirmType == Qobuz_artist_more){
+    if(this->confirmType == Tidal_artist_more  || this->confirmType == Bugs_artist_more || this->confirmType == Qobuz_artist_more){
 
         QString tmp_text = QString("<html><head/><body><span style='font-size:20px; font-weight:500; line-height:1.88; color:#0F78F0;'>Biography</span></body></html>");
 
         this->lb_titleType = new QLabel(this->widget_total);
         this->lb_titleType->setAlignment(Qt::AlignLeft | Qt::AlignVCenter);
-        this->lb_titleType->setFixedSize(200, 25);
-        this->lb_titleType->setGeometry(30, 20, 0, 0);
+        this->lb_titleType->setFixedSize(200, 30);
+        this->lb_titleType->setGeometry(30, 15, 0, 0);
         this->lb_titleType->setText(tmp_text);
 
-        this->lb_title = new LabelLongAnimation(680, 530, 40, this->widget_total);
+        this->lb_title = new LabelLongAnimation(680, 530, 60, this->widget_total);
         this->lb_title->setStyleSheet("background-color:transparent;color:#FFFFFF;font-size:30px;font-weight:500;");
-        this->lb_title->setGeometry(30, 45, 0, 0);
+        this->lb_title->setGeometry(30, 50, 680, 60);
 
         QPushButton *btn_close = GSCommon::getUIBtnImg("btn_close", ":/images/icon_close_gray.png", this->widget_total);
         btn_close->setFixedSize(QSize(70, 70));
@@ -92,6 +93,13 @@ void DialogNotice::setUIControl(){
         this->scrollArea_content->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
         this->scrollArea_content->setVerticalScrollBarPolicy(Qt::ScrollBarAsNeeded);
         this->scrollArea_content->setStyleSheet("background-color:transparent;border:none;");
+        this->scrollArea_content->setAlignment(Qt::AlignTop);
+        this->scrollArea_content->verticalScrollBar()->setCursor(Qt::PointingHandCursor);
+        this->scrollArea_content->verticalScrollBar()->setStyleSheet("QScrollBar:vertical {border: none; background-color: transparent; width: 6px; margin: 3px 0px 3px 0px; }"
+                                                                    "QScrollBar::handle:vertical {background-color: #b18658; min-height: 60px; border-radius: 3px; }"
+                                                                    "QScrollBar::add-line:vertical {height: 0px; subcontrol-position: bottom; subcontrol-origin: margin; }"
+                                                                    "QScrollBar::sub-line:vertical {height: 0 px; subcontrol-position: top; subcontrol-origin: margin; }"
+                                                                    "QScrollBar::add-page:vertical, QScrollBar::sub-page:vertical {background: none; }");
         this->scrollArea_content->setFixedSize(730, 440);
         this->scrollArea_content->setGeometry(30, 110, 0, 0);
         this->scrollArea_content->setWidget(this->lb_content);
@@ -278,7 +286,7 @@ void DialogNotice::setUIControl(){
 
 void DialogNotice::setData_formJsonObj(const QJsonObject &jsonObj){
 
-    if(this->confirmType == Qobuz_artist_more){
+    if(this->confirmType == Tidal_artist_more || this->confirmType == Bugs_artist_more ||  this->confirmType == Qobuz_artist_more){
 
         QString artist = ProcJsonEasy::getString(jsonObj, "artist");
         this->lb_title->setText(artist);
@@ -568,21 +576,12 @@ void DialogNotice::slot_fileDownload_loadImage(){
         painter.setRenderHint(QPainter::SmoothPixmapTransform, true);
 
         QPainterPath path = QPainterPath();
-        path.addRoundedRect(0, 0, 140, 140, 2, 2);
+        path.addRoundedRect(0, 0, 140, 140, 6, 6);
+
+        int leftValue = (140 - tmp_pixmap.width()) / 2;
+        int topValue = (140 - tmp_pixmap.height()) / 2;
 
         painter.setClipPath(path);
-
-        int leftValue = 0;
-        int topValue = 0;
-
-        if(tmp_pixmap.width() > 140){
-            leftValue = (140 - tmp_pixmap.width()) / 2;
-        }
-
-        if(tmp_pixmap.height() > 140){
-            topValue = (140 - tmp_pixmap.height()) / 2;
-        }
-
         painter.drawPixmap(leftValue, topValue, tmp_pixmap);
         painter.end();
 

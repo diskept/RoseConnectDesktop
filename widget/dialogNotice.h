@@ -22,6 +22,7 @@ public:
         , Music_album_info
         , Tidal_album_credit
         , Tidal_artist_more
+        , Bugs_artist_more
         , Qobuz_album_info
         , Qobuz_artist_more
     };

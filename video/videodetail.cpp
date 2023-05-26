@@ -60,6 +60,9 @@ namespace video {
 
             this->jsonArr_tracks_toPlay = tmpTrackArr;
         }
+        else{
+            print_debug();ContentLoadingwaitingMsgHide();   //j230328
+        }
     }
 
 
@@ -103,7 +106,7 @@ namespace video {
             this->box_main_contents->addWidget(this->video_detail_info);
             this->box_main_contents->addSpacing(50);
 
-            ContentLoadingwaitingMsgShow(tr("Content is being loaded. Please wait."));
+            print_debug();ContentLoadingwaitingMsgShow(tr("Content is being loaded. Please wait."));
             this->slot_applyResult_videoAlbum();
             this->slot_applyResult_videoTrack();
         }
@@ -486,9 +489,13 @@ namespace video {
             //this->proc_clicked_optMorePopup_fromPlaylist(this->data_playlist, index, section, clickMode);
 
             if(clickMode == OptMorePopup::ClickMode::Play_RightNow
-                    || clickMode == OptMorePopup::ClickMode::SubMenu_QueueAdd_Last
-                    || clickMode == OptMorePopup::ClickMode::SubMenu_QueueAdd_Empty
-                    || clickMode == OptMorePopup::ClickMode::SubMenu_QueueAdd_CurrNext
+                    || clickMode == OptMorePopup::ClickMode::SubMenu_QueueAdd_Last_OnlyOne
+                    || clickMode == OptMorePopup::ClickMode::SubMenu_QueueAdd_Empty_OnlyOne
+                    || clickMode == OptMorePopup::ClickMode::SubMenu_Play_RightNow_OnlyOne
+                    || clickMode == OptMorePopup::ClickMode::SubMenu_QueueAdd_CurrNext_OnlyOne
+                    || clickMode == OptMorePopup::ClickMode::SubMenu_Play_FromHere
+                    || clickMode == OptMorePopup::ClickMode::SubMenu_Play_FromHere_procEmpty
+                    || clickMode == OptMorePopup::ClickMode::SubMenu_QueueAdd_FromHere_Last
             )
             {
                 // Rose Play 요청

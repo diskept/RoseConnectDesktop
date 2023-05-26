@@ -22,8 +22,11 @@ namespace rosetube {
 
         void setData(const QJsonObject &jsonObj);
         void setCacheImgShow(bool flag);
+        void setFavorite_btnHeart(const bool, const int);
 
         int get_fixedHeight() override;
+        int get_fixedWidth();
+        int get_rightMargin();
 
     private:
         void setUIControl();

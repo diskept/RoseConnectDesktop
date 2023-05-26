@@ -11,6 +11,8 @@
 #include "roseHome/AbstractRoseHomeSubWidget.h"
 #include "roseHome/ItemPlaylist_rosehome.h"
 
+#include <QCoreApplication>
+
 
 namespace rosetube {
 
@@ -44,23 +46,31 @@ namespace rosetube {
 
     private slots:
         void slot_applyResult_getShareLink(const QString &link);//c220828_2
-        void slot_hide_msg();
 
         void slot_showLoginPage();
         void slot_getMyInfo_loginAfter();
         void slot_change_device_state(const QString&);
+        void slot_change_cache_state();
+        void slot_change_cache_list();
 
-        // about 쒕툕 댄踰꾪듉
+        // about 서브 타이틀의 버튼
         void slot_clickBtn_subTitle_viewAll();
 
         void slot_applyResult_MyPlaylist(const QList<roseHome::PlaylistItemData>&, const QJsonArray&, const bool);
         void slot_applyResult_favoriteTracks(const QList<roseHome::TrackItemData>&, const QJsonArray&, const bool);
 
+        void slot_applyResult_MyPlaylistCheck(const QList<roseHome::PlaylistItemData>&, const QJsonArray&, const bool);
+        void slot_applyResult_favoriteTracksCheck(const QList<roseHome::TrackItemData>&, const QJsonArray&, const bool);
+
+        void slot_applyResult_getRating_track(const QJsonArray&);
+
     private:
-        // 珥덇린 UI붾㈃ 援ъ꽦
+        // 초기 UI화면 구성
         void setUIControl_requestRose();
 
         void setUIControl_appendWidget_rose();
+        void setUIControl_checkWidget_rose();
+
         void setUIControl_appendWidget_Delete();
 
         QWidget* setUIControl_LoginBefore();
@@ -112,6 +122,7 @@ namespace rosetube {
 
         QJsonArray jsonArr_myFavorite;
         QJsonArray jsonArr_myCaching;
+        QJsonArray jsonArr_myCachLock;
         QJsonObject jsonObj_CacheLock;
 
         int cache_lock_index = 0;
@@ -122,6 +133,13 @@ namespace rosetube {
         bool flag_myFavorite[2] = {false, false};
         bool flag_myPlaylist[2] = {false, false};
         bool flag_myCaching[2] = {false, false};
+
+        bool flag_myFavorite_check[2] = {false, false};
+        bool flag_myPlaylist_check[2] = {false, false};
+
+        int flag_fav_idx = 0;
+        int flag_fav_star = 0;
+        int flag_fav_type = 0;
 
         bool flag_page_reload = false;
     };

@@ -41,11 +41,11 @@ namespace bugs {
 
         void setActivePage() override;
         virtual void applyLoginSuccessState(){ }            ///< 로그인 성공하면 호출되는 함수임. 자식 클래스에서 필요시 재정의
-
+        void slot_clickBtnLogout();//c230329
     protected slots:
         // Bugs 로그인, 로그아웃 관련
         void slot_clickBtnLogin_toShowDialog();
-        void slot_clickBtnLogout();
+        //void slot_clickBtnLogout();//c230329
 
         // 전체재생, 셔플재생 Slot - 필요한 곳에서 overriding
         virtual void slot_btnClicked_playAll(){ }
@@ -140,8 +140,6 @@ namespace bugs {
         void proc_clicked_itemMyAlbum(bugs::MyAlbumItemData& data_my_album, const tidal::AbstractItem::ClickMode clickMode, const int index, const int section);
         void proc_clicked_itemMyAlbum(QList<bugs::MyAlbumItemData>* list_my_album, const tidal::AbstractItem::ClickMode clickMode, const int index, const int section);
 
-
-
         void proc_clicked_itemArtist(bugs::ArtistItemData& data_artist, const tidal::AbstractItem::ClickMode clickMode, const int index, const int section);
         void proc_clicked_itemArtist(QList<bugs::ArtistItemData>* list_artist, const tidal::AbstractItem::ClickMode clickMode, const int index, const int section);
 
@@ -159,6 +157,9 @@ namespace bugs {
 
         void proc_clicked_itemTrack_inList(bugs::TrackItemData& data_track, const QJsonArray& jsonArray_toPlayAll, const PlaylistTrackDetailInfo_RHV::ClickMode clickMode, const int index, const int section);
         void proc_clicked_itemTrack_inList(QList<bugs::TrackItemData>* list_track, const QJsonArray& jsonArray_toPlayAll, const PlaylistTrackDetailInfo_RHV::ClickMode clickMode, const int index, const int section);
+
+        void proc_clicked_itemHistory(roseHome::HistoryItemData& data_history, const tidal::AbstractItem::ClickMode clickMode, const int index, const int section);
+        void proc_clicked_itemHistory(QList<roseHome::HistoryItemData>* list_history, const tidal::AbstractItem::ClickMode clickMode, const int index, const int section);
 
 
         // Fav 클릭에 대한 처리. 자식 클래스에서 처리해야한다. (list 데이터를 소유하고 있으므로)
@@ -211,6 +212,8 @@ namespace bugs {
         void movePage_my_album_detailView(bugs::MyAlbumItemData& data_my_album);
 
         void movePage_video_allView_ofTrack(bugs::TrackItemData& data_track);
+
+        void movePage_rose_add_playlist(const QJsonObject& data);
 
         // Filtering 관련
         static QList<bugs::FilterOptionData> get_list_filterOptData_forMyCollection();

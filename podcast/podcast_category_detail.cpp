@@ -18,7 +18,7 @@ namespace podcast {
      * @param parent
      * @note 팟캐스트-인기(홈) 과 구성 동일
      */
-    Podcast_Category_Detail::Podcast_Category_Detail(QWidget *parent) : roseHome::AbstractRoseHomeSubWidget(VerticalScroll_viewAll, parent)
+    Podcast_Category_Detail::Podcast_Category_Detail(QWidget *parent) : roseHome::AbstractRoseHomeSubWidget(VerticalScroll_roseviewAll, parent)
     {
         setInit();
         setUIControl();
@@ -26,6 +26,7 @@ namespace podcast {
 
 
     Podcast_Category_Detail::~Podcast_Category_Detail(){
+        GSCommon::clearLayout(this->flowLayout_podcast);
 
         this->deleteLater();
     }
@@ -66,22 +67,16 @@ namespace podcast {
         // 항상 부모클래스의 함수 먼저 호출
         AbstractRoseHomeSubWidget::setActivePage();
 
+
         GSCommon::clearLayout(this->box_contents);
         this->box_contents->setAlignment(Qt::AlignTop);
         this->scrollArea_main->setVerticalScrollBarPolicy(Qt::ScrollBarAsNeeded);
 
-        // layout for items
-        this->flowLayout_podcast = new FlowLayout(0, 20, 20);
-        this->flowLayout_podcast->setSizeConstraint(QLayout::SetMinimumSize);
+        this->podcast_widget_width = 214;
+        this->podcast_widget_margin = 10;
 
-        GSCommon::clearLayout(this->flowLayout_podcast);
+        this->flowLayout_podcast = this->get_addUIControl_flowLayout(0, 20);
 
-        this->widget_podcast = new QWidget();
-        this->widget_podcast->setLayout(this->flowLayout_podcast);
-        this->widget_podcast->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
-        this->widget_podcast->setStyleSheet("background-color:transparent;");
-
-        this->box_contents->addWidget(this->widget_podcast);
     }
 
 
@@ -96,8 +91,15 @@ namespace podcast {
         tmp_widget->setHover();
         tmp_widget->setCursor(Qt::PointingHandCursor);
 
+        QVBoxLayout *box_wrap = new QVBoxLayout;
+        box_wrap->setContentsMargins(10, 0, 10, 0);
+        box_wrap->addWidget(tmp_widget);
+
+        QWidget *wg_wrap = new QWidget;
+        wg_wrap->setLayout(box_wrap);
+
         //flowLayout->addWidget(tmp_widget);
-        this->flowLayout_podcast->addWidget(tmp_widget);
+        this->flowLayout_podcast->addWidget(wg_wrap);
     }
 
 
@@ -139,6 +141,10 @@ namespace podcast {
      */
     void Podcast_Category_Detail::requestData(const int &p_genreID){
 
+        if(this->width()-(this->podcast_widget_width + this->podcast_widget_margin) >= 0){
+            this->setFlowLayoutResize(this, this->flowLayout_podcast, this->podcast_widget_width, this->podcast_widget_margin);
+        }
+
         if(currentGenreId != p_genreID){
 
             currentGenreId = p_genreID;
@@ -173,5 +179,11 @@ namespace podcast {
         }
 
         sender()->deleteLater();
+    }
+
+    void Podcast_Category_Detail::resizeEvent(QResizeEvent *event){//c230223
+
+        Q_UNUSED(event);
+        this->setFlowLayoutResize(this, this->flowLayout_podcast, this->podcast_widget_width, this->podcast_widget_margin);
     }
 }

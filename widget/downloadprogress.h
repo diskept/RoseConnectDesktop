@@ -16,6 +16,7 @@ public:
     explicit DownloadProgress(qint64 p_max, QWidget *parent = nullptr);
     ~DownloadProgress();
 
+    void hideText();
     void setMaxValue(const qint64 &p_maxValue);
     void setCurrentValue(const qint64 &p_currentValue, const qint64 &p_totalValue);
     void showRefreshBtn();

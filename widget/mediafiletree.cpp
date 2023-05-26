@@ -94,7 +94,6 @@ void MediaFileTree::setInit(){
         listNameFilter.append("*.x-ms-wma");
         listNameFilter.append("*.x-mpegurl");
         listNameFilter.append("*.x-wav");
-
     }
     else{
         listNameFilter.append("*.3gp");
@@ -136,7 +135,6 @@ void MediaFileTree::setInit(){
         listNameFilter.append("*.wbem");
         listNameFilter.append("*.webm");
         listNameFilter.append("*.wmv");
-
     }
 
 
@@ -1017,6 +1015,7 @@ void MediaFileTree::showOptionPopup(int p_index){
         tmp_jsonObject.insert(KEY_OP_MUSIC_PLAYLIST_ADD_DATA, tmp_jsonArrTrack);
         tmp_jsonObject.insert(KEY_MAIN_CODE, GSCommon::MainMenuCode::MusicNetwork);
         tmp_jsonObject.insert("isAlbum", false); // 앨범이 아니라 곡임..
+
         emit linker->signal_clickedHoverItem(HOVER_CODE_MORE, tmp_jsonObject);
     }
 }
@@ -1152,9 +1151,9 @@ DataPopup* MediaFileTree::getTrackData(const int &p_index){
         //        strQuery += " SELECT A._id AS id, A.title, A.artist, A.album, A.duration, AI._data AS album_art, A.album_id, A._data AS data ";
         //        strQuery += " FROM audio AS A LEFT JOIN album_art AS AI ON A.album_id=AI.album_id ";
         //        strQuery += " WHERE _display_name='"+tmp_filename+"'";
-                strQuery += "SELECT A.album, A.album_key, A.artist_key, A.artist_id, A.album_id, A._id AS id, A._data AS data, A.title, A.artist, A.duration, ART._data AS album_art ";
+                strQuery += " SELECT A.album, A.album_key, A.artist_key, A.artist_id, A.album_id, A._id AS id, A._display_name AS orderName, A._data AS data, A.title, A.artist, A.duration, A.bookmark, A.track, A.mime_type, A.samplerate, A.bitdepth, ART._data AS album_art ";
                 strQuery += " FROM audio AS A LEFT JOIN album_art AS ART ON A.album_id=ART.album_id ";
-                strQuery += " WHERE _display_name='"+tmp_filename+"'";
+//                strQuery += " WHERE _display_name='" + tmp_filename + "' ORDER BY A.bookmark ASC, A.track ASC, orderName ASC "; //bj230515
                 QVariantList data;
                 sqlite->exec(strQuery, data);
                 if(data.size() > 0){
@@ -1397,7 +1396,7 @@ void MediaFileTree::slot_responseHttp_play(const int &p_id, const QJsonObject &p
     qDebug() << "MediaFileTree::slot_responseHttp---" << strJson;
 
     if(p_id == HTTP_NETWORK_PLAY){
-        if(p_jsonObject.contains("code")){//cheon210812-iso
+        if(p_jsonObject.contains("code")){//
             QString tmp_code = p_jsonObject["code"].toString();
             bool tmp_codeOk = p_jsonObject["flagOk"].toBool();
             if(tmp_code =="G0000" && tmp_codeOk){
@@ -1405,6 +1404,12 @@ void MediaFileTree::slot_responseHttp_play(const int &p_id, const QJsonObject &p
                 //emit signal_isoplay(false);
                 global.isoflag = false;
                 //ToastMsg::show(this, "", tr("play--Select a song again to play CD PLAY"),3000);//cheon210812-iso
+
+                if(global.Queue_track_count > 0 ){ //bj230525 음악 재생 후 큐가 새로고침 되도록
+                    print_debug();
+                    global.queue_recent_track_addFlag = true;
+
+                }
             }
             // else global.isoflag = true;
         }
@@ -1478,7 +1483,7 @@ void MediaFileTree::slot_reqThumbnail(const int &p_index, const QString &p_fileP
  * @param p_index
  */
 void MediaFileTree::slot_reqFavorites(const int &p_index){
-    requestGetTrackFavorites(p_index);
+    //requestGetTrackFavorites(p_index); //bj230515
 }
 
 /**

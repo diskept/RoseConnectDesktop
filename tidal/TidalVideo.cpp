@@ -122,6 +122,9 @@ namespace tidal {
             this->flag_Electro[1] = false;
             this->flag_Indie[1] = false;
         }
+        else{
+            print_debug();ContentLoadingwaitingMsgHide();   //j230328
+        }
     }
 
 
@@ -233,7 +236,7 @@ namespace tidal {
                 connect(this->video_Indie[i], &tidal::ItemVideo::signal_clicked, this, &TidalVideo::slot_clickedItemVideo);
             }
 
-            ContentLoadingwaitingMsgShow(tr("Content is being loaded. Please wait."));//cheontidal
+            print_debug();ContentLoadingwaitingMsgShow(tr("Content is being loaded. Please wait."));//cheontidal
 
             // request HTTP API
             ProcCommon *proc_hip = new ProcCommon(this);
@@ -479,7 +482,7 @@ namespace tidal {
         tmp_scrollArea->setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
         tmp_scrollArea->setStyleSheet("background-color:transparent; border:0px;");
         tmp_scrollArea->setContentsMargins(0,0,0,0);
-        tmp_scrollArea->setFixedHeight(275);
+        tmp_scrollArea->setFixedHeight(285);
 
         QScroller::grabGesture(tmp_scrollArea, QScroller::LeftMouseButtonGesture);
         //----------------------------------------------------------------------------------------------------

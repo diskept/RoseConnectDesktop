@@ -156,6 +156,9 @@ namespace music {
                 connect(this->artist_albums[i], &roseHome::ItemAlbum_rosehome::signal_clicked, this, &ArtistDetail::slot_clickedItemAlbum);
             }
         }
+        else{
+            print_debug();ContentLoadingwaitingMsgHide();   //j230328
+        }
     }
 
 
@@ -170,7 +173,7 @@ namespace music {
             // 항상 부모클래스의 함수 먼저 호출
             AbstractRoseHomeSubWidget::setActivePage();
 
-            ContentLoadingwaitingMsgShow(tr("Content is being loaded. Please wait."));
+            print_debug();ContentLoadingwaitingMsgShow(tr("Content is being loaded. Please wait."));
             this->setDataTrackFromDB();
             this->setDataAlbumFromDB();
             ContentLoadingwaitingMsgHide();
@@ -186,13 +189,13 @@ namespace music {
         if(err.type() == QSqlError::NoError){
 
             QString strQuery = "";
-            strQuery = " SELECT count(A.album) AS track_count ";
+            strQuery = " SELECT count(A.album) AS track_count, A.bookmark, A.track, A._display_name AS orderName ";
             strQuery += " FROM audio AS A LEFT JOIN album_art AS ART ON A.album_id=ART.album_id ";
             if(this->artist_name.front() == "'" || this->artist_name.back() == "'"){
-                strQuery += " WHERE A.artist_id=(SELECT artist_id from artists where artist='\"%1\"') ORDER BY A.track ";
+                strQuery += " WHERE A.artist_id=(SELECT artist_id from artists where artist='\"%1\"') ORDER BY A.bookmark ASC, A.track ASC, orderName ASC ";
             }
             else{
-                strQuery += " WHERE A.artist_id=(SELECT artist_id from artists where artist='%1') ORDER BY A.track ";
+                strQuery += " WHERE A.artist_id=(SELECT artist_id from artists where artist='%1') ORDER BY A.bookmark ASC, A.track ASC, orderName ASC ";
             }
 
             QVariantList data_cnt;
@@ -220,13 +223,13 @@ namespace music {
                 this->box_main_contents->addSpacing(30);
 
                 strQuery = "";
-                strQuery = " SELECT A.album, A.album_key, A.artist_key, A.artist_id, A.album_id, A._id AS id, A._data AS data, A.title, A.artist, A.duration, ART._data AS album_art , A.mime_type, A.samplerate, A.bitdepth ";
+                strQuery = " SELECT A.album, A.album_key, A.artist_key, A.artist_id, A.album_id, A._id AS id, A._display_name AS orderName, A._data AS data, A.bookmark, A.track, A.title, A.artist, A.duration, ART._data AS album_art , A.mime_type, A.samplerate, A.bitdepth ";
                 strQuery += " FROM audio AS A LEFT JOIN album_art AS ART ON A.album_id=ART.album_id";
                 if(this->artist_name.front() == "'" || this->artist_name.back() == "'"){
-                    strQuery += " WHERE A.artist_id=(SELECT artist_id from artists where artist= '\"%1\"') ORDER BY A.track LIMIT 5 ";
+                    strQuery += " WHERE A.artist_id=(SELECT artist_id from artists where artist= '\"%1\"') ORDER BY A.bookmark ASC, A.track ASC, orderName ASC LIMIT 5 ";
                 }
                 else{
-                    strQuery += " WHERE A.artist_id=(SELECT artist_id from artists where artist='%1') ORDER BY A.track LIMIT 5 ";
+                    strQuery += " WHERE A.artist_id=(SELECT artist_id from artists where artist='%1') ORDER BY A.bookmark ASC, A.track ASC, orderName ASC LIMIT 5 ";
                 }
 
                 QVariantList data;
@@ -578,6 +581,46 @@ namespace music {
 
             // OptMorePopup 띄우기
             this->makeObj_optMorePopup(OptMorePopup::Rosehome_Artist, roseHome::ConvertData::getConvertOptHeaderData(data_album), 0, SECTION_FOR_MORE_POPUP___artist, true);
+        }
+        else if(clickMode == AbstractImageDetailContents_RHV::BtnClickMode::PlayAll){
+
+            if(global.Queue_track_count != 0) {
+                print_debug();emit linker->signal_checkQueue(27, "");
+
+                return;
+            }
+            print_debug(); emit linker->signal_queuelist_mouse_trigger_menu_flag();
+            global.Queue_track_count += this->jsonArrTracks.count();     // 220419 queue count
+
+            QJsonObject tmp_json;
+            tmp_json.insert("music", this->jsonArrTracks);
+            tmp_json.insert("musicPlayType", 15);
+            tmp_json.insert("currentPosition", 0);
+            tmp_json.insert("shuffle", 0);
+            tmp_json.insert("roseToken", global.device.getDeviceRoseToken());
+
+            NetworkHttp *network = new NetworkHttp;
+            network->request(0, QString("http://%1:%2/%3").arg(global.device.getDeviceIP()).arg(global.port).arg("music_song"), tmp_json, true, true);
+        }
+        else if(clickMode == AbstractImageDetailContents_RHV::BtnClickMode::PlayShuffle){
+
+            if(global.Queue_track_count != 0) {
+                print_debug();emit linker->signal_checkQueue(27, "");
+
+                return;
+            }
+            print_debug(); emit linker->signal_queuelist_mouse_trigger_menu_flag();
+            global.Queue_track_count += this->jsonArrTracks.count();     // 220419 queue count
+
+            QJsonObject tmp_json;
+            tmp_json.insert("music", this->jsonArrTracks);
+            tmp_json.insert("musicPlayType", 15);
+            tmp_json.insert("currentPosition", 0);
+            tmp_json.insert("shuffle", 1);
+            tmp_json.insert("roseToken", global.device.getDeviceRoseToken());
+
+            NetworkHttp *network = new NetworkHttp;
+            network->request(0, QString("http://%1:%2/%3").arg(global.device.getDeviceIP()).arg(global.port).arg("music_song"), tmp_json, true, true);
         }
     }
 
@@ -1040,9 +1083,12 @@ namespace music {
         QSqlError err = sqlite->addConnectionRose();
         if(err.type() == QSqlError::NoError){
             QString strQuery = "";
-            strQuery += " SELECT A.album, A.album_key, A.artist_key, A.artist_id, A.album_id, A._id AS id, A._data AS data, A.title, A.artist, A.duration, A.mime_type, A.samplerate, A.bitdepth, ART._data AS album_art ";
+            /*strQuery += " SELECT A.album, A.album_key, A.artist_key, A.artist_id, A.album_id, A._id AS id, A._data AS data, A.title, A.artist, A.duration, A.mime_type, A.samplerate, A.bitdepth, ART._data AS album_art ";
             strQuery += " FROM audio AS A LEFT JOIN album_art AS ART ON A.album_id=ART.album_id ";
-            strQuery += " WHERE A.album_id=%1 ORDER BY A.track ";
+            strQuery += " WHERE A.album_id=%1 ORDER BY A.track ";*/
+            strQuery += " SELECT A.album, A.album_key, A.artist_key, A.artist_id, A.album_id, A._id AS id, A._display_name AS orderName, A._data AS data, A.title, A.artist, A.duration, A.bookmark, A.track, A.mime_type, A.samplerate, A.bitdepth, ART._data AS album_art ";
+            strQuery += " FROM audio AS A LEFT JOIN album_art AS ART ON A.album_id=ART.album_id ";
+            strQuery += " WHERE A.album_id=%1 ORDER BY A.bookmark ASC, A.track ASC, orderName ASC ";
 
             QVariantList dataDB;
             sqlite->exec(strQuery.arg(album_id), dataDB);

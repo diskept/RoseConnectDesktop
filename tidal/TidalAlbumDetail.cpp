@@ -152,11 +152,13 @@ namespace tidal {
                     }
                 }
 
-                ContentLoadingwaitingMsgShow(tr("Content is being loaded. Please wait."));
+                print_debug();ContentLoadingwaitingMsgShow(tr("Content is being loaded. Please wait."));
 
                 this->track_favoriteOffset = 0;
             }
             else{
+                print_debug();ContentLoadingwaitingMsgHide();   //j230328
+
                 // 리로드 하지 않는 경우에는, favorite 정보만 다시 요청한다. (album_id 가 변경되지 않고, 페이지가 다시 요청된 경우임)
                 // request HTTP API - get favorite for Rose Server
                 roseHome::ProcCommon *proc_fav_album = new roseHome::ProcCommon(this);
@@ -198,6 +200,10 @@ namespace tidal {
 
                 this->flag_track_ok = false;
             }
+
+            GSCommon::clearLayout(this->box_contents);
+            this->box_contents->setAlignment(Qt::AlignTop);
+            this->scrollArea_main->setVerticalScrollBarPolicy(Qt::ScrollBarAsNeeded);
 
             this->box_main_contents = new QVBoxLayout();
             this->box_main_contents->setSpacing(0);
@@ -562,9 +568,6 @@ namespace tidal {
             roseHome::ProcCommon *proc_fav_album = new roseHome::ProcCommon(this);
             connect(proc_fav_album, &roseHome::ProcCommon::completeReq_rating_album, this, &TidalAlbumDetail::slot_applyResult_getRating_album);
             proc_fav_album->request_rose_getRating_Album("TIDAL", QString("%1").arg(this->data_album.id));
-print_debug();
-
-
 
             // album track 정보를 가져와야 하는 경우임.
             ProcCommon *proc_tracks = new ProcCommon(this);
@@ -1264,12 +1267,12 @@ print_debug();
      * @param clickMode
      */
     void TidalAlbumDetail::slot_clickedItemArtist(const tidal::AbstractItem::ClickMode clickMode){
+
         int index = ((tidal::AbstractItem*)sender())->index();
         int section = ((tidal::AbstractItem*)sender())->section();
 
         // ClickMode 별로 처리
         this->proc_clicked_itemArtist(this->list_suggestArtist, clickMode, index, section);
-
     }
 
 

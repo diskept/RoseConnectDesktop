@@ -47,7 +47,7 @@ namespace tidal {
 
     private:
         void setUIControl_tracks();
-        void setUiControl_filter();
+        void setUIControl_filter();
 
         void request_more_trackData();
 
@@ -74,8 +74,8 @@ namespace tidal {
 
         QString type = "";
         QString subType = "";
-        QString str_id = "";
-        int int_id = 0;
+        QString srtID = "";
+        int revID = 0;
 
         QString title = "";
 

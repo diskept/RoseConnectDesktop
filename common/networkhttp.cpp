@@ -3,7 +3,7 @@
 #include "bugs/ProcBugsAPI.h"
 #include "home/ReplyTimeout.h"
 
-const int TIMEOUTValue =  25000;//c221004_1
+const int TIMEOUTValue =  23000;//c221004_1
 /**
  * @brief NetworkHttp::NetworkHttp : Http + TimeOut + Thread
  * @details QNetworkAccessManager를 이용한 Http 통신
@@ -55,7 +55,7 @@ void NetworkHttp::setConnect(){
 void NetworkHttp::request(const int &p_id,const QString &p_url, const QUrlQuery &p_param, const bool &flagPost, const bool &flagAuth){
     //thread.start();
     id = p_id;
-
+    //ReplyTimeout::set(reply, TIMEOUTValue);//c230212
     slotRequestHttp(p_url, p_param, flagPost, flagAuth);
     ReplyTimeout::set(reply, TIMEOUTValue);
 
@@ -71,6 +71,7 @@ void NetworkHttp::request(const int &p_id,const QString &p_url, const QUrlQuery 
 void NetworkHttp::request(const int &p_id, const QString &p_url, const QJsonObject &p_param, const bool &flagPost, const bool &flagAuth){
     //thread.start();
     id = p_id;
+    //ReplyTimeout::set(reply, TIMEOUTValue);//c230212
     slotRequestHttp(p_url, p_param, flagPost, flagAuth);
     ReplyTimeout::set(reply, TIMEOUTValue);
 }
@@ -83,6 +84,7 @@ void NetworkHttp::request(const int &p_id, const QString &p_url, const QJsonObje
  */
 void NetworkHttp::request(const int &p_id, const QString &p_url, const QString &p_param, const bool &flagPost, const bool &flagAuth){
     id = p_id;
+    //ReplyTimeout::set(reply, TIMEOUTValue);//c230212
     slotRequestHttp(p_url, p_param, flagPost, flagAuth);
     ReplyTimeout::set(reply, TIMEOUTValue);
 }
@@ -96,6 +98,7 @@ void NetworkHttp::request(const int &p_id, const QString &p_url, const QString &
 void NetworkHttp::requestPut(const int &p_id, const QString &p_url, const QJsonObject &p_param,  const bool &flagAuth){
     //thread.start();
     id = p_id;
+    //ReplyTimeout::set(reply, TIMEOUTValue);//c230212
     slotRequestHttpPut(p_url, p_param, flagAuth);
     ReplyTimeout::set(reply, TIMEOUTValue);
 }
@@ -109,7 +112,9 @@ void NetworkHttp::requestPut(const int &p_id, const QString &p_url, const QJsonO
 void NetworkHttp::requestDelete(const int &p_id, const QString &p_url, const QJsonObject &p_param,  const bool &flagAuth){
     //thread.start();
     id = p_id;
+    //ReplyTimeout::set(reply, TIMEOUTValue);//c230212
     slotRequestHttpDelete(p_url, p_param, flagAuth);
+    ReplyTimeout::set(reply, TIMEOUTValue);//c230213
 }
 
 
@@ -133,7 +138,9 @@ void NetworkHttp::request_forTidal(const int &p_id,const QString &p_url, const H
     //QJsonDocument doc(jsonObj_optUser);
     //QString strJson(doc.toJson(QJsonDocument::Compact));
     //qDebug() << strJson;
+    //ReplyTimeout::set(reply, TIMEOUTValue);//c230212
     slotRequestHttp_forTidal(p_url, p_headerOpt, p_param, method);
+    ReplyTimeout::set(reply, TIMEOUTValue);//c230213
 }
 
 
@@ -150,7 +157,9 @@ void NetworkHttp::request_forTidal(const int &p_id, const QString &p_url, const 
     id = p_id;
     this->flagShowDebug = flagShowDebug;
 
+    //ReplyTimeout::set(reply, TIMEOUTValue);//c230212
     slotRequestHttp_forTidal(p_url, p_headerOpt, p_param_post, p_param_get);
+    ReplyTimeout::set(reply, TIMEOUTValue);//c230213
 }
 
 
@@ -168,12 +177,14 @@ void NetworkHttp::request_forBugs(const int &p_id,const QString &p_url, const He
     id = p_id;
     this->flagShowDebug = flagShowDebug;
     this->jsonObj_optUser = jsonObj_optUser;
+    //ReplyTimeout::set(reply, TIMEOUTValue);//c230212
     slotRequestHttp_forBugs(p_url, p_headerOpt, p_param, method);
+    ReplyTimeout::set(reply, TIMEOUTValue);//c230213
 }
 
 
 /**
- * @brief Qobuz API 요청 관련         // TODO :: Added Jeon 12/14/2020
+ * @brief Qobuz API 요청 관련         // TODO :: Added diskept 12/14/2020
  * @param p_url URL
  * @param p_headerOpt Qobuz 파트에서 사용을 위해서 추가된 함수임. Qobuz 전용으로 사용하는 함수
  * @param p_param QUrlQuery
@@ -192,12 +203,14 @@ void NetworkHttp::request_forQobuz(const int &p_id,const QString &p_url, const H
     //QJsonDocument doc(jsonObj_optUser);
     //QString strJson(doc.toJson(QJsonDocument::Compact));
     //qDebug() << strJson;
+    //ReplyTimeout::set(reply, TIMEOUTValue);//c230212
     slotRequestHttp_forQobuz(p_url, p_headerOpt, p_param, method);
+    ReplyTimeout::set(reply, TIMEOUTValue);//c230213
 }
 
 
 /**
- * @brief Qobuz API 요청 관련         // TODO :: Added Jeon 12/14/2020
+ * @brief Qobuz API 요청 관련         // TODO :: Added diskept 12/14/2020
  * @param p_id
  * @param p_url
  * @param p_headerOpt
@@ -210,7 +223,9 @@ void NetworkHttp::request_forQobuz(const int &p_id, const QString &p_url, const 
     id = p_id;
     this->flagShowDebug = flagShowDebug;
 
+    //ReplyTimeout::set(reply, TIMEOUTValue);//c230212
     slotRequestHttp_forQobuz(p_url, p_headerOpt, p_param_post, p_param_get);
+    ReplyTimeout::set(reply, TIMEOUTValue);//c230213
 }
 
 
@@ -227,7 +242,9 @@ void NetworkHttp::request_forApple(const int &p_id,const QString &p_url, const H
     this->flagShowDebug = flagShowDebug;
     this->jsonObj_optUser = jsonObj_optUser;
 
+    //ReplyTimeout::set(reply, TIMEOUTValue);//c230212
     slotRequestHttp_forApple(p_url, p_headerOpt, p_param, method);
+    ReplyTimeout::set(reply, TIMEOUTValue);//c230213
 }
 
 
@@ -245,7 +262,9 @@ void NetworkHttp::request_forApple(const int &p_id, const QString &p_url, const 
     id = p_id;
     this->flagShowDebug = flagShowDebug;
 
+    //ReplyTimeout::set(reply, TIMEOUTValue);//c230212
     slotRequestHttp_forApple(p_url, p_headerOpt, p_param_post, p_param_get);
+    ReplyTimeout::set(reply, TIMEOUTValue);//c230213
 }
 
 
@@ -658,7 +677,7 @@ void NetworkHttp::slotRequestHttp_forBugs(const QString &p_url, const HeaderOpti
 
 
 /**
- * @brief NetworkHttp::slotRequestHttp        // TODO :: Added Jeon 12/14/2020
+ * @brief NetworkHttp::slotRequestHttp        // TODO :: Added diskept 12/14/2020
  * @param p_url
  * @param p_headerOpt Qobuz 파트에서 사용을 위해서 추가된 함수임. Qobuz 전용으로 사용하는 함수
  * @param param
@@ -723,7 +742,7 @@ void NetworkHttp::slotRequestHttp_forQobuz(const QString &p_url, const HeaderOpt
 
 
 /**
- * @brief NetworkHttp::slotRequestHttp_forQobuz       // TODO :: Added Jeon 12/14/2020
+ * @brief NetworkHttp::slotRequestHttp_forQobuz       // TODO :: Added diskept 12/14/2020
  * @param p_url
  * @param p_headerOpt
  * @param param_post
@@ -799,12 +818,15 @@ void NetworkHttp::slotRequestHttp_forApple(const QString &p_url, const HeaderOpt
     // headerOpt 처리
     //---------------------------------------------------------------------------
     if(p_headerOpt == HeaderOption_forApple::Request_UserToken) {
-        QString tmp_auth = "Bearer " + global.user.getShazam_token();
-        request.setRawHeader("Authorization", tmp_auth.toUtf8());
+        QString shazam_auth = "Bearer " + global.user.getShazam_token();
+        request.setRawHeader("Authorization", shazam_auth.toUtf8());
     }
     else if(p_headerOpt == HeaderOption_forApple::Apple_UserToken) {
-        QString tmp_auth = "Bearer " + global.user.getShazam_token();   //global.user_forApple.get_user_token();
-        request.setRawHeader("Authorization", tmp_auth.toUtf8());
+        QString shazam_auth = "Bearer " + global.user.getShazam_token();
+        request.setRawHeader("Authorization", shazam_auth.toUtf8());
+
+        QString apple_auth = global.user_forApple.get_user_token();
+        request.setRawHeader("Music-User-Token", apple_auth.toUtf8());
     }
 
     //---------------------------------------------------------------------------
@@ -932,7 +954,7 @@ void NetworkHttp::slotReadyRead_forBugs(){
 
 
 /**
- * @brief NetworkHttp::slotReadyRead : SLOT - Http 데이터 읽기     // TODO :: Added Jeon 12/14/2020
+ * @brief NetworkHttp::slotReadyRead : SLOT - Http 데이터 읽기     // TODO :: Added diskept 12/14/2020
  */
 void NetworkHttp::slotReadyRead_forQobuz(){
 
@@ -1060,7 +1082,7 @@ void NetworkHttp::slot_occur_sslError_forBugs(const QList<QSslError>& list_error
 
 
 /**
- * @brief NetworkHttp::slot_occur_sslError    // TODO :: Added Jeon 12/14/2020
+ * @brief NetworkHttp::slot_occur_sslError    // TODO :: Added diskept 12/14/2020
  * @param list_error
  */
 void NetworkHttp::slot_occur_sslError_forQobuz(const QList<QSslError>& list_error){

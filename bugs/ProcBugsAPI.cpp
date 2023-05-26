@@ -27,6 +27,7 @@ namespace bugs {
      * @brief ProcBugsAPI::ProcBugsAPI
      */
     ProcBugsAPI::ProcBugsAPI(QWidget *parent) : QObject(parent) {
+        this->linker = Linker::getInstance();//c230421
     }
 
 
@@ -175,7 +176,7 @@ namespace bugs {
      * @brief ProcBugsAPI::request_bugs_getToken
      * @param p_login_authCode
      */
-    void ProcBugsAPI::request_bugs_getTokenAndSave(){
+    void ProcBugsAPI::request_bugs_getTokenAndSave(){//로그인정보로 벅스 서버로 부터 토큰을 가져옮
 
         NetworkHttp *network = new NetworkHttp();
         connect(network, SIGNAL(response(int,QJsonObject)), SLOT(slot_responseHttp(int,QJsonObject)));
@@ -1027,7 +1028,19 @@ namespace bugs {
     void ProcBugsAPI::slot_responseHttp(int p_id, QJsonObject p_jsonObj){
 
         NetworkHttp* sender_http = qobject_cast<NetworkHttp*>(sender());
-
+        //print_debug();
+        //qDebug() << "p_id=" << p_id;
+        //qDebug() << "p_jsonObj=" << p_jsonObj;
+        if(ProcJsonEasy::get_flagOk(p_jsonObj) && ProcJsonEasy::getString(p_jsonObj, "ret_code")=="202"){//c230421
+            print_debug();
+            global.user_forBugs.set_logoutState();
+            emit linker->signal_clicked_movePage(global.user_forBugs.getPageData());
+            sender()->deleteLater();
+            if(global.abs_ani_dialog_wait->isHidden() != true){
+                global.abs_ani_dialog_wait->hide(); //cheontidal
+            }
+            return;
+        }
 
         switch (p_id) {
             case HttpRequestType::Get_Token:            this->setResult_getToken(p_jsonObj);            break;
@@ -1081,6 +1094,11 @@ namespace bugs {
                 this->setResult_favorite_album(p_jsonObj, sender_http->get_userOptJson());
                 break;
 
+            case HttpRequestType::Favorite_Add_PD_Album:
+            case HttpRequestType::Favorite_Delete_PD_Album:
+                this->setResult_favorite_pd_album(p_jsonObj, sender_http->get_userOptJson());
+                break;
+
             case HttpRequestType::Favorite_Add_Artist:
             case HttpRequestType::Favorite_Delete_Artist:
                 this->setResult_favorite_artist(p_jsonObj, sender_http->get_userOptJson());
@@ -1107,6 +1125,7 @@ namespace bugs {
 
         if(ProcJsonEasy::get_flagOk(p_jsonObj) == false){
             //emit this->signal_completeReq_getToken(false, tr("Bugs 서비스를 이용할 수 없습니다."));
+            QTimer::singleShot(3000,this,[=](){emit linker->signal_loginBugsAcount();});//c230426
             emit this->signal_completeReq_getToken(false, tr("Bugs Service is unavailable."));
         }
         else{
@@ -1488,16 +1507,18 @@ namespace bugs {
         if(ProcJsonEasy::get_flagOk(p_jsonObj) && ProcJsonEasy::getInt(p_jsonObj, "ret_code", -1)==0){
             QJsonArray jsonArr_item = ProcJsonEasy::getJsonArray(p_jsonObj, "list");
 
+            // pager
+            QJsonObject jsonObj_pager = ProcJsonEasy::getJsonObject(p_jsonObj, "pager");
+
             for(int i=0 ; i<jsonArr_item.count() ; i++){
                 QJsonObject tmp_json = jsonArr_item.at(i).toObject();
 
                 // 정보 담을 struct
                 bugs::MyAlbumItemData tmp_data = ConvertData_forBugs::make_my_albumData_fromBugsJsonObj(tmp_json);
+                tmp_data.total_count = ProcJsonEasy::getInt(jsonObj_pager, "total_count");
                 list_output.append(tmp_data);
             }
 
-            // pager
-            QJsonObject jsonObj_pager = ProcJsonEasy::getJsonObject(p_jsonObj, "pager");
             bool flag_lastPage = ProcJsonEasy::getBool(jsonObj_pager, "last_yn");
 
             emit this->completeReq_list_my_albums(list_output, flag_lastPage);
@@ -1547,15 +1568,17 @@ namespace bugs {
      * @param p_jsonObj
      */
     void ProcBugsAPI::setResult_list_itmes_of_pd_album(const QJsonObject &p_jsonObj){
+
         QList<bugs::TrackItemData> list_output;
-        if(ProcJsonEasy::get_flagOk(p_jsonObj) && ProcJsonEasy::getInt(p_jsonObj, "ret_code", -1)==0){
+        if(ProcJsonEasy::get_flagOk(p_jsonObj) && ProcJsonEasy::getInt(p_jsonObj, "ret_code", -1) == 0){
             QJsonArray jsonArr_item = ProcJsonEasy::getJsonArray(p_jsonObj, "list");
 
-            for(int i=0 ; i<jsonArr_item.count() ; i++){
+            for(int i = 0; i < jsonArr_item.count(); i++){
                 QJsonObject tmp_json = jsonArr_item.at(i).toObject();
 
                 // 정보 담을 struct
                 bugs::TrackItemData tmp_data = ConvertData_forBugs::make_trackData_fromBugsJsonObj(tmp_json);
+                tmp_data.total_count = jsonArr_item.count();
                 list_output.append(tmp_data);
             }
 
@@ -1576,8 +1599,9 @@ namespace bugs {
      * @param p_jsonObj
      */
     void ProcBugsAPI::setResult_list_itmes_of_my_album(const QJsonObject &p_jsonObj){
+
         QList<bugs::TrackItemData> list_output;
-        if(ProcJsonEasy::get_flagOk(p_jsonObj) && ProcJsonEasy::getInt(p_jsonObj, "ret_code", -1)==0){
+        if(ProcJsonEasy::get_flagOk(p_jsonObj) && ProcJsonEasy::getInt(p_jsonObj, "ret_code", -1) == 0){
             QJsonArray jsonArr_item = ProcJsonEasy::getJsonArray(p_jsonObj, "list");
 
             for(int i=0 ; i<jsonArr_item.count() ; i++){
@@ -1585,6 +1609,7 @@ namespace bugs {
 
                 // 정보 담을 struct
                 bugs::TrackItemData tmp_data = ConvertData_forBugs::make_trackData_fromBugsJsonObj(tmp_json);
+                tmp_data.total_count = jsonArr_item.count();
                 list_output.append(tmp_data);
             }
 
@@ -1691,6 +1716,25 @@ namespace bugs {
         }
         else{
             emit this->failedReq_favorite_album(p_jsonObj_opt);
+        }
+    }
+
+
+    /**
+     * @brief PD Album에 대해서 Fav 처리 결과를 반영함 (Data & UI)
+     * @param p_jsonObj
+     * @param p_jsonObj_opt
+     */
+    void ProcBugsAPI::setResult_favorite_pd_album(const QJsonObject &p_jsonObj, QJsonObject p_jsonObj_opt){
+
+        if(ProcJsonEasy::get_flagOk(p_jsonObj) && ProcJsonEasy::getInt(p_jsonObj, "ret_code", -1)==0){
+            QJsonObject jsonObj_result = ProcJsonEasy::getJsonObject(p_jsonObj, "result");
+            p_jsonObj_opt.insert("likes_yn", ProcJsonEasy::getBool(jsonObj_result, "likes_yn"));
+
+            emit this->completeReq_favarite_pd_album(p_jsonObj_opt);
+        }
+        else{
+            emit this->failedReq_favorite_pd_album(p_jsonObj_opt);
         }
     }
 

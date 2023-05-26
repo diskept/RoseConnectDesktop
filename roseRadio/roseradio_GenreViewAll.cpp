@@ -80,10 +80,13 @@ namespace roseRadio {
 
             this->flag_flow_draw = false;
 
-            ContentLoadingwaitingMsgShow(tr("Content is being loaded. Please wait."));
+            print_debug();ContentLoadingwaitingMsgShow(tr("Content is being loaded. Please wait."));
 
             // request HTTP API
             this->request_more_roseData();
+        }
+        else{
+            ContentLoadingwaitingMsgHide();
         }
     }
 
@@ -129,7 +132,7 @@ namespace roseRadio {
 
             this->flag_roseRadio_draw = true;
 
-            ContentLoadingwaitingMsgShow(tr("Content is being loaded. Please wait."));
+            print_debug();ContentLoadingwaitingMsgShow(tr("Content is being loaded. Please wait."));
 
             this->request_more_roseDraw();
         }*/
@@ -156,13 +159,14 @@ namespace roseRadio {
             else{
                 this->next_offset++;
 
-                ContentLoadingwaitingMsgShow(tr("Content is being loaded. Please wait."));
+                print_debug();ContentLoadingwaitingMsgShow(tr("Content is being loaded. Please wait."));
             }
 
             // request HTTP API
             roseHome::ProcCommon *proc_channel = new roseHome::ProcCommon(this);
             connect(proc_channel, &roseHome::ProcCommon::completeReq_list_roseRadio, this, &RoseRadioGenreViewAll::slot_applyResult_Channel);
-            proc_channel->request_rose_getList_genreChannel(this->apiPath, this->genreId, this->next_offset, GET_ITEM_SIZE___ONCE, "POPULAR");
+            //proc_channel->request_rose_getList_genreChannel(this->apiPath, this->genreId, this->next_offset, GET_ITEM_SIZE___ONCE, "POPULAR");
+            proc_channel->request_rose_getList_genreChannel(this->apiPath, this->genreId, this->next_offset, GET_ITEM_SIZE___ONCE, "NAME_ASC");
 
             if(this->next_offset == 0){
                 this->flag_roseRadio_draw = true;

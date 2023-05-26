@@ -21,12 +21,19 @@ public:
 
     void setTitle(const QString &p_title);
     void setText(const QString &p_text);
+    void setAlertMode();
+
     void setLayoutMy(QLayout *a);//c220709
     void setLayoutMy_withText(QLayout *a);//c220804
     void setTextHeight(const int &h);//c220511
     void setAlignment(Qt::Alignment);//c220511
-    void setAlertMode();
     void yellow_setStyleSheet();//cheon211203
+
+    void setAlignmentTitle(Qt::Alignment);
+    void setAlignmentContent(Qt::Alignment);
+    void setStyleSheetTitle(QString);
+    void setStyleSheetContent(QString);
+    void setFixedDialogSize(int, int);
 
 private:
     DlgConfirmType confirmType;

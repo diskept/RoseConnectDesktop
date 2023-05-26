@@ -47,6 +47,9 @@ public:
 
     void set_logoutState();
 
+    void savePageData(QJsonObject p_data){this->page_data = p_data;};//c230421
+    QJsonObject getPageData(){ return this->page_data;};//c230421
+
     QString getNickName(){ return this->nickName; }
     QString getProductName(){ return this->product_name; }
     void setNickName(QString p_nickName){ this->nickName = p_nickName; }
@@ -58,6 +61,8 @@ public:
     QList<tidal::AlbumItemData> list_visualData;
 
 private :
+
+    QJsonObject page_data;//c230421
 
     // 로그인을 위한 정보
     bool flagSavedLoginInfo = false;    ///< 로그인을 위한 정보 - 타이달 사용자 정보를 저장할지의 여부. (자동로그인에서 사용)

@@ -25,6 +25,12 @@ public:
     }
 
 signals:
+    void clickedQueuePlayListHide(bool p_flagShow);//c230428
+    void signal_loginTidalAcount();//c230426
+    void signal_loginBugsAcount();//c230426
+    void signal_successLoginTidal();//c230422
+    void signal_successLoginQobuz();//c230422
+    void signal_searchBar_clearfocus();//c230220
     void signal_reload_setting_clicked(QString );//c221013_1
     void signal_setMountShareFolder(QString, QString, QString, QString);//c220913_1
     void signal_goFolder(QString);//c220909_1
@@ -87,7 +93,9 @@ signals:
     void signal_music_start();//c220411
     void signal_device_connect_check();//c220521
     void signal_device_connect_check_error();//c220525
-    void signal_leftmenuSearch(QString);//cheon211008-search
+    void signal_leftmenuLogined(int);//c230223_2
+
+    void signal_leftmenuOnOff(QString, bool);//c230329
 
     // 기기 연결 완료
     void signal_connected();
@@ -115,6 +123,8 @@ signals:
     void signal_loginchageBugs();//cheon210617-http
     void signal_changedRadioFavorChannel(const bool &flagChangedInFavor);
     void signal_changedRadioUserChannel();
+    void signal_musicDbProcess();
+    void signal_connect_reset_notice();//c230326
 
     // 검색 요청 시그널
     void signal_search(const QString &p_text);
@@ -153,11 +163,18 @@ signals:
     // message show timeout signal
     void signal_message_show_timeout();
 
+    void signal_rosefmChannelChanged(const QJsonObject &p_jsonObject);
+
+    void signal_cacheState_change();
+    void signal_cacheList_change();
+
+    void signal_volume_change(int&);
+    void signal_volume_muteState(int&);
+    void signal_volume_widget_hide();
+
     void signal_addPlaylistFinish();
     void signal_rosetubeRecentChanged();
     void signal_musicRecentChanged();
-
-    void signal_rosefmChannelChanged(const QJsonObject &p_jsonObject);
 
     void signal_Video_movePage(const QJsonObject &p_jsonObject);
     void signal_Artist_movePage(const QJsonObject &p_jsonObject);
@@ -168,6 +185,7 @@ signals:
     void signal_httpserverQueueMsg(const QJsonObject &a);//c220402
     void signal_httpservermsg(const QJsonObject &a);//cheon210617-http
     void signal_httpservermsg_music_play_type_change();//c220408
+
     void signal_dragDrop();
     void signal_dragDrop_playlist();
     void signal_dragEnter();

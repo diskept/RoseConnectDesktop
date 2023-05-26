@@ -136,7 +136,7 @@ namespace roseRadio {
 
             QPixmap tmp_pixmap;
             tmp_pixmap = tmp_pixmap.fromImage(image);
-            tmp_pixmap = tmp_pixmap.scaled(this->image_size, this->image_size, Qt::KeepAspectRatioByExpanding, Qt::SmoothTransformation);
+            tmp_pixmap = tmp_pixmap.scaled(this->image_size, this->image_size, Qt::KeepAspectRatio, Qt::SmoothTransformation);
 
             QPainter painter (&pixmapIMG);
             painter.setRenderHint(QPainter::Antialiasing, true);
@@ -145,8 +145,12 @@ namespace roseRadio {
 
             QPainterPath path = QPainterPath();
             path.addRoundedRect(0, 0, this->image_size, this->image_size, 4, 4);
+
+            int leftValue = (this->image_size - tmp_pixmap.width()) / 2;
+            int topValue = (this->image_size - tmp_pixmap.height()) / 2;
+
             painter.setClipPath(path);
-            painter.drawPixmap(0, 0, tmp_pixmap);
+            painter.drawPixmap(leftValue, topValue, tmp_pixmap);
             painter.end();
 
             this->label_image->setPixmap(pixmapIMG);
@@ -178,7 +182,7 @@ namespace roseRadio {
         QPixmap pixmapIMG = QPixmap(QSize(this->image_size, this->image_size));
         pixmapIMG.fill(Qt::transparent);
 
-        pixmap = pixmap.scaled(this->image_size, this->image_size, Qt::KeepAspectRatioByExpanding, Qt::SmoothTransformation);
+        pixmap = pixmap.scaled(this->image_size, this->image_size, Qt::KeepAspectRatio, Qt::SmoothTransformation);
 
         QPainter painter (&pixmapIMG);
         painter.setRenderHint(QPainter::Antialiasing, true);
@@ -187,8 +191,12 @@ namespace roseRadio {
 
         QPainterPath path = QPainterPath();
         path.addRoundedRect(0, 0, this->image_size, this->image_size, 4, 4);
+
+        int leftValue = (this->image_size - pixmap.width()) / 2;
+        int topValue = (this->image_size - pixmap.height()) / 2;
+
         painter.setClipPath(path);
-        painter.drawPixmap(0, 0, pixmap);
+        painter.drawPixmap(leftValue, topValue, pixmap);
         painter.end();
 
         this->label_image->setPixmap(pixmapIMG);

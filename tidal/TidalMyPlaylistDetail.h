@@ -152,6 +152,8 @@ namespace tidal {
         void slot_applyResult_getRating_track(const QJsonArray&);
         void slot_applyResult_getRating_thumbup(const QJsonObject&);
 
+        void slot_tidal_completeReq_listAll_myFavoritesIds(const QJsonObject&);
+
     private:
         AbstractImageDetailContents_RHV *playlist_detail_info;
         PlaylistTrackDetailInfo_RHV *playlist_track_info[99999];

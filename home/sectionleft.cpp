@@ -1,6 +1,7 @@
 #include "common/gscommon.h"
 #include "common/global.h"
 #include "menuitem.h"
+#include "qapplication.h"
 #include "sectionleft.h"
 
 #include <QJsonArray>
@@ -8,6 +9,7 @@
 #include <QPainter>
 #include <QScrollArea>
 #include <QVBoxLayout>
+
 
 #include <common/filedownloader.h>
 #include <common/networkhttp.h>
@@ -34,6 +36,31 @@ SectionLeft::SectionLeft(QWidget *parent) : QWidget(parent)
     this->list_menuItem.clear();
     this->list_profile_my.clear();
     this->list_profile_friend.clear();
+
+    //c230518--start
+    SqliteHelper *query = new SqliteHelper(this);
+    QSqlError err = query->addConnectionLocal();
+
+
+    const QString QUERY_SEL = "SELECT * FROM LeftmenuSetting";
+    QVariantList *list = new QVariantList();
+    query->exec(QUERY_SEL, *list);
+
+    if(err.type() == QSqlError::NoError){
+        print_debug();
+        foreach(QVariant val, *list){
+            QMap<QString, QVariant> map = val.toMap();
+            int id = map["id"].toInt();
+            global.menuUse_is_active = map["is_active"].toInt();
+            qDebug() << "id = " << id << " ,is_active=" << global.menuUse_is_active;
+        }
+    }
+    query->close();
+    //c230518--end
+
+
+
+
     this->setUIControl();
 }
 
@@ -50,6 +77,9 @@ SectionLeft::~SectionLeft(){
 void SectionLeft::setUIControl(){
 
     linker = Linker::getInstance();//cheon211008
+    connect(linker, SIGNAL(signal_leftmenuLogined(int)), this, SLOT(slot_setLoginedSelectMenu(int)));//c230223_2
+    connect(linker, SIGNAL(signal_leftmenuOnOff(QString, bool)), this, SLOT(slot_setOnOffSelectMenu(QString, bool)));//c230329
+
 
     this->vl_logo = new QVBoxLayout();
     this->vl_logo->setContentsMargins(0,0,0,0);
@@ -89,9 +119,9 @@ void SectionLeft::setUIControl(){
     this->appendMenuItem(tr("RoseTube"), QString(GSCommon::MainMenuCode::RoseTube),":/images/main_icon_yt.png");
     this->appendMenuItem(tr("Podcast"), QString(GSCommon::MainMenuCode::PodCast),":/images/main_icon_pot.png");
     this->appendMenuItem(tr("CD"), QString(GSCommon::MainMenuCode::CDplay),":/images/main_icon_cd.png");//c220721
-    this->appendMenuItem(tr("TIDAL"), QString(GSCommon::MainMenuCode::Tidal),":/images/main_icon_tidal.png");
+    this->appendMenuItem("TIDAL", QString(GSCommon::MainMenuCode::Tidal),":/images/main_icon_tidal.png");
     this->appendMenuItem(tr("Bugs"), QString(GSCommon::MainMenuCode::Bugs),":/images/main_icon_bugs.png");
-    this->appendMenuItem(tr("Qobuz"), QString(GSCommon::MainMenuCode::Qobuz) ,":/images/main_icon_qobuz.png");
+    this->appendMenuItem("Qobuz", QString(GSCommon::MainMenuCode::Qobuz) ,":/images/main_icon_qobuz.png");
     //this->appendMenuItem(tr("Apple Music"), QString(GSCommon::MainMenuCode::AppleMusic) ,":/images/main_icon_apple.png");
     //this->appendMenuItem(tr("Vibe"), QString(GSCommon::MainMenuCode::NaverVibe) ,":/images/main_icon_qobuz.png");
     //this->appendMenuItem(tr("Amazon Music"), QString(GSCommon::MainMenuCode::AmazonMusic) ,":/images/main_icon_qobuz.png");
@@ -107,12 +137,12 @@ void SectionLeft::setUIControl(){
 
     this->lb_title_playList_my = new QLabel(tr("My Playlist"));
     this->lb_title_playList_my->setContentsMargins(25,10,0,10);
-    this->lb_title_playList_my->setStyleSheet("font-size:15px;color:#888888;");
+    this->lb_title_playList_my->setStyleSheet("font-size:15px;font:bold;color:#888888;");       //c230223_1
     this->lb_title_playList_my->setVisible(false);
 
     this->lb_title_playList_friend = new QLabel(tr("Friend playlist"));
     this->lb_title_playList_friend->setContentsMargins(25,10,0,10);
-    this->lb_title_playList_friend->setStyleSheet("font-size:15px;color:#888888;");
+    this->lb_title_playList_friend->setStyleSheet("font-size:15px;font:bold;color:#888888;");   //c230223_1
     this->lb_title_playList_friend->setVisible(false);
 
     QVBoxLayout *vl_total = new QVBoxLayout();
@@ -167,6 +197,87 @@ void SectionLeft::setUIControl(){
     this->setLayout(vl_scroll);
 
     connect(linker, SIGNAL(signal_leftmenuSearch(QString)), this, SLOT(slot_setSelectMenu(QString)));//cheon211008
+    selectTableLeftmenu();//c230329
+}
+
+void SectionLeft::selectTableLeftmenu(){//c230329
+
+    print_debug();
+    SqliteHelper *sqliteHelper = new SqliteHelper(this);
+    QSqlError err = sqliteHelper->addConnectionLocal();
+    const QString QUERY_SEL = "SELECT * FROM Leftmenu";
+    // SELECT 처리
+    QVariantList *list = new QVariantList();
+    sqliteHelper->exec(QUERY_SEL, *list);
+    sqliteHelper->close();
+    if(err.type() == QSqlError::NoError){
+        print_debug();
+        foreach(QVariant val, *list){
+            QMap<QString, QVariant> map = val.toMap();
+            int idx = map["idx"].toInt();
+            int sel = map["menu"].toInt();
+            qDebug() << "idx = " << idx << " ,menu=" << sel;
+            if(idx == 1){
+                emit linker->signal_leftmenuOnOff(QString(GSCommon::MainMenuCode::Tidal), bool(sel));
+                if(!sel){
+
+                }
+            }else if(idx == 2){
+                emit linker->signal_leftmenuOnOff(QString(GSCommon::MainMenuCode::Qobuz), bool(sel));
+                if(!sel){
+
+                }
+            }else if(idx == 3){
+                emit linker->signal_leftmenuOnOff(QString(GSCommon::MainMenuCode::Bugs), bool(sel));
+                if(!sel){
+
+                }
+            }else {
+
+            }
+
+        }
+    }
+
+}
+
+void SectionLeft::slot_setOnOffSelectMenu(QString p_menuCode, bool f){//c230329
+    print_debug();
+
+    for(int i = 0; i < this->list_menuItem.count(); i++){
+        if(this->list_menuItem[i]->getMenuCode()==p_menuCode){
+            if(f){
+                print_debug();
+                qDebug() << "p_menuCode=" << this->list_menuItem[i]->getMenuName();
+
+                this->list_menuItem[i]->show();
+                this->list_menuItem_spacer[i]->changeSize(0, 5, QSizePolicy::Minimum, QSizePolicy::Fixed); //bj230516
+
+            }else{
+                print_debug();
+                this->list_menuItem[i]->hide();
+                this->list_menuItem_spacer[i]->changeSize(0, 0, QSizePolicy::Minimum, QSizePolicy::Fixed); //bj230516
+            }
+        }
+    }
+
+
+}
+void SectionLeft::slot_setLoginedSelectMenu(int index){//c230223_2
+    print_debug();
+
+    this->list_menuItem[index]->setLoginedSelectedMenu();
+
+    /*
+    for(int i = 0; i < this->list_menuItem.count(); i++){
+        //this->list_menuItem[i]->setUnSelectedMenu();      // 메뉴 스타일 초기화
+        if(global.now_Section == index){
+            this->list_menuItem[i]->setLoginedSelectedMenu();
+
+        }
+    }
+    */
+
 }
 
 
@@ -176,28 +287,125 @@ void SectionLeft::setUIControl(){
  * @param p_menuCode
  * @param p_iconPath
  */
-void SectionLeft::appendMenuItem(const QString p_menuName, const QString p_menuCode, const QString p_iconPath){
+void SectionLeft::appendMenuItem(const QString p_menuName, const QString p_menuCode, const QString p_iconPath){ //bj230516
 
     MenuItem *menuItem = new MenuItem(p_menuName, p_menuCode, p_iconPath, this);
-    connect(menuItem, SIGNAL(clicked(QString)), this, SLOT(clickedMenu(QString)));
+//    connect(menuItem, SIGNAL(clicked(QString)), this, SLOT(clickedMenu(QString)));
+    connect(menuItem, SIGNAL(clicked(QString)), this, SLOT(clickedMenu(QString)));//c230518
+    connect(menuItem, SIGNAL(signal_ttt()), this, SLOT(slot_hoveredMenu()));//c230518
+
+    if(global.menuUse_is_active == 0 && (p_menuName == "TIDAL" || p_menuName == "Qobuz" || p_menuName == "Bugs" || p_menuName == "벅스" )){//c230518
+        menuItem->setToolTip(tr("This service menu can be deleted/added from the Left Menu when you go to Setting/Services."));
+        menuItem->setToolTipDuration(3000);
+
+    }else{
+        //menuItem->setToolTip(tr("tetetetet000"));
+        //menuItem->setToolTipDuration(0);
+    }
+
+
+    QSpacerItem* spacer = new QSpacerItem(0, 5);
 
     this->list_menuItem.append(menuItem);
+    this->list_menuItem_spacer.append(spacer);
 
     this->vl_mainMenu->addWidget(menuItem);
-    this->vl_mainMenu->addSpacing(5);
+    this->vl_mainMenu->addSpacerItem(spacer);
 }
 
+void SectionLeft::slot_hoveredMenu(){//c230518
+
+    //print_debug();
+    MenuItem *menuItem_sender = qobject_cast<MenuItem*>(sender());
+    QString tmp_MenuCode = menuItem_sender->property("menuCode").toString();
+    //qDebug() << global.menuUse_is_active;
+    //qDebug() << tmp_MenuCode;
+    if(global.menuUse_is_active == 0 && (tmp_MenuCode == QString(GSCommon::MainMenuCode::Tidal) || tmp_MenuCode == QString(GSCommon::MainMenuCode::Qobuz) || tmp_MenuCode == QString(GSCommon::MainMenuCode::Bugs)  )){//c230518
+        //menuItem_sender->setToolTip(tr("This service menu can be deleted/added from the Left Menu when you go to Setting/Services."));
+        //menuItem_sender->setToolTipDuration(3000);
+        //print_debug();
+
+    }else{
+        //print_debug();
+        menuItem_sender->setToolTip(tr(""));
+        menuItem_sender->setToolTipDuration(0);
+    }
+}
 
 /**
  * @brief SectionLeft::clickedMenu [SLOT] 메뉴 클릭
  * @param p_menuCode
  */
-void SectionLeft::clickedMenu(QString p_menuCode){
+
+
+
+void SectionLeft::clickedMenu(QString p_menuCode){//c230308_3
+
+    //this->activateWindow();//c230323
 print_debug();
-    //if(global.enable_section_left == false){
-   if(global.abs_ani_dialog_wait->isHidden() == true){
+    if(global.abs_ani_dialog_wait->isHidden() == true){//
+
+        //c230314_1 start
+        //ToastMsg::delay(this,"", tr("delay"), 2000);//
+        /*if(global.c == true){
+            global.enable_section_left = false;
+        }*/
+
+        if(p_menuCode == QString(GSCommon::MainMenuCode::RoseHome)){
+            print_debug();
+        }else if(p_menuCode == QString(GSCommon::MainMenuCode::Music)){
+            //ToastMsg::delay(this,"", tr("delay"), 1000);//
+            if(!global.db_downloadComplete_flag){
+                //music_downloadNotice();
+                emit linker->signal_musicDbProcess();
+                return;//c230413
+                //ToastMsg::show(this,"", tr("DB is downloading from Rose-device. Please wait."), 2000);//c230409
+                //return;//c230409
+            }
+        }else if(p_menuCode == QString(GSCommon::MainMenuCode::Video)){
+            //ToastMsg::delay(this,"", tr("delay"), 1000);//
+            if(!global.db_downloadComplete_flag){
+                //music_downloadNotice();
+                emit linker->signal_musicDbProcess();
+                return;//c230413
+                //ToastMsg::show(this,"", tr("DB is downloading from Rose-device. Please wait."), 2000);//c230409
+                //return;//c230409
+            }
+        }else if(p_menuCode == QString(GSCommon::MainMenuCode::Radio)){
+            //ToastMsg::delay(this,"", tr("delay"), 1000);//
+        }else if(p_menuCode == QString(GSCommon::MainMenuCode::RoseRadio)){
+            //ToastMsg::delay(this,"", tr("delay"), 1000);//
+        }else if(p_menuCode == QString(GSCommon::MainMenuCode::RoseFM)){
+            //ToastMsg::delay(this,"", tr("delay"), 1000);//
+        }else if(p_menuCode == QString(GSCommon::MainMenuCode::RoseTube)){
+            //ToastMsg::delay(this,"", tr("delay"), 1000);//
+            print_debug();
+        }else if(p_menuCode == QString(GSCommon::MainMenuCode::PodCast)){
+            //ToastMsg::delay(this,"", tr("delay"), 1000);//
+        }else if(p_menuCode == QString(GSCommon::MainMenuCode::CDplay)){
+            //ToastMsg::delay(this,"", tr("delay"), 1000);//
+        }else if(p_menuCode == QString(GSCommon::MainMenuCode::Tidal)){
+            //ToastMsg::delay(this,"", tr("delay"), 1000);//
+            print_debug();
+        }else if(p_menuCode == QString(GSCommon::MainMenuCode::Bugs)){
+            //ToastMsg::delay(this,"", tr("delay"), 1000);//
+            print_debug();
+        }else if(p_menuCode == QString(GSCommon::MainMenuCode::Qobuz)){
+            //ToastMsg::delay(this,"", tr("delay"), 1000);//
+            //print_debug();
+        }else if(p_menuCode == QString(GSCommon::MainMenuCode::AppleMusic)){
+            //ToastMsg::delay(this,"", tr("delay"), 1000);//
+        }else if(p_menuCode == QString(GSCommon::MainMenuCode::Spotify)){
+            //ToastMsg::delay(this,"", tr("delay"), 1000);//
+        }else if(p_menuCode == QString(GSCommon::MainMenuCode::Setting)){
+            //ToastMsg::delay(this,"", tr("delay"), 1000);//
+        }
+        //ToastMsg::delay(this,"", tr("delay"), 1000);//
+        //c230314_1 end
+        //print_debug();
+        //if(!global.enable_section_left) return ;//c230311
         global.searchMenuFlag = false;//cheon211008
-        global.enable_section_left = true;
+        //global.enable_section_left = false;
 
         for(int i = 0; i < this->list_menuItem.count(); i++){
             this->list_menuItem[i]->setUnSelectedMenu();      // 메뉴 스타일 초기화
@@ -206,9 +414,20 @@ print_debug();
                 //global.now_Section = i;    //c220321
             }
         }
-print_debug();
-qDebug() << "p_menuCode= " << p_menuCode;
+        print_debug();
+        qDebug() << "p_menuCode= " << p_menuCode;
+
         emit changedMenu(p_menuCode);
+        this->click_max_CNT = 0;//c230426
+    }else{//c230426
+        print_debug();
+        this->click_max_CNT++;
+        if(this->click_max_CNT == 3){
+            if(global.abs_ani_dialog_wait != nullptr){
+                global.abs_ani_dialog_wait->hide();
+            }
+        }
+        if(this->click_max_CNT > 3) this->click_max_CNT = 0;
     }
 }
 
@@ -218,24 +437,25 @@ void SectionLeft::slot_setSelectMenu(QString p_menuCode)//cheon211008
 
     for(int i=0; i<this->list_menuItem.count(); i++){
         this->list_menuItem[i]->setUnSelectedMenu();      // 메뉴 스타일 초기화
-        if(this->list_menuItem[i]->getMenuCode()==p_menuCode){
+        if(this->list_menuItem[i]->getMenuCode() == p_menuCode){
             this->list_menuItem[i]->setSelectedMenu();
             //global.now_Section = i; //c220321
         }
     }
 }
 
+
 void SectionLeft::setSmallSize(){
 
     this->lb_logo->setGeometry(18, 45, 45, 50);
+
     this->setFixedWidth(MENU_W_MIN);
+    QCoreApplication::processEvents(QEventLoop::ExcludeUserInputEvents);
     //this->setMaximumWidth(MENU_W_MIN);
+
     lb_title_playList_my->setText(tr("My"));
     lb_title_playList_friend->setText(tr("friend"));
-    /*
-     *     lb_title_playList_my->setText(tr("마이"));
-    lb_title_playList_friend->setText(tr("친구"));
-    */
+
     for(int i = 0; i < this->list_menuItem.count(); i++){
         this->list_menuItem[i]->hideMenuName();
     }
@@ -247,16 +467,17 @@ void SectionLeft::setSmallSize(){
     }
 }
 
+
 void SectionLeft::setBigSize(){
 
     this->lb_logo->setGeometry(18, 45, 125, 50);
 
     this->setFixedWidth(MENU_W_MAX);
     //this->setMaximumWidth(MENU_W_MAX);
+
     lb_title_playList_my->setText(tr("My Playlist"));
-    //    lb_title_playList_my->setText(tr("마이 플레이리스트"));
     lb_title_playList_friend->setText(tr("Friend Playlist"));
-    //lb_title_playList_friend->setText(tr("친구 플레이리스트"));
+
     for(int i = 0; i < this->list_menuItem.count(); i++){
         this->list_menuItem[i]->showMenuName();
     }
@@ -289,7 +510,8 @@ void SectionLeft::requestPlayList(){
 
         GSCommon::clearLayout(this->vl_playList_my);
         GSCommon::clearLayout(this->vl_playList_friend);
-    }else{
+    }
+    else{
         // ----------------------------------
         // 로그인 된 상태임
         // ----------------------------------
@@ -401,8 +623,10 @@ void SectionLeft::slot_responseHttp(const int &p_id, const QJsonObject &p_jsonOb
         }
         break;
     }
+
     sender()->deleteLater();
 }
+
 
 /**
  * @brief SectionLeft::slot_clickedProfileRow [SLOT] 플레이리스트 Row 클릭시

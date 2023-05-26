@@ -101,6 +101,10 @@ void NoData_Widget::setText_forNoData(const NoData_Message p_msgOpt){
             this->label_msg->setText(tr("No rose radio channel information."));
             break;
 
+        case NoData_Message::History_NoDate:
+            this->label_msg->setText(tr("No Information on My History."));
+            break;
+
 /*
  *         case NoData_Message::Unknown:
             this->label_msg->setText(tr("데이터가 없습니다."));

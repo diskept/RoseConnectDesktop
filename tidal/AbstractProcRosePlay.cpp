@@ -121,10 +121,26 @@ QJsonArray AbstractProcRosePlay::get_rearrangeJsonArray_toPlayData(const QJsonAr
  * @return
  */
 QJsonArray AbstractProcRosePlay::subRange_JsonArray(const QJsonArray &p_jsonArr, const int startIndex){
-    const int len_data = p_jsonArr.count();
-    if(startIndex>0 && startIndex<len_data){
+
+    int len_data = 0;
+
+    if(p_jsonArr.count() > 3000){
+        int tmp_max = 3000 + startIndex;
+
+        if(tmp_max > p_jsonArr.count()){
+            len_data = p_jsonArr.count();
+        }
+        else{
+            len_data = tmp_max;
+        }
+    }
+    else{
+        len_data = p_jsonArr.count();
+    }
+
+    if(startIndex > 0 && startIndex < len_data){
         QJsonArray jsonArr_subRange;
-        for(int i=startIndex ; i<len_data ; i++){
+        for(int i = startIndex; i < len_data; i++){
             jsonArr_subRange.append(p_jsonArr.at(i));
         }
         return jsonArr_subRange;
@@ -143,15 +159,39 @@ QJsonArray AbstractProcRosePlay::subRange_JsonArray(const QJsonArray &p_jsonArr,
  * @return
  */
 QJsonArray AbstractProcRosePlay::reorderJsonArray(const QJsonArray &p_jsonArr, const int startIndex){
-    const int len_data = p_jsonArr.count();
-    if(startIndex>0 && startIndex<len_data){
+
+    int len_data = 0;
+
+    if(p_jsonArr.count() > 3000){
+        int tmp_max = 3000 + startIndex;
+
+        if(tmp_max > p_jsonArr.count()){
+            len_data = p_jsonArr.count();
+        }
+        else{
+            len_data = tmp_max;
+        }
+    }
+    else{
+        len_data = p_jsonArr.count();
+    }
+
+    if(startIndex > 0 && startIndex < len_data){
         QJsonArray jsonArr_reorder;
-        for(int i=startIndex ; i<len_data ; i++){
+
+        for(int i = startIndex; i < len_data; i++){
             jsonArr_reorder.append(p_jsonArr.at(i));
         }
-        for(int i=0 ; i<startIndex ; i++){
-            jsonArr_reorder.append(p_jsonArr.at(i));
+
+        for(int i = 0; i < startIndex; i++){
+            if(jsonArr_reorder.count() < len_data){
+                jsonArr_reorder.append(p_jsonArr.at(i));
+            }
+            else{
+                break;
+            }
         }
+
         return jsonArr_reorder;
     }
     else{

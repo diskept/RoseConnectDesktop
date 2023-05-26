@@ -569,7 +569,7 @@ void dialogsetting_RXsetting::slot_clickedbit32question(){//c220511
     print_debug();
     dlgConfirmHdmi->setAlignment(Qt::AlignLeft);
     //dlgConfirmHdmi->setTitle(tr("Headphone Output Impedance"));
-    //dlgConfirmHdmi->setText(tr("This is a menu to set the Headphone Output Impedace.\nIf you select the output (16 Ohm, 32 Ohm, 50 Ohm, 100 Ohm) that matches your headphone specifications, you can enjoy better sound."));
+    //dlgConfirmHdmi->setText(tr("This is a menu to set the Headphone Output Impedace.\nIf you select the output (16 Ohm, 32 Ohm, 50 Ohm, 100 Ohm) that fits your headphone specifications, you can hear better sound quality."));
     dlgConfirmHdmi->setAlignment(Qt::AlignLeft);
     dlgConfirmHdmi->setTitle(tr("The low 8bits of a 32 bit sound sources\n will have correct"));
     dlgConfirmHdmi->setText(tr("Some DACs may generate noise when playing a 32-bit sound source with a high sampling rate.\nIn this case, it is used to reduce noise by correcting the lower 8 bits."));

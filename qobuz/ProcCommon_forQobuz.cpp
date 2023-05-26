@@ -20,6 +20,7 @@ namespace qobuz {
      * @brief 기본 생성자.
      */
     ProcCommon::ProcCommon(QWidget *parent) : QObject(parent) {
+        this->linker = Linker::getInstance();//c230421
     }
 
 
@@ -162,7 +163,7 @@ namespace qobuz {
         params.addQueryItem("password", str_pw_md5);
 
         //params.addQueryItem("clientUniqueKey", "");
-        QString header1 = "RS201";
+        QString header1 = global.device.getDeviceID();//"RS201";//c230422
         params.addQueryItem("device_manufacturer_id", header1.toUtf8());        
 
         //qDebug() << "ProcCommon::request_qobuzLogin()--------------";       //cheon_debug01
@@ -178,6 +179,42 @@ namespace qobuz {
 
     }
 
+
+    void ProcCommon::request_qobuzLogin_termCall(UserLoginInfo userLoginInfo){//c230422
+
+        // slot 에서 추가처리를 위해 멤버변수로 저장해둠
+        this->userLoginInfo = userLoginInfo;
+
+        NetworkHttp *network = new NetworkHttp;
+        connect(network, SIGNAL(response(int,QJsonObject)), SLOT(slot_responseHttp(int,QJsonObject)));
+
+        QUrlQuery params;
+        params.addQueryItem("username", userLoginInfo.username);
+
+        // Convert password format to md5 format    Added code 21/12/2020 by cheon
+        QString qstrReadpw = userLoginInfo.password;
+        QByteArray byteArray = qstrReadpw.toUtf8();
+        const char *chrTest = byteArray.constData();
+
+        QString str_pw_md5 = QString(QCryptographicHash::hash((chrTest),QCryptographicHash::Md5).toHex());
+        params.addQueryItem("password", str_pw_md5);
+
+        //params.addQueryItem("clientUniqueKey", "");
+        QString header1 = "RS201";//c230422
+        params.addQueryItem("device_manufacturer_id", header1.toUtf8());
+
+        //qDebug() << "ProcCommon::request_qobuzLogin()--------------";       //cheon_debug01
+        //qDebug() << userLoginInfo.username;
+        //qDebug() << userLoginInfo.password;
+        //qDebug() << "password" << str_pw_md5;
+
+        network->request_forQobuz(Login_termCall,
+                         QString("%1/user/login").arg(global.qobuzAPI_url),
+                         NetworkHttp::HeaderOption_forQobuz::X_App_Id,
+                         params,
+                         NetworkHttp::RequestMethod::Post);
+
+    }
 
 
     /**
@@ -927,7 +964,7 @@ namespace qobuz {
         //https://www.qobuz.com/api.json/0.2/playlist/get?playlist_id=5551640&limit=1000&offset=0&extra=tracks%2CgetSimilarPlaylists
 
         QUrlQuery params;
-        params.addQueryItem("playlist_id", playlist_id);       // Added Jeon 29/12/2020
+        params.addQueryItem("playlist_id", playlist_id);       // Added diskept 29/12/2020
         params.addQueryItem("extra", "tracks%2CgetSimilarPlaylists");
         //params.addQueryItem("countryCode", global.user_forQobuz.getCountryCode());
 
@@ -977,7 +1014,7 @@ namespace qobuz {
                                   , params
                                   , NetworkHttp::RequestMethod::Get
                                   , false);*/
-        // Added Jeon 29/12/2020
+        // Added diskept 29/12/2020
         QUrlQuery params;
         params.addQueryItem("album_id", album_id);
         //params.addQueryItem("extra", "albumsFromSameArtist");
@@ -1087,7 +1124,7 @@ namespace qobuz {
      * @brief QOBUZ API 요청 - 즐겨찾기 추가 (Album)
      * @param album_id
      */
-    //void ProcCommon::request_qobuz_addFavorite_album(const int album_id){         // Added Jeon 27/12/2020
+    //void ProcCommon::request_qobuz_addFavorite_album(const int album_id){         // Added diskept 27/12/2020
     void ProcCommon::request_qobuz_addFavorite_album(const QString album_id){
         this->request_qobuz_addFavorie(Favorite_Add_Album, "albumIds", album_id, "albums");
     }
@@ -1163,7 +1200,7 @@ namespace qobuz {
      * @brief QOBUZ API 요청 - 즐겨찾기 삭제 (Album)
      * @param album_id
      */
-    //void ProcCommon::request_qobuz_deleteFavorite_album(const int album_id){      // Added Jeon 27/12/2020
+    //void ProcCommon::request_qobuz_deleteFavorite_album(const int album_id){      // Added diskept 27/12/2020
     void ProcCommon::request_qobuz_deleteFavorite_album(const QString album_id){
         this->request_qobuz_deleteFavorie(Favorite_Delete_Album, album_id, "albums");
     }
@@ -1517,10 +1554,25 @@ namespace qobuz {
             //QString strJson(doc.toJson(QJsonDocument::Compact));
            // qDebug() << "p_id : " << p_id << "\nProcCommon::slot_responseHttp----p_jsonObj : " << strJson << "\n";                             //cheon210717-hiresjson
         //}
-
+        //print_debug();
+        //qDebug() << "p_id=" << p_id;
+        //qDebug() << "p_jsonObj=" << p_jsonObj;
+  /*      if( (ProcJsonEasy::getString(p_jsonObj, "code")==202 || ProcJsonEasy::getString(p_jsonObj, "code")==401)){//c230421
+            print_debug();
+            qobuz::UserLoginInfo qobuz_userLoginInfo = getLoginInfo_qobuzDB();
+            request_qobuzLogin_termCall(qobuz_userLoginInfo);
+            //global.user_forQobuz.setLogout();
+            emit linker->signal_clicked_movePage(global.user_forQobuz.getPageData());
+            sender()->deleteLater();
+            if(global.abs_ani_dialog_wait->isHidden() != true){
+                global.abs_ani_dialog_wait->hide(); //cheontidal
+            }
+            return;
+        }*/
         NetworkHttp* sender_http = qobject_cast<NetworkHttp*>(sender());
 
         switch (p_id) {
+            case Login_termCall:  setResult_loginQobuz_termCall(p_jsonObj);    break;//c230422
             case Login:  setResult_loginQobuz(p_jsonObj);    break;
 
             case Logout: setResult_logoutQobuz(p_jsonObj);   break;
@@ -1614,9 +1666,8 @@ namespace qobuz {
 
         }
 
+        sender_http->deleteLater();//c230423
         sender()->deleteLater();
-
-
     }
 
 
@@ -1682,6 +1733,73 @@ namespace qobuz {
 
                 // 시그널 발생
                 emit this->successLogin();
+            }
+
+        }
+        else{
+            emit this->failedLogin(tr("Unable to login to QOBUZ service. (1)"));
+            //emit this->failedLogin(tr("QOBUZ 서비스에 로그인할 수 없습니다. (1)"));
+        }
+    }
+
+
+    void ProcCommon::setResult_loginQobuz_termCall(const QJsonObject &p_jsonObj){//c230422
+
+        //qDebug() << "[QOBUZ][MSG][FUNC] : ProcCommon_forQobuz.cpp -> ProcCommon::setResult_loginQobuz(const QJsonObject &p_jsonObj)";
+        //print_qobuz_func();
+        //QJsonDocument doc(p_jsonObj);
+        //QString strJson(doc.toJson(QJsonDocument::Compact));
+        //qDebug() << "p_jsonObj = " << strJson << "\n";
+
+        if(ProcJsonEasy::get_flagOk(p_jsonObj)){
+            qobuz::RoseSessionInfo_forQobuz data_output;
+            data_output.user_auth_token = ProcJsonEasy::getString(p_jsonObj, "user_auth_token");
+
+            QJsonObject user_Obj = ProcJsonEasy::getJsonObject(p_jsonObj, "user");
+            data_output.email = ProcJsonEasy::getString(user_Obj, "email");
+            data_output.user_id = QString("%1").arg(ProcJsonEasy::getInt(user_Obj, "id"));
+            QJsonObject device_Obj = ProcJsonEasy::getJsonObject(user_Obj, "device");
+            data_output.device_man_id = ProcJsonEasy::getString(device_Obj, "device_manufacturer_id");
+            data_output.device_id = QString("%1").arg(ProcJsonEasy::getInt(device_Obj, "id"));
+            QJsonObject credential_Obj = ProcJsonEasy::getJsonObject(user_Obj, "credential");
+            data_output.description = ProcJsonEasy::getString(credential_Obj, "description");
+            data_output.c_id = QString("%1").arg(ProcJsonEasy::getInt(credential_Obj, "id"));
+            data_output.label = ProcJsonEasy::getString(credential_Obj, "label");
+            QJsonObject parameters_Obj = ProcJsonEasy::getJsonObject(credential_Obj, "parameters");
+            data_output.hfp_purchases = ProcJsonEasy::getBool(parameters_Obj, "hfp_purchase");
+            data_output.hires_purchases = ProcJsonEasy::getBool(parameters_Obj, "hires_purchases_streaming");
+            data_output.hires_streaming = ProcJsonEasy::getBool(parameters_Obj, "hires_streaming");
+            data_output.lossless_streaming = ProcJsonEasy::getBool(parameters_Obj, "lossless_streaming");
+            data_output.lossy_streaming = ProcJsonEasy::getBool(parameters_Obj, "lossy_streaming");
+            data_output.mobile_streaming = ProcJsonEasy::getBool(parameters_Obj, "mobile_streaming");
+            data_output.offline_streaming = ProcJsonEasy::getBool(parameters_Obj, "offline_streaming");
+
+            userLoginInfo.auth_token = data_output.user_auth_token;
+            userLoginInfo.user_id = data_output.user_id;
+
+            if(data_output.email.isEmpty()){
+                emit this->failedLogin(tr("Unable to login to QOBUZ service. (2)"));
+                //emit this->failedLogin(tr("QOBUZ 서비스에 로그인할 수 없습니다. (2)"));
+            }
+            else{
+                // 정보 저장 (어플 사용하는 동안 필요한 정보임)
+                global.user_forQobuz.setLogin(data_output.user_auth_token, data_output.email, data_output.user_id, userLoginInfo.flagSavedLoginInfo);
+                //global.user_forQobuz.setUsername(userLoginInfo.username);
+
+                // DB 정보 처리
+                if(userLoginInfo.flagSavedLoginInfo){
+                    this->saveLoginInfo_qobuzDB(userLoginInfo);
+                }
+                else{
+                    this->clearLoginInfo_qobuzDB();
+                }
+
+                //login 정보 rose로 전달
+                ProcRosePlay_withQobuz *procRose = new ProcRosePlay_withQobuz();
+                procRose->request_set_session_info(data_output);
+
+                // 시그널 발생
+                emit linker->signal_successLoginQobuz();
             }
 
         }
@@ -2123,7 +2241,7 @@ namespace qobuz {
                 QJsonArray jsonArr_item = ProcJsonEasy::getJsonArray(jsonPar_album, "items");
                 bool flag_lastPage = true;
 
-                // Added Jeon 30/12/2020 jsonArr_item 재구성
+                // Added diskept 30/12/2020 jsonArr_item 재구성
                 for(int i = 0; i < jsonArr_item.count(); i++){
                     QJsonObject tmp_json = jsonArr_item.at(i).toObject();
 
@@ -2162,7 +2280,6 @@ namespace qobuz {
 
                     list_output.append(tmp_data);
 
-                    QJsonObject track;
                     QJsonObject album;
                     album.insert("duration", tmp_data.album_duration);
                     album.insert("hires", tmp_data.album_hires);
@@ -2204,27 +2321,34 @@ namespace qobuz {
                     performer.insert("id", tmp_data.performer_id);
                     performer.insert("name", tmp_data.performer_name);
 
+                    QJsonObject track;
                     track.insert("album", album);
                     track.insert("artist", artist);
                     track.insert("composer", composer);
-                    track.insert("copyright", tmp_data.copyright);
-                    track.insert("duration", tmp_data.duration);
-                    track.insert("hires", tmp_data.hires);
-                    track.insert("hires_streamable", tmp_data.hires_streamable);
-                    track.insert("id", tmp_data.id);
-                    track.insert("maximum_bit_depth", tmp_data.maximum_bit_depth);
-                    track.insert("maximum_sampling_rate", tmp_data.maximum_sampling_rate);
-                    track.insert("media_number", tmp_data.media_number);
+                    track.insert("copyright", list_output.at(i).copyright);
+                    track.insert("duration", list_output.at(i).duration);
+                    track.insert("hires", list_output.at(i).hires);
+                    track.insert("hires_streamable", list_output.at(i).hires_streamable);
+                    track.insert("id", list_output.at(i).id);
+                    track.insert("maximum_bit_depth", list_output.at(i).maximum_bit_depth);
+                    track.insert("maximum_sampling_rate", list_output.at(i).maximum_sampling_rate);
+                    track.insert("media_number", list_output.at(i).media_number);
+                    track.insert("parental_warning", list_output.at(i).parental_warning);
                     track.insert("performer", performer);
-                    track.insert("performers", tmp_data.performers);
-                    track.insert("previewable", tmp_data.previewable);
-                    track.insert("purchasable", tmp_data.purchasable);
-                    track.insert("qobuz_id", tmp_data.qobuz_id);
-                    track.insert("sampleable", tmp_data.sampleable);
-                    track.insert("streamable", tmp_data.streamable);
-                    track.insert("title", tmp_data.title);
-                    track.insert("work", tmp_data.work);
-                    track.insert("track_number", tmp_data.track_number);
+                    track.insert("performers", list_output.at(i).performers);
+                    track.insert("previewable", list_output.at(i).previewable);
+                    track.insert("purchasable", list_output.at(i).purchasable);
+                    track.insert("qobuz_id", list_output.at(i).qobuz_id);
+                    track.insert("sampleable", list_output.at(i).sampleable);
+                    track.insert("streamable", list_output.at(i).streamable);
+                    track.insert("title", list_output.at(i).title);
+                    if(!list_output.at(i).work.isEmpty()){
+                        track.insert("work", list_output.at(i).work);//cheon210812-work
+                    }
+                    if(!list_output.at(i).version.isEmpty()){
+                        track.insert("version", list_output.at(i).version);//cheon210812-work
+                    }
+                    track.insert("track_number", list_output.at(i).track_number);
 
                     send_tracks.append(track);
                 }
@@ -2409,7 +2533,7 @@ namespace qobuz {
         bool flag_lastPage = true;
 
         if(ProcJsonEasy::get_flagOk(p_jsonObj)){
-            // Added Jeon 30/12/2020 jsonArr_item 재구성
+            // Added diskept 30/12/2020 jsonArr_item 재구성
             for(int i = 0; i < jsonArr_item.count(); i++){
                 QJsonObject tmp_json = jsonArr_item.at(i).toObject();
 
@@ -2502,6 +2626,7 @@ namespace qobuz {
                 track.insert("maximum_bit_depth", list_output.at(i).maximum_bit_depth);
                 track.insert("maximum_sampling_rate", list_output.at(i).maximum_sampling_rate);
                 track.insert("media_number", list_output.at(i).media_number);
+                track.insert("parental_warning", list_output.at(i).parental_warning);
                 track.insert("performer", performer);
                 track.insert("performers", list_output.at(i).performers);
                 track.insert("previewable", list_output.at(i).previewable);

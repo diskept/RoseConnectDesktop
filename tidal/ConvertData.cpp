@@ -42,7 +42,7 @@ namespace tidal {
      */
     tidal::RoseSessionInfo_forTidal ConvertData::convertData_roseSessionInfo(const QJsonObject &jsonObj){
 
-        // test debug 28.01.2021 Added Jeon
+        // test debug 28.01.2021 Added diskept
         //qDebug() << "file_name: " << __FILE__ << "function_name: " << __FUNCTION__ << "line: " << __LINE__ << "\n";
 
         tidal::RoseSessionInfo_forTidal data_output;
@@ -248,6 +248,9 @@ namespace tidal {
         QJsonObject jsonObj_album = ProcJsonEasy::getJsonObject(jsonObj, "album");
         data_output.albumName = ProcJsonEasy::getString(jsonObj_album, "title");
         data_output.album_id = ProcJsonEasy::getInt(jsonObj_album, "id");
+
+        data_output.adult_certification = ProcJsonEasy::getBool(jsonObj, "explicit");
+        data_output.allowStreaming = ProcJsonEasy::getBool(jsonObj,"allowStreaming");
 
         // 앨범 이미지
         QString album_cover = ProcJsonEasy::getString(jsonObj_album, "cover");

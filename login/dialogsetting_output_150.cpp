@@ -12,6 +12,7 @@
 #include <QRadioButton>
 #include <QDebug>
 #include <QMessageBox>
+#include <QMovie>
 
 #define print_debug() qDebug() << "\n" << "file_name: " << __FILE__ << "function_name: " << __FUNCTION__ << "line: " << __LINE__ << "\n";
 
@@ -51,6 +52,8 @@ void dialogsetting_output_150::setInit(){
  * @brief DialogSelect_Cloud::setUIControl : UI 세팅
  */
 void dialogsetting_output_150::setUIControl(){
+
+    this->loding_ani_init();
 
     QJsonObject tmp_outputsettingval = get_settingOfOutputDetail();
 
@@ -230,6 +233,8 @@ void dialogsetting_output_150::setUIControl(){
     comboBoxOutputPCMResampling->addItem(tr(" 96 kHz"), 4);//cheon01_src
     comboBoxOutputPCMResampling->addItem(tr(" 176.4 kHz"), 5);//cheon01_src
     comboBoxOutputPCMResampling->addItem(tr(" 192 kHz"), 6);//cheon01_src
+    comboBoxOutputPCMResampling->addItem(tr(" 352.8 kHz"), 6);//cheon01_src
+    comboBoxOutputPCMResampling->addItem(tr(" 384 kHz"), 6);//cheon01_src
 
 
 
@@ -249,7 +254,7 @@ void dialogsetting_output_150::setUIControl(){
 
     QLabel *lb_PCM = new QLabel(tr("output LSB"));
     lb_PCM->setStyleSheet("color:#E5E5E4");
-    lb_PCM->setFixedHeight(120);//c220511
+    lb_PCM->setFixedHeight(70);//c220511
     lb_PCM->setText((tr("PCM Resampling Frequency")));
     lb_PCM->setStyleSheet("Text-align:left; font-size:18px;color:#E5E5E4; ");
 
@@ -260,6 +265,7 @@ void dialogsetting_output_150::setUIControl(){
     comboBoxOutputPCMMaxSampling->addItem(tr(" 48 kHz"), 1);//cheon01_src
     comboBoxOutputPCMMaxSampling->addItem(tr(" 96 kHz"), 2);//cheon01_src
     comboBoxOutputPCMMaxSampling->addItem(tr(" 192 kHz"), 3);//cheon01_src
+    comboBoxOutputPCMMaxSampling->addItem(tr(" 384 kHz"), 3);//cheon01_src
 
 
 
@@ -315,7 +321,7 @@ void dialogsetting_output_150::setUIControl(){
     QHBoxLayout *hl_lb_PCM = new QHBoxLayout();
     hl_lb_PCM->setContentsMargins(33,0,30,0);
     hl_lb_PCM->setSpacing(20);
-    hl_lb_PCM->addWidget(lb_PCM);
+    hl_lb_PCM->addWidget(lb_PCM,0,Qt::AlignCenter);
     hl_lb_PCM->addWidget(btn_questionPCM, 0, Qt::AlignLeft);//c220511
     hl_lb_PCM->addWidget(widget_PCM_and_Max, 0, Qt::AlignRight);//c220511
     //hl_lb_PCM->addWidget(comboBoxHdmiPCM);
@@ -330,7 +336,7 @@ void dialogsetting_output_150::setUIControl(){
 
         comboBoxOutputDSD->addItem(tr(" Native DSD(upto DSD512)"), 0);//cheon01_src
         comboBoxOutputDSD->addItem(tr(" DSD over PCM(Not supported)"), 1);//cheon01_src
-        comboBoxOutputDSD->addItem(tr(" DSD to PCM(upto DSD128)"), 2);//cheon01_src
+        comboBoxOutputDSD->addItem(tr(" DSD to PCM(upto DSD512)"), 2);//cheon01_src
 
 
         QLabel *lb_DSD = new QLabel(tr("DSD Mode"));
@@ -464,10 +470,10 @@ void dialogsetting_output_150::setUIControl(){
     comboBoxFIR->addItem(tr("Low Dispersion Short Delay filter"), 5);
 
 
-    QLabel *lb_FIR = new QLabel(tr("FIR Interpolation Filter"));
+    QLabel *lb_FIR = new QLabel(tr("FIR interpoation phase Filter"));
     lb_FIR->setStyleSheet("color:#E5E5E4");
     lb_FIR->setFixedHeight(70);//c220511
-    lb_FIR->setText((tr("FIR Interpolation Filter")));
+    lb_FIR->setText((tr("FIR interpoation phase Filter")));
     lb_FIR->setStyleSheet("Text-align:left; font-size:18px;color:#E5E5E4; ");
 
    // this->list_keyValue.append(0);
@@ -878,9 +884,10 @@ void dialogsetting_output_150::slot_clickedbit32question(){//c220511
     dlgConfirmOutput->setAlignment(Qt::AlignLeft);
     dlgConfirmOutput->setAlignment(Qt::AlignLeft);
     dlgConfirmOutput->setTitle(tr("The low 8bits of a 32 bit sound sources\n will have correct"));
-    dlgConfirmOutput->setText(tr("Some DACs may generate noise when playing a 32 bit sound source with a high sampling rate.\nIn this case, \nit is used to reduce noise by correcting the lower 8 bits."));
+    dlgConfirmOutput->setText(tr("Some DACs may generate noise when playing a 32-bit sound source with a high sampling rate.\nIn this case, it is used to reduce noise by correcting the lower 8 bits."));
 
-    dlgConfirmOutput->setGeometry((DLG_WIDTH + 80), (350 + 100), 350, 500);
+    dlgConfirmOutput->setTextHeight(120);
+    dlgConfirmOutput->setGeometry((this->geometry().left() + (DLG_WIDTH - 660) / 2), this->geometry().top() + (DLG_HEIGHT - dlgConfirmOutput->sizeHint().height()) / 2, 0, 0);
     dlgConfirmOutput->setAlertMode();
     dlgConfirmOutput->setProperty("flagShown",false);
 
@@ -900,9 +907,10 @@ void dialogsetting_output_150::slot_clickedDSDquestion(){//c220511
     DialogConfirm *dlgConfirmOutput = new DialogConfirm(this);
     dlgConfirmOutput->setAlignment(Qt::AlignLeft);
     dlgConfirmOutput->setTitle(tr("DSD Mode"));
-    dlgConfirmOutput->setText(tr("Determines the transmission format (Native, DOP, PCM) of audio samples to be transmitted to the DAC when playing DSD sound sources. \n For HDMI output, only DSD to PCM is available."));
+    dlgConfirmOutput->setText(tr("Determines the transmission format (Native, DOP, PCM) of audio samples to be delivered to the DAC when playing DSD music. \n When in Native mode, analog output supports up to DSD512 when playing DSD, but digital output does not produce sound. When in DOP mode, analog output does not produce sound and digital output transmits audio data uo to DSD256. For optical, and COAX, it supports only uo to DSD64. In case of DSD to PCM mode, it supprts up to DSD512 and supprts both digital and analog output."));
 
-    dlgConfirmOutput->setGeometry((DLG_WIDTH + 80), (350 + 100), 350, 500);
+    dlgConfirmOutput->setTextHeight(350);
+    dlgConfirmOutput->setGeometry((this->geometry().left() + (DLG_WIDTH - 660) / 2), this->geometry().top() + (DLG_HEIGHT - dlgConfirmOutput->sizeHint().height()) / 2, 0, 0);
     dlgConfirmOutput->setAlertMode();
     dlgConfirmOutput->setProperty("flagShown",false);
 
@@ -924,7 +932,8 @@ void dialogsetting_output_150::slot_clickedPCMquestion(){//c220511
     dlgConfirmOutput->setTitle(tr("PCM Resampling Frequency"));
     dlgConfirmOutput->setText(tr("This is the menu to set sampling frequecy. if you want to output the original sound as it is, select the Original Sampling Rate, and if want to use the resampling function, select the desired sampling rate (48kHz, 96Khz, 192Khz, etc), MQA, Native DSD, DOP, Video, Bluetooth and Airplay, Roon Ready are not supported."));
 
-    dlgConfirmOutput->setGeometry((DLG_WIDTH + 80), (350 + 100), 350, 500);
+    dlgConfirmOutput->setTextHeight(250);
+    dlgConfirmOutput->setGeometry((this->geometry().left() + (DLG_WIDTH - 660) / 2), this->geometry().top() + (DLG_HEIGHT - dlgConfirmOutput->sizeHint().height()) / 2, 0, 0);
     dlgConfirmOutput->setAlertMode();
     dlgConfirmOutput->setProperty("flagShown",false);
 
@@ -943,10 +952,11 @@ void dialogsetting_output_150::slot_clickedPreLevelquestion(){//c220511
     print_debug();
     DialogConfirm *dlgConfirmOutput = new DialogConfirm(this);
     dlgConfirmOutput->setAlignment(Qt::AlignLeft);
-    dlgConfirmOutput->setTitle(tr("PCM Resampling Frequency"));
-    dlgConfirmOutput->setText(tr("This is the menu to set sampling frequecy. if you want to output the original sound as it is, select the Original Sampling Rate, and if want to use the resampling function, select the desired sampling rate (48kHz, 96Khz, 192Khz, etc), MQA, Native DSD, DOP, Video, Bluetooth and Airplay, Roon Ready are not supported."));
+    dlgConfirmOutput->setTitle(tr("Preout Level Setting"));
+    dlgConfirmOutput->setText(tr("Fixes the pre-out output level. You can use the output level of the ROSE by holding the output level of the ROSE as an input within the acceptable range of the AMP, you connected without using the volume control of the ROSE."));
 
-    dlgConfirmOutput->setGeometry((DLG_WIDTH + 80), (350 + 100), 350, 500);
+    dlgConfirmOutput->setTextHeight(150);
+    dlgConfirmOutput->setGeometry((this->geometry().left() + (DLG_WIDTH - 660) / 2), this->geometry().top() + (DLG_HEIGHT - dlgConfirmOutput->sizeHint().height()) / 2, 0, 0);
     dlgConfirmOutput->setAlertMode();
     dlgConfirmOutput->setProperty("flagShown",false);
 
@@ -967,10 +977,10 @@ void dialogsetting_output_150::slot_clickedHOIquestion(){//c220708
     DialogConfirm *dlgConfirmOutput = new DialogConfirm(this);
     dlgConfirmOutput->setAlignment(Qt::AlignLeft);
     dlgConfirmOutput->setTitle(tr("Headphone Output Impedance"));
-    dlgConfirmOutput->setText(tr("This is a menu to set the Headphone Output Impedace.\nIf you select the output (16 Ohm, 32 Ohm, 50 Ohm, 100 Ohm) that matches your headphone specifications, you can enjoy better sound."));
-    dlgConfirmOutput->setAlignment(Qt::AlignLeft);
+    dlgConfirmOutput->setText(tr("This is a menu to set the Headphone Output Impedace.\nIf you select the output (16 Ohm, 32 Ohm, 50 Ohm, 100 Ohm) that fits your headphone specifications, you can hear better sound quality."));
 
-    dlgConfirmOutput->setGeometry((DLG_WIDTH + 80), (350 + 100), 350, 500);
+    dlgConfirmOutput->setTextHeight(150);
+    dlgConfirmOutput->setGeometry((this->geometry().left() + (DLG_WIDTH - 660) / 2), this->geometry().top() + (DLG_HEIGHT - dlgConfirmOutput->sizeHint().height()) / 2, 0, 0);
     dlgConfirmOutput->setAlertMode();
     dlgConfirmOutput->setProperty("flagShown",false);
 
@@ -991,10 +1001,10 @@ void dialogsetting_output_150::slot_clickedSoftwareVolquestion(){//c220511
     DialogConfirm *dlgConfirmOutput = new DialogConfirm(this);
     dlgConfirmOutput->setAlignment(Qt::AlignLeft);
     dlgConfirmOutput->setTitle(tr("Software Volume Control"));
-    dlgConfirmOutput->setText(tr("Adjust the playback volume of digital audio data using the Rose volume control software.\nCaution 1. It cannot be used in Native DSD or DSD over PCM mode. It is applied after changing to DSD to PCM(upto DSD128) mode.\nCaution 2. For digital output. MQA Stream is supported only when the volume is MAX. If it is less than MAX. MQA Stream is not supported."));
-    dlgConfirmOutput->setTextHeight(250);
-    dlgConfirmOutput->setAlignment(Qt::AlignLeft);
-    dlgConfirmOutput->setGeometry((DLG_WIDTH + 80), (350 + 100), 350, 500);
+    dlgConfirmOutput->setText(tr("Adjust the playback volume of digital audio data using the Rose volume control software.\n\nCaution 1. It cannot be used in Native DSD or DSD over PCM mode. It is applied after changing to DSD to PCM(upto DSD128) mode.\nCaution 2. For digital output. MQA Stream is supported only when the volume is MAX. If it is less than MAX. MQA Stream is not supported."));
+    dlgConfirmOutput->setTextHeight(270);
+    dlgConfirmOutput->setGeometry((this->geometry().left() + (DLG_WIDTH - 660) / 2), this->geometry().top() + (DLG_HEIGHT - dlgConfirmOutput->sizeHint().height()) / 2, 0, 0);
+
 
     dlgConfirmOutput->setAlertMode();
     dlgConfirmOutput->setProperty("flagShown",false);
@@ -1018,7 +1028,8 @@ void dialogsetting_output_150::slot_clickedPhaseInvertquestion(){//c220709
     dlgConfirmOutput->setAlignment(Qt::AlignLeft);
     dlgConfirmOutput->setTitle(tr("Phase Invert"));
     dlgConfirmOutput->setText(tr("Off : Phase Invert Off - European system\nOn : Phase Invert On - USA system"));
-    dlgConfirmOutput->setTextHeight(150);
+
+
 
     QPixmap pixmapPI_off, pixmapPI_on;
     pixmapPI_off.load(":images/setting/150/pi_01.png");
@@ -1043,10 +1054,9 @@ void dialogsetting_output_150::slot_clickedPhaseInvertquestion(){//c220709
 
    // dlgConfirmOutput->setLayoutMy(lh_PI_Info);
 
-
-    dlgConfirmOutput->setGeometry((DLG_WIDTH + 80), (350), 350, 500);
+    dlgConfirmOutput->setTextHeight(100);
+    dlgConfirmOutput->setGeometry((this->geometry().left() + (DLG_WIDTH - 660) / 2), this->geometry().top() + (DLG_HEIGHT - dlgConfirmOutput->sizeHint().height()) / 2, 0, 0);
     dlgConfirmOutput->setAlertMode();
-    dlgConfirmOutput->setProperty("flagShown",false);
 
     if(dlgConfirmOutput->property("flagShown").toBool()==false){
         dlgConfirmOutput->setProperty("flagShown",true);
@@ -1066,7 +1076,8 @@ void dialogsetting_output_150::slot_clickedFIRquestion(){//c220708
     dlgConfirmOutput->setTitle(tr("FIR Interpolation phase Filter"));
     dlgConfirmOutput->setText(tr("If you use MQA stream, it is recommended to use 'Minimum phase Fast Roll-off filter'.\nFIR filter is applied only to PCM data, not to DSD."));
 
-    dlgConfirmOutput->setGeometry((DLG_WIDTH + 80), (350 + 100), 350, 500);
+    dlgConfirmOutput->setTextHeight(100);
+    dlgConfirmOutput->setGeometry((this->geometry().left() + (DLG_WIDTH - 660) / 2), this->geometry().top() + (DLG_HEIGHT - dlgConfirmOutput->sizeHint().height()) / 2, 0, 0);
     dlgConfirmOutput->setAlertMode();
     dlgConfirmOutput->setProperty("flagShown",false);
 
@@ -1561,6 +1572,8 @@ void dialogsetting_output_150::getOutputInOutSettingOfsetting(){
 void dialogsetting_output_150::slot_clickedOutputChangeSet(){
     print_debug();
 
+    this->loding_ani_show();
+
    NetworkHttp *network = new NetworkHttp;
    QJsonObject tmp_json = get_settingOfOutputDetail();
    QJsonObject tmp_json_set;
@@ -1607,7 +1620,7 @@ void dialogsetting_output_150::setDialogOutput_save(QJsonObject p_jsonObject){
     }
    // QJsonDocument doc(tmp_Json);  QString strJson(doc.toJson(QJsonDocument::Compact));  qDebug() <<"\npre-setDialogOutput_save()-tmp_Json :"<< strJson;//cheon09_io
      int codecTrim = tmp_Json["codecTrim"].toInt();
-     int dacFilterType = tmp_Json["dacFilterType"].toInt();
+     int phaseInvert = tmp_Json["phaseInvert"].toInt();
      int drcInfo = tmp_Json["drcInfo"].toInt();
      int dsdMode = tmp_Json["dsdMode"].toInt();
      int hpOhm = tmp_Json["hpOhm"].toInt();
@@ -1623,7 +1636,7 @@ void dialogsetting_output_150::setDialogOutput_save(QJsonObject p_jsonObject){
      int opticalLsb = tmp_Json["opticalLsb"].toInt();
      int opticalMsb = tmp_Json["opticalMsb"].toInt();
      int outputGain = tmp_Json["outputGain"].toInt();
-     int phaseInvert = tmp_Json["phaseInvert"].toInt();
+     int dacFilterType = tmp_Json["dacFilterType"].toInt();
      int preoutLevelInfo = tmp_Json["preoutLevelInfo"].toInt();
      int digitalVolume = tmp_Json["digitalVolume"].toInt();
      int samplingRate = tmp_Json["samplingRate"].toInt();
@@ -1742,6 +1755,7 @@ void dialogsetting_output_150::slot_responseHttp(const int &p_id, const QJsonObj
         }else if( deviceType == "RS350"){
 
         }
+        this->loding_ani_hide();
         break;
     }
     sender()->deleteLater();
@@ -1880,4 +1894,69 @@ void dialogsetting_output_150::setTextName(QString usbstr){
 
 void dialogsetting_output_150::setPropertyName(QString usbstr){
     radio_UsbName->setProperty(PROPERTY_NAME_READABLE, usbstr);
+}
+
+void dialogsetting_output_150::loding_ani_init(){
+
+    int left = 0;
+    int top = 0;
+
+    this->loding_ani_dialog = new QDialog();
+
+    QMovie *abs_ani_mov = new QMovie(":/images/Spinner-4.2s-200px.gif");
+    abs_ani_mov->setScaledSize(QSize(120, 120));
+    abs_ani_mov->setBackgroundColor("transparent");
+
+    QLabel *lb_Movie = new QLabel();
+    lb_Movie->setStyleSheet("background-color:transparent;");
+    lb_Movie->setMovie(abs_ani_mov);
+
+    QHBoxLayout *hl_msgBox = new QHBoxLayout();
+    hl_msgBox->setContentsMargins(0, 0, 0, 0);
+    hl_msgBox->setSpacing(0);
+    hl_msgBox->addWidget(lb_Movie);
+
+    this->loding_ani_dialog->setLayout(hl_msgBox);
+    this->loding_ani_dialog->setModal(true);
+    this->loding_ani_dialog->setWindowFlags(Qt::Dialog | Qt::FramelessWindowHint);
+    this->loding_ani_dialog->setAttribute(Qt::WA_TranslucentBackground);
+
+    left = global.left_mainwindow + ((global.width_mainwindow - 120) / 2);
+    top = global.top_mainwindow + ((global.height_mainwindow - 120) / 2);
+
+    this->loding_ani_dialog->move(left, top);
+
+    abs_ani_mov->start();
+    this->loding_ani_dialog->hide();
+}
+
+
+void dialogsetting_output_150::loding_ani_show(){
+
+    if(this->loding_ani_dialog->isHidden() != true){
+        return;
+    }
+
+    //if(!global.window_activate_flag) return;
+
+    if(global.powerDialogShowFlag) return;
+
+    int left = 0;
+    int top = 0;
+
+    left = global.left_mainwindow + ((global.width_mainwindow - 120) / 2);
+    top = global.top_mainwindow + ((global.height_mainwindow - 120) / 2);
+
+    this->loding_ani_dialog->move(left, top);
+
+    this->loding_ani_dialog->show();
+    this->loding_ani_dialog->raise();
+}
+
+
+void dialogsetting_output_150::loding_ani_hide(){
+
+    if(this->loding_ani_dialog->isHidden() != true){
+        this->loding_ani_dialog->hide();
+    }
 }

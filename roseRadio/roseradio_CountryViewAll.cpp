@@ -63,11 +63,16 @@ namespace roseRadio {
             this->flag_lastPage_country = false;
 
             this->flag_flow_draw = false;
+            this->flag_country_draw = false;
 
-            ContentLoadingwaitingMsgShow(tr("Content is being loaded. Please wait."));
+            print_debug();ContentLoadingwaitingMsgShow(tr("Content is being loaded. Please wait."));
 
             // request HTTP API
             this->request_more_countryData();
+        }
+        else{
+            ContentLoadingwaitingMsgHide();
+            print_debug();
         }
     }
 
@@ -128,7 +133,7 @@ namespace roseRadio {
             else{
                 this->next_offset++;
 
-                ContentLoadingwaitingMsgShow(tr("Content is being loaded. Please wait."));
+                print_debug();ContentLoadingwaitingMsgShow(tr("Content is being loaded. Please wait."));
             }
 
             // request HTTP API
@@ -149,8 +154,6 @@ namespace roseRadio {
         int max_cnt = ((this->country_total_cnt - this->country_draw_cnt) > GET_ITEM_SIZE___ONCE ) ? GET_ITEM_SIZE___ONCE : (this->country_total_cnt - this->country_draw_cnt);
         this->country_draw_cnt += max_cnt;
 
-        ContentLoadingwaitingMsgHide();
-
         for(int i = start_index; i < this->country_draw_cnt; i++){
 
             QJsonObject tmpObj = this->jsonArr_country.at(i).toObject();
@@ -160,10 +163,11 @@ namespace roseRadio {
 
             this->flowLayout_country->addWidget(country);
 
-            QCoreApplication::processEvents();
+            //QCoreApplication::processEvents();
         }
 
         if(this->country_total_cnt == this->country_draw_cnt){
+            ContentLoadingwaitingMsgHide();
             this->box_contents->addSpacing(60);
         }
 
@@ -183,7 +187,7 @@ namespace roseRadio {
 
         QLabel *countryName = new QLabel(btn_country);
         countryName->setStyleSheet("background-color:transparent; color:#FFFFFF; font-size:18px; line-height:0.89; font-weight:normal;");
-        countryName->setGeometry(34, 25, 500, 20);
+        countryName->setGeometry(34, 25, 500, 24);
         countryName->setText(name);
 
         QWidget *widget_line = new QWidget();
@@ -249,17 +253,18 @@ namespace roseRadio {
 
                     this->flowLayout_country->addWidget(country);
 
-                    QCoreApplication::processEvents();
+                    //QCoreApplication::processEvents();
                 }
+
+                ContentLoadingwaitingMsgHide();
 
                 this->flag_flow_draw = true;
                 this->flag_country_draw = false;
 
                 if(this->country_total_cnt == this->country_draw_cnt){
+
                     this->box_contents->addSpacing(60);
                 }
-
-                ContentLoadingwaitingMsgHide();
 
                 //this->request_more_roseData();
             }

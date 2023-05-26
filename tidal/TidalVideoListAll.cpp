@@ -30,6 +30,7 @@ namespace tidal {
         this->setUIControl_video();
     }
 
+
     /**
      * @brief 소멸자.
      */
@@ -60,6 +61,8 @@ namespace tidal {
             this->video_total_cnt = 0;
             this->video_draw_cnt = 0;
 
+            this->video_widget_cnt = 0;
+
             this->list_video->clear();
 
             // request HTTP API
@@ -68,9 +71,12 @@ namespace tidal {
 
             this->flag_video_draw = false;
 
-            ContentLoadingwaitingMsgShow(tr("Content is being loaded. Please wait."));
+            print_debug();ContentLoadingwaitingMsgShow(tr("Content is being loaded. Please wait."));
 
             this->request_more_videoData();
+        }
+        else{
+            print_debug();ContentLoadingwaitingMsgHide();   //j230328
         }
     }
 
@@ -118,7 +124,7 @@ namespace tidal {
 
             this->flag_video_draw = true;
 
-            ContentLoadingwaitingMsgShow(tr("Content is being loaded. Please wait."));
+            print_debug();ContentLoadingwaitingMsgShow(tr("Content is being loaded. Please wait."));
 
             this->request_more_videoDraw();
         }
@@ -137,7 +143,7 @@ namespace tidal {
             this->flagReqMore_video = true;
 
             // j220913 list count check
-            int width_cnt = global.LmtCnt / 220;
+            int width_cnt = global.LmtCnt / 304;
             int mod = this->video_widget_cnt % width_cnt;
             int height_cnt = 0;
 
@@ -179,7 +185,7 @@ namespace tidal {
     void TidalVideoListAll::request_more_videoDraw(){
 
         // j220913 list count check
-        int width_cnt = global.LmtCnt / 220;
+        int width_cnt = global.LmtCnt / 304;
         int mod = this->video_widget_cnt % width_cnt;
         int height_cnt = 0;
 
@@ -284,7 +290,6 @@ namespace tidal {
     }
 
 
-
     /**
      * @brief [slot] override - ItemVideo 위짓의 clicked 이벤트를 처리하는 슬롯함수 재정의
      * @param clickMode
@@ -327,27 +332,15 @@ namespace tidal {
                         break;
                 }
 
-                if(playType == OptMorePopup::ClickMode::SubMenu_Play_FromHere
-                        || playType == OptMorePopup::ClickMode::SubMenu_Play_FromHere_procEmpty
-                        || playType == OptMorePopup::ClickMode::SubMenu_QueueAdd_FromHere_Last)
-                {
-                    QJsonArray tmpJsonArr = QJsonArray();
-                    for(int i = index; i < this->list_video->size(); i++){
-                        QJsonObject tmpJsonObj = this->list_video->at(i).jsonObj_toPlay;
-                        tmpJsonArr.append(tmpJsonObj);
-                    }
-
-                    // Rose Play 요청
-                    ProcRosePlay_withTidal *procRosePlay = new ProcRosePlay_withTidal(this);
-                    procRosePlay->requestPlayRose_videolist(tmpJsonArr, playType);
+                QJsonArray tmpJsonArr = QJsonArray();
+                for(int i = index; i < this->list_video->size(); i++){
+                    QJsonObject tmpJsonObj = this->list_video->at(i).jsonObj_toPlay;
+                    tmpJsonArr.append(tmpJsonObj);
                 }
-                else{
-                    QJsonObject tmpJsonObj = this->list_video->at(index).jsonObj_toPlay;
 
-                    // Rose Play 요청
-                    ProcRosePlay_withTidal *procRosePlay = new ProcRosePlay_withTidal(this);
-                    procRosePlay->requestPlayRose_video(tmpJsonObj, playType);
-                }
+                // Rose Play 요청
+                ProcRosePlay_withTidal *procRosePlay = new ProcRosePlay_withTidal(this);
+                procRosePlay->requestPlayRose_videolist(tmpJsonArr, playType);
             }
             else{
                 this->proc_clicked_itemVideo(this->list_video, clickMode, index, section);

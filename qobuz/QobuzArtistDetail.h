@@ -52,6 +52,10 @@ namespace qobuz {
         void slot_artistInfo_btnClicked();
         void slot_clickBtn_subTitle_viewAll();
 
+        void slot_applyResult_checkRating_artist(const QJsonObject&);
+        void slot_applyResult_getRating_artist(const QJsonArray&);
+        void slot_applyResult_addRating_artist(const QJsonObject&);
+
         void slot_applyResult_checkRating_track(const QJsonObject&);
         void slot_applyResult_addRating_track(const QJsonObject&);
         void slot_applyResult_getRating_track(const QJsonArray&);
@@ -68,6 +72,7 @@ namespace qobuz {
         QHBoxLayout* setUIControl_hBoxLayout_forArtist();
 
     private:
+        Linker *linker;
         DialogNotice *dlgArtistMore;
 
         AbstractImageDetailContents_RHV *artist_detail_info;
@@ -101,6 +106,8 @@ namespace qobuz {
 
         QJsonArray jsonArr_tracks_toPlay;           ///< Track 전체를 재생하기 위함 (list_track 관련)
         QJsonArray jsonArr_appears_toPlay;          ///< appears 전체를 재생하기 위함 (list_track 관련)
+
+        bool flag_page_load = false;
 
         bool flag_reload_page = false;
         bool flag_tracks[2] = {false, false};

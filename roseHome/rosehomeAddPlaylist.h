@@ -2,10 +2,12 @@
 #define ROSEHOMEADDPLAYLIST_H
 
 #include "roseHome/AbstractRoseHomeSubWidget.h"
-//#include "roseHome/.h"
 
 #include "tidal/TidalAddPlaylist.h"
+#include "bugs/BugsAddPlaylist.h"
 #include "qobuz/QobuzAddPlaylist.h"
+#include "roseHome/rosehomeEditPlaylist.h"
+#include "rosetube/rosetube_ADDPlaylist.h"
 
 #include <QListWidget>
 
@@ -32,12 +34,15 @@ namespace roseHome {
     private:
 
         tidal::TidalAddPlaylist *addPlaylist_Tidal;
+        bugs::BugsAddPlaylist *addPlaylist_Bugs;
         qobuz::QobuzAddPlaylist *addPlaylist_Qobuz;
+        roseHome::RoseHomeEidtPlaylist *editPlaylist_Rose;
+        rosetube::RoseTubeAddPlaylist *addPlaylist_Rosetube;
 
         QJsonObject dataSend_jsonObj;
 
         QString streamType = "";
-
+        QString viewType = "";
     };
 };
 #endif // ROSEHOMEADDPLAYLIST_H

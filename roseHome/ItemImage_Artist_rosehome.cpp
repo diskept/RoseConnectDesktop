@@ -1,5 +1,6 @@
 #include "roseHome/ItemImage_Artist_rosehome.h"
 
+
 namespace roseHome {
 
     /**
@@ -18,6 +19,7 @@ namespace roseHome {
         this->setUseBtn_favorite(false);
         this->setUseBtn_play(false);
         this->setUseBtn_more(false);
+        this->setUseArtist(true);
 
         // hover 만 사용
         this->setUseHover(true);

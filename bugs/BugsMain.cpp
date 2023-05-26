@@ -31,20 +31,35 @@ namespace bugs {
         connect(linker, SIGNAL(signal_search(QString)), SLOT(slot_search(QString)));
         connect(linker, SIGNAL(signal_dragEnterEvent_hide_show(bool)), SLOT(slot_dragEnterEvent_hide_show(bool)));//c220730
         connect(linker, SIGNAL(signal_dropEvent_hide_show(bool)), SLOT(slot_dropEvent_hide_show(bool)));//c220730
-
+        connect(linker, SIGNAL(signal_loginBugsAcount()), this, SLOT(slot_loginAcount()));//c230426
         make_CustomLineEdit();//c220730
 
-        if(global.user_forBugs.isLogined() == false){
-            // Rose 장비로부터 Session 정보를 요청
-            ProcRoseAPI_withBugs *procRose = new ProcRoseAPI_withBugs(this);
-            connect(procRose, &ProcRoseAPI_withBugs::signal_completeReq_get_session_info, this, &BugsMain::slot_completeReq_get_session_info);
-            procRose->request_get_session_info();
-        }
-        else{
-            //request_login_getMemberInfo();
+        this->setUIControl();
+        //this->request_login_getMemberInfo();
+
+    }
+
+
+    void BugsMain::slot_loginAcount(){//c230426
+        print_debug();
+        QString pageCode_firstPage;
+        ToastMsg::show(this, "", tr("Your Bugs account status has been changed by another device."));
+        global.user_forBugs.set_logoutState();
+
+        if(global.enable_section_left == true){
+            global.enable_section_left = false;
         }
 
-        this->setUIControl();
+        pageCode_firstPage = PAGECODE_BUGS___SETTING;
+
+
+        QJsonObject jsonObj_first;
+        jsonObj_first[KEY_PAGE_CODE] = pageCode_firstPage;
+
+        if(!pageCode_firstPage.isEmpty()){
+            this->goToMoveNewOrderPage(jsonObj_first);
+        }
+
     }
 
     void BugsMain::slot_overrideSigalSearch(bool b){//c220728
@@ -57,6 +72,7 @@ namespace bugs {
         }
 
     }
+
 
     void BugsMain::slot_dragEnterEvent_hide_show(bool show){//c220826_1
         print_debug();
@@ -95,8 +111,9 @@ namespace bugs {
         this->le_search_back->hide();
     }
 
-    void BugsMain::request_login_getMemberInfo(){//cheon210619-login
 
+    void BugsMain::request_login_getMemberInfo(){//cheon210619-login
+print_debug();
             // get token info
             ProcBugsAPI *proc = new ProcBugsAPI(this);
             bugs::BugsTokenInfo tokenInfo = proc->getTokenInfo_bugsDB();
@@ -349,6 +366,8 @@ namespace bugs {
             this->sub_myCollection = this->procCommon_showSubPage<bugs::BugsMyCollection>(true, this->sub_myCollection, p_data);
         }else if(p_pageCode == PAGECODE_BUGS___MY_COLLECTION___LIKE_MUSIC){
             this->sub_myLikeMusic = this->procCommon_showSubPage<bugs::BugsMyLikeMusic>(false, this->sub_myLikeMusic, p_data);
+        }else if(p_pageCode == PAGECODE_BUGS___MY_COLLECTION___MYALBUM){
+            this->sub_myAlbumlist = this->procCommon_showSubPage<bugs::BugsMyAlbumlistAll>(false, this->sub_myAlbumlist, p_data);
 
         }else if(p_pageCode == PAGECODE_BUGS___SETTING){
             this->sub_settings = this->procCommon_showSubPage<bugs::BugsSettings>(true, this->sub_settings, p_data);
@@ -366,6 +385,8 @@ namespace bugs {
 
         }else if(p_pageCode == PAGECODE_BUGS___TRACK_ALL_VIEW){
             this->sub_trackAll = this->procCommon_showSubPage<bugs::BugsTracksListAll>(false, this->sub_trackAll, p_data);
+        }else if(p_pageCode == PAGECODE_BUGS___MOST_TRACK_ALL_VIEW){
+            this->sub_mostTrackAll = this->procCommon_showSubPage<bugs::BugsMostTracksListAll>(false, this->sub_mostTrackAll, p_data);
         }else if(p_pageCode == PAGECODE_BUGS___TRACK_SHARE_ALL_VIEW){
             this->sub_trackAll_Share = this->procCommon_showSubPage<bugs::BugsTrackListAll_Share>(false, this->sub_trackAll_Share, p_data);
         }else if(p_pageCode == PAGECODE_BUGS___ALBUM_ALL_VIEW___OF_ARTIST){
@@ -398,15 +419,33 @@ namespace bugs {
             this->sub_recentlyPlaylistAll = this->procCommon_showSubPage<bugs::BugsRecentlyPlaylistAll>(false, this->sub_recentlyPlaylistAll, p_data);
         }else if(p_pageCode == PAGECODE_BUGS__MY_RECENTLY_TRACK_ALL_LIST){
             this->sub_recentlyTrackAll = this->procCommon_showSubPage<bugs::BugsRecentlyTrackAll>(false, this->sub_recentlyTrackAll, p_data);
+        }else if(p_pageCode == PAGECODE_BUGS__MY_RECENTLY_ARTIST_ALL_LIST){
+            this->sub_recentlyArtistAll = this->procCommon_showSubPage<bugs::BugsRecenltyArtistAll>(false, this->sub_recentlyArtistAll, p_data);
         }else if(p_pageCode == PAGECODE_BUGS__MY_ROSE_PLAYLIST_DETAIL){
             this->sub_playlistDetail = this->procCommon_showSubPage<bugs::BugsPlaylistDetail>(false, this->sub_playlistDetail, p_data);
         }else if(p_pageCode == PAGECODE_BUGS__MY_ROSE_PLAYLIST_ALL_LIST){
             this->sub_myRosePlaylistAll = this->procCommon_showSubPage<bugs::BugsMyRosePlaylistAll>(false, this->sub_myRosePlaylistAll, p_data);
         }else if(p_pageCode == PAGECODE_BUGS__USER_ROSE_PLAYLIST_ALL_LIST){
             this->sub_userRosePlaylistAll = this->procCommon_showSubPage<bugs::BugsUserRosePlaylistAll>(false, this->sub_userRosePlaylistAll, p_data);
+        }else if(p_pageCode == PAGECODE_BUGS___HISTORY_LIST_VIEW){
+            this->sub_historyListAll = this->procCommon_showSubPage<bugs::BugsHistoryListAll>(false, this->sub_historyListAll, p_data);
+        }else if(p_pageCode == PAGECODE_BUGS___HISTORY_DETAIL){
+            this->sub_historyDetail = this->procCommon_showSubPage<bugs::BugsHistoryDetail>(false, this->sub_historyDetail, p_data);
+        }else if(p_pageCode == PAGECODE_BUGS___HISTORY_PLAYLIST_VIEW){
+            this->sub_historyPlaylistAll = this->procCommon_showSubPage<bugs::BugsPlaylistHistoryAll>(false, this->sub_historyPlaylistAll, p_data);
+        }else if(p_pageCode == PAGECODE_BUGS___HISTORY_ALBUM_VIEW){
+            this->sub_historyAlbumAll = this->procCommon_showSubPage<bugs::BugsAlbumHistoryAll>(false, this->sub_historyAlbumAll, p_data);
+        }else if(p_pageCode == PAGECODE_BUGS___HISTORY_TRACK_VIEW){
+            this->sub_historyTrackAll = this->procCommon_showSubPage<bugs::BugsTrackHistoryAll>(false, this->sub_historyTrackAll, p_data);
+        }else if(p_pageCode == PAGECODE_BUGS___HISTORY_ARTIST_VIEW){
+            this->sub_historyArtistAll = this->procCommon_showSubPage<bugs::BugsArtistHistoryAll>(false, this->sub_historyArtistAll, p_data);
+        }else if(p_pageCode == PAGECODE_BUGS__MY_PLAYLIST_ADD){
+            this->sub_AddPlaylist = this->procCommon_showSubPage<bugs::BugsAddPlaylist>(false, this->sub_AddPlaylist, p_data);
+        }else if(p_pageCode == PAGECODE_BUGS__MY_RECENTLY_LIST_DELETE){
+            this->sub_roseRecentlyDelete = this->procCommon_showSubPage<bugs::BugsRecentlyListDelete>(false, this->sub_roseRecentlyDelete, p_data);
+
         }
     }
-
 
 
     /**
@@ -427,7 +466,8 @@ namespace bugs {
         }
 
         stackedWidget_content->setCurrentWidget(sub_widget);
-        if(ProcJsonEasy::getString(jsonObj_data, "pageCode") == PAGECODE_BUGS___HOME){
+        if(ProcJsonEasy::getString(jsonObj_data, "pageCode") == PAGECODE_BUGS___HOME || ProcJsonEasy::getString(jsonObj_data, "pageCode") == PAGECODE_BUGS___EXPLORE
+                || ProcJsonEasy::getString(jsonObj_data, "pageCode") == PAGECODE_BUGS___MY_COLLECTION){
             sub_widget->setJsonObject_forData(jsonObj_data);
         }
         else{
@@ -437,41 +477,6 @@ namespace bugs {
 
         return sub_widget;
     }
-
-
-
-    /**
-     * @brief BugsMain::slot_completeReq_get_session_info
-     * @param sessionInfo
-     */
-    void BugsMain::slot_completeReq_get_session_info(const RoseSessionInfo_forBugs& sessionInfo){
-
-        // Rose로부터 받은 Session 정보
-        if(!sessionInfo.BUGS_AccessToken.isEmpty()){
-            // 로그인 상태를 저장함
-            global.user_forBugs.set_loginState(sessionInfo.BUGS_AccessToken, sessionInfo.BUGS_RefreshToken);
-            global.user_forBugs.setNickName(sessionInfo.BUGS_Nickname);
-            global.user_forBugs.setProductName(sessionInfo.BUGS_ProductName);
-
-            AbstractBugsSubWidget *sub_curr = qobject_cast<AbstractBugsSubWidget*>(this->stackedWidget_content->currentWidget());
-            sub_curr->applyLoginSuccessState();
-
-
-            // 전체 장르 정보를 요청함 - 공통으로 사용 (세팅 안된 경우)
-            DataCommon_Bugs& dataCommon_bugs = DataCommon_Bugs::instance();
-            if(dataCommon_bugs.list_all.size() == 0){
-                ProcBugsAPI *proc = new ProcBugsAPI(this);
-                proc->request_bugs_getListGenres();
-            }
-
-        }
-        else{
-            // 로그아웃으로 처리함
-            global.user_forBugs.set_logoutState();
-        }
-    }
-
-
 
 
     void BugsMain::slot_responseHttp(const int &p_id, const QJsonObject &p_jsonObj){

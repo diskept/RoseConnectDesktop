@@ -4,7 +4,7 @@
 #include <QWidget>
 #include "qobuz/qobuz_struct.h"
 //include "AbstractItem_forQobuz.h"
-#include "tidal/AbstractItem.h"     // TODO :: Added Jeon 16/12/2020
+#include "tidal/AbstractItem.h"     // TODO :: Added diskept 16/12/2020
 
 
 #define  print_qobuz_func() qDebug() << "[QOBUZ][FILE][INFO]" << "file_name: " << __FILE__ << "function_name: " << __FUNCTION__ << "line: " << __LINE__ << "\n";
@@ -24,6 +24,8 @@ namespace qobuz {
         void setData(const qobuz::VideoItemData &p_data_video);
 
         int get_fixedHeight() override;
+        int get_fixedWidth();
+        int get_rightMargin();
 
     private:
         void setUIControl();

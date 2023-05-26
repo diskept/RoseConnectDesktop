@@ -179,15 +179,12 @@ QString CustomLineEdit::getTextAddedPreedistStr(){
  */
 void CustomLineEdit::focusInEvent(QFocusEvent *p_event){
     QLineEdit::focusInEvent(p_event);
-print_debug();
-this->setCursor(Qt::PointingHandCursor);//c221020_1
-    // ---------------------------------------------------
-    //  포커스 시그널 : 검색 제안어 UI Show/Hide 용도로 사용
-    //      :: 입력된 문자열이 2글자 이상인 경우에만 시그널 발생
-    // ---------------------------------------------------
-    //if(text().size() >= 2){//c220620
+    print_debug();
+    this->setCursor(Qt::PointingHandCursor);//c221020_1
+
+    if(text().size() == 0){//c230308_4
         emit linker->signal_searchBarFocusChanged(true);
-    //}
+    }
 }
 
 /**

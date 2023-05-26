@@ -30,6 +30,9 @@ namespace music {
 
             this->page = pageCode;
         }
+        else{
+            print_debug();ContentLoadingwaitingMsgHide();   //j230328
+        }
     }
 
 

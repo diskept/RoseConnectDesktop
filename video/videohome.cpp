@@ -18,14 +18,11 @@ namespace video {
     const int HTTP_VIDEO_HOME_LIST = 11;
     const int HTTP_NETWORK_PLAY_ALL = 12;
 
-    VideoHome::VideoHome(QWidget *parent) : roseHome::AbstractRoseHomeSubWidget(VerticalScroll_rosetube, parent)
+    VideoHome::VideoHome(QWidget *parent) : roseHome::AbstractRoseHomeSubWidget(VerticalScroll_roseviewAll, parent)
     {
+        global.isDrawingMainContent = false;
 
         linker = Linker::getInstance();
-
-        if(global.enable_section_left == true){
-            global.enable_section_left = false;
-        }
 
         // 기본 UI 세팅
         this->setUIControl_video();
@@ -40,22 +37,26 @@ namespace video {
 
     void VideoHome::setDataFromRose(){
 
-        NetworkHttp *network = new NetworkHttp(this);
-        connect(network, SIGNAL(response(int,QJsonObject)), SLOT(slot_responseHttp(int,QJsonObject)));
+        print_debug();ContentLoadingwaitingMsgShow(tr("Content is being loaded. Please wait."));
+        if(this->flag_flow_draw == false){
+            NetworkHttp *network = new NetworkHttp(this);
+            connect(network, SIGNAL(response(int,QJsonObject)), SLOT(slot_responseHttp(int,QJsonObject)));
 
-        QJsonObject json;
-        json.insert("roseToken", global.device.getDeviceRoseToken());
-        json.insert("totalCnt", "-1");
+            QJsonObject json;
+            json.insert("roseToken", global.device.getDeviceRoseToken());
+            json.insert("totalCnt", "-1");
 
-        QString url = QString("http://%1:").arg(global.device.getDeviceIP()) + QString("%1/video_data").arg(global.port);
-        network->request(HTTP_VIDEO_GET_TOTAL, url, json, true);
+            QString url = QString("http://%1:").arg(global.device.getDeviceIP()) + QString("%1/video_data").arg(global.port);
+            network->request(HTTP_VIDEO_GET_TOTAL, url, json, true);
+        }
+        print_debug();ContentLoadingwaitingMsgHide();//c230322_3
     }
 
 
     void VideoHome::setUIControl_video(){
 
-        if(this->flag_video_draw == false){
-
+        print_debug();ContentLoadingwaitingMsgShow(tr("Content is being loaded. Please wait."));
+        if(this->flag_flow_draw == false){
             // init
             this->curr_page = 0;
             this->video_total_cnt = 0;
@@ -63,19 +64,21 @@ namespace video {
             this->video_draw_cnt = 0;
 
             GSCommon::clearLayout(this->box_contents);
-
             this->box_contents->setAlignment(Qt::AlignTop);
             this->scrollArea_main->setVerticalScrollBarPolicy(Qt::ScrollBarAsNeeded);
 
-            // layout for items
-            this->flowLayout_videos = new FlowLayout(0, 0, 30);
-            this->flowLayout_videos->setSizeConstraint(QLayout::SetMinimumSize);
-            this->flowLayout_videos->setContentsMargins(60, 50, 60, 0);
+            video::ItemWidget_video *listVideo = new video::ItemWidget_video(0, 0, tidal::AbstractItem::ImageSizeMode::Ractangle_200x281, true);
+
+            this->video_widget_width = listVideo->get_fixedWidth();
+            this->video_widget_margin = listVideo->get_rightMargin();
+
+            //qDebug() << "[Debug] RoseHomeAlbumListAll::setUIControl_albums " << listAlbum->get_fixedWidth() << listAlbum->get_rightMargin();
+
+            this->flowLayout_videos = this->get_addUIControl_flowLayout(0, 20);
 
             GSCommon::clearLayout(this->flowLayout_videos);
-
-            this->box_contents->addLayout(this->flowLayout_videos);
         }
+        print_debug();ContentLoadingwaitingMsgHide();//c230322_3
     }
 
 
@@ -85,17 +88,21 @@ namespace video {
      */
     void VideoHome::slot_responseHttp(const int &p_id, const QJsonObject &p_jsonObject){
 
-        // j220913 list count check
-        int width_cnt = global.LmtCnt / 220;
-        int mod = this->video_draw_cnt % width_cnt;
+        int f_width = this->flowLayout_videos->geometry().width();
 
-        if(mod == 0){
-            this->video_widget_cnt = width_cnt * 10;
+        if(this->flowLayout_videos->geometry().width() <= 0){
+            f_width = this->width() - (80 + 63) - 10;
+        }
+
+        int f_wg_cnt = f_width / (this->video_widget_width + this->video_widget_margin);
+        int f_mod = this->video_draw_cnt % f_wg_cnt;
+
+        if(f_mod == 0){
+            this->video_widget_cnt = f_wg_cnt * 10;
         }
         else{
-            this->video_widget_cnt = width_cnt * 10 + (width_cnt - mod);
+            this->video_widget_cnt = f_wg_cnt * 10 + (f_wg_cnt - f_mod);
         }
-        // j220913 list count check
 
         switch(p_id){
             case HTTP_VIDEO_GET_TOTAL:
@@ -108,21 +115,21 @@ namespace video {
                             this->curr_page = 1;
 
                             this->video_total_cnt = tmp_arr.count();
-                            this->video_total_page = (this->video_total_cnt / this->video_widget_cnt) + 1;
+                            this->video_total_page = (this->video_total_cnt / 200) + 1;
 
                             NetworkHttp *network = new NetworkHttp(this);
                             connect(network, SIGNAL(response(int,QJsonObject)), SLOT(slot_responseHttp(int,QJsonObject)));
 
                             QJsonObject json;
                             json.insert("paging", QString("%1").arg(this->curr_page));
-                            json.insert("pagingCnt", QString("%1").arg(this->video_widget_cnt));
+                            json.insert("pagingCnt", QString("%1").arg(200));
                             json.insert("roseToken", global.device.getDeviceRoseToken());
                             json.insert("totalCnt", QString("%1").arg(this->video_total_cnt));
 
                             QString url = QString("http://%1:").arg(global.device.getDeviceIP()) + QString("%1/video_data").arg(global.port);
                             network->request(HTTP_VIDEO_HOME_LIST, url, json, true);
 
-                            ContentLoadingwaitingMsgShow(tr("Content is being loaded. Please wait."));
+                            print_debug();ContentLoadingwaitingMsgShow(tr("Content is being loaded. Please wait."));
                         }
                     }
                 }
@@ -139,22 +146,29 @@ namespace video {
                                 this->jsonArr_tracks_toPlay = QJsonArray();
                                 this->jsonArr_tracks_toPlay = tmp_arr;
 
-                                int start_cnt = this->video_draw_cnt;
-                                int max_cnt = this->jsonArr_tracks_toPlay.size();
-                                this->video_draw_cnt = max_cnt;
+                                int start_index = this->video_draw_cnt;
+                                int max_cnt = ((this->video_total_cnt - this->video_draw_cnt) > this->video_widget_cnt ) ? this->video_widget_cnt : (this->video_total_cnt - this->video_draw_cnt);
+                                this->video_draw_cnt += max_cnt;
 
-                                for(int i = start_cnt; i < max_cnt; i++){
+                                for(int i = start_index; i < this->video_draw_cnt; i++){
                                     this->list_video[i] = new video::ItemWidget_video(i, SECTION_FOR_MORE_POPUP___videos, tidal::AbstractItem::ImageSizeMode::Ractangle_200x281, true);
-                                    connect(this->list_video[i], &video::ItemWidget_video::signal_clicked, this, &VideoHome::slot_clickedItemVideo);
+                                    QCoreApplication::processEvents();
                                 }
 
-                                for(int i = start_cnt; i < max_cnt; i++){
+                                for(int i = start_index; i < this->video_draw_cnt; i++){
                                     this->list_video[i]->setData(this->jsonArr_tracks_toPlay.at(i).toObject());
-                                    flowLayout_videos->addWidget(this->list_video[i]);
-
-                                   QCoreApplication::processEvents();
                                 }
+
+
+                                for(int i = start_index; i < this->video_draw_cnt; i++){
+                                    connect(this->list_video[i], &video::ItemWidget_video::signal_clicked, this, &VideoHome::slot_clickedItemVideo);
+                                    flowLayout_videos->addWidget(this->list_video[i]);
+                                }
+                                this->setFlowLayoutResize(this, this->flowLayout_videos, this->video_widget_width, this->video_widget_margin);
                             }
+
+                            this->flag_flow_draw = true;
+                            global.isDrawingMainContent = true;
                             ContentLoadingwaitingMsgHide();
                         }
                         else{
@@ -164,18 +178,21 @@ namespace video {
 
                                 ProcJsonEasy::mergeJsonArray(this->jsonArr_tracks_toPlay, tmp_arr);
                             }
+
+                            this->flag_flow_draw = true;
+                            ContentLoadingwaitingMsgHide();
                         }
 
                         if(this->video_total_cnt > this->video_draw_cnt){
                             this->curr_page++;
-                            this->video_total_page = (this->video_total_cnt / this->video_widget_cnt) + 1;
+                            this->video_total_page = (this->video_total_cnt / 200) + 1;
 
                             NetworkHttp *network = new NetworkHttp(this);
                             connect(network, SIGNAL(response(int,QJsonObject)), SLOT(slot_responseHttp(int,QJsonObject)));
 
                             QJsonObject json;
                             json.insert("paging", QString("%1").arg(this->curr_page));
-                            json.insert("pagingCnt", QString("%1").arg(this->video_widget_cnt));
+                            json.insert("pagingCnt", QString("%1").arg(200));
                             json.insert("roseToken", global.device.getDeviceRoseToken());
                             json.insert("totalCnt", QString("%1").arg(this->video_total_cnt));
 
@@ -207,7 +224,7 @@ namespace video {
 
             this->flag_video_draw = true;
 
-            ContentLoadingwaitingMsgShow(tr("Content is being loaded. Please wait."));
+            print_debug();ContentLoadingwaitingMsgShow(tr("Content is being loaded. Please wait."));
 
             this->request_more_videoDraw();
         }
@@ -216,35 +233,44 @@ namespace video {
 
     void VideoHome::request_more_videoDraw(){
 
-        // j220913 list count check
-        int width_cnt = global.LmtCnt / 220;
-        int mod = this->video_draw_cnt % width_cnt;
+        int f_width = this->flowLayout_videos->geometry().width();
 
-        if(mod == 0){
-            this->video_widget_cnt = width_cnt * 10;
+        if(this->flowLayout_videos->geometry().width() <= 0){
+            f_width = this->width() - (80 + 63) - 10;
+        }
+
+        int f_wg_cnt = f_width / (this->video_widget_width + this->video_widget_margin);
+        int f_mod = this->video_draw_cnt % f_wg_cnt;
+
+        if(f_mod == 0){
+            this->video_widget_cnt = f_wg_cnt * 10;
         }
         else{
-            this->video_widget_cnt = width_cnt * 10 + (width_cnt - mod);
+            this->video_widget_cnt = f_wg_cnt * 10 + (f_wg_cnt - f_mod);
         }
-        // j220913 list count check
 
-        int start_cnt = this->video_draw_cnt;
+        //qDebug() << "[Debug] RoseHomeAlbumListAll::request_more_albumDraw " << f_width << f_wg_cnt << f_mod << this->album_widget_cnt;
+
+        int start_index = this->video_draw_cnt;
         int max_cnt = ((this->video_total_cnt - this->video_draw_cnt) > this->video_widget_cnt ) ? this->video_widget_cnt : (this->video_total_cnt - this->video_draw_cnt);
         this->video_draw_cnt += max_cnt;
 
-        for(int i = start_cnt; i < this->video_draw_cnt; i++){
+        for(int i = start_index; i < this->video_draw_cnt; i++){
             this->list_video[i] = new video::ItemWidget_video(i, SECTION_FOR_MORE_POPUP___videos, tidal::AbstractItem::ImageSizeMode::Ractangle_200x281, true);
-            connect(this->list_video[i], &video::ItemWidget_video::signal_clicked, this, &VideoHome::slot_clickedItemVideo);
-        }
-
-        for(int i = start_cnt; i < this->video_draw_cnt; i++){
-            this->list_video[i]->setData(this->jsonArr_tracks_toPlay.at(i).toObject());
-            flowLayout_videos->addWidget(this->list_video[i]);
-
             QCoreApplication::processEvents();
         }
 
+        for(int i = start_index; i < this->video_draw_cnt; i++){
+            this->list_video[i]->setData(this->jsonArr_tracks_toPlay.at(i).toObject());
+        }
+
+        for(int i = start_index; i < this->video_draw_cnt; i++){
+            connect(this->list_video[i], &video::ItemWidget_video::signal_clicked, this, &VideoHome::slot_clickedItemVideo);
+            flowLayout_videos->addWidget(this->list_video[i]);
+        }
+
         ContentLoadingwaitingMsgHide();
+
         this->flag_video_draw = false;
     }
 
@@ -329,5 +355,15 @@ namespace video {
                 emit linker->signal_clickedMovePage(jsonData);
             }
         }
+    }
+    /**
+     * @brief RoseHomeAlbumListAll::resizeEvent
+     * @param event
+     */
+    void VideoHome::resizeEvent(QResizeEvent *event){//c230223
+
+        Q_UNUSED(event);
+
+        this->setFlowLayoutResize(this, this->flowLayout_videos, this->video_widget_width, this->video_widget_margin);
     }
 }

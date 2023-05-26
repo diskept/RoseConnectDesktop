@@ -112,6 +112,7 @@ void DownloadProgress::hideEvent(QHideEvent *event){
     //movieProgress->stop();
 }
 
+
 /**
  * @brief DownloadProgress::setCurrentValue : 현재 값 세팅
  * @param p_currentValue
@@ -130,10 +131,20 @@ void DownloadProgress::setMaxValue(const qint64 &p_maxValue){
     progressBar->setMaximum(maxValue);
 }
 
+void DownloadProgress::hideText(){
+    lb_icon->hide();
+    lb_text->hide();
+    btn_refresh->hide();
+}
+
 void DownloadProgress::resizeEvent(QResizeEvent *event){
     QWidget::resizeEvent(event);
 
     lb_text->setText(GSCommon::getTextCutFromLabelWidth(lb_text->text(), this->width()-40, lb_text->font()));
+    if(lb_text->text().contains("…")){
+        lb_text->setToolTip(lb_text->text());//c230321
+        lb_text->setToolTipDuration(2000);//c230321
+    }
 }
 
 void DownloadProgress::showRefreshBtn(){

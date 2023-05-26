@@ -1,7 +1,9 @@
 #ifndef PROCCOMMON_FORQOBUZ_H
 #define PROCCOMMON_FORQOBUZ_H
 
-#include "qobuz_struct.h"
+#include "qobuz/qobuz_struct.h"
+
+#include "common/linker.h"//230421
 
 #include <QObject>
 #include <QJsonObject>
@@ -90,7 +92,7 @@ namespace qobuz {
 
             , Login = 1900
             , Logout
-
+            , Login_termCall//c230422
 
         };
         Q_ENUM(HttpRequestType);
@@ -192,6 +194,7 @@ namespace qobuz {
 
         // HTTP 요청 - 공통으로 사용하는 타이달 API
         void request_qobuzLogin(UserLoginInfo userLoginInfo);
+        void request_qobuzLogin_termCall(UserLoginInfo userLoginInfo);//c230422
         void request_qobuzLogout();
 
         void request_qobuz_getListGenres();
@@ -211,10 +214,10 @@ namespace qobuz {
         void request_qobuz_getList_items_of_playlist(const QString playlist_id, const int limit, const int offset);
         //void request_qobuz_getList_items_of_playlist(const int playlist_id, const int limit, const int offset);
         //void request_qobuz_getList_items_of_album(const int album_id);
-        void request_qobuz_getList_items_of_album(const QString album_id);   // Added Jeon 27/12/2020
+        void request_qobuz_getList_items_of_album(const QString album_id);   // Added diskept 27/12/2020
 
         //void request_qobuz_get_album(const int album_id);
-        void request_qobuz_get_album(const QString album_id);                // Added Jeon 27/12/2020
+        void request_qobuz_get_album(const QString album_id);                // Added diskept 27/12/2020
         void request_qobuz_get_albuminfo(const QString album_id);
         void request_qobuz_get_artist(const int artist_id);
         void request_qobuz_get_artist_bioText(const int artist_id);
@@ -255,7 +258,7 @@ namespace qobuz {
 
         // about adding Favorite - 일부러 종류별로 놔둠.
         //void request_qobuz_addFavorite_album(const int album_id);
-        void request_qobuz_addFavorite_album(const QString album_id);       // Added Jeon 27/12/2020
+        void request_qobuz_addFavorite_album(const QString album_id);       // Added diskept 27/12/2020
         void request_qobuz_addFavorite_artist(const int artist_id);
         void request_qobuz_addFavorite_track(const int track_id);
         void request_qobuz_addFavorite_playlist(const QString playlist_id);
@@ -264,7 +267,7 @@ namespace qobuz {
 
         // about deleting Favorite
         //void request_qobuz_deleteFavorite_album(const int album_id);
-        void request_qobuz_deleteFavorite_album(const QString album_id);       // Added Jeon 27/12/2020
+        void request_qobuz_deleteFavorite_album(const QString album_id);       // Added diskept 27/12/2020
         void request_qobuz_deleteFavorite_artist(const int artist_id);
         void request_qobuz_deleteFavorite_track(const int track_id);
         void request_qobuz_deleteFavorite_playlist(const QString playlist_id);
@@ -285,12 +288,16 @@ namespace qobuz {
 
 
     private:
+
+        Linker *linker;//c230421
+
         void procQueryList(const QList<QString> &list_query);
 //        QStringList getList_artists(const QJsonArray& jsonArr_artist);
 
 
         // HTTP 응답처리 함수
         void setResult_loginQobuz(const QJsonObject &p_jsonObj);
+        void setResult_loginQobuz_termCall(const QJsonObject &p_jsonObj);//c230422
         void setResult_logoutQobuz(const QJsonObject &p_jsonObj);
         void setResult_listGenres(const QJsonObject &p_jsonObj);
         void setResult_listMoods(const QJsonObject &p_jsonObj);

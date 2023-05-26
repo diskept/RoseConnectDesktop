@@ -18,9 +18,12 @@ namespace roseHome {
 
     public:
         explicit ItemAlbum_rosehome(int index, int section, ImageSizeMode imageSizeMode, bool flagPlay, QWidget *parent = nullptr);
+        ~ItemAlbum_rosehome();
 
         void setData(const roseHome::AlbumItemData &p_data);
         int get_fixedHeight() override;
+        int get_fixedWidth();
+        int get_rightMargin();
 
     private:
         void setUIControl();
@@ -34,6 +37,7 @@ namespace roseHome {
         QLabel *label_artist;
 
         bool flag_btnPlay = false;
+        bool flag_setData = false;
     };
 
 };

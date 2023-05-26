@@ -32,9 +32,12 @@ private:
 
     void paintEvent(QPaintEvent *event) override;
 
-    const int IMG_WIDTH = 186;
-    const int IMG_HEIGHT = 186;
-    const int MARGIN = 10;
+    const int IMG_WIDTH = 200;
+    const int IMG_HEIGHT = 200;
+    const int MARGIN = 17;
+
+    const int LABEL_HEIGHT = 24;
+    const int SPACE_LABELS = 3;
 
     DataMusicComposer *data;
     QList<DataPopup*> *dataPopupList;

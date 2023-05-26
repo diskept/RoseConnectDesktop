@@ -1,9 +1,11 @@
 #ifndef SQLITEVIEWTOTABLE_H
 #define SQLITEVIEWTOTABLE_H
 
+#include "common/sqlitehelper.h"
+
 #include <QObject>
 #include <QThread>
-#include <common/sqlitehelper.h>
+#include <QCoreApplication>
 
 
 /**
@@ -17,8 +19,6 @@ public:
     explicit SqliteViewToTable(QObject *parent = nullptr);
     ~SqliteViewToTable();
 
-
-
 signals:
     void signal_viewToTable();
     void signal_finished();
@@ -27,12 +27,11 @@ private slots:
     void viewToTable();
 
 private:
+    void setInit();
 
+private:
     QThread thread;
     SqliteHelper *helper;
-
-
-    void setInit();
 };
 
 #endif // SQLITEVIEWTOTABLE_H

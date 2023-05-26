@@ -615,7 +615,7 @@ void dialogsetting_interoutput_520::slot_clickedBit32question(){//c220511
     print_debug();
     dlgConfirmOpt_coax->setAlignment(Qt::AlignLeft);
     //dlgConfirmOutput->setTitle(tr("Headphone Output Impedance"));
-    //dlgConfirmOutput->setText(tr("This is a menu to set the Headphone Output Impedace.\nIf you select the output (16 Ohm, 32 Ohm, 50 Ohm, 100 Ohm) that matches your headphone specifications, you can enjoy better sound."));
+    //dlgConfirmOutput->setText(tr("This is a menu to set the Headphone Output Impedace.\nIf you select the output (16 Ohm, 32 Ohm, 50 Ohm, 100 Ohm) that fits your headphone specifications, you can hear better sound quality."));
     dlgConfirmOpt_coax->setAlignment(Qt::AlignLeft);
     dlgConfirmOpt_coax->setTitle(tr("The low 8bits of a 32 bit sound sources\n will have correct"));
     dlgConfirmOpt_coax->setText(tr("Some DACs may generate noise when playing a 32-bit sound source with a high sampling rate.\nIn this case, it is used to reduce noise by correcting the lower 8 bits."));

@@ -64,6 +64,7 @@ namespace rosetube {
         void setUIControl_chooseStep(QString type);
 
         void request_more_Data(QString type);
+        void request_more_Draw(QString type);
 
     private:
         Linker *linker;
@@ -134,6 +135,7 @@ namespace rosetube {
 
         int track_next_offset = 0;
         int track_totalCount = 0;
+        int track_drawCount = 0;
 
         bool flagReqMore_album = false;
         bool flag_lastPage_album = false;
@@ -141,6 +143,7 @@ namespace rosetube {
 
         int album_next_offset = 0;
         int album_totalCount = 0;
+        int album_drawCount = 0;
 
         bool flagReqMore_playlist = false;
         bool flag_lastPage_playlist = false;
@@ -148,6 +151,7 @@ namespace rosetube {
 
         int playlist_next_offset = 0;
         int playlist_totalCount = 0;
+        int playlist_drawCount = 0;
 
         int track_id_fav = 0;
         int track_idx_fav = 0;

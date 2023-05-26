@@ -73,13 +73,42 @@ namespace qobuz {
 
             this->flag_playlist_draw = false;
 
-            ContentLoadingwaitingMsgShow(tr("Content is being loaded. Please wait."));
+            print_debug();ContentLoadingwaitingMsgShow(tr("Content is being loaded. Please wait."));
 
             this->request_more_playlistData();
+        }
+        else{
+            print_debug();ContentLoadingwaitingMsgHide();   //j230328
         }
     }
 
 
+    void QobuzPlaylistAll::resizeEvent(QResizeEvent *event){//c230223
+            AbstractQobuzSubWidget::resizeEvent(event);
+            Q_UNUSED(event);
+            print_debug();
+            qDebug() << flowLayout_playlists->sizeHint();
+            //qDebug() << this->box_contents->sizeHint();
+
+            int w = flowLayout_playlists->sizeHint().width();
+            int l = 80, r = 60, scrollbarW = 0;
+
+            int mod_nn = (global.LmtCnt-l-r-scrollbarW)%(w+0);
+            //qDebug() << "mod_nn=" << mod_nn;
+            int i = 0;
+            while(1){
+
+                mod_nn = (global.LmtCnt-l-r-scrollbarW)%(w+0+i);
+                if(mod_nn > 20){
+
+                    mod_nn = (global.LmtCnt-l-r-scrollbarW)%(w+(0+(i++)));
+                }else{
+                    break;
+                }
+            }
+
+            flowLayout_playlists->setSpacingHV(0+i,20);
+    }
     /**
      * @brief 페이지 활성화를 처리하는 함수임.
      * HTTP API 호출한다.
@@ -125,7 +154,7 @@ namespace qobuz {
 
             this->flag_playlist_draw = true;
 
-            ContentLoadingwaitingMsgShow(tr("Content is being loaded. Please wait."));
+            print_debug();ContentLoadingwaitingMsgShow(tr("Content is being loaded. Please wait."));
 
             this->request_more_playlistDraw();
         }
@@ -141,7 +170,12 @@ namespace qobuz {
             this->flagReqMore_playlist = true;
 
             // j220913 list count check
-            int width_cnt = global.LmtCnt / 220;
+            int width_cnt;//c230223
+            if(flowLayout_playlists->sizeHint().width() < 0) {//c230223
+                width_cnt = global.LmtCnt / 217;
+            }else{
+                width_cnt = global.LmtCnt / flowLayout_playlists->sizeHint().width();//
+            }
             int mod = this->playlist_draw_cnt % width_cnt;
 
             if(mod == 0){
@@ -170,7 +204,7 @@ namespace qobuz {
     void QobuzPlaylistAll::request_more_playlistDraw(){
 
         // j220913 list count check
-        int width_cnt = global.LmtCnt / 220;
+        int width_cnt = global.LmtCnt / flowLayout_playlists->sizeHint().width();//c230223
         int mod = this->playlist_draw_cnt % width_cnt;
 
         if(mod == 0){
@@ -239,12 +273,46 @@ namespace qobuz {
                     QCoreApplication::processEvents();
                 }
 
+                //c230306_1-start
+                int w = flowLayout_playlists->sizeHint().width();
+                int l = 80, r = 60, scrollbarW = 10, mod = 0;
+
+                int mod_nn = (global.LmtCnt-l-r-scrollbarW)%(w + mod);
+                int nn = (global.LmtCnt-l-r-scrollbarW)/(w + mod);
+                //qDebug() << "global.LmtCnt=" << global.LmtCnt;
+                //qDebug() << "this->width()=" << this->width();
+                //qDebug() << "nn=" << nn;
+                //qDebug() << "mod_nn=" << mod_nn;
+
+
+                int i = 0;
+                while(1){
+
+                    mod_nn = (global.LmtCnt-l-r-scrollbarW)%(w + mod + i);
+                    if(mod_nn > 20){
+
+                        mod_nn = (global.LmtCnt-l-r-scrollbarW)%(w + ( mod +(i++)));
+                    }else{
+                        break;
+                    }
+                }
+                //print_debug();
+                //qDebug() << "w=" << w;
+                //qDebug() << "i=" << i;
+                //qDebug() << "this->width()=" << this->width();
+                //this->resize(this->width()+1, this->height());
+                flowLayout_playlists->setSpacingHV(mod+i,20);
+                //c230306_1-end
+
+                ContentLoadingwaitingMsgHide();
+
                 this->flag_flow_draw = true;
                 this->flag_playlist_draw = false;
             }
 
-            ContentLoadingwaitingMsgHide();
-            this->request_more_playlistData();
+            if(this->flag_lastPage_playlist == false){
+                this->request_more_playlistData();
+            }
         }
         else{
             ContentLoadingwaitingMsgHide();
@@ -343,6 +411,9 @@ namespace qobuz {
 
             this->label_mainTitle->setText(this->api_mainTitle);
         }
+        else{
+            print_debug();ContentLoadingwaitingMsgHide();   //j230328
+        }
     }
 
 
@@ -359,7 +430,7 @@ namespace qobuz {
 
             GSCommon::clearLayout(this->flowLayout_playlists);
 
-            ContentLoadingwaitingMsgShow(tr("Content is being loaded. Please wait."));
+            print_debug();ContentLoadingwaitingMsgShow(tr("Content is being loaded. Please wait."));
 
             QJsonArray json_arr;
             this->slot_applyResult_playlists(*this->list_playlist, json_arr, false);

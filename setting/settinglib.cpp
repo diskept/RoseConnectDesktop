@@ -194,8 +194,16 @@ qDebug() << "global.LmtCnt-260=" << global.LmtCnt-260;
         lb_path_tmp[p_index] ->resize(global.LmtCnt-260, 70);
         if(global.LmtCnt-260 >990){
             lb_path_tmp[p_index] ->setText(GSCommon::getTextCutFromLabelWidth(tmp_path, 990-255, lb_path_tmp[p_index] ->font()));
+            if(lb_path_tmp[p_index]->text().contains("…")){
+                lb_path_tmp[p_index]->setToolTip(tmp_path);//c230321
+                lb_path_tmp[p_index]->setToolTipDuration(2000);//c230321
+            }
         }else{
             lb_path_tmp[p_index] ->setText(GSCommon::getTextCutFromLabelWidth(tmp_path, global.LmtCnt-260-255, lb_path_tmp[p_index] ->font()));
+            if(lb_path_tmp[p_index]->text().contains("…")){
+                lb_path_tmp[p_index]->setToolTip(tmp_path);//c230321
+                lb_path_tmp[p_index]->setToolTipDuration(2000);//c230321
+            }
         }
 
         lb_path_tmp[p_index] ->setStyleSheet(tmp_titleStyle);
@@ -245,6 +253,10 @@ void SettingLib::resizeEvent(QResizeEvent *event){
             this->lb_path_tmp[i] ->setFixedWidth(global.LmtCnt-260-155);
             QString tmp_path = getMedaiNamePath(listMedia->at(i)->getIsServer(), listMedia->at(i)->getName(), listMedia->at(i)->getPath());
             lb_path_tmp[i] ->setText(GSCommon::getTextCutFromLabelWidth(tmp_path, global.LmtCnt-260-255, lb_path_tmp[i] ->font()));
+            if(lb_path_tmp[i]->text().contains("…")){
+                lb_path_tmp[i]->setToolTip(tmp_path);//c230321
+                lb_path_tmp[i]->setToolTipDuration(2000);//c230321
+            }
         }
     }
 
@@ -273,10 +285,10 @@ void SettingLib::showDlgOfDBInit(){
  */
 void SettingLib::showDlgOfDbReReceive(){
     DialogConfirm *dlgConfirm = new DialogConfirm(this);
-    dlgConfirm->setText(tr("Get the database again"));
-    //dlgConfirm->setText(tr("데이터 베이스 다시 받아오기"));
-    dlgConfirm->setTitle(tr("DB reset"));
-    //dlgConfirm->setTitle(tr("DB 초기화"));
+    dlgConfirm->setText(tr("Would you like to get the database again?"));
+    //dlgConfirm->setText(tr("데이터 베이스를 다시 받아오시겠습니까?"));
+    dlgConfirm->setTitle(tr("Get the database again"));
+    //dlgConfirm->setTitle(tr("데이터 베이스 다시 받아오기"));
     int tmp_result = dlgConfirm->exec();
 
     if(tmp_result == QDialog::Accepted){

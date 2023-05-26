@@ -1,7 +1,7 @@
 #ifndef AbstractRoseHomeSubWidget_H
 #define AbstractRoseHomeSubWidget_H
 
-#include "rosehome_struct.h"
+#include "roseHome/rosehome_struct.h"
 
 #include "common/AbstractCommonSubWidget.h"
 
@@ -30,6 +30,9 @@ namespace roseHome {
     protected slots:
 
         // ProcCommon 으로부터 데이터 수신 처리 - 데이터 받는 경우 override 처리할 것
+        virtual void slot_applyResult_MYplaylists(const QList<roseHome::PlaylistItemData>&, const QJsonArray&, const bool){ }
+        virtual void slot_applyResult_NEWplaylists(const QList<roseHome::PlaylistItemData>&, const QJsonArray&, const bool){ }
+        virtual void slot_applyResult_POPplaylists(const QList<roseHome::PlaylistItemData>&, const QJsonArray&, const bool){ }
         virtual void slot_applyResult_playlists(const QList<roseHome::PlaylistItemData>&, const QJsonArray&, const bool){ }
         virtual void slot_applyResult_albums(const QList<roseHome::AlbumItemData>&, const QJsonArray&, const bool){ }
         virtual void slot_applyResult_tracks(const QList<roseHome::TrackItemData>&, const QJsonArray&, const bool){ }
@@ -63,6 +66,12 @@ namespace roseHome {
         void proc_clicked_itemAlbum(roseHome::AlbumItemData& data_album, const tidal::AbstractItem::ClickMode clickMode, const int index, const int section);
         void proc_clicked_itemAlbum(QList<roseHome::AlbumItemData>* list_album, const tidal::AbstractItem::ClickMode clickMode, const int index, const int section);
 
+        void proc_clicked_itemHistory(roseHome::HistoryItemData& data_history, const tidal::AbstractItem::ClickMode clickMode, const int index, const int section);
+        void proc_clicked_itemHistory(QList<roseHome::HistoryItemData>* list_history, const tidal::AbstractItem::ClickMode clickMode, const int index, const int section);
+
+        void proc_clicked_itemArtist(roseHome::ArtistItemData& data_album, const tidal::AbstractItem::ClickMode clickMode, const int index, const int section);
+        void proc_clicked_itemArtist(QList<roseHome::ArtistItemData>* list_album, const tidal::AbstractItem::ClickMode clickMode, const int index, const int section);
+
         void proc_clicked_itemPlaylist(roseHome::PlaylistItemData& data_playlist, const tidal::AbstractItem::ClickMode clickMode, const int index, const int section);
         void proc_clicked_itemPlaylist(QList<roseHome::PlaylistItemData>* list_playlist, const tidal::AbstractItem::ClickMode clickMode, const int index, const int section);
 
@@ -82,6 +91,10 @@ namespace roseHome {
         void proc_clicked_optMorePopup_fromTrack(roseHome::TrackItemData& data_track, const QJsonArray& jsonArr_toPlayAll, const int index, const OptMorePopup::ClickMode clickMode);
         void proc_clicked_optMorePopup_fromTrack(QList<roseHome::TrackItemData>* list_track, const QJsonArray& jsonArr_toPlayAll, const int index, const OptMorePopup::ClickMode clickMode);
 
+        void proc_clicked_optMorePopup_fromArtist(roseHome::ArtistItemData& data_artist, const OptMorePopup::ClickMode clickMode);
+        void proc_clicked_optMorePopup_fromArtist(QList<roseHome::ArtistItemData>* list_artist, const int index, const OptMorePopup::ClickMode clickMode);
+
+
         // 자식 클래스에서 DetailInfo 클릭에 대한 상세처리하기 위한 함수들
         void proc_clicked_imageDetailInfo_fromAlbum(roseHome::AlbumItemData& data_album, const QJsonArray p_jsonArr_toPlay, const int section, AbstractImageDetailInfo_RHV::BtnClickMode btnClickMode);
         void proc_clicked_imageDetailInfo_fromPlaylist(roseHome::PlaylistItemData& data_playlist, const QJsonArray p_jsonArr_toPlay, const int section, AbstractImageDetailInfo_RHV::BtnClickMode btnClickMode);
@@ -91,6 +104,8 @@ namespace roseHome {
         void movePage_playlist_allView(roseHome::PageInfo_PlaylistAllView&);
         void movePage_rosetube_allView(roseHome::PageInfo_PlaylistAllView&);
         void movePage_track_allView(roseHome::PageInfo_TrackAllView&);
+        void movePage_artist_allView(roseHome::PageInfo_ArtistAllView&);
+        void movePage_history_allView(roseHome::PageInfo_HistoryAllView&);
 
         void movePage_userPage(roseHome::PageInfo_UserPage&);
 
@@ -99,8 +114,13 @@ namespace roseHome {
         // Filtering 관련
         static QList<bugs::FilterOptionData> get_list_filterOptData_forMyCollection();
 
-    private:
+    private slots:
+        void slot_applyResult_visualTracks(const QList<tidal::TrackItemData>&, const QJsonArray&, const bool);
+
         void slot_applyResult_getShareLink(const QString &link);//c220825_2
+
+        void slot_add_rosePlaylist_withRosetube(const int&, const QJsonObject&);
+
 
     //cheon211018---start
     signals:

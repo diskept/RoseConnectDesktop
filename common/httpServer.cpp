@@ -18,23 +18,29 @@ HttpServer::HttpServer(QObject *parent) :
 HttpServer::~HttpServer()//= default;
 {
     print_debug();
-    this->quit();//c220716
+    //this->quit();//c230304
     this->m_server->close();
 
-    this->deleteLater();
+    this->deleteLater();//c230304
 }
 
 
-void HttpServer::start()
+void HttpServer::start()//c230303
 {
     //global.device.getDeviceIP()
-    this->m_server->listen(QHostAddress::Any, 9284);
+    //m_server->listen(QHostAddress::Any, 9284);
+    //QTimer::singleShot(2000, this, SLOT(slot_httpServer_start()));
+    //QThread::sleep(2);
+    this->slot_httpServer_start();
 }
 
-//
+void HttpServer::slot_httpServer_start(){//c230303
+        m_server->listen(QHostAddress::Any, 9284);
+}
+
 void HttpServer::newConnection()
 {
-    const auto socket = this->m_server->nextPendingConnection();
+    const auto socket = m_server->nextPendingConnection();
 
     QHostAddress host_address = socket->peerAddress();
 
@@ -42,10 +48,11 @@ void HttpServer::newConnection()
     QString tmpIpAddr = host_address.toString().replace("::ffff:", "");
 
     if(!socket || (tmpIpAddr != global.device.getDeviceIP())){
-        //socket->close();
-        return;
+        if(tmpIpAddr.right(1).at(0) != "1"){
+            socket->deleteLater();
+            return;
+        }
     }
-    else if(socket || (tmpIpAddr == global.device.getDeviceIP())){
-        new httpServerConnection(socket);
-    }
+
+    new httpServerConnection(socket);
 }

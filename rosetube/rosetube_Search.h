@@ -33,6 +33,7 @@ namespace rosetube {
     signals:
         void signal_clickedViewAll(const QJsonObject &p_jsonObject);
         void signal_changedMenuName(const QString &p_menuName, const QString &menu);
+        void signal_clickedPagemove(const QJsonObject &p_jsonObject);
 
     protected slots:
 
@@ -47,9 +48,13 @@ namespace rosetube {
     protected:
         void proc_wheelEvent_to_getMoreData() override;
 
+        void resizeEvent(QResizeEvent *event) override;
+
     private slots:
         void slot_applyResult_getShareLink(const QString &link);//c220818 share link
         void slot_searchData(const QJsonArray&);
+
+        void slot_add_rosePlaylist_withRosetube(const int&, const QJsonObject&);
 
     private:
         void setUIControl_basic();
@@ -70,7 +75,7 @@ namespace rosetube {
         QLabel *label_mainTitle;
 
         QVBoxLayout *vbox_contents;
-        QWidget *widget_contents;
+         QWidget *widget_contents = nullptr; ///< j230407 Removing ghosting effect
 
         FlowLayout *flowLayout_search_track;
         QWidget *widget_search_content;
@@ -82,6 +87,11 @@ namespace rosetube {
         QJsonArray jsonArr_tracks_toTemp;
 
         bool flagReqMore_search = false;
+
+        int rosetube_widget_width = 0;
+        int rosetube_widget_margin = 0;
+
+        int rosetube_widget_cnt = 0;
     };
 };
 

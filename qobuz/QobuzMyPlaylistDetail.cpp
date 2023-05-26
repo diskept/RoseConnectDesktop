@@ -67,7 +67,9 @@ namespace qobuz {
             this->listWidget_track->clear();
             this->listWidget_track->setFixedHeight(100);
         }
-
+        else{
+            print_debug();ContentLoadingwaitingMsgHide();   //j230328
+        }
     }
 
 
@@ -352,7 +354,7 @@ namespace qobuz {
 
             this->flag_draw = false;
 
-            ContentLoadingwaitingMsgShow(tr("Content is being loaded. Please wait."));
+            print_debug();ContentLoadingwaitingMsgShow(tr("Content is being loaded. Please wait."));
 
             roseHome::ProcCommon *proc_playlist = new roseHome::ProcCommon(this);
             connect(proc_playlist, &roseHome::ProcCommon::completeReq_playlist, this, &QobuzMyPlaylistDetail_ROSE::slot_applyResult_playlist);
@@ -365,6 +367,9 @@ namespace qobuz {
                 connect(proc_thumb_playlist, &roseHome::ProcCommon::completeReq_rating_thumbup, this, &QobuzMyPlaylistDetail_ROSE::slot_applyResult_getRating_thumbup);
                 proc_thumb_playlist->request_rose_getRating_Thumbup("PLAY_LIST", QString("%1").arg(tmp_data_playlist.id));
             }
+        }
+        else{
+            print_debug();ContentLoadingwaitingMsgHide();   //j230328
         }
     }
 
@@ -427,7 +432,7 @@ namespace qobuz {
 
             this->flag_draw = true;
 
-            ContentLoadingwaitingMsgShow(tr("Content is being loaded. Please wait."));
+            print_debug();ContentLoadingwaitingMsgShow(tr("Content is being loaded. Please wait."));
             this->request_more_trackDraw();
         }
     }
@@ -599,6 +604,25 @@ namespace qobuz {
 
             this->box_main_contents->addWidget(noData_widget);
         }
+    }
+
+    void QobuzMyPlaylistDetail_ROSE::slot_qobuz_completeReq_listAll_myFavoritesIds(const QJsonObject& contents){
+
+        // Favorite 정보를 전달해줌. 알아서 처리하라고.
+//        if(contents.contains("flagOk") && ProcJsonEasy::get_flagOk(contents)){
+//            bool status  = ProcJsonEasy::getBool(contents, "status");
+
+//            // Qobuz favorite toggle check
+//            if(this->flag_send_track == true){
+//                if((status == true && this->flag_track_fav == false) || (status == false && this->flag_track_fav == true)){
+//                    // Qobuz Favorite toggle
+//                    ProcCommon *proc = new ProcCommon(this);
+//                    connect(proc, &qobuz::ProcCommon::completeReq_listAll_myFavoritesIds, this, &QobuzMyPlaylistDetail_ROSE::slot_qobuz_completeReq_listAll_myFavoritesIds);
+//                    proc->request_qobuz_set_favorite("track", QString("%1").arg(this->track_id_fav), this->flag_track_fav);
+//                }
+//                this->flag_send_track = false;
+//            }
+//        }
     }
 
 
@@ -802,18 +826,31 @@ namespace qobuz {
         if(clickMode == PlaylistTrackDetailInfo_RHV::ClickMode::FavBtn){
 
             if(this->flag_check_track == false){
-                int star_cnt = this->playlist_track_info[idx]->getFavoritesStars();
+                this->track_star_fav = this->playlist_track_info[idx]->getFavoritesStars();
                 this->flag_track_fav = false;
 
-                if(star_cnt == 3){
-                    star_cnt = 0;
+                if(this->track_star_fav == 3){
+                    this->track_star_fav = 0;
+
+                    this->track_idx_fav = idx;
                     this->flag_track_fav = false;
-
                 }
-                else if(star_cnt >= 0 && star_cnt < 3){
-                    star_cnt++;
-                    this->flag_track_fav = true;
+                else if(this->track_star_fav >= 0 && this->track_star_fav < 3){
+                    this->track_star_fav++;
 
+                    this->track_idx_fav = idx;
+                    this->flag_track_fav = true;
+                }
+
+                if(this->track_star_fav == 0 || this->track_star_fav == 1){
+                    // Qobuz Favorite toggle
+                    this->track_id_fav = this->list_track->at(idx).clientKey.toInt();
+
+                    ProcCommon *proc = new ProcCommon(this);
+                    connect(proc, &qobuz::ProcCommon::completeReq_listAll_myFavoritesIds, this, &QobuzMyPlaylistDetail_ROSE::slot_qobuz_completeReq_listAll_myFavoritesIds);
+                    proc->request_qobuz_set_favorite("track", QString("%1").arg(this->track_id_fav), this->flag_track_fav);
+
+                    this->flag_send_track = true;
                 }
 
                 QJsonObject track = this->jsonArr_tracks_toPlay.at(idx).toObject();
@@ -822,7 +859,7 @@ namespace qobuz {
 
                 QJsonObject ratingInfo;
                 ratingInfo.insert("favorite", this->flag_track_fav);
-                ratingInfo.insert("star", star_cnt);
+                ratingInfo.insert("star", this->track_star_fav);
                 ratingInfo.insert("thumbup", false);
                 ratingInfo.insert("type", track_type);
 
@@ -833,10 +870,10 @@ namespace qobuz {
                 // request HTTP API - get favorite for Rose Server
                 roseHome::ProcCommon *proc_fav_track = new roseHome::ProcCommon(this);
                 connect(proc_fav_track, &roseHome::ProcCommon::completeReq_rating_track, this, &QobuzMyPlaylistDetail_ROSE::slot_applyResult_getRating_track);
-                proc_fav_track->request_rose_setRating_Track(json, this->flag_track_fav, star_cnt);
+                proc_fav_track->request_rose_setRating_Track(json, this->flag_track_fav, this->track_star_fav);
                 this->flag_check_track = true;
 
-                this->playlist_track_info[idx]->setFavoritesIds(this->flag_track_fav, star_cnt);
+                this->playlist_track_info[idx]->setFavoritesIds(this->flag_track_fav, this->track_star_fav);
             }
         }
         else{
@@ -908,7 +945,7 @@ print_debug();
                 qDebug() << "this->shareLink="<<this->shareLink;
 
             }
-            if(clickMode == OptMorePopup::ClickMode::Play_RightNow
+            else if(clickMode == OptMorePopup::ClickMode::Play_RightNow
                    || clickMode == OptMorePopup::ClickMode::SubMenu_QueueAdd_Last
                    || clickMode == OptMorePopup::ClickMode::SubMenu_QueueAdd_Empty
                    || clickMode == OptMorePopup::ClickMode::SubMenu_QueueAdd_CurrNext
@@ -917,6 +954,21 @@ print_debug();
                // Rose Play 요청
                roseHome::ProcRosePlay_withRosehome *procRosePlay = new roseHome::ProcRosePlay_withRosehome(this);
                procRosePlay->requestPlayRose_byPlaylist(this->data_playlist, this->jsonArr_tracks_toPlay, 0, clickMode, roseHome::ProcRosePlay_withRosehome::PlayShuffleMode::JustPlay);
+           }
+           else if(clickMode == OptMorePopup::ClickMode::Edit){
+               QString view_type = "edit";
+
+               QJsonObject data;
+               data.insert("view_type", view_type);
+               data.insert("playlist_id", this->data_playlist.id);
+               data.insert("type", "ROSE");
+
+               QJsonObject jsonObj_move;
+               jsonObj_move.insert("data", data);
+
+               jsonObj_move.insert(KEY_PAGE_CODE, PAGECODE_Q_ADD_PLAYLIST);
+
+               emit this->signal_clickedMovePage(jsonObj_move);
            }
        }
        else if(section == SECTION_FOR_MORE_POPUP___tracks){

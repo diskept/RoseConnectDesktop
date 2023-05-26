@@ -24,6 +24,7 @@ namespace bugs {
 
         void setJsonObject_forData(const QJsonObject& jsonObj) override;        ///< 페이지 Show 요청 시, 데이터 전달받는 용도
         void setActivePage() override;                                          ///< 페이지 초기활성화 관련. (페이지 초기활성화시 호출)
+        void resizeEvent(QResizeEvent *event) override;   //c230223
 
     protected slots:
         void slot_clickedItemAlbum(const tidal::AbstractItem::ClickMode) override;

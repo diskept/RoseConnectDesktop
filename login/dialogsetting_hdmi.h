@@ -50,6 +50,10 @@ private slots:
     void slot_clickedbit32question();//c220511
 
 private:
+    QDialog *loding_ani_dialog = nullptr;
+    void loding_ani_init();
+    void loding_ani_show();
+    void loding_ani_hide();
 
     QComboBox *comboBoxHdmiMQA;
     QComboBox *comboBoxHdmiPCM, *comboBoxHdmiPCM_Max;

@@ -39,11 +39,14 @@ namespace qobuz {
      */
     QobuzAlbumDetail::QobuzAlbumDetail(QWidget *parent) : AbstractQobuzSubWidget(MainUIType::VerticalScroll_filter, parent) {
 
+        this->linker = Linker::getInstance();
+
         // data
         this->list_track = new QList<qobuz::TrackItemData>();
         this->list_sameArtist = new QList<qobuz::AlbumItemData>();
         this->list_suggestArtist = new QList<qobuz::ArtistItemData>();
     }
+
 
     /**
      * @brief 소멸자.
@@ -141,11 +144,13 @@ namespace qobuz {
                     proc_artist->request_qobuz_getList_artists("artist/getSimilarArtists", this->data_album.artist_id, 15, 0);
                 }
 
-                ContentLoadingwaitingMsgShow(tr("Content is being loaded. Please wait."));
+                print_debug();ContentLoadingwaitingMsgShow(tr("Content is being loaded. Please wait."));
 
                 this->track_favoriteOffset = 0;
             }
             else{
+                print_debug();ContentLoadingwaitingMsgHide();   //j230328
+
                 // 리로드 하지 않는 경우에는, favorite 정보만 다시 요청한다. (album_id 가 변경되지 않고, 페이지가 다시 요청된 경우임)
                 // request HTTP API - favorite for Rose Server
                 roseHome::ProcCommon *proc_fav = new roseHome::ProcCommon(this);
@@ -182,6 +187,8 @@ namespace qobuz {
             if(this->flag_track_ok == true){
                 GSCommon::clearLayout(this->box_main_contents);
                 this->box_contents->removeWidget(this->widget_main_contents);
+
+                this->flag_track_ok = false;
             }
 
             GSCommon::clearLayout(this->box_contents);
@@ -218,7 +225,6 @@ namespace qobuz {
 
             this->setUIControl_basic();
         }
-
     }
 
 
@@ -283,7 +289,6 @@ namespace qobuz {
         this->hBox_suggestArtist = new QHBoxLayout();
         this->hBox_suggestArtist->setSpacing(0);
         this->hBox_suggestArtist->setContentsMargins(0, 0, 0, 0);
-
     }
 
 
@@ -341,7 +346,7 @@ namespace qobuz {
         tmp_scrollArea->setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
         tmp_scrollArea->setStyleSheet("background-color:transparent; border:0px;");
         tmp_scrollArea->setContentsMargins(0,0,0,0);
-        tmp_scrollArea->setFixedHeight(275);
+        tmp_scrollArea->setFixedHeight(285);
 
         QScroller::grabGesture(tmp_scrollArea, QScroller::LeftMouseButtonGesture);
         //----------------------------------------------------------------------------------------------------  BODY : END
@@ -375,7 +380,7 @@ namespace qobuz {
         tmp_scrollArea->setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
         tmp_scrollArea->setStyleSheet("background-color:transparent; border:0px;");
         tmp_scrollArea->setContentsMargins(0,0,0,0);
-        tmp_scrollArea->setFixedHeight(250);
+        tmp_scrollArea->setFixedHeight(260);
 
         QScroller::grabGesture(tmp_scrollArea, QScroller::LeftMouseButtonGesture);
         //----------------------------------------------------------------------------------------------------  BODY : END
@@ -409,8 +414,8 @@ namespace qobuz {
 
             this->box_main_contents->addSpacing(30);
         }
-
     }
+
 
     void QobuzAlbumDetail::setUIControl_suggestArtsits(){
 
@@ -433,7 +438,6 @@ namespace qobuz {
 
             this->box_main_contents->addSpacing(30);
         }
-
     }
 
 
@@ -449,7 +453,6 @@ namespace qobuz {
      */
     void QobuzAlbumDetail::slot_applyResult_albumInfo(qobuz::AlbumItemData album_info){
 
-        ContentLoadingwaitingMsgHide();//c220616
         if(album_info.title == "error"){
 
             QJsonObject albumObj;
@@ -548,11 +551,13 @@ namespace qobuz {
         proc_track->request_qobuz_getList_items_of_album(this->data_album.id);
     }
 
+
     //c220818 share link
     void QobuzAlbumDetail::slot_applyResult_getShareLink(const QString &link){
 
         this->shareLink = link;
     }
+
 
     void QobuzAlbumDetail::slot_applyResult_sameArtist(const QList<qobuz::AlbumItemData> &list_data, const QJsonArray &jsonArr_dataToPlay, const bool flag_lastPage){
 
@@ -571,7 +576,6 @@ namespace qobuz {
     }
 
 
-
     void QobuzAlbumDetail::slot_applyResult_suggestArtsit(const QList<qobuz::ArtistItemData> &list_data, const bool flag_lastPage){
 
         Q_UNUSED(flag_lastPage);
@@ -584,7 +588,6 @@ namespace qobuz {
                 connect(this->artistSuggestions[i], &qobuz::ItemArtist_qobuz::signal_clicked, this, &QobuzAlbumDetail::slot_clickedItemArtist);
             }
         }
-
     }
 
 
@@ -595,33 +598,32 @@ namespace qobuz {
     void QobuzAlbumDetail::slot_qobuz_completeReq_listAll_myFavoritesIds(const QJsonObject& p_jsonObj){
 
         // Favorite 정보를 전달해줌. 알아서 처리하라고.
-        if(p_jsonObj.contains("flagOk") && ProcJsonEasy::get_flagOk(p_jsonObj)){
-            bool status  = ProcJsonEasy::getBool(p_jsonObj, "status");
+//        if(p_jsonObj.contains("flagOk") && ProcJsonEasy::get_flagOk(p_jsonObj)){
+//            bool status  = ProcJsonEasy::getBool(p_jsonObj, "status");
 
-            // Qobuz favorite toggle check
-            if(this->flag_send_album == true){
-                if((status == true && this->flag_album_fav == false) || (status == false && this->flag_album_fav == true)){
-                    // Qobuz Favorite toggle
-                    ProcCommon *proc = new ProcCommon(this);
-                    connect(proc, &qobuz::ProcCommon::completeReq_listAll_myFavoritesIds, this, &QobuzAlbumDetail::slot_qobuz_completeReq_listAll_myFavoritesIds);
-                    proc->request_qobuz_set_favorite("album", QString("%1").arg(data_album.id), this->flag_album_fav);
-                }
-                this->flag_send_album = false;
-            }
-            else if(this->flag_send_track == true){
-                if((status == true && this->flag_track_fav == false) || (status == false && this->flag_track_fav == true)){
-                    // Qobuz Favorite toggle
-                    ProcCommon *proc = new ProcCommon(this);
-                    connect(proc, &qobuz::ProcCommon::completeReq_listAll_myFavoritesIds, this, &QobuzAlbumDetail::slot_qobuz_completeReq_listAll_myFavoritesIds);
-                    proc->request_qobuz_set_favorite("track", QString("%1").arg(this->track_id_fav), this->flag_track_fav);
-                }
-                this->flag_send_track = false;
-            }
-            else{
+//            // Qobuz favorite toggle check
+//            if(this->flag_send_album == true){
+//                if((status == true && this->flag_album_fav == false) || (status == false && this->flag_album_fav == true)){
+//                    // Qobuz Favorite toggle
+//                    ProcCommon *proc = new ProcCommon(this);
+//                    connect(proc, &qobuz::ProcCommon::completeReq_listAll_myFavoritesIds, this, &QobuzAlbumDetail::slot_qobuz_completeReq_listAll_myFavoritesIds);
+//                    proc->request_qobuz_set_favorite("album", QString("%1").arg(data_album.id), this->flag_album_fav);
+//                }
+//                this->flag_send_album = false;
+//            }
+//            else if(this->flag_send_track == true){
+//                if((status == true && this->flag_track_fav == false) || (status == false && this->flag_track_fav == true)){
+//                    // Qobuz Favorite toggle
+//                    ProcCommon *proc = new ProcCommon(this);
+//                    connect(proc, &qobuz::ProcCommon::completeReq_listAll_myFavoritesIds, this, &QobuzAlbumDetail::slot_qobuz_completeReq_listAll_myFavoritesIds);
+//                    proc->request_qobuz_set_favorite("track", QString("%1").arg(this->track_id_fav), this->flag_track_fav);
+//                }
+//                this->flag_send_track = false;
+//            }
+//            else{
 
-            }
-        }
-
+//            }
+//        }
     }
 
 
@@ -863,9 +865,6 @@ namespace qobuz {
     }
 
 
-
-
-
     /**
      * @brief QobuzAlbumDetail::slot_applyResult_track
      * @param list_data
@@ -874,9 +873,10 @@ namespace qobuz {
     void QobuzAlbumDetail::slot_applyResult_tracks(const QList<qobuz::TrackItemData>& list_data, const QJsonArray &jsonArr_dataToPlay, const bool flag_lastPage){
 
         Q_UNUSED(flag_lastPage);
-        ContentLoadingwaitingMsgHide();//c220620
 
         if(list_data.size() <= 0){
+            ContentLoadingwaitingMsgHide();
+
             NoData_Widget *noData_widget = new NoData_Widget(NoData_Widget::NoData_Message::Track_NoData);
             noData_widget->setFixedSize(1500, 300);
 
@@ -994,6 +994,8 @@ namespace qobuz {
                 QCoreApplication::processEvents();
             }
 
+            ContentLoadingwaitingMsgHide();
+
             // request HTTP API - get favorite for Rose Server
             roseHome::ProcCommon *proc_fav_track = new roseHome::ProcCommon(this);
             connect(proc_fav_track, &roseHome::ProcCommon::completeReq_rating_track, this, &QobuzAlbumDetail::slot_applyResult_getRating_track);
@@ -1019,8 +1021,6 @@ namespace qobuz {
             connect(proc_next, &ProcCommon::completeReq_drawnext, this, &QobuzAlbumDetail::slot_applyResult_creditInfo);
             proc_next->request_qobuz_drawNext(1);
         }
-
-        //ContentLoadingwaitingMsgHide();//c220616
     }
 
 
@@ -1112,7 +1112,6 @@ namespace qobuz {
                 }
             }
         }
-
     }
 
 
@@ -1142,7 +1141,6 @@ namespace qobuz {
 
         // 페이지 변경 및 데이터 세팅
         this->changedOnlyTabUI_notSendSignal(tmp_step);
-
     }
 
 
@@ -1214,8 +1212,8 @@ namespace qobuz {
         else{
             this->proc_clicked_imageDetailInfo_fromAlbum(this->data_album, this->jsonArr_tracks_toPlay, SECTION_FOR_MORE_POPUP___albums, clickMode);
         }
-
     }
+
 
     /**
      * @brief [slot] TrackDelegate로부터 signal 받은
@@ -1223,6 +1221,7 @@ namespace qobuz {
      * @param clickMode
      */
     void QobuzAlbumDetail::slot_clickedItemTrack_inList(const int idx, const AlbumTrackDetailInfo_RHV::ClickMode clickMode){
+
         int section = SECTION_FOR_MORE_POPUP___track;
 
         if(clickMode == AlbumTrackDetailInfo_RHV::ClickMode::FavBtn){
@@ -1266,13 +1265,11 @@ namespace qobuz {
                 this->album_tracks[idx]->setFavoritesIds(this->flag_track_fav, this->track_star_fav);
                 this->album_credit[idx]->setFavoritesIds(this->flag_track_fav, this->track_star_fav);
             }
-
         }
         else{
             // ClickMode 별로 처리
             this->proc_clicked_itemTrack_inList(this->list_track, this->jsonArr_tracks_toPlay, clickMode, idx, section);
         }
-
     }
 
 
@@ -1293,7 +1290,6 @@ namespace qobuz {
 
         // ClickMode 별로 처리
         this->proc_clicked_itemAlbum(this->list_sameArtist, clickMode, index, section);
-
     }
 
 
@@ -1308,8 +1304,6 @@ namespace qobuz {
 
         // ClickMode 별로 처리
         this->proc_clicked_itemArtist(this->list_suggestArtist, clickMode, index, section);
-
-
     }
 
 
@@ -1318,25 +1312,53 @@ namespace qobuz {
         int btnId = sender()->property("idx").toInt();
 
         if(btnId == BTN_IDX_SUBTITLE_sameArtist){
-            PageInfo_AlbumAllView data_page;
-            data_page.pathTitle = QString("%1 - By the same artist").arg(this->data_album.artist_name);
-            data_page.list_sameAritst.append(*this->list_sameArtist);
+            if(global.user_forQobuz.flag_rosehome == true){
+                global.user_forQobuz.rosehome_obj = QJsonObject();
+                global.user_forQobuz.rosehome_obj.insert(KEY_PAGE_CODE, PAGECODE_Q_SAME_ARTIST_LIST_VIEW);
+                PageInfo_AlbumAllView data_page;
+                data_page.pathTitle = QString("%1 - By the same artist").arg(this->data_album.artist_name);
+                data_page.list_sameAritst.append(*this->list_sameArtist);
 
-            QJsonObject jsonObj_move = ConvertData::getObjectJson_pageInfo_albumAllView(data_page);
-            jsonObj_move.insert(KEY_PAGE_CODE, PAGECODE_Q_SAME_ARTIST_LIST_VIEW);
-            emit this->signal_clickedMovePage(jsonObj_move);            // 페이지 이동 signal
+                QJsonObject tmp_data = ConvertData::getObjectJson_pageInfo_albumAllView(data_page);
+                global.user_forQobuz.rosehome_obj.insert(KEY_DATA, tmp_data);
+
+                emit linker->signal_RoseHome_movePage(QString(GSCommon::MainMenuCode::Qobuz));
+            }
+            else{
+                PageInfo_AlbumAllView data_page;
+                data_page.pathTitle = QString("%1 - By the same artist").arg(this->data_album.artist_name);
+                data_page.list_sameAritst.append(*this->list_sameArtist);
+
+                QJsonObject jsonObj_move = ConvertData::getObjectJson_pageInfo_albumAllView(data_page);
+                jsonObj_move.insert(KEY_PAGE_CODE, PAGECODE_Q_SAME_ARTIST_LIST_VIEW);
+                emit this->signal_clickedMovePage(jsonObj_move);            // 페이지 이동 signal
+            }
         }
         else if(btnId == BTN_IDX_SUBTITLE_suggestArtist){
-            PageInfo_ArtistAllView data_page;
-            data_page.pathTitle = QString("%1 - Artist suggestions").arg(this->data_album.artist_name);
-            data_page.api_subPath = "artist/getSimilarArtists";
-            data_page.artist_id = this->data_album.artist_id;
+            if(global.user_forQobuz.flag_rosehome == true){
+                global.user_forQobuz.rosehome_obj = QJsonObject();
+                global.user_forQobuz.rosehome_obj.insert(KEY_PAGE_CODE, PAGECODE_Q_ARTIST_ALL_LIST_VIEW);
+                PageInfo_ArtistAllView data_page;
+                data_page.pathTitle = QString("%1 - Artist suggestions").arg(this->data_album.artist_name);
+                data_page.api_subPath = "artist/getSimilarArtists";
+                data_page.artist_id = this->data_album.artist_id;
 
-            QJsonObject jsonObj_move = ConvertData::getObjectJson_pageInfo_artistAllView(data_page);
-            jsonObj_move.insert(KEY_PAGE_CODE, PAGECODE_Q_ARTIST_ALL_LIST_VIEW);
-            emit this->signal_clickedMovePage(jsonObj_move);            // 페이지 이동 signal
+                QJsonObject tmp_data = ConvertData::getObjectJson_pageInfo_artistAllView(data_page);
+                global.user_forQobuz.rosehome_obj.insert(KEY_DATA, tmp_data);
+
+                emit linker->signal_RoseHome_movePage(QString(GSCommon::MainMenuCode::Qobuz));
+            }
+            else{
+                PageInfo_ArtistAllView data_page;
+                data_page.pathTitle = QString("%1 - Artist suggestions").arg(this->data_album.artist_name);
+                data_page.api_subPath = "artist/getSimilarArtists";
+                data_page.artist_id = this->data_album.artist_id;
+
+                QJsonObject jsonObj_move = ConvertData::getObjectJson_pageInfo_artistAllView(data_page);
+                jsonObj_move.insert(KEY_PAGE_CODE, PAGECODE_Q_ARTIST_ALL_LIST_VIEW);
+                emit this->signal_clickedMovePage(jsonObj_move);            // 페이지 이동 signal
+            }
         }
-
     }
 
 
@@ -1360,7 +1382,6 @@ namespace qobuz {
         else if(section == SECTION_FOR_MORE_POPUP___suggestArtist){
             this->proc_clicked_optMorePopup_fromArtist(this->list_suggestArtist, index, clickMode);
         }
-
     }
 
 
@@ -1370,8 +1391,5 @@ namespace qobuz {
 
         this->setJsonObject_forData(this->login_wait_Object);
         this->setActivePage();
-
-
     }
-
 }

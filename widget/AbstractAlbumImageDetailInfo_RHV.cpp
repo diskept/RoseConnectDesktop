@@ -47,6 +47,7 @@ AlbumImageDetailInfo_RHV::AlbumImageDetailInfo_RHV(ContentsUIType p_ContentsUITy
 
 AlbumImageDetailInfo_RHV::~AlbumImageDetailInfo_RHV(){
 
+    this->deleteLater();
 }
 
 
@@ -225,7 +226,7 @@ QHBoxLayout* AlbumImageDetailInfo_RHV::setUIControl_hBoxLayout_forAlbum(){
     tmp_scrollArea->setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
     tmp_scrollArea->setStyleSheet("background-color:transparent; border:0px;");
     tmp_scrollArea->setContentsMargins(0,0,0,0);
-    tmp_scrollArea->setFixedHeight(275);
+    tmp_scrollArea->setFixedHeight(285);
 
     QScroller::grabGesture(tmp_scrollArea, QScroller::LeftMouseButtonGesture);
     //----------------------------------------------------------------------------------------------------  BODY : END
@@ -407,6 +408,10 @@ void AlbumImageDetailInfo_RHV::setData_fromQobuzData_album(const qobuz::AlbumIte
                 this->label_titleUp->setText(tmp_title_line1);
                 if(hires_left >= 950){
                     this->label_titleDown->setText(GSCommon::getTextCutFromLabelWidth(tmp_title_total, hires_left - 10, this->label_titleDown->font()));
+                    if(this->label_titleDown->text().contains("…")){
+                        this->label_titleDown->setToolTip(tmp_title_total);
+                        this->label_titleDown->setToolTipDuration(2000);
+                    }
                 }
                 else{
                     this->label_titleDown->setText(tmp_title_total);
@@ -896,6 +901,10 @@ void AlbumImageDetailInfo_RHV::setData_fromRoseData(const roseHome::AlbumItemDat
                 this->label_titleUp->setText(tmp_title_line1);
                 if(hires_left >= 950){
                     this->label_titleDown->setText(GSCommon::getTextCutFromLabelWidth(tmp_title_total, hires_left - 10, this->label_titleDown->font()));
+                    if(this->label_titleDown->text().contains("…")){
+                        this->label_titleDown->setToolTip(tmp_title_total);
+                        this->label_titleDown->setToolTipDuration(2000);
+                    }
                 }
                 else{
                     this->label_titleDown->setText(tmp_title_total);

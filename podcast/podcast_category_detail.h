@@ -30,11 +30,14 @@ namespace podcast {
         void setUIControl();
         void setResultOfChannelList(const QJsonObject &p_jsonObject);
         void appendChannel(const QJsonObject &jsonData);
+        void resizeEvent(QResizeEvent *event) override;
 
     private:
         // 관리 필요한 Layout UI
-        QWidget *widget_podcast;
         FlowLayout *flowLayout_podcast;
+
+        int podcast_widget_width = 0;
+        int podcast_widget_margin = 0;
 
         int currentGenreId;
     };

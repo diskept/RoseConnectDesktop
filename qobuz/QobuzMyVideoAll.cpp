@@ -70,7 +70,7 @@ namespace qobuz {
         this->addUIControl_mainTitle("My Videos");
 
         // filtering
-        //this->setUiControl_filter();
+        //this->setUIControl_filter();
 
         // layout for items
         this->flowLayout_video = this->get_addUIControl_flowLayout(0, 20);
@@ -83,9 +83,9 @@ namespace qobuz {
 
 
     /**
-     * @brief QobuzMyVideoAll::setUiControl_filter
+     * @brief QobuzMyVideoAll::setUIControl_filter
      */
-    void QobuzMyVideoAll::setUiControl_filter(){
+    void QobuzMyVideoAll::setUIControl_filter(){
         // 필터링 부분
         this->filterWidget = new FilterWidget();
         QString def_code = this->list_filterOpt_sort.first().opt_code.toString();

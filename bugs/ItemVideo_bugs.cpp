@@ -39,11 +39,11 @@ namespace bugs {
 
         this->label_title = new QLabel(label_base);
         this->label_title->setWordWrap(true);
-        this->label_title->setStyleSheet("font-size:16px; color:#FFFFFF;");
+        this->label_title->setStyleSheet("font-size:16px;font-weight: normal;font-style: normal;line-height: 2.1;text-align: left; color:#FFFFFF;");
         this->label_title->setGeometry(0, 0, img_width, this->LABEL_HEIGHT * 2);
 
         this->label_creator = new QLabel(label_base);
-        this->label_creator->setStyleSheet("font-size:16px; color: #999999;");
+        this->label_creator->setStyleSheet("font-size:16px;  font-weight: normal;font-style: normal;line-height: 2.1;text-align: left; color: #999999;");
         this->label_creator->setGeometry(0, (this->LABEL_HEIGHT * 2) + this->SPACE_LABELS, img_width, this->LABEL_HEIGHT);
 
         QVBoxLayout *boxLayout = new QVBoxLayout();
@@ -84,6 +84,19 @@ namespace bugs {
         height += (this->LABEL_HEIGHT * 3) + this->SPACE_LABELS;
 
         return height;
+    }
+
+    int ItemVideo_bugs::get_fixedWidth(){
+
+        int width = this->get_imageWidth(this->m_imageSizeMode);
+
+        return width;
+    }
+
+
+    int ItemVideo_bugs::get_rightMargin(){
+
+        return ITEM_BETWEEN_MARGIN_RIGHT;
     }
 
 
@@ -148,9 +161,17 @@ namespace bugs {
 
                 this->label_title->setGeometry(0, 0, all_width, this->LABEL_HEIGHT * 2);
                 this->label_title->setText(GSCommon::getTextCutFromLabelWidth(title, title_width, this->label_title->font()));
+                if(this->label_title->text().contains("…")){
+                    this->label_title->setToolTip(title);
+                    this->label_title->setToolTipDuration(2000);
+                }
 
                 this->label_creator->setGeometry(0, (this->LABEL_HEIGHT * 2) + this->SPACE_LABELS, all_width, this->LABEL_HEIGHT);
                 this->label_creator->setText(GSCommon::getTextCutFromLabelWidth(this->data_video.list_artist_nm.join(","), all_width, this->label_creator->font()));
+                if(this->label_creator->text().contains("…")){
+                    this->label_creator->setToolTip(this->data_video.list_artist_nm.join(","));
+                    this->label_creator->setToolTipDuration(2000);
+                }
             }
             else{
                 this->label_title->setGeometry(0, 0, all_width, this->LABEL_HEIGHT);
@@ -158,6 +179,10 @@ namespace bugs {
 
                 this->label_creator->setGeometry(0, this->LABEL_HEIGHT + this->SPACE_LABELS, all_width, this->LABEL_HEIGHT);
                 this->label_creator->setText(GSCommon::getTextCutFromLabelWidth(this->data_video.list_artist_nm.join(","), all_width, this->label_creator->font()));
+                if(this->label_creator->text().contains("…")){
+                    this->label_creator->setToolTip(this->data_video.list_artist_nm.join(","));
+                    this->label_creator->setToolTipDuration(2000);
+                }
             }
         }
     }

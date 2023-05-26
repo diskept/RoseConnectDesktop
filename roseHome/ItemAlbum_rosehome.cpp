@@ -17,9 +17,17 @@ namespace roseHome {
     ItemAlbum_rosehome::ItemAlbum_rosehome(int index, int section, ImageSizeMode imageSizeMode, bool flagPlay, QWidget *parent)
         : tidal::AbstractItem(index, section, imageSizeMode, parent) {
 
+        this->flag_setData = false;
         this->flag_btnPlay = flagPlay;
         this->setUIControl();
     }
+
+
+    ItemAlbum_rosehome::~ItemAlbum_rosehome(){
+
+        this->deleteLater();
+    }
+
 
     /**
      * @brief [override] UI 세팅
@@ -40,12 +48,12 @@ namespace roseHome {
 
         this->label_title = new QLabel(label_base);
         this->label_title->setWordWrap(true);
-        this->label_title->setStyleSheet("font-size:16px; color:#FFFFFF;");
+        this->label_title->setStyleSheet("font-size:16px;font-weight: normal;font-style: normal;line-height: 1.25;text-align: left; color:#FFFFFF;");
         this->label_title->setGeometry(0, 0, img_width, (this->LABEL_HEIGHT * 2));
 
         this->label_artist = new QLabel(label_base);
         this->label_artist->setContentsMargins(0,0,0,0);
-        this->label_artist->setStyleSheet("font-size:16px; color: #999999;");
+        this->label_artist->setStyleSheet("font-size:16px; font-weight: 300;font-style: normal;line-height: 1.88;text-align: left; color: #999999;");
         this->label_artist->setGeometry(0, (this->LABEL_HEIGHT * 2) + this->SPACE_LABELS, img_width, this->LABEL_HEIGHT);
         this->label_artist->hide();
 
@@ -74,6 +82,7 @@ namespace roseHome {
     void ItemAlbum_rosehome::setData(const roseHome::AlbumItemData &p_data){
 
         this->data_album = p_data;
+        this->flag_setData = true;
     }
 
 
@@ -90,6 +99,18 @@ namespace roseHome {
         return height;
     }
 
+    int ItemAlbum_rosehome::get_fixedWidth(){
+
+        int width = this->get_imageWidth(this->m_imageSizeMode);
+
+        return width;
+    }
+
+
+    int ItemAlbum_rosehome::get_rightMargin(){
+
+        return ITEM_BETWEEN_MARGIN_RIGHT;
+    }
 
     /**
      * @brief 페인트 이벤트 처리
@@ -99,7 +120,7 @@ namespace roseHome {
 
         AbstractItem::paintEvent(event);
 
-        if(this->flagInitDraw == false){
+        if(this->flagInitDraw == false && this->flag_setData == true){
             this->flagInitDraw = true;
 
             int all_width = 0;
@@ -108,27 +129,27 @@ namespace roseHome {
             QString image_type = "";
             if(this->data_album.thumbnail.isEmpty()){
                 if(this->data_album.type == "MUSIC"){
-                    image_bg_path = ":/images/def_mus_300.png";
+                    image_bg_path = ":/images/def_mus_550.png";
                     image_type = ":/images/rosehome/home_music.png";
                 }
                 else if(this->data_album.type == "VIDEO"){
-                    image_bg_path = ":/images/rosehome/def_mus_300.png";
+                    image_bg_path = ":/images/def_video_200x2.png";
                     image_type = ":/images/rosehome/home_video.png";
                 }
                 else if(this->data_album.type == "YOUTUBE"){
-                    image_bg_path = ":/images/rosehome/def_mus_300.png";
+                    image_bg_path = ":/images/def_tube_340.png";
                     image_type = ":/images/rosehome/home_tube.png";
                 }
                 else if(this->data_album.type == "TIDAL"){
-                    image_bg_path = ":/images/rosehome/tidal/tidal_def_400.png";
+                    image_bg_path = ":/images/tidal/tidal_def_400.png";
                     image_type = ":/images/rosehome/home_tidal.png";
                 }
                 else if(this->data_album.type == "BUGS"){
-                    image_bg_path = ":/images/rosehome/bugs/bugs_def_430.png";
+                    image_bg_path = ":/images/bugs/bugs_def_430.png";
                     image_type = ":/images/rosehome/home_bugs.png";
                 }
                 else if(this->data_album.type == "QOBUZ"){
-                    image_bg_path = ":/images/rosehome/qobuz/qobuz_default_400.png";
+                    image_bg_path = ":/images/qobuz/qobuz_default_400.png";
                     image_type = ":/images/rosehome/home_qobuz.png";
                 }
                 else if(this->data_album.type == "APPLE_MUSIC"){
@@ -180,6 +201,17 @@ namespace roseHome {
             all_width = this->itemImage->sizeHint().width();
 
             QString title = this->data_album.title;
+            //QString title_ori = "";
+            if(!title.isEmpty() && title.left(1) == " "){
+                //title_ori = title;
+                title = title.remove(0, 1);
+                //qDebug() << "[Debug]" << __FUNCTION__ << __LINE__ << title_ori << title;
+            }
+            if(!title.isEmpty() && title.right(1) == " "){
+                //title_ori = title;
+                title.chop(1);
+                //qDebug() << "[Debug]" << __FUNCTION__ << __LINE__ << title_ori << title;
+            }
 
             QLabel *tmp_wordwrap = new QLabel();            
             tmp_wordwrap->setStyleSheet("font-size:16px; color:#FFFFFF;");
@@ -224,8 +256,14 @@ namespace roseHome {
 
                 this->label_title->setGeometry(0, 0, all_width, this->LABEL_HEIGHT * 2);
                 this->label_title->setText(GSCommon::getTextCutFromLabelWidth(title, title_width, this->label_title->font()));
+                //qDebug() << "[Debug]" << __FUNCTION__ << __LINE__ << title << title_width << this->label_title->geometry();
+                if(this->label_title->text().contains("…")){
+                    this->label_title->setToolTip(title);//c230321
+                    this->label_title->setToolTipDuration(2000);//c230321
+                }
 
                 this->label_artist->setGeometry(0, (this->LABEL_HEIGHT * 2) + this->SPACE_LABELS, all_width, this->LABEL_HEIGHT);
+
             }
             else{
                 this->label_title->setGeometry(0, 0, all_width, this->LABEL_HEIGHT);
@@ -237,6 +275,10 @@ namespace roseHome {
             if(!this->data_album.artist.isEmpty()){
                 this->label_artist->setText(GSCommon::getTextCutFromLabelWidth(this->data_album.artist, all_width, this->label_artist->font()));
                 this->label_artist->show();
+                if(this->label_artist->text().contains("…")){
+                    this->label_artist->setToolTip(this->data_album.artist);//c230321
+                    this->label_artist->setToolTipDuration(2000);//c230321
+                }
             }
         }
     }

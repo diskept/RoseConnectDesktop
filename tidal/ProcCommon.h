@@ -3,6 +3,8 @@
 
 #include "tidal_struct.h"
 
+#include "common/linker.h"//230421
+
 #include <QObject>
 #include <QJsonObject>
 
@@ -95,7 +97,7 @@ namespace tidal {
 
             , Login = 1900
             , Logout
-
+            , Login_termCall//c230422
 
         };
         Q_ENUM(HttpRequestType);
@@ -209,6 +211,7 @@ namespace tidal {
 
         // HTTP 요청 - 공통으로 사용하는 타이달 API
         void request_tidalLogin(UserLoginInfo userLoginInfo);
+        void request_tidalLogin_termCall(UserLoginInfo userLoginInfo);//c230422
         void request_tidalLogout();
 
         void request_tidal_getListGenres();
@@ -383,6 +386,8 @@ namespace tidal {
         void slot_getToken(const bool flagSuccess, const QString errorMsg);
 
     private:
+        Linker *linker;//c230421
+
         bool visual_album_offset = false;
     };
 

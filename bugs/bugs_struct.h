@@ -120,13 +120,15 @@ namespace bugs {
      * @brief Bugs Artist 아이템
      */
     struct ArtistItemData {
-        int artist_id = 0;
-        QString artist_nm = "";
         QString image = "";
-        bool likes_yn = false;
-        //QString profile_url = "";//CHEON210606
+        QString artist_nm = "";
+        QString biography = "";
 
+        int artist_id = 0;
+        bool likes_yn = false;
         int total_count = 0;
+
+        //QString profile_url = "";//CHEON210606
 
         QString group_cd_nm = "";
         QString gender_cd_nm = "";
@@ -169,6 +171,9 @@ namespace bugs {
         bool likes_yn = false;              ///< 좋아요 여부
         bool service_yn = false;            ///< 금지곡 여부
         bool adult_yn = false;              ///< 성인곡 여부
+
+        QString rank_code ="";
+        QString rank_code_value = "";
 
         QString album_title = "";
         QString album_image = "";

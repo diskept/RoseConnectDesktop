@@ -47,7 +47,7 @@ namespace bugs {
 
     private:
         void setUIControl_videos();
-        void setUiControl_filter();
+        void setUIControl_filter();
 
         void request_more_videoData();
         void request_more_videoDraw();
@@ -123,7 +123,7 @@ namespace bugs {
 
     private:
         void setUIControl_videos();
-        void setUiControl_filter();
+        void setUIControl_filter();
 
         void request_more_videoData();
         void request_more_videoDraw();

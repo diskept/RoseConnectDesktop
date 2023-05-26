@@ -69,10 +69,13 @@ namespace bugs {
 
             this->flag_video_draw = false;
 
-            ContentLoadingwaitingMsgShow(tr("Content is being loaded. Please wait."));
+            print_debug();ContentLoadingwaitingMsgShow(tr("Content is being loaded. Please wait."));
 
             // request HTTP API
             this->request_more_videoData();
+        }
+        else{
+            print_debug();ContentLoadingwaitingMsgHide();   //j230328
         }
     }
 
@@ -175,13 +178,35 @@ namespace bugs {
 
             this->flag_video_draw = true;
 
-            ContentLoadingwaitingMsgShow(tr("Content is being loaded. Please wait."));
+            print_debug();ContentLoadingwaitingMsgShow(tr("Content is being loaded. Please wait."));
 
             this->request_more_videoDraw();
         }
     }
 
+    void BugsSearchVideoAll::resizeEvent(QResizeEvent *event){//c230223
 
+        AbstractBugsSubWidget::resizeEvent(event);
+        int w = flowLayout_video->sizeHint().width();
+        int  l = 80, r = 60, scrollbarW = 0;
+
+        int mod_nn = (global.LmtCnt-l-r-scrollbarW)%(w+0);
+        //qDebug() << "mod_nn=" << mod_nn;
+        int i = 0;
+        while(1){
+
+            mod_nn = (global.LmtCnt-l-r-scrollbarW)%(w+0+i);
+            if(mod_nn > 20){
+
+                mod_nn = (global.LmtCnt-l-r-scrollbarW)%(w+(0+(i++)));
+            }else{
+                break;
+            }
+        }
+
+        flowLayout_video->setSpacingHV(0+i,20);
+
+    }
     /**
      * @brief BugsSearchVideoAll::request_more_videoData
      */
@@ -191,7 +216,12 @@ namespace bugs {
             this->flagReqMore_video = true;
 
             // j220913 list count check
-            int width_cnt = global.LmtCnt / 220;
+            int width_cnt;//c230223
+            if(flowLayout_video->sizeHint().width() < 0) {//c230223
+                width_cnt = global.LmtCnt / 217;
+            }else{
+                width_cnt = global.LmtCnt / flowLayout_video->sizeHint().width();//
+            }
             int mod = this->video_widget_cnt % width_cnt;
 
             if(mod == 0){
@@ -225,7 +255,12 @@ namespace bugs {
     void BugsSearchVideoAll::request_more_videoDraw(){
 
         // j220913 list count check
-        int width_cnt = global.LmtCnt / 220;
+        int width_cnt;//c230223
+        if(flowLayout_video->sizeHint().width() < 0) {//c230223
+            width_cnt = global.LmtCnt / 217;
+        }else{
+            width_cnt = global.LmtCnt / flowLayout_video->sizeHint().width();//
+        }
         int mod = this->video_widget_cnt % width_cnt;
 
         if(mod == 0){
@@ -303,12 +338,46 @@ namespace bugs {
                     QCoreApplication::processEvents();
                 }
 
+                //c230306_1-start
+                int w = flowLayout_video->sizeHint().width();
+                int l = 80, r = 60, scrollbarW = 10, mod = 0;
+
+                int mod_nn = (global.LmtCnt-l-r-scrollbarW)%(w + mod);
+                int nn = (global.LmtCnt-l-r-scrollbarW)/(w + mod);
+                //qDebug() << "global.LmtCnt=" << global.LmtCnt;
+                //qDebug() << "this->width()=" << this->width();
+                //qDebug() << "nn=" << nn;
+                //qDebug() << "mod_nn=" << mod_nn;
+
+
+                int i = 0;
+                while(1){
+
+                    mod_nn = (global.LmtCnt-l-r-scrollbarW)%(w + mod + i);
+                    if(mod_nn > 20){
+
+                        mod_nn = (global.LmtCnt-l-r-scrollbarW)%(w + ( mod +(i++)));
+                    }else{
+                        break;
+                    }
+                }
+                //print_debug();
+                //qDebug() << "w=" << w;
+                //qDebug() << "i=" << i;
+                //qDebug() << "this->width()=" << this->width();
+                //this->resize(this->width()+1, this->height());
+                flowLayout_video->setSpacingHV(mod+i,20);
+                //c230306_1-end
+
+                ContentLoadingwaitingMsgHide();      //cheon Tidal
+
                 this->flag_flow_draw = true;
                 this->flag_video_draw = false;
             }
 
-            ContentLoadingwaitingMsgHide();      //cheon Tidal
-            this->request_more_videoData();
+            if(this->flag_lastPage_video == false){
+                this->request_more_videoData();
+            }
         }
         else{
             ContentLoadingwaitingMsgHide();      //cheon Tidal

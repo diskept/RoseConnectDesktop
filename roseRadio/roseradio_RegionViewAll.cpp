@@ -63,11 +63,15 @@ namespace roseRadio {
             this->flag_lastPage_region = false;
 
             this->flag_flow_draw = false;
+            this->flag_region_draw = false;
 
-            ContentLoadingwaitingMsgShow(tr("Content is being loaded. Please wait."));
+            print_debug();ContentLoadingwaitingMsgShow(tr("Content is being loaded. Please wait."));
 
             // request HTTP API
             this->request_more_RegionData();
+        }
+        else{
+            ContentLoadingwaitingMsgHide();
         }
     }
 
@@ -131,7 +135,7 @@ namespace roseRadio {
             else{
                 this->next_offset++;
 
-                ContentLoadingwaitingMsgShow(tr("Content is being loaded. Please wait."));
+                print_debug();ContentLoadingwaitingMsgShow(tr("Content is being loaded. Please wait."));
             }
 
             // request HTTP API
@@ -152,8 +156,6 @@ namespace roseRadio {
         int max_cnt = ((this->region_total_cnt - this->region_draw_cnt) > GET_ITEM_SIZE___ONCE ) ? GET_ITEM_SIZE___ONCE : (this->region_total_cnt - this->region_draw_cnt);
         this->region_draw_cnt += max_cnt;
 
-        ContentLoadingwaitingMsgHide();
-
         for(int i = start_index; i < this->region_draw_cnt; i++){
 
             QJsonObject tmpObj = this->jsonArr_region.at(i).toObject();
@@ -165,6 +167,8 @@ namespace roseRadio {
 
             QCoreApplication::processEvents();
         }
+
+        ContentLoadingwaitingMsgHide();
 
         if(this->region_total_cnt == this->region_draw_cnt){
             this->box_contents->addSpacing(60);
@@ -186,7 +190,7 @@ namespace roseRadio {
 
         QLabel *countryName = new QLabel(btn_country);
         countryName->setStyleSheet("background-color:transparent; color:#FFFFFF; font-size:18px; line-height:0.89; font-weight:normal;");
-        countryName->setGeometry(34, 25, 500, 20);
+        countryName->setGeometry(34, 25, 500, 24);
         countryName->setText(name);
 
         QWidget *widget_line = new QWidget();
@@ -224,8 +228,6 @@ namespace roseRadio {
                 int max_cnt = this->jsonArr_region.size();
                 this->region_draw_cnt = max_cnt;
 
-                ContentLoadingwaitingMsgHide();
-
                 for(int i = start_index; i < this->region_draw_cnt; i++){
 
                     QJsonObject tmpObj = this->jsonArr_region.at(i).toObject();
@@ -237,6 +239,8 @@ namespace roseRadio {
 
                     QCoreApplication::processEvents();
                 }
+
+                ContentLoadingwaitingMsgHide();
 
                 this->flag_flow_draw = true;
                 this->flag_region_draw = false;
@@ -255,6 +259,8 @@ namespace roseRadio {
                     this->request_more_RegionDraw();
                 }
             }
+
+            ContentLoadingwaitingMsgHide();
         }
         else{
             ContentLoadingwaitingMsgHide();

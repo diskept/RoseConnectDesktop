@@ -48,6 +48,7 @@ private slots:
     void slot_changeTopDirName(QString p_dirName, QString p_dirPath);
     void slot_changedRootPath(QString p_dirName, QString p_dirPath);
     void slot_clickedNetworkHost(const QString &p_ip, const QString &p_hostName);
+    void slot_clickedCloudHost(const QString &cloudPath, const QString &p_cloudName);
     void slot_responseHttp(const int &p_id, const QJsonObject &p_jsonObject);
     void slot_clickedRemoveNetwork();
     void slot_clickedNetworkFolder();
@@ -104,9 +105,9 @@ private:
 
     QVBoxLayout *vl_localnetworkList;//cheon210617-file
     QList<DataNetworkFolder*> *listLocalNetworkFolder;//cheon210617-file
-     DialogConfirm_MacShare *dlgConfirmFinder;//c220913_1
+    DialogConfirm_MacShare *dlgConfirmFinder;//c220913_1
 
-     int listNetworkFolder_cnt = 0;//c220908_1
+    int listNetworkFolder_cnt = 0;//c220908_1
 
     void setInit();
     void setUIControl();

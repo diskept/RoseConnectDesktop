@@ -334,6 +334,10 @@ void FrameRoseTubePlayList::paintEvent(QPaintEvent *event){
 
             this->lb_title->setGeometry(0, 0, all_width, (LABEL_HEIGHT * 2));
             this->lb_title->setText(GSCommon::getTextCutFromLabelWidth(title, title_width, this->lb_title->font()));
+            if(this->lb_title->text().contains("…")){
+                this->lb_title->setToolTip(title);//c230321
+                this->lb_title->setToolTipDuration(2000);//c230321
+            }
 
             this->label_owner->setGeometry(0, (this->LABEL_HEIGHT * 2), all_width, this->LABEL_HEIGHT);
             this->image_thumb->setGeometry(0, (this->LABEL_HEIGHT * 3) + 5, 0, 0);

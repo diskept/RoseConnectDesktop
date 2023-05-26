@@ -2,51 +2,54 @@
 #define QOBUZMAIN_H
 
 
-#include "QobuzHome.h"              // 홈
-#include "QobuzVideo.h"             // 비디오
-#include "QobuzMaster.h"            // Master
-#include "QobuzSettings.h"          // 설정
+#include "qobuz/QobuzHome.h"              // 홈
+#include "qobuz/QobuzVideo.h"             // 비디오
+#include "qobuz/QobuzMaster.h"            // Master
+#include "qobuz/QobuzSettings.h"          // 설정
 
 // 탐색
-#include "QobuzExplore.h"
-#include "QobuzGenresMain.h"
-#include "QobuzGenresChoose.h"
-#include "QobuzMoodsMain.h"
-#include "QobuzNewMain.h"
-#include "QobuzTop20Main.h"
-#include "QobuzRisingMain.h"
+#include "qobuz/QobuzExplore.h"
+#include "qobuz/QobuzGenresMain.h"
+#include "qobuz/QobuzGenresChoose.h"
+#include "qobuz/QobuzMoodsMain.h"
+#include "qobuz/QobuzNewMain.h"
+#include "qobuz/QobuzTop20Main.h"
+#include "qobuz/QobuzRisingMain.h"
 
 // 공통
-#include "QobuzPlaylistAll.h"
-#include "QobuzPlaylistDetail.h"
-#include "QobuzAlbumListAll.h"
-#include "QobuzTracksListAll.h"
-#include "QobuzTrackListAll_Share.h"
-#include "QobuzAlbumDetail.h"
-#include "QobuzMyTrackAll.h"
-#include "QobuzArtistListAll.h"
-#include "QobuzArtistDetail.h"
-#include "QobuzVideoListAll.h"
+#include "qobuz/QobuzPlaylistAll.h"
+#include "qobuz/QobuzPlaylistDetail.h"
+#include "qobuz/QobuzAlbumListAll.h"
+#include "qobuz/QobuzTracksListAll.h"
+#include "qobuz/QobuzTrackListAll_Share.h"
+#include "qobuz/QobuzAlbumDetail.h"
+#include "qobuz/QobuzMyTrackAll.h"
+#include "qobuz/QobuzArtistListAll.h"
+#include "qobuz/QobuzArtistDetail.h"
+#include "qobuz/QobuzVideoListAll.h"
+#include "qobuz/QobuzHistoryListAll.h"
+#include "qobuz/QobuzHistoryDetail.h"
 
 // My Collection
-#include "QobuzMyCollection.h"
-#include "QobuzMyFavorites.h"
-#include "QobuzMyPurchases.h"
-#include "QobuzMyPlaylistAll.h"
-#include "QobuzMyPlaylistDetail.h"
-#include "QobuzMyPlaylistEdit.h"
-#include "QobuzMyAlbumAll.h"
-#include "QobuzMyArtistAll.h"
-#include "QobuzMyVideoAll.h"
-#include "QobuzAddPlaylist.h"
+#include "qobuz/QobuzMyCollection.h"
+#include "qobuz/QobuzMyFavorites.h"
+#include "qobuz/QobuzMyPurchases.h"
+#include "qobuz/QobuzMyPlaylistAll.h"
+#include "qobuz/QobuzMyPlaylistDetail.h"
+#include "qobuz/QobuzMyPlaylistEdit.h"
+#include "qobuz/QobuzMyAlbumAll.h"
+#include "qobuz/QobuzMyArtistAll.h"
+#include "qobuz/QobuzMyVideoAll.h"
+#include "qobuz/QobuzAddPlaylist.h"
+#include "qobuz/QobuzRecentlyListDelete.h"
 
 // Search
-#include "QobuzSearchMain.h"
-#include "QobuzSearchTrackAll.h"
-#include "QobuzSearchArtistAll.h"
-#include "QobuzSearchAlbumAll.h"
-#include "QobuzSearchPlaylistAll.h"
-#include "QobuzSearchVidelAll.h"
+#include "qobuz/QobuzSearchMain.h"
+#include "qobuz/QobuzSearchTrackAll.h"
+#include "qobuz/QobuzSearchArtistAll.h"
+#include "qobuz/QobuzSearchAlbumAll.h"
+#include "qobuz/QobuzSearchPlaylistAll.h"
+#include "qobuz/QobuzSearchVidelAll.h"
 
 #include "home/abstractmaincontent.h"
 #include "widget/myqwidget.h"//c220730
@@ -76,15 +79,12 @@ namespace qobuz {
     protected slots:
         void slot_overrideSigalSearch(bool b) override;//c220730
         void slot_dragEnterEvent_hide_show(bool show);//c220730
+
     private slots:
         void slot_dragEnterEvent_restore();//c220826_1
         void slot_responseHttp(const int &p_id, const QJsonObject &p_jsonObject) override;//cheon211015
 
         void slot_clickedMoveSubPage(const QJsonObject &p_jsonData);
-        void slot_completeReq_get_session_info(const qobuz::RoseSessionInfo_forQobuz& sessionInfo);
-
-        void slot_failedLogin(const QString& errorMsg);//cheon210617-login
-        void slot_successLogin();//cheon210617-login
 
         void slot_search(const QString&);
 
@@ -97,9 +97,6 @@ namespace qobuz {
     private :
         // UI 세팅
         void setUIControl();
-
-        void setUIControl1();//cheon210617-login
-        void setUIControl2();//cheon210617-login
 
         // 데이터 반환
         QJsonObject getJsonObject_forMainTitle();
@@ -164,6 +161,12 @@ namespace qobuz {
         QobuzArtistDetail *sub_artistDetail = nullptr;                  ///< 코부즈 전용 Artist 상세 화면
         QobuzVideoListAll *sub_videoAll = nullptr;                      ///< 코부즈 Video 전체 (flowLayout 기반)
         QobuzAddPlaylist *sub_AddPlaylist = nullptr;                    ///< 코부즈 Playlist 추가/삭제/변경 화면
+        QobuzHistoryListAll *sub_historyListAll = nullptr;
+        QobuzHistoryDetail *sub_historyDetail = nullptr;
+        QobuzPlaylistHistoryAll *sub_historyPlaylistAll = nullptr;
+        QobuzAlbumHistoryAll *sub_historyAlbumAll = nullptr;
+        QobuzTrackHistoryAll *sub_historyTrackAll = nullptr;
+        QobuzArtistHistoryAll *sub_historyArtistAll = nullptr;
 
         // My Collection
         QobuzMycollection *sub_myCollection = nullptr;                  ///< 코부즈 > My Collection
@@ -181,7 +184,9 @@ namespace qobuz {
 
         QobuzRecentlyAlbumAll *sub_recentlyAlbumAll = nullptr;          ///< 코부즈 > 홈 > My Recently Albums
         QobuzRecentlyPlaylistAll *sub_recentlyPlaylistAll = nullptr;    ///< 코부즈 > 홈 > My Recently Playlists
-        QobuzRecentlyTrackAll *sub_recentlyTrackAll = nullptr;          ///< 코부즈 > 홈 > My Recently Playlists
+        QobuzRecentlyTrackAll *sub_recentlyTrackAll = nullptr;          ///< 코부즈 > 홈 > My Recently Tracks
+        QobuzRecenltyArtistAll *sub_recenltyArtistAll = nullptr;        ///< 코부즈 > 홈 > My Recently Artists
+        QobuzRecentlyListDelete *sub_recentlyListDelete = nullptr;      ///< 코부즈 > 홈 > My Recently list Delete
         QobuzMyPlaylistDetail_ROSE *sub_myRosePlaylistDetail = nullptr; ///< 코부즈 > 홈 > My Playlists > 상세
         QobuzMyRosePlaylistAll *sub_myRosePlaylistAll = nullptr;        ///< 코부즈 > 홈 > My Playlists
         QobuzUserRosePlaylistAll *sub_userRosePlaylistAll = nullptr;    ///< 코부즈 > 홈 > User Playlists

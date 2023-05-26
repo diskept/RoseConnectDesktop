@@ -23,6 +23,8 @@ public:
 
     void set_loginState(const QString p_accessToken, const QString p_refreshToken);
     void set_logoutState();
+    void savePageData(QJsonObject p_data){this->page_data = p_data;};//c230421
+    QJsonObject getPageData(){ return this->page_data;};//c230421
 
     QString get_access_token(){ return this->access_token; }
     QString get_refresh_token(){ return this->refresh_token; }
@@ -54,7 +56,7 @@ public:
 
 private:
     bool flagLogin = false;                 ///< 현재 로그인을 했는지의 상태값
-
+    QJsonObject page_data;//c230421
     QString bugs_login_authCode;              ///< Authorization Code
     QString access_token;
     QString refresh_token;

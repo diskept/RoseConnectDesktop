@@ -11,11 +11,9 @@
 #include "common/gscommon.h"
 #include "common/global.h"
 #include "common/ProcJsonEasy.h"
-#include "common/rosesettings.h"
 
+#include "widget/dialogconfirm.h"
 #include "widget/NoData_Widget.h"
-#include "widget/toastmsg.h"//c220729
-#include "common/networkhttp.h"//c220729
 
 #include <QDebug>
 #include <QScroller>
@@ -38,13 +36,11 @@ namespace qobuz {
 
     const int GET_ITEM_SIZE___ONCE_FOR_MAIN = 15;
 
-
     // QOBUZ API 관련
     QString QOBUZ_API_RELEASE_PATH = "album/getFeatured";
     QString QOBUZ_API_RELEASE_TYPE = "new-releases";
     QString QOBUZ_API_IDEAL_TYPE = "ideal-discography";
     QString QOBUZ_API_QOBUZ_TYPE = "qobuzissims";
-
     QString QOBUZ_API_PLAYLIST_PATH = "playlist/getFeatured";
     QString QOBUZ_API_PLAYLIST_TYPE = "editor-picks";
 
@@ -52,21 +48,26 @@ namespace qobuz {
     // ROSE subTitle의 사이드 버튼의 btnId 로 사용
     const int BTN_IDX_SUBTITLE_recentlyPlay = 4;
     const int BTN_IDX_SUBTITLE_recentlyTrack = 5;
-    const int BTN_IDX_SUBTITLE_myPlaylists = 6;
-    const int BTN_IDX_SUBTITLE_userPlaylists = 7;
+    const int BTN_IDX_SUBTITLE_recentlyArtist = 6;
+    const int BTN_IDX_SUBTITLE_History = 7;
+    const int BTN_IDX_SUBTITLE_myPlaylists = 8;
+    const int BTN_IDX_SUBTITLE_userPlaylists = 9;
 
     // ROSE section 정의할 때에는 숫자값은 상관 없음. 중복 없게만 하면 됨
     const int SECTION_FOR_MORE_POPUP___recentlyAlbum = 4;
     const int SECTION_FOR_MORE_POPUP___recentlyPlaylist = 5;
     const int SECTION_FOR_MORE_POPUP___recentlyTrack = 6;
-    const int SECTION_FOR_MORE_POPUP___myPlaylists = 7;
-    const int SECTION_FOR_MORE_POPUP___userPlaylists = 8;
-
+    const int SECTION_FOR_MORE_POPUP___recentlyArtist = 7;
+    const int SECTION_FOR_MORE_POPUP___History = 8;
+    const int SECTION_FOR_MORE_POPUP___myPlaylists = 9;
+    const int SECTION_FOR_MORE_POPUP___userPlaylists = 10;
 
     // ROSE API 관련
     QString ROSE_API_ALBUM_PATH = "member/album/recent";
     QString ROSE_API_PLAYLIST_PATH = "member/playlist/recent";
     QString ROSE_API_TRACK_PATH = "member/track/recent";
+    QString ROSE_API_ARTIST_PATH = "member/artist/recent";
+    QString ROSE_API_HISTORY_PATH = "member/track/history";
     QString ROSE_API_MYPLAYLIST_PATH = "member/playlist";
     QString ROSE_API_USERPLAYLIST_PATH = "member/playlist/all";
 
@@ -78,13 +79,13 @@ namespace qobuz {
      * @brief "QOBUZ > 홈" 화면을 위한 생성자. @see PAGECODE_T_HOME
      * @param parent
      */
-    QobuzHome::QobuzHome(QWidget *parent) : AbstractQobuzSubWidget(VerticalScroll_filter, parent) {
+    QobuzHome::QobuzHome(QWidget *parent) : AbstractQobuzSubWidget(VerticalScroll_rosefilter, parent) {
+
+        global.isDrawingMainContent = false;
 
         this->linker = Linker::getInstance();
         connect(linker, SIGNAL(signal_change_device_state(QString)), SLOT(slot_change_device_state(QString)));
         connect(linker, SIGNAL(signal_message_show_timeout()), SLOT(slot_time_out()));
-
-
 
         if(global.user_forQobuz.isLogined() == true){
 
@@ -109,6 +110,8 @@ namespace qobuz {
             this->list_recentlyAlbum = new QList<roseHome::AlbumItemData>();
             this->list_recentlyPlaylist = new QList<roseHome::PlaylistItemData>();
             this->list_recentlytrack = new QList<roseHome::TrackItemData>();
+            this->list_recentlyArtist = new QList<roseHome::ArtistItemData>();
+            this->list_Historylist = new QList<roseHome::HistoryItemData>;
             this->list_myPlaylist = new QList<roseHome::PlaylistItemData>();
             this->list_userPlaylist = new QList<roseHome::PlaylistItemData>();
         }
@@ -152,18 +155,26 @@ namespace qobuz {
             this->list_recentlyAlbum->clear();
             this->list_recentlyPlaylist->clear();
             this->list_recentlytrack->clear();
+            this->list_recentlyArtist->clear();
+            this->list_Historylist->clear();
             this->list_myPlaylist->clear();
             this->list_userPlaylist->clear();
+
+            this->jsonArr_tracks_toPlay = QJsonArray();
 
             this->flag_album[0] = false;
             this->flag_playlist[0] = false;
             this->flag_track[0] = false;
+            this->flag_artist[0] = false;
+            this->flag_historylist[0] = false;
             this->flag_myPlaylist[0] = false;
             this->flag_userPlaylist[0] = false;
 
             this->flag_album[1] = false;
             this->flag_playlist[1] = false;
             this->flag_track[1] = false;
+            this->flag_artist[1] = false;
+            this->flag_historylist[1] = false;
             this->flag_myPlaylist[1] = false;
             this->flag_userPlaylist[1] = false;
 
@@ -182,8 +193,49 @@ namespace qobuz {
             this->flag_ideal[1] = false;
             this->flag_qobuz[1] = false;
         }
-    }
+        else{
+            this->flag_recentAlbum_check[0] = false;
+            this->flag_recentPlaylist_check[0] = false;
+            this->flag_recentTrack_check[0] = false;
+            this->flag_recentArtist_check[0] = false;
+            this->flag_myPlaylist_check[0] = false;
 
+            this->flag_recentAlbum_check[1] = false;
+            this->flag_recentPlaylist_check[1] = false;
+            this->flag_recentTrack_check[1] = false;
+            this->flag_recentArtist_check[1] = false;
+            this->flag_myPlaylist_check[1] = false;
+
+            print_debug();ContentLoadingwaitingMsgShow(tr("Content is being loaded. Please wait."));
+
+            // request HTTP API for Recently Album
+            roseHome::ProcCommon *proc_recentlyAlbum = new roseHome::ProcCommon(this);
+            connect(proc_recentlyAlbum, &roseHome::ProcCommon::completeReq_list_albums, this, &QobuzHome::slot_applyResult_recentlyAlbumCheck);
+            proc_recentlyAlbum->request_rose_getList_recentlyAlbums(ROSE_API_ALBUM_PATH , "QOBUZ", 0, GET_ITEM_SIZE___ONCE_FOR_MAIN);
+
+            // request HTTP API for Recently Playlist
+            roseHome::ProcCommon *proc_recentlyPlaylist = new roseHome::ProcCommon(this);
+            connect(proc_recentlyPlaylist, &roseHome::ProcCommon::completeReq_list_playlists, this, &QobuzHome::slot_applyResult_recentlyPlaylistCheck);
+            proc_recentlyPlaylist->request_rose_getList_recentlyPlaylists(ROSE_API_PLAYLIST_PATH , "QOBUZ", 0, GET_ITEM_SIZE___ONCE_FOR_MAIN);
+
+            // request HTTP API for Recently Track
+            roseHome::ProcCommon *proc_recentlyTrack = new roseHome::ProcCommon(this);
+            connect(proc_recentlyTrack, &roseHome::ProcCommon::completeReq_list_tracks, this, &QobuzHome::slot_applyResult_recentlyTrackCheck);
+            proc_recentlyTrack->request_rose_getList_recentlyTracks(ROSE_API_TRACK_PATH , "QOBUZ", 0, 5);
+
+            // request HTTP API for Recently Artist
+            roseHome::ProcCommon *proc_recent_artist = new roseHome::ProcCommon(this);
+            connect(proc_recent_artist, &roseHome::ProcCommon::completeReq_list_artists, this, &QobuzHome::slot_applyResult_recentlyArtistCheck);
+            proc_recent_artist->request_rose_getList_recentlyArtists(ROSE_API_ARTIST_PATH, "QOBUZ", 0, GET_ITEM_SIZE___ONCE_FOR_MAIN);
+
+            // request HTTP API for Recently Playlist
+            roseHome::ProcCommon *proc_myPlaylist = new roseHome::ProcCommon(this);
+            connect(proc_myPlaylist, &roseHome::ProcCommon::completeReq_list_myplaylists, this, &QobuzHome::slot_applyResult_myPlaylistCheck);
+            proc_myPlaylist->request_rose_getList_myPlaylists(ROSE_API_MYPLAYLIST_PATH , "QOBUZ", 0, GET_ITEM_SIZE___ONCE_FOR_MAIN);
+
+            print_debug();ContentLoadingwaitingMsgHide();//c230322_3
+        }
+    }
 
 
     /**
@@ -195,7 +247,7 @@ namespace qobuz {
 
             // 항상 부모클래스의 함수 먼저 호출
             AbstractQobuzSubWidget::setActivePage();
-
+            //print_debug();ContentLoadingwaitingMsgShow(tr("QobuzHome::setActivePage"));//c230323
             // 데이터로 UI 적용 : 세팅이 안되어 있는 경우에만
             if(this->flagSet_genre == false){
                 if(global.user_forQobuz.flag_main_filter == false){
@@ -212,35 +264,17 @@ namespace qobuz {
             this->box_contents->removeWidget(this->widget_home_contents);
             GSCommon::clearLayout(this->box_contents);
             this->box_contents->setAlignment(Qt::AlignTop);
+            this->scrollArea_main->setVerticalScrollBarPolicy(Qt::ScrollBarAsNeeded);
 
             this->box_rose_contents = new QVBoxLayout();
             this->box_rose_contents->setSpacing(0);
-            this->box_rose_contents->setContentsMargins(0, 0, 0, 0);
+            this->box_rose_contents->setContentsMargins(0, 10, 0, 0);
 
             this->widget_rose_contents = new QWidget();
             this->widget_rose_contents->setStyleSheet("background:#212121; border:0px;");
             this->widget_rose_contents->setLayout(this->box_rose_contents);
 
-            this->box_contents->addWidget(this->widget_rose_contents);
-
-            QJsonArray *p_jsonArray_titlSub = new QJsonArray();
-            QJsonObject sub1 { {"name", tr("Album")}, {"code", ALBTAB_STEP_ALBUM} };
-            QJsonObject sub2 { {"name", tr("Playlist")}, {"code", ALBTAB_STEP_PLAYLIST} };
-
-            p_jsonArray_titlSub->push_back(sub1);
-            p_jsonArray_titlSub->push_back(sub2);
-
-            this->menubar = new TopMenuBar(TopMenuBar::ShowMenuStyle::ListSubMenuBar);
-            this->menubar->setDataTopMenuBar(QJsonObject(), p_jsonArray_titlSub);
-
-            connect(this->menubar, SIGNAL(changedSubMenu(QJsonObject)), this, SLOT(slot_changedSubTabUI(QJsonObject)));
-
-            this->contentStep = "album";
-            this->menubar->setSelectedSubMenuNoSignal(this->contentStep);
-            this->menubar->hide();
-
-            this->stackRecent = new QStackedWidget();
-            this->stackRecent->setFixedHeight(305);
+            this->box_contents->addWidget(this->widget_rose_contents, 0, Qt::AlignTop);
 
             this->box_home_contents = new QVBoxLayout();
             this->box_home_contents->setSpacing(0);
@@ -249,6 +283,8 @@ namespace qobuz {
             this->widget_home_contents = new QWidget();
             this->widget_home_contents->setStyleSheet("background:#212121; border:0px;");
             this->widget_home_contents->setLayout(this->box_home_contents);
+
+            this->box_contents->addWidget(this->widget_home_contents, 1, Qt::AlignTop);
 
             //---------------------//c220729  start
            // this->make_CustomLineEdit();//c220729
@@ -268,109 +304,9 @@ namespace qobuz {
             //this->box_contents->addWidget(this->le_search_back);*/
             //--------------------------------------------//c220729  end
 
-            this->box_contents->addWidget(this->widget_home_contents);
-
-            this->scrollArea_main->setVerticalScrollBarPolicy(Qt::ScrollBarAsNeeded);
-
-            // init UI
-            this->vBox_recentlyPlay = new QVBoxLayout();
-            this->vBox_recentlyTrack = new QVBoxLayout();
-            this->vBox_myPlaylist = new QVBoxLayout();
-            this->vBox_userPlaylist = new QVBoxLayout();
-
-            this->hBox_recentlyAlbum = new QHBoxLayout();
-            this->hBox_recentlyPlaylist = new QHBoxLayout();
-            this->hBox_myPlaylist = new QHBoxLayout();
-            this->hBox_userPlaylist = new QHBoxLayout();
-
-            this->vBox_newReleases = new QVBoxLayout();
-            this->vBox_editorPicks = new QVBoxLayout();
-            this->vBox_idealDiscography = new QVBoxLayout();
-            this->vBox_qobuzIssime = new QVBoxLayout();
-
-            this->hBox_newReleases = new QHBoxLayout();
-            this->hBox_editorPicks = new QHBoxLayout();
-            this->hBox_idealDiscography = new QHBoxLayout();
-            this->hBox_qobuzIssime = new QHBoxLayout();
-
-            // clear UI
-            GSCommon::clearLayout(this->vBox_recentlyPlay);
-            GSCommon::clearLayout(this->vBox_recentlyTrack);
-            GSCommon::clearLayout(this->vBox_myPlaylist);
-            GSCommon::clearLayout(this->vBox_userPlaylist);
-
-            GSCommon::clearLayout(this->hBox_recentlyAlbum);
-            GSCommon::clearLayout(this->hBox_recentlyPlaylist);
-            GSCommon::clearLayout(this->hBox_myPlaylist);
-            GSCommon::clearLayout(this->hBox_userPlaylist);
-
-            GSCommon::clearLayout(this->vBox_newReleases);
-            GSCommon::clearLayout(this->vBox_editorPicks);
-            GSCommon::clearLayout(this->vBox_idealDiscography);
-            GSCommon::clearLayout(this->vBox_qobuzIssime);
-
-            GSCommon::clearLayout(this->hBox_newReleases);
-            GSCommon::clearLayout(this->hBox_editorPicks);
-            GSCommon::clearLayout(this->hBox_idealDiscography);
-            GSCommon::clearLayout(this->hBox_qobuzIssime);
-
-            // sub Title UI
-            for(int i = 0; i < 10; i++){
-                this->lb_subTitle[i] = new QLabel();
-                this->btnView_all[i] = new QPushButton();
-            }
-
-            for(int i = 0; i < 15; i++){
-                this->home_recently_album[i] = new roseHome::ItemAlbum_rosehome(i, SECTION_FOR_MORE_POPUP___recentlyAlbum, tidal::AbstractItem::ImageSizeMode::Square_200x200, true);
-                connect(this->home_recently_album[i], &roseHome::ItemAlbum_rosehome::signal_clicked, this, &QobuzHome::slot_clickedItemAlbum);
-            }
-
-            for(int i = 0; i < 15; i++){
-                this->home_recently_playlist[i] = new roseHome::ItemPlaylist_rosehome(i, SECTION_FOR_MORE_POPUP___recentlyPlaylist, tidal::AbstractItem::ImageSizeMode::Square_200x200, 2, true);        //Ractangle_384x186
-                connect(this->home_recently_playlist[i], &roseHome::ItemPlaylist_rosehome::signal_clicked, this, &QobuzHome::slot_clickedItemPlaylist);
-            }
-
-            for (int i = 0; i < 5; i++) {
-                this->home_recently_track[i] = new PlaylistTrackDetailInfo_RHV;
-                connect(this->home_recently_track[i], &PlaylistTrackDetailInfo_RHV::clicked, this, &QobuzHome::slot_clickedItemTrack_inList);
-                this->home_recently_track[i]->setProperty("index", i);
-                this->home_recently_track[i]->setObjectName("recently tracks");
-            }
-
-            for(int i = 0; i < 15; i++){
-                this->home_myPlaylist[i] = new roseHome::ItemPlaylist_rosehome(i, SECTION_FOR_MORE_POPUP___myPlaylists, tidal::AbstractItem::ImageSizeMode::Square_200x200, 5, true);
-                connect(this->home_myPlaylist[i], &roseHome::ItemPlaylist_rosehome::signal_clicked, this, &QobuzHome::slot_clickedItemPlaylist);
-            }
-
-            for(int i = 0; i < 15; i++){
-                this->home_userPlaylist[i] = new roseHome::ItemPlaylist_rosehome(i, SECTION_FOR_MORE_POPUP___userPlaylists, tidal::AbstractItem::ImageSizeMode::Square_200x200, 8, true);
-                connect(this->home_userPlaylist[i], &roseHome::ItemPlaylist_rosehome::signal_clicked, this, &QobuzHome::slot_clickedItemPlaylist);
-            }
-
-
-            for(int i = 0; i < 15; i++){
-                this->home_newReleases[i] = new qobuz::ItemAlbum_qobuz(i, SECTION_FOR_MORE_POPUP___new_releases, tidal::AbstractItem::ImageSizeMode::Square_200x200);
-                connect(this->home_newReleases[i], &qobuz::ItemAlbum_qobuz::signal_clicked, this, &QobuzHome::slot_clickedItemAlbum);
-            }
-
-            for(int i = 0; i < 15; i++){
-                this->home_editorPicks[i] = new qobuz::ItemPlaylist_qobuz(i, SECTION_FOR_MORE_POPUP___editor_picks, tidal::AbstractItem::ImageSizeMode::Ractangle_360x176);
-                connect(this->home_editorPicks[i], &qobuz::ItemPlaylist_qobuz::signal_clicked, this, &QobuzHome::slot_clickedItemPlaylist);
-            }
-
-            for(int i = 0; i < 15; i++){
-                this->home_idealDiscography[i] = new qobuz::ItemAlbum_qobuz(i, SECTION_FOR_MORE_POPUP___idealdiscography, tidal::AbstractItem::ImageSizeMode::Square_200x200);
-                connect(this->home_idealDiscography[i], &qobuz::ItemAlbum_qobuz::signal_clicked, this, &QobuzHome::slot_clickedItemAlbum);
-            }
-
-            for(int i = 0; i < 15; i++){
-                this->home_qobuzIssime[i] = new qobuz::ItemAlbum_qobuz(i, SECTION_FOR_MORE_POPUP___qobuzissime, tidal::AbstractItem::ImageSizeMode::Square_200x200);
-                connect(this->home_qobuzIssime[i], &qobuz::ItemAlbum_qobuz::signal_clicked, this, &QobuzHome::slot_clickedItemAlbum);
-            }
-
             if(global.updateCheckFlag){
 
-                //ContentLoadingwaitingMsgShow(tr("Content is being loaded. Please wait."));              //cheon211114-01//c1223
+                print_debug();ContentLoadingwaitingMsgShow(tr("Content is being loaded. Please wait."));   //c230323           //cheon211114-01//c1223
                 //QTimer::singleShot(10000, this, SLOT(slot_hide_msg()));
 
                 if(global.enable_section_left == true){
@@ -395,22 +331,180 @@ namespace qobuz {
 
                 global.enable_message_count = 0;
                 global.enable_message_flag = true;
-                ContentLoadingwaitingMsgShow(tr("Content is being loaded. Please wait."));              //cheon211114-01//c1223
 
-                this->setUIControl_requestRose();
-                this->setUIControl_requestGenres();
+                print_debug();ContentLoadingwaitingMsgShow(tr("Content is being loaded. Please wait."));              //cheon211114-01//c1223
+
+                QJsonArray *p_jsonArray_titlSub = new QJsonArray();
+                QJsonObject sub1 { {"name", tr("Album")}, {"code", ALBTAB_STEP_ALBUM} };
+                QJsonObject sub2 { {"name", tr("Playlist")}, {"code", ALBTAB_STEP_PLAYLIST} };
+
+                p_jsonArray_titlSub->push_back(sub1);
+                p_jsonArray_titlSub->push_back(sub2);
+
+                this->menubar = new TopMenuBar(TopMenuBar::ShowMenuStyle::ListSubMenuBar);
+                this->menubar->setDataTopMenuBar(QJsonObject(), p_jsonArray_titlSub);
+
+                connect(this->menubar, SIGNAL(changedSubMenu(QJsonObject)), this, SLOT(slot_changedSubTabUI(QJsonObject)));
+
+                this->contentStep = "album";
+                this->menubar->setSelectedSubMenuNoSignal(this->contentStep);
+                this->menubar->hide();
+
+                this->stackRecent = new QStackedWidget();
+                this->stackRecent->setFixedHeight(305);
+
+                // init UI
+                this->vBox_recentlyPlay = new QVBoxLayout();
+                this->vBox_recentlyTrack = new QVBoxLayout();
+                this->vBox_recentlyArtist = new QVBoxLayout();
+                this->vBox_historylist = new QVBoxLayout();
+                this->vBox_myPlaylist = new QVBoxLayout();
+                this->vBox_userPlaylist = new QVBoxLayout();
+
+                this->hBox_recentlyAlbum = new QHBoxLayout();
+                this->hBox_recentlyPlaylist = new QHBoxLayout();
+                this->hBox_recentlyArtist = new QHBoxLayout();
+                this->hBox_historylist = new QHBoxLayout();
+                this->hBox_myPlaylist = new QHBoxLayout();
+                this->hBox_userPlaylist = new QHBoxLayout();
+
+                this->vBox_newReleases = new QVBoxLayout();
+                this->vBox_editorPicks = new QVBoxLayout();
+                this->vBox_idealDiscography = new QVBoxLayout();
+                this->vBox_qobuzIssime = new QVBoxLayout();
+
+                this->hBox_newReleases = new QHBoxLayout();
+                this->hBox_editorPicks = new QHBoxLayout();
+                this->hBox_idealDiscography = new QHBoxLayout();
+                this->hBox_qobuzIssime = new QHBoxLayout();
+
+                // clear UI
+                GSCommon::clearLayout(this->vBox_recentlyPlay);
+                GSCommon::clearLayout(this->vBox_recentlyTrack);
+                GSCommon::clearLayout(this->vBox_recentlyArtist);
+                GSCommon::clearLayout(this->vBox_historylist);
+                GSCommon::clearLayout(this->vBox_myPlaylist);
+                GSCommon::clearLayout(this->vBox_userPlaylist);
+
+                GSCommon::clearLayout(this->hBox_recentlyAlbum);
+                GSCommon::clearLayout(this->hBox_recentlyPlaylist);
+                GSCommon::clearLayout(this->hBox_recentlyArtist);
+                GSCommon::clearLayout(this->hBox_historylist);
+                GSCommon::clearLayout(this->hBox_myPlaylist);
+                GSCommon::clearLayout(this->hBox_userPlaylist);
+
+                GSCommon::clearLayout(this->vBox_newReleases);
+                GSCommon::clearLayout(this->vBox_editorPicks);
+                GSCommon::clearLayout(this->vBox_idealDiscography);
+                GSCommon::clearLayout(this->vBox_qobuzIssime);
+
+                GSCommon::clearLayout(this->hBox_newReleases);
+                GSCommon::clearLayout(this->hBox_editorPicks);
+                GSCommon::clearLayout(this->hBox_idealDiscography);
+                GSCommon::clearLayout(this->hBox_qobuzIssime);
+
+                // sub Title UI
+                for(int i = 0; i < 10; i++){
+                    this->lb_subTitle[i] = new QLabel();
+                    this->btnView_all[i] = new QPushButton();
+                }
+
+                for(int i = 0; i < 15; i++){
+                    this->home_recently_album[i] = new roseHome::ItemAlbum_rosehome(i, SECTION_FOR_MORE_POPUP___recentlyAlbum, tidal::AbstractItem::ImageSizeMode::Square_200x200, true);
+                }
+
+                for(int i = 0; i < 15; i++){
+                    this->home_recently_playlist[i] = new roseHome::ItemPlaylist_rosehome(i, SECTION_FOR_MORE_POPUP___recentlyPlaylist, tidal::AbstractItem::ImageSizeMode::Square_200x200, 2, true);
+                }
+
+                for (int i = 0; i < 5; i++) {
+                    this->home_recently_track[i] = new PlaylistTrackDetailInfo_RHV;
+                    this->home_recently_track[i]->setProperty("index", i);
+                    this->home_recently_track[i]->setObjectName("recently tracks");
+                }
+
+                for(int i = 0; i < 15; i++){
+                    this->home_recently_artist[i] = new roseHome::ItemArtist_rosehome(i, SECTION_FOR_MORE_POPUP___recentlyArtist, tidal::AbstractItem::ImageSizeMode::Square_200x200);
+                }
+
+                for(int i = 0; i < 15; i++){
+                    this->home_historylist[i] = new roseHome::ItemHistory_rosehome(i, SECTION_FOR_MORE_POPUP___History, tidal::AbstractItem::ImageSizeMode::Square_200x200, false);
+                }
+
+                for(int i = 0; i < 15; i++){
+                    this->home_myPlaylist[i] = new roseHome::ItemPlaylist_rosehome(i, SECTION_FOR_MORE_POPUP___myPlaylists, tidal::AbstractItem::ImageSizeMode::Square_200x200, 5, true);
+                }
+
+                for(int i = 0; i < 15; i++){
+                    this->home_userPlaylist[i] = new roseHome::ItemPlaylist_rosehome(i, SECTION_FOR_MORE_POPUP___userPlaylists, tidal::AbstractItem::ImageSizeMode::Square_200x200, 8, true);
+                }
+
+
+                for(int i = 0; i < 15; i++){
+                    this->home_newReleases[i] = new qobuz::ItemAlbum_qobuz(i, SECTION_FOR_MORE_POPUP___new_releases, tidal::AbstractItem::ImageSizeMode::Square_200x200);
+                }
+
+                for(int i = 0; i < 15; i++){
+                    this->home_editorPicks[i] = new qobuz::ItemPlaylist_qobuz(i, SECTION_FOR_MORE_POPUP___editor_picks, tidal::AbstractItem::ImageSizeMode::Ractangle_360x176);
+                }
+
+                for(int i = 0; i < 15; i++){
+                    this->home_idealDiscography[i] = new qobuz::ItemAlbum_qobuz(i, SECTION_FOR_MORE_POPUP___idealdiscography, tidal::AbstractItem::ImageSizeMode::Square_200x200);
+                }
+
+                for(int i = 0; i < 15; i++){
+                    this->home_qobuzIssime[i] = new qobuz::ItemAlbum_qobuz(i, SECTION_FOR_MORE_POPUP___qobuzissime, tidal::AbstractItem::ImageSizeMode::Square_200x200);
+                }
+
+                print_debug();
+                //c230322_3  start
+                if(!global.user.isValid()){
+                    print_debug();
+                    global.enable_message_flag = false;
+                    global.enable_message_count = 0;
+                    QTimer::singleShot(3000, this, SLOT(slot_gotoRoseHome()));
+
+                }
+                else if(global.user.isValid() && !global.user_forQobuz.isLogined()){
+                    global.enable_message_flag = false;
+                    global.enable_message_count = 0;
+                    QJsonObject tmp_data;
+                    tmp_data.insert(KEY_PAGE_CODE, PAGECODE_Q_SETTINGS);
+                    print_debug();
+                    emit this->signal_clickedMovePage(tmp_data);
+                }
+                if(global.user.isValid() && global.user_forQobuz.isLogined()){
+                    print_debug();
+                    this->setUIControl_requestRose();
+                    this->setUIControl_requestGenres();
+                }
+
+                //this->setUIControl_requestRose();
+                //this->setUIControl_requestGenres();
+                //c230322_3  end
             }
+            print_debug();ContentLoadingwaitingMsgHide();//c230322_3
         }
+    }
+
+
+    void QobuzHome::slot_gotoRoseHome(){//c230322_3
+
+        //global.enable_message_flag = false;
+        print_debug();ContentLoadingwaitingMsgHide();//c230322_3
+        emit linker->signal_RoseHome_movePage(QString(GSCommon::MainMenuCode::RoseHome));
     }
 
 
     void QobuzHome::slot_hide_msg(){
 
-        ContentLoadingwaitingMsgHide();
-
         if(global.enable_message_flag == true){
             global.enable_message_flag = false;
             global.enable_message_count = 0;
+        }
+
+        if(global.enable_section_left == true){
+            global.enable_section_left = false;
         }
 
         for(int i = 0 ; i < this->btn_filter_cnt ; i++){
@@ -418,10 +512,12 @@ namespace qobuz {
             this->btn_filter[i]->setEnabled(true);
         }
         this->btn_filter_clear->setEnabled(true);
+
+        //ContentLoadingwaitingMsgHide();
     }
 
 
-    void QobuzHome::slot_time_out(){
+    void QobuzHome::slot_time_out(){//c230322_2
 
         ContentLoadingwaitingMsgHide();
 
@@ -432,16 +528,20 @@ namespace qobuz {
             // page move
             if(global.user_forQobuz.isLogined() == true){
                 AbstractQobuzSubWidget::slot_acceptedDialogLogin();
+                emit linker->signal_RoseHome_movePage(QString(GSCommon::MainMenuCode::RoseHome));
             }
-            else if(global.user_forQobuz.isLogined() == false){
+            else {
                 AbstractQobuzSubWidget::slot_acceptedDialogLogout();
+                QJsonObject tmp_data;
+                tmp_data.insert(KEY_PAGE_CODE, PAGECODE_Q_SETTINGS);
+
+                // 부모에게 페이지 변경하라고 시그널 보냄
+                emit this->signal_clickedMovePage(tmp_data);
             }
+        }
 
-            QJsonObject tmp_data;
-            tmp_data.insert(KEY_PAGE_CODE, PAGECODE_Q_SETTINGS);
-
-            // 부모에게 페이지 변경하라고 시그널 보냄
-            emit this->signal_clickedMovePage(tmp_data);
+        if(global.enable_section_left == true){
+            global.enable_section_left = false;
         }
     }
 
@@ -510,7 +610,7 @@ namespace qobuz {
         // 상단 필터
         this->widget_btnFilter = new QWidget();
         this->widget_btnFilter->setObjectName("widget_btnFilter");
-        this->widget_btnFilter->setStyleSheet("#widget_btnFilter { background-color:#171717; }");
+        this->widget_btnFilter->setStyleSheet("#widget_btnFilter { background-color: transparent; }");
         this->widget_btnFilter->setFixedSize(global.LmtCnt, 75);//c220805
 
         this->btn_filter_ico = GSCommon::getUIBtnImg("btn_filter",":/images/ico_filter.png", this->widget_btnFilter);
@@ -578,6 +678,8 @@ namespace qobuz {
             genre_ids = QString("%1").arg(ProcCommon::getGenreInfo(0).id);
         }
 
+        ContentLoadingwaitingMsgShow(tr("QobuzHome::setUIControl_requestGenres"));//c230308_5
+
         // request HTTP API for New Relsease
         qobuz::ProcCommon *proc_newRelease = new qobuz::ProcCommon(this);
         connect(proc_newRelease, &ProcCommon::completeReq_list_albums, this, &QobuzHome::slot_applyResult_newReleases);
@@ -598,12 +700,14 @@ namespace qobuz {
         connect(proc_qobuzissime, &ProcCommon::completeReq_list_albums, this, &QobuzHome::slot_applyResult_qobuzIssime);
         proc_qobuzissime->request_qobuz_getList_albums(QOBUZ_API_RELEASE_PATH, QOBUZ_API_QOBUZ_TYPE, genre_ids, GET_ITEM_SIZE___ONCE_FOR_MAIN, 0);
 
+        print_debug(); ContentLoadingwaitingMsgHide();//c230323
     }
 
 
     void QobuzHome::setUIControl_requestRose(){
 
         if(!global.user.getAccess_token().isEmpty()){
+            ContentLoadingwaitingMsgShow(tr("QobuzHome::setUIControl_requestGenres"));//c230308_5
 
             // request HTTP API for Recently Album
             roseHome::ProcCommon *proc_recentlyAlbum = new roseHome::ProcCommon(this);
@@ -620,6 +724,19 @@ namespace qobuz {
             connect(proc_recentlyTrack, &roseHome::ProcCommon::completeReq_list_tracks, this, &QobuzHome::slot_applyResult_recentlyTrack);
             proc_recentlyTrack->request_rose_getList_recentlyTracks(ROSE_API_TRACK_PATH , "QOBUZ", 0, 5);
 
+            // request HTTP API for Recently Artist
+            roseHome::ProcCommon *proc_recent_artist = new roseHome::ProcCommon(this);
+            connect(proc_recent_artist, &roseHome::ProcCommon::completeReq_list_artists, this, &QobuzHome::slot_applyResult_recentlyArtist);
+            proc_recent_artist->request_rose_getList_recentlyArtists(ROSE_API_ARTIST_PATH, "QOBUZ", 0, GET_ITEM_SIZE___ONCE_FOR_MAIN);
+
+            // request HTTP API for My History
+            QDate todayData = QDate::currentDate();
+            QString strToday = todayData.toString("yyyyMM");
+
+            roseHome::ProcCommon *proc_historylist = new roseHome::ProcCommon(this);
+            connect(proc_historylist, &roseHome::ProcCommon::completeReq_list_history, this, &QobuzHome::slot_applyResult_historylist);
+            proc_historylist->request_rose_getList_hisotrylist(ROSE_API_HISTORY_PATH, strToday, "QOBUZ");
+
             // request HTTP API for Recently Playlist
             roseHome::ProcCommon *proc_myPlaylist = new roseHome::ProcCommon(this);
             connect(proc_myPlaylist, &roseHome::ProcCommon::completeReq_list_myplaylists, this, &QobuzHome::slot_applyResult_myPlaylist);
@@ -629,6 +746,8 @@ namespace qobuz {
             roseHome::ProcCommon *proc_userPlaylist = new roseHome::ProcCommon(this);
             connect(proc_userPlaylist, &roseHome::ProcCommon::completeReq_list_usersplaylists, this, &QobuzHome::slot_applyResult_userPlaylist);
             proc_userPlaylist->request_rose_getList_usersPlaylists(ROSE_API_USERPLAYLIST_PATH , "PLAYLIST_RECENT", "QOBUZ", 0, GET_ITEM_SIZE___ONCE_FOR_MAIN);
+
+            print_debug(); ContentLoadingwaitingMsgHide();//c230323
         }
     }
 
@@ -813,40 +932,44 @@ namespace qobuz {
 
     void QobuzHome::setUIControl_appendWidget_rose(){
 
-        if(this->flag_album[0] == true && this->flag_playlist[0] == true && this->flag_track[0] == true && this->flag_myPlaylist[0] == true && this->flag_userPlaylist[0] == true)
+        if(this->flag_album[0] == true && this->flag_playlist[0] == true && this->flag_track[0] == true && this->flag_artist[0] == true && this->flag_historylist[0] == true && this->flag_myPlaylist[0] == true && this->flag_userPlaylist[0] == true)
         {
+            ContentLoadingwaitingMsgShow("QobuzHome::setUIControl_appendWidget");//c230308_3
             if(this->flag_album[0] == true){
+                this->flag_album[0] = false;
 
                 this->widget_recentPlay = this->setUIControl_subTitle_withSubMenu(tr("Recently played"), "View All", BTN_IDX_SUBTITLE_recentlyPlay, this->vBox_recentlyPlay);
 
                 this->vBox_recentlyPlay->addSpacing(0);
                 this->vBox_recentlyPlay->addWidget(this->stackRecent, 1, Qt::AlignTop);
 
+                //----------------------------------------------------------------------------------------------------  BODY : START
+                this->hBox_recentlyAlbum->setSpacing(0);
+                this->hBox_recentlyAlbum->setContentsMargins(0, 0, 0, 0);
+                this->hBox_recentlyAlbum->setAlignment(Qt::AlignTop);
+                this->hBox_recentlyAlbum->setSizeConstraint(QLayout::SetFixedSize);
+
+                QWidget *widget_content = new QWidget;
+                widget_content->setLayout(this->hBox_recentlyAlbum);
+                widget_content->setContentsMargins(0, 0, 0, 0);
+
+                this->album_scrollArea = new QScrollArea();
+                this->album_scrollArea->setWidget(widget_content);
+                this->album_scrollArea->setWidgetResizable(false);
+                this->album_scrollArea->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
+                this->album_scrollArea->setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
+                this->album_scrollArea->setStyleSheet("background-color:transparent; border:0px;");
+                this->album_scrollArea->setContentsMargins(0, 0, 0, 0);
+                this->album_scrollArea->setFixedHeight(311);
+
+                QScroller::grabGesture(this->album_scrollArea, QScroller::LeftMouseButtonGesture);
+                //----------------------------------------------------------------------------------------------------  BODY : END
+
+                // Apply Main Layout with spacing
+                this->stackRecent->insertWidget(0, this->album_scrollArea);
+
                 if(this->flag_album[1] == true){
-                    //----------------------------------------------------------------------------------------------------  BODY : START
-                    this->hBox_recentlyAlbum->setSpacing(0);
-                    this->hBox_recentlyAlbum->setContentsMargins(0, 0, 0, 0);
-                    this->hBox_recentlyAlbum->setAlignment(Qt::AlignTop);
-                    this->hBox_recentlyAlbum->setSizeConstraint(QLayout::SetFixedSize);
-
-                    QWidget *widget_content = new QWidget;
-                    widget_content->setLayout(this->hBox_recentlyAlbum);
-                    widget_content->setContentsMargins(0, 0, 0, 0);
-
-                    QScrollArea *album_scrollArea = new QScrollArea();
-                    album_scrollArea->setWidget(widget_content);
-                    album_scrollArea->setWidgetResizable(false);
-                    album_scrollArea->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
-                    album_scrollArea->setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
-                    album_scrollArea->setStyleSheet("background-color:transparent; border:0px;");
-                    album_scrollArea->setContentsMargins(0, 0, 0, 0);
-                    album_scrollArea->setFixedHeight(305);
-
-                    QScroller::grabGesture(album_scrollArea, QScroller::LeftMouseButtonGesture);
-                    //----------------------------------------------------------------------------------------------------  BODY : END
-
-                    // Apply Main Layout with spacing
-                    this->stackRecent->addWidget(album_scrollArea);
+                    this->flag_album[1] = false;
 
                     int maxCount = 0;
                     if(this->list_recentlyAlbum->size() > 15){
@@ -858,21 +981,28 @@ namespace qobuz {
 
                     for(int i = 0; i < maxCount; i++){
                         this->home_recently_album[i]->setData(this->list_recentlyAlbum->at(i));
+                        QCoreApplication::processEvents();
+                    }
+
+                    for(int i = 0; i < maxCount; i++){
+                        connect(this->home_recently_album[i], &roseHome::ItemAlbum_rosehome::signal_clicked, this, &QobuzHome::slot_clickedItemAlbum);
                         this->hBox_recentlyAlbum->addWidget(this->home_recently_album[i]);
                     }
                 }
                 else{
                     NoData_Widget *noData_widget = new NoData_Widget(NoData_Widget::NoData_Message::Album_NoData);
-                    noData_widget->setFixedSize(1500, 305);
+                    noData_widget->setFixedSize(1500, 311);
+                    noData_widget->setObjectName("Nodata");
 
-                    this->stackRecent->addWidget(noData_widget);
+                    this->hBox_recentlyAlbum->addWidget(noData_widget);
                 }
 
                 this->box_rose_contents->addLayout(this->vBox_recentlyPlay);
                 this->box_rose_contents->addSpacing(45);
             }
 
-            if(this->flag_playlist[1] == true){
+            if(this->flag_playlist[0] == true){
+                this->flag_playlist[0] = false;
 
                 //----------------------------------------------------------------------------------------------------  BODY : START
                 this->hBox_recentlyPlaylist->setSpacing(0);
@@ -884,48 +1014,56 @@ namespace qobuz {
                 widget_content->setLayout(this->hBox_recentlyPlaylist);
                 widget_content->setContentsMargins(0, 0, 0, 0);
 
-                QScrollArea *playlist_scrollArea = new QScrollArea();
-                playlist_scrollArea->setWidget(widget_content);
-                playlist_scrollArea->setWidgetResizable(false);
-                playlist_scrollArea->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
-                playlist_scrollArea->setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
-                playlist_scrollArea->setStyleSheet("background-color:transparent; border:0px;");
-                playlist_scrollArea->setContentsMargins(0, 0, 0, 0);
-                playlist_scrollArea->setFixedHeight(305);
+                this->playlist_scrollArea = new QScrollArea();
+                this->playlist_scrollArea->setWidget(widget_content);
+                this->playlist_scrollArea->setWidgetResizable(false);
+                this->playlist_scrollArea->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
+                this->playlist_scrollArea->setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
+                this->playlist_scrollArea->setStyleSheet("background-color:transparent; border:0px;");
+                this->playlist_scrollArea->setContentsMargins(0, 0, 0, 0);
+                this->playlist_scrollArea->setFixedHeight(311);
 
-                QScroller::grabGesture(playlist_scrollArea, QScroller::LeftMouseButtonGesture);
+                QScroller::grabGesture(this->playlist_scrollArea, QScroller::LeftMouseButtonGesture);
                 //----------------------------------------------------------------------------------------------------  BODY : END
 
                 // Apply Main Layout with spacing
-                this->stackRecent->addWidget(playlist_scrollArea);
+                this->stackRecent->insertWidget(1, this->playlist_scrollArea);
 
-                int maxCount = 0;
-                if(this->list_recentlyPlaylist->size() > 15){
-                    maxCount = 15;
+                if(this->flag_playlist[1] == true){
+                    this->flag_playlist[1] = false;
+
+                    int maxCount = 0;
+                    if(this->list_recentlyPlaylist->size() > 15){
+                        maxCount = 15;
+                    }
+                    else{
+                        maxCount = this->list_recentlyPlaylist->size();
+                    }
+
+                    for(int i = 0; i < maxCount; i++){
+                        this->home_recently_playlist[i]->setData(this->list_recentlyPlaylist->at(i));
+                        QCoreApplication::processEvents();
+                    }
+
+                    for(int i = 0; i < maxCount; i++){
+                        connect(this->home_recently_playlist[i], &roseHome::ItemPlaylist_rosehome::signal_clicked, this, &QobuzHome::slot_clickedItemPlaylist);
+                        this->hBox_recentlyPlaylist->addWidget(this->home_recently_playlist[i]);
+                    }
                 }
                 else{
-                    maxCount = this->list_recentlyPlaylist->size();
+                    NoData_Widget *noData_widget = new NoData_Widget(NoData_Widget::NoData_Message::Playlist_NoData);
+                    noData_widget->setFixedSize(1500, 311);
+                    noData_widget->setObjectName("Nodata");
+
+                    this->hBox_recentlyPlaylist->addWidget(noData_widget);
                 }
-
-                for(int i = 0; i < maxCount; i++){
-                    this->home_recently_playlist[i]->setData(this->list_recentlyPlaylist->at(i));
-                    this->hBox_recentlyPlaylist->addWidget(this->home_recently_playlist[i]);
-                }
-
-                this->contentStep = ALBTAB_STEP_ALBUM;
-                this->menubar->setSelectedSubMenuNoSignal(this->contentStep);
-            }
-            else{
-                NoData_Widget *noData_widget = new NoData_Widget(NoData_Widget::NoData_Message::Playlist_NoData);
-                noData_widget->setFixedSize(1500, 305);
-
-                this->stackRecent->addWidget(noData_widget);
 
                 this->contentStep = ALBTAB_STEP_ALBUM;
                 this->menubar->setSelectedSubMenuNoSignal(this->contentStep);
             }
 
             if(this->flag_track[0] == true){
+                this->flag_track[0] = false;
 
                 // box_contents 에 담을 widget, layout 생성.  box_contents에 먼저 담는다.
                 QHBoxLayout *tmp_hBox = new QHBoxLayout();
@@ -959,26 +1097,28 @@ namespace qobuz {
 
                 this->vBox_recentlyTrack->addWidget(this->widget_recentlyTrack);
 
-                QVBoxLayout *vBox_recentlyTrack_info = new QVBoxLayout();
-                vBox_recentlyTrack_info->setSpacing(0);
-                vBox_recentlyTrack_info->setContentsMargins(40, 0, 54, 0);
-                vBox_recentlyTrack_info->setAlignment(Qt::AlignTop);
+                this->vBox_recentlyTrack_info = new QVBoxLayout();
+                this->vBox_recentlyTrack_info->setSpacing(0);
+                this->vBox_recentlyTrack_info->setContentsMargins(40, 0, 54, 0);
+                this->vBox_recentlyTrack_info->setAlignment(Qt::AlignTop);
 
                 QWidget *widget_recentlyTrack_info = new QWidget();
                 widget_recentlyTrack_info->setStyleSheet("background-color:#0d0d0d; border:0px;");
                 widget_recentlyTrack_info->setContentsMargins(0, 0, 0, 0);
                 widget_recentlyTrack_info->setFixedHeight(411);
-                widget_recentlyTrack_info->setLayout(vBox_recentlyTrack_info);
+                widget_recentlyTrack_info->setLayout(this->vBox_recentlyTrack_info);
 
                 this->vBox_recentlyTrack->addWidget(widget_recentlyTrack_info);
 
                 if(this->flag_track[1] == true){
+                    this->flag_track[1] = false;
+
                     int maxCount = 0;
-                    if(this->list_recentlytrack->at(0).totalCount > 5){
+                    if(this->list_recentlytrack->size() > 5){
                         maxCount = 5;
                     }
                     else{
-                        maxCount = this->list_recentlytrack->at(0).totalCount;
+                        maxCount = this->list_recentlytrack->size();
                     }
 
                     for(int i = 0; i < maxCount; i++){
@@ -986,21 +1126,166 @@ namespace qobuz {
                         this->home_recently_track[i]->setFavoritesIds(this->list_recentlytrack->at(i).favorite, this->list_recentlytrack->at(i).star);
                         this->home_recently_track[i]->resize(1550, 70);
 
-                        vBox_recentlyTrack_info->addWidget(this->home_recently_track[i]);
+                        QCoreApplication::processEvents();
+                    }
+
+                    for(int i = 0; i < maxCount; i++){
+                        connect(this->home_recently_track[i], &PlaylistTrackDetailInfo_RHV::clicked, this, &QobuzHome::slot_clickedItemTrack_inList);
+                        this->vBox_recentlyTrack_info->addWidget(this->home_recently_track[i]);
                     }
                 }
                 else{
                     NoData_Widget *noData_widget = new NoData_Widget(NoData_Widget::NoData_Message::Track_NoData);
                     noData_widget->setFixedSize(1500, 350);
+                    noData_widget->setObjectName("Nodata");
 
-                    vBox_recentlyTrack_info->addWidget(noData_widget);
+                    this->vBox_recentlyTrack_info->addWidget(noData_widget);
                 }
 
                 this->box_rose_contents->addLayout(this->vBox_recentlyTrack);
                 this->box_rose_contents->addSpacing(65);
             }
 
+            if(this->flag_artist[0] == true){
+                this->flag_artist[0] = false;
+
+                this->widget_recentArtist = new QWidget();
+                QString subTitle = tr("Recently Played Artists");
+                if(this->list_recentlyArtist->size() > 0){
+                    this->widget_recentArtist = this->setUIControl_subTitle_withSideBtn(subTitle + QString(" (%1)").arg(this->list_recentlyArtist->at(0).totalCount), "View All", BTN_IDX_SUBTITLE_recentlyArtist, this->vBox_recentlyArtist);
+                }
+                else{
+                    this->widget_recentArtist = this->setUIControl_subTitle_withSideBtn(subTitle + QString(" (0)"), "View All", BTN_IDX_SUBTITLE_recentlyArtist, this->vBox_recentlyArtist);
+                }
+
+                this->vBox_recentlyArtist->addSpacing(10);
+
+                //----------------------------------------------------------------------------------------------------  BODY : START
+                this->hBox_recentlyArtist->setSpacing(0);
+                this->hBox_recentlyArtist->setContentsMargins(0, 0, 0, 0);
+                this->hBox_recentlyArtist->setAlignment(Qt::AlignTop);
+                this->hBox_recentlyArtist->setSizeConstraint(QLayout::SetFixedSize);
+
+                QWidget *widget_content = new QWidget;
+                widget_content->setLayout(this->hBox_recentlyArtist);
+                widget_content->setContentsMargins(0, 0, 0, 0);
+
+                QScrollArea *artist_scrollArea = new QScrollArea();
+                artist_scrollArea->setWidget(widget_content);
+                artist_scrollArea->setWidgetResizable(false);
+                artist_scrollArea->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
+                artist_scrollArea->setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
+                artist_scrollArea->setStyleSheet("background-color:transparent; border:0px;");
+                artist_scrollArea->setContentsMargins(0, 0, 0, 0);
+                artist_scrollArea->setFixedHeight(261);
+
+                QScroller::grabGesture(artist_scrollArea, QScroller::LeftMouseButtonGesture);
+                //----------------------------------------------------------------------------------------------------  BODY : END
+
+                // Apply Main Layout with spacing
+                this->vBox_recentlyArtist->addWidget(artist_scrollArea);
+
+                if(this->flag_artist[1] == true){
+                    this->flag_artist[1] = false;
+
+                    int maxCount = 0;
+                    if(this->list_recentlyArtist->size() > 15){
+                        maxCount = 15;
+                    }
+                    else{
+                        maxCount = this->list_recentlyArtist->size();
+                    }
+
+                    for(int i = 0; i < maxCount; i++){
+                        this->home_recently_artist[i]->setData(this->list_recentlyArtist->at(i));
+                        QCoreApplication::processEvents();
+                    }
+
+                    for(int i = 0; i < maxCount; i++){
+                        connect(this->home_recently_artist[i], &roseHome::ItemArtist_rosehome::signal_clicked, this, &QobuzHome::slot_clickedItemArtist);
+                        this->hBox_recentlyArtist->addWidget(this->home_recently_artist[i]);
+                    }
+                }
+                else{
+                    NoData_Widget *noData_widget = new NoData_Widget(NoData_Widget::NoData_Message::Artist_NoData);
+                    noData_widget->setFixedSize(1500, 261);
+                    noData_widget->setObjectName("Nodata");
+
+                    this->hBox_recentlyArtist->addWidget(noData_widget);
+                }
+
+                this->box_rose_contents->addLayout(this->vBox_recentlyArtist);
+                this->box_rose_contents->addSpacing(60);
+            }
+
+            if(this->flag_historylist[0] == true){
+                this->flag_historylist[0] = false;
+
+                this->widget_historylist = new QWidget();
+                QString subTitle = tr("My History");
+                this->widget_historylist = this->setUIControl_subTitle_withSideBtn(subTitle, "View All", BTN_IDX_SUBTITLE_History, this->vBox_historylist);
+
+                this->vBox_historylist->addSpacing(10);
+                //----------------------------------------------------------------------------------------------------  BODY : START
+                this->hBox_historylist->setSpacing(0);
+                this->hBox_historylist->setContentsMargins(0, 0, 0, 0);
+                this->hBox_historylist->setAlignment(Qt::AlignTop);
+                this->hBox_historylist->setSizeConstraint(QLayout::SetFixedSize);
+
+                QWidget *widget_content = new QWidget;
+                widget_content->setLayout(this->hBox_historylist);
+                widget_content->setContentsMargins(0, 0, 0, 0);
+
+                QScrollArea *history_scrollArea = new QScrollArea();
+                history_scrollArea->setWidget(widget_content);
+                history_scrollArea->setWidgetResizable(false);
+                history_scrollArea->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
+                history_scrollArea->setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
+                history_scrollArea->setStyleSheet("background-color:transparent; border:0px;");
+                history_scrollArea->setContentsMargins(0, 0, 0, 0);
+                history_scrollArea->setFixedHeight(234);
+
+                QScroller::grabGesture(history_scrollArea, QScroller::LeftMouseButtonGesture);
+                //----------------------------------------------------------------------------------------------------  BODY : END
+
+                // Apply Main Layout with spacing
+                this->vBox_historylist->addWidget(history_scrollArea);
+
+                if(this->flag_historylist[1] == true){
+                    this->flag_historylist[1] = false;
+
+                    int maxCount = 0;
+                    if(this->list_Historylist->size() > 13){
+                        maxCount = 13;
+                    }
+                    else{
+                        maxCount = this->list_Historylist->size();
+                    }
+
+                    for(int i = 0; i < maxCount; i++){
+                        this->home_historylist[i]->setData(this->list_Historylist->at(i));
+                        QCoreApplication::processEvents();
+                    }
+
+                    for(int i = 0; i < maxCount; i++){
+                        connect(this->home_historylist[i], &roseHome::ItemHistory_rosehome::signal_clicked, this, &QobuzHome::slot_clickedItemAlbum);
+                        this->hBox_historylist->addWidget(this->home_historylist[i]);
+                    }
+                }
+                else{
+                    NoData_Widget *noData_widget = new NoData_Widget(NoData_Widget::NoData_Message::Album_NoData);
+                    noData_widget->setFixedSize(1500, 234);
+                    noData_widget->setObjectName("Nodata");
+
+                    this->hBox_historylist->addWidget(noData_widget);
+                }
+
+                this->box_rose_contents->addLayout(this->vBox_historylist);
+                this->box_rose_contents->addSpacing(60);
+            }
+
             if(this->flag_myPlaylist[0] == true){
+                this->flag_myPlaylist[0] = false;
 
                 this->widget_myPlaylist = new QWidget();
                 if(this->list_myPlaylist->size() > 0){
@@ -1012,31 +1297,33 @@ namespace qobuz {
 
                 this->vBox_myPlaylist->addSpacing(10);
 
+                //----------------------------------------------------------------------------------------------------  BODY : START
+                this->hBox_myPlaylist->setSpacing(0);
+                this->hBox_myPlaylist->setContentsMargins(0, 0, 0, 0);
+                this->hBox_myPlaylist->setAlignment(Qt::AlignTop);
+                this->hBox_myPlaylist->setSizeConstraint(QLayout::SetFixedSize);
+
+                QWidget *widget_content = new QWidget;
+                widget_content->setLayout(this->hBox_myPlaylist);
+                widget_content->setContentsMargins(0, 0, 0, 0);
+
+                QScrollArea *playlist_scrollArea = new QScrollArea();
+                playlist_scrollArea->setWidget(widget_content);
+                playlist_scrollArea->setWidgetResizable(false);
+                playlist_scrollArea->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
+                playlist_scrollArea->setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
+                playlist_scrollArea->setStyleSheet("background-color:transparent; border:0px;");
+                playlist_scrollArea->setContentsMargins(0, 0, 0, 0);
+                playlist_scrollArea->setFixedHeight(311);
+
+                QScroller::grabGesture(playlist_scrollArea, QScroller::LeftMouseButtonGesture);
+                //----------------------------------------------------------------------------------------------------  BODY : END
+
+                // Apply Main Layout with spacing
+                this->vBox_myPlaylist->addWidget(playlist_scrollArea);
+
                 if(this->flag_myPlaylist[1] == true){
-                    //----------------------------------------------------------------------------------------------------  BODY : START
-                    this->hBox_myPlaylist->setSpacing(0);
-                    this->hBox_myPlaylist->setContentsMargins(0, 0, 0, 0);
-                    this->hBox_myPlaylist->setAlignment(Qt::AlignTop);
-                    this->hBox_myPlaylist->setSizeConstraint(QLayout::SetFixedSize);
-
-                    QWidget *widget_content = new QWidget;
-                    widget_content->setLayout(this->hBox_myPlaylist);
-                    widget_content->setContentsMargins(0, 0, 0, 0);
-
-                    QScrollArea *playlist_scrollArea = new QScrollArea();
-                    playlist_scrollArea->setWidget(widget_content);
-                    playlist_scrollArea->setWidgetResizable(false);
-                    playlist_scrollArea->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
-                    playlist_scrollArea->setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
-                    playlist_scrollArea->setStyleSheet("background-color:transparent; border:0px;");
-                    playlist_scrollArea->setContentsMargins(0, 0, 0, 0);
-                    playlist_scrollArea->setFixedHeight(305);
-
-                    QScroller::grabGesture(playlist_scrollArea, QScroller::LeftMouseButtonGesture);
-                    //----------------------------------------------------------------------------------------------------  BODY : END
-
-                    // Apply Main Layout with spacing
-                    this->vBox_myPlaylist->addWidget(playlist_scrollArea);
+                    this->flag_myPlaylist[1] = false;
 
                     int maxCount = 0;
                     if(this->list_myPlaylist->size() > 15){
@@ -1048,14 +1335,20 @@ namespace qobuz {
 
                     for(int i = 0; i < maxCount; i++){
                         this->home_myPlaylist[i]->setData(this->list_myPlaylist->at(i));
+                        QCoreApplication::processEvents();
+                    }
+
+                    for(int i = 0; i < maxCount; i++){
+                        connect(this->home_myPlaylist[i], &roseHome::ItemPlaylist_rosehome::signal_clicked, this, &QobuzHome::slot_clickedItemPlaylist);
                         this->hBox_myPlaylist->addWidget(this->home_myPlaylist[i]);
                     }
                 }
                 else{
                     NoData_Widget *noData_widget = new NoData_Widget(NoData_Widget::NoData_Message::Playlist_NoData);
-                    noData_widget->setFixedSize(1500, 305);
+                    noData_widget->setFixedSize(1500, 311);
+                    noData_widget->setObjectName("Nodata");
 
-                    this->vBox_myPlaylist->addWidget(noData_widget);
+                    this->hBox_myPlaylist->addWidget(noData_widget);
                 }
 
                 this->box_rose_contents->addLayout(this->vBox_myPlaylist);
@@ -1063,6 +1356,7 @@ namespace qobuz {
             }
 
             if(this->flag_userPlaylist[0] == true){
+                this->flag_userPlaylist[0] = false;
 
                 this->widget_userPlaylist = new QWidget();
                 if(this->list_userPlaylist->size() > 0){
@@ -1074,31 +1368,33 @@ namespace qobuz {
 
                 this->vBox_userPlaylist->addSpacing(10);
 
+                //----------------------------------------------------------------------------------------------------  BODY : START
+                this->hBox_userPlaylist->setSpacing(0);
+                this->hBox_userPlaylist->setContentsMargins(0, 0, 0, 0);
+                this->hBox_userPlaylist->setAlignment(Qt::AlignTop);
+                this->hBox_userPlaylist->setSizeConstraint(QLayout::SetFixedSize);
+
+                QWidget *widget_userRoseplaylist = new QWidget;
+                widget_userRoseplaylist->setLayout(this->hBox_userPlaylist);
+                widget_userRoseplaylist->setContentsMargins(0, 0, 0, 0);
+
+                QScrollArea *userPlaylist_scrollArea = new QScrollArea();
+                userPlaylist_scrollArea->setWidget(widget_userRoseplaylist);
+                userPlaylist_scrollArea->setWidgetResizable(false);
+                userPlaylist_scrollArea->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
+                userPlaylist_scrollArea->setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
+                userPlaylist_scrollArea->setStyleSheet("background-color:transparent; border:0px;");
+                userPlaylist_scrollArea->setContentsMargins(0, 0, 0, 0);
+                userPlaylist_scrollArea->setFixedHeight(311);
+
+                QScroller::grabGesture(userPlaylist_scrollArea, QScroller::LeftMouseButtonGesture);
+                //----------------------------------------------------------------------------------------------------  BODY : END
+
+                // Apply Main Layout with spacing
+                this->vBox_userPlaylist->addWidget(userPlaylist_scrollArea);
+
                 if(this->flag_userPlaylist[1] == true){
-                    //----------------------------------------------------------------------------------------------------  BODY : START
-                    this->hBox_userPlaylist->setSpacing(0);
-                    this->hBox_userPlaylist->setContentsMargins(0, 0, 0, 0);
-                    this->hBox_userPlaylist->setAlignment(Qt::AlignTop);
-                    this->hBox_userPlaylist->setSizeConstraint(QLayout::SetFixedSize);
-
-                    QWidget *widget_userRoseplaylist = new QWidget;
-                    widget_userRoseplaylist->setLayout(this->hBox_userPlaylist);
-                    widget_userRoseplaylist->setContentsMargins(0, 0, 0, 0);
-
-                    QScrollArea *userPlaylist_scrollArea = new QScrollArea();
-                    userPlaylist_scrollArea->setWidget(widget_userRoseplaylist);
-                    userPlaylist_scrollArea->setWidgetResizable(false);
-                    userPlaylist_scrollArea->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
-                    userPlaylist_scrollArea->setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
-                    userPlaylist_scrollArea->setStyleSheet("background-color:transparent; border:0px;");
-                    userPlaylist_scrollArea->setContentsMargins(0, 0, 0, 0);
-                    userPlaylist_scrollArea->setFixedHeight(305);
-
-                    QScroller::grabGesture(userPlaylist_scrollArea, QScroller::LeftMouseButtonGesture);
-                    //----------------------------------------------------------------------------------------------------  BODY : END
-
-                    // Apply Main Layout with spacing
-                    this->vBox_userPlaylist->addWidget(userPlaylist_scrollArea);
+                    this->flag_userPlaylist[1] = false;
 
                     int maxCount = 0;
                     if(this->list_userPlaylist->size() > 15){
@@ -1110,19 +1406,27 @@ namespace qobuz {
 
                     for(int i = 0; i < maxCount; i++){
                         this->home_userPlaylist[i]->setData(this->list_userPlaylist->at(i));
+                        QCoreApplication::processEvents();
+                    }
+
+                    for(int i = 0; i < maxCount; i++){
+                        connect(this->home_userPlaylist[i], &roseHome::ItemPlaylist_rosehome::signal_clicked, this, &QobuzHome::slot_clickedItemPlaylist);
                         this->hBox_userPlaylist->addWidget(this->home_userPlaylist[i]);
                     }
                 }
                 else{
                     NoData_Widget *noData_widget = new NoData_Widget(NoData_Widget::NoData_Message::Playlist_NoData);
-                    noData_widget->setFixedSize(1500, 305);
+                    noData_widget->setFixedSize(1500, 311);
+                    noData_widget->setObjectName("Nodata");
 
-                    this->vBox_userPlaylist->addWidget(noData_widget);
+                    this->hBox_userPlaylist->addWidget(noData_widget);
                 }
 
                 this->box_rose_contents->addLayout(this->vBox_userPlaylist);
                 this->box_rose_contents->addSpacing(50);
             }
+
+            print_debug(); ContentLoadingwaitingMsgHide();//c230308_5
         }
     }
 
@@ -1131,6 +1435,7 @@ namespace qobuz {
 
         if(this->flag_release[0] == true && this->flag_editor[0] == true && this->flag_ideal[0] == true && this->flag_qobuz[0] == true){
 
+            ContentLoadingwaitingMsgShow("QobuzHome::setUIControl_appendWidget");//c230308_3
             if(this->flag_release[1] == true){
                 this->widget_newReleases = new QWidget();
                 this->widget_newReleases = this->setUIControl_subTitle_withSideBtn(QString("New releases (%1)").arg(this->list_newReleases->at(0).album_total_cnt), "View All", BTN_IDX_SUBTITLE_newReleases, this->vBox_newReleases);
@@ -1141,6 +1446,11 @@ namespace qobuz {
 
                 for(int i = 0; i < this->list_newReleases->size(); i++){
                     this->home_newReleases[i]->setData(this->list_newReleases->at(i));
+                    QCoreApplication::processEvents();
+                }
+
+                for(int i = 0; i < this->list_newReleases->size(); i++){
+                    connect(this->home_newReleases[i], &qobuz::ItemAlbum_qobuz::signal_clicked, this, &QobuzHome::slot_clickedItemAlbum);
                     this->hBox_newReleases->addWidget(this->home_newReleases[i]);
                 }
 
@@ -1158,6 +1468,11 @@ namespace qobuz {
 
                 for(int i = 0; i < this->list_editorPicks->size(); i++){
                     this->home_editorPicks[i]->setData(this->list_editorPicks->at(i));
+                    QCoreApplication::processEvents();
+                }
+
+                for(int i = 0; i < this->list_editorPicks->size(); i++){
+                    connect(this->home_editorPicks[i], &qobuz::ItemPlaylist_qobuz::signal_clicked, this, &QobuzHome::slot_clickedItemPlaylist);
                     this->hBox_editorPicks->addWidget(this->home_editorPicks[i]);
                 }
 
@@ -1175,6 +1490,11 @@ namespace qobuz {
 
                 for(int i = 0; i < this->list_idealDiscography->size(); i++){
                     this->home_idealDiscography[i]->setData(this->list_idealDiscography->at(i));
+                    QCoreApplication::processEvents();
+                }
+
+                for(int i = 0; i < this->list_idealDiscography->size(); i++){
+                    connect(this->home_idealDiscography[i], &qobuz::ItemAlbum_qobuz::signal_clicked, this, &QobuzHome::slot_clickedItemAlbum);
                     this->hBox_idealDiscography->addWidget(this->home_idealDiscography[i]);
                 }
 
@@ -1192,12 +1512,308 @@ namespace qobuz {
 
                 for(int i = 0; i < this->list_qobuz_issime->size(); i++){
                     this->home_qobuzIssime[i]->setData(this->list_qobuz_issime->at(i));
+                    QCoreApplication::processEvents();
+                }
+
+                for(int i = 0; i < this->list_qobuz_issime->size(); i++){
+                    connect(this->home_qobuzIssime[i], &qobuz::ItemAlbum_qobuz::signal_clicked, this, &QobuzHome::slot_clickedItemAlbum);
                     this->hBox_qobuzIssime->addWidget(this->home_qobuzIssime[i]);
                 }
 
                 this->box_home_contents->addLayout(this->vBox_qobuzIssime);
                 this->box_home_contents->addSpacing(60);
             }
+
+            this->slot_hide_msg();
+            print_debug();ContentLoadingwaitingMsgHide();//c230322_3
+            global.isDrawingMainContent = true;
+        }
+    }
+
+
+    void QobuzHome::setUIControl_checkWidget_rose(){
+
+        if(this->flag_recentAlbum_check[0] == true && this->flag_recentPlaylist_check[0] == true && this->flag_recentTrack_check[0] == true && this->flag_recentArtist_check[0] == true && this->flag_myPlaylist_check[0] == true){
+            ContentLoadingwaitingMsgShow(tr("QobuzHome::setUIControl_checkWidget_rose"));//c230308_5
+            if(this->flag_recentAlbum_check[1] == true){
+                this->flag_recentAlbum_check[0] = false;
+                this->flag_recentAlbum_check[1] = false;
+
+                QWidget *tmpWidget = this->hBox_recentlyAlbum->itemAt(0)->widget();
+                    //qDebug() << this->hBox_recentlyAlbum->count() << tmpWidget->objectName();
+
+                    if(tmpWidget->objectName() != "NoData"){
+                        for(int i = 0; i < this->hBox_recentlyAlbum->count(); i++){
+                            this->home_recently_album[i]->hide();
+                            this->home_recently_album[i]->disconnect();
+                            this->hBox_recentlyAlbum->removeWidget(this->home_recently_album[i]);
+                        }
+                    }
+                    GSCommon::clearLayout(this->hBox_recentlyAlbum);
+
+                    int maxCount = 0;
+                    if(this->list_recentlyAlbum->size() > 15){
+                        maxCount = 15;
+                    }
+                    else{
+                        maxCount = this->list_recentlyAlbum->size();
+                    }
+
+                    if(maxCount > 0){
+                        for(int i = 0; i < 15; i++){
+                            this->home_recently_album[i] = new roseHome::ItemAlbum_rosehome(i, SECTION_FOR_MORE_POPUP___recentlyAlbum, tidal::AbstractItem::ImageSizeMode::Square_200x200, true);
+                            QCoreApplication::processEvents();
+                        }
+
+                        for(int i = 0; i < maxCount; i++){
+                            this->home_recently_album[i]->setData(this->list_recentlyAlbum->at(i));
+                            QCoreApplication::processEvents();
+                        }
+
+                        for(int i = 0; i < maxCount; i++){
+                            connect(this->home_recently_album[i], &roseHome::ItemAlbum_rosehome::signal_clicked, this, &QobuzHome::slot_clickedItemAlbum);
+                            this->hBox_recentlyAlbum->addWidget(this->home_recently_album[i]);
+                        }
+                    }
+                    else{
+                        NoData_Widget *noData_widget = new NoData_Widget(NoData_Widget::NoData_Message::Album_NoData);
+                        noData_widget->setFixedSize(1500, 311);
+                        noData_widget->setObjectName("Nodata");
+
+                        this->hBox_recentlyAlbum->addWidget(noData_widget);
+                    }
+
+                    this->changedOnlyTabUI_notSendSignal(this->contentStep);
+            }
+
+            if(this->flag_recentPlaylist_check[1] == true){
+                this->flag_recentPlaylist_check[0] = false;
+                    this->flag_recentPlaylist_check[1] = false;
+
+                    QWidget *tmpWidget = this->hBox_recentlyPlaylist->itemAt(0)->widget();
+                    //qDebug() << this->hBox_recentlyPlaylist->count() << tmpWidget->objectName();
+
+                    if(tmpWidget->objectName() != "NoData"){
+                        for(int i = 0; i < this->hBox_recentlyPlaylist->count(); i++){
+                            this->home_recently_playlist[i]->hide();
+                            this->home_recently_playlist[i]->disconnect();
+                            this->hBox_recentlyPlaylist->removeWidget(this->home_recently_playlist[i]);
+                        }
+                    }
+                    GSCommon::clearLayout(this->hBox_recentlyPlaylist);
+
+                    int maxCount = 0;
+                    if(this->list_recentlyPlaylist->size() > 15){
+                        maxCount = 15;
+                    }
+                    else{
+                        maxCount = this->list_recentlyPlaylist->size();
+                    }
+
+                    if(maxCount > 0){
+                        for(int i = 0; i < 15; i++){
+                            this->home_recently_playlist[i] = new roseHome::ItemPlaylist_rosehome(i, SECTION_FOR_MORE_POPUP___recentlyPlaylist, tidal::AbstractItem::ImageSizeMode::Square_200x200, 2, true);
+                            QCoreApplication::processEvents();
+                        }
+
+                        for(int i = 0; i < maxCount; i++){
+                            this->home_recently_playlist[i]->setData(this->list_recentlyPlaylist->at(i));
+                            QCoreApplication::processEvents();
+                        }
+
+                        for(int i = 0; i < maxCount; i++){
+                            connect(this->home_recently_playlist[i], &roseHome::ItemPlaylist_rosehome::signal_clicked, this, &QobuzHome::slot_clickedItemPlaylist);
+                            this->hBox_recentlyPlaylist->addWidget(this->home_recently_playlist[i]);
+                        }
+                    }
+                    else{
+                        NoData_Widget *noData_widget = new NoData_Widget(NoData_Widget::NoData_Message::Playlist_NoData);
+                        noData_widget->setFixedSize(1500, 311);
+                        noData_widget->setObjectName("Nodata");
+
+                        this->hBox_recentlyPlaylist->addWidget(noData_widget);
+                    }
+
+                    this->changedOnlyTabUI_notSendSignal(this->contentStep);
+            }
+
+            if(this->flag_recentTrack_check[1] == true){
+                this->flag_recentTrack_check[0] = false;
+                    this->flag_recentTrack_check[1] = false;
+
+                    QWidget *tmpWidget = this->vBox_recentlyTrack_info->itemAt(0)->widget();
+                    //qDebug() << this->vBox_recentlyTrack_info->count() << tmpWidget->objectName();
+
+                    if(tmpWidget->objectName() != "NoData"){
+                        for(int i = 0; i < this->vBox_recentlyTrack_info->count(); i++){
+                            this->home_recently_track[i]->hide();
+                            this->home_recently_track[i]->disconnect();
+                            this->vBox_recentlyTrack_info->removeWidget(this->home_recently_track[i]);
+                        }
+                    }
+                    GSCommon::clearLayout(this->vBox_recentlyTrack_info);
+
+                    QString subTitle = tr("Recently played tracks");
+                    if(this->list_recentlytrack->size() > 0){
+                        this->lb_subTitle[BTN_IDX_SUBTITLE_recentlyTrack]->setText(subTitle + QString(" (%1)").arg(this->list_recentlytrack->at(0).totalCount));
+                    }
+                    else{
+                        this->lb_subTitle[BTN_IDX_SUBTITLE_recentlyTrack]->setText(subTitle + QString(" (0)"));
+                    }
+
+                    int maxCount = 0;
+                    if(this->list_recentlytrack->size() > 5){
+                        maxCount = 5;
+                    }
+                    else{
+                        maxCount = this->list_recentlytrack->size();
+                    }
+
+                    if(maxCount > 0){
+                        for (int i = 0; i < maxCount; i++) {
+                            this->home_recently_track[i] = new PlaylistTrackDetailInfo_RHV();
+                            this->home_recently_track[i]->setProperty("index", i);
+                            this->home_recently_track[i]->setObjectName("recently track");
+                            QCoreApplication::processEvents();
+                        }
+
+                        for(int i = 0; i < maxCount; i++){
+                            this->home_recently_track[i]->setDataTrackInfo_RoseMain(this->list_recentlytrack->at(i));
+                            this->home_recently_track[i]->setFavoritesIds(this->list_recentlytrack->at(i).favorite, this->list_recentlytrack->at(i).star);
+                            this->home_recently_track[i]->resize(1550, 70);
+                            QCoreApplication::processEvents();
+                        }
+
+                        for(int i = 0; i < maxCount; i++){
+                            connect(this->home_recently_track[i], &PlaylistTrackDetailInfo_RHV::clicked, this, &QobuzHome::slot_clickedItemTrack_inList);
+                            this->vBox_recentlyTrack_info->addWidget(this->home_recently_track[i]);
+                        }
+                    }
+                    else{
+                        NoData_Widget *noData_widget = new NoData_Widget(NoData_Widget::NoData_Message::Track_NoData);
+                        noData_widget->setFixedSize(1500, 350);
+                        noData_widget->setObjectName("Nodata");
+
+                        vBox_recentlyTrack_info->addWidget(noData_widget);
+                    }
+            }
+
+            if(this->flag_recentArtist_check[1] == true){
+                this->flag_recentArtist_check[0] = false;
+                this->flag_recentArtist_check[1] = false;
+
+                QWidget *tmpWidget = this->hBox_recentlyArtist->itemAt(0)->widget();
+                //qDebug() << this->hBox_recentlyArtist->count() << tmpWidget->objectName();
+
+                if(tmpWidget->objectName() != "NoData"){
+                    for(int i = 0; i < this->hBox_recentlyArtist->count(); i++){
+                        this->home_recently_artist[i]->hide();
+                        this->home_recently_artist[i]->disconnect();
+                        this->hBox_recentlyArtist->removeWidget(this->home_recently_artist[i]);
+                    }
+                }
+                GSCommon::clearLayout(this->hBox_recentlyArtist);
+
+                QString subTitle = tr("Recently Played Artists");
+                if(this->list_recentlyArtist->size() > 0){
+                    this->lb_subTitle[BTN_IDX_SUBTITLE_recentlyArtist]->setText(subTitle + QString(" (%1)").arg(this->list_recentlyArtist->at(0).totalCount));
+                }
+                else{
+                    this->lb_subTitle[BTN_IDX_SUBTITLE_recentlyArtist]->setText(subTitle + QString(" (0)"));
+                }
+
+                int maxCount = 0;
+                if(this->list_recentlyArtist->size() > 15){
+                    maxCount = 15;
+                }
+                else{
+                    maxCount = this->list_recentlyArtist->size();
+                }
+
+                if(maxCount > 0){
+                    for(int i = 0; i < 15; i++){
+                        this->home_recently_artist[i] = new roseHome::ItemArtist_rosehome(i, SECTION_FOR_MORE_POPUP___recentlyArtist, tidal::AbstractItem::ImageSizeMode::Square_200x200);
+                        QCoreApplication::processEvents();
+                    }
+
+                    for(int i = 0; i < maxCount; i++){
+                        this->home_recently_artist[i]->setData(this->list_recentlyArtist->at(i));
+                        QCoreApplication::processEvents();
+                    }
+
+                    for(int i = 0; i < maxCount; i++){
+                        connect(this->home_recently_artist[i], &roseHome::ItemArtist_rosehome::signal_clicked, this, &QobuzHome::slot_clickedItemArtist);
+                        this->hBox_recentlyArtist->addWidget(this->home_recently_artist[i]);
+                    }
+                }
+                else{
+                    NoData_Widget *noData_widget = new NoData_Widget(NoData_Widget::NoData_Message::Artist_NoData);
+                    noData_widget->setFixedSize(1500, 261);
+                    noData_widget->setObjectName("Nodata");
+
+                    this->hBox_recentlyArtist->addWidget(noData_widget);
+                }
+            }
+
+            if(this->flag_myPlaylist_check[1] == true){
+                this->flag_myPlaylist_check[0] = false;
+                this->flag_myPlaylist_check[1] = false;
+
+                QWidget *tmpWidget = this->hBox_myPlaylist->itemAt(0)->widget();
+                //qDebug() << this->hBox_myPlaylist->count() << tmpWidget->objectName();
+
+                if(tmpWidget->objectName() != "NoData"){
+                    for(int i = 0; i < this->hBox_myPlaylist->count(); i++){
+                        this->home_myPlaylist[i]->hide();
+                        this->home_myPlaylist[i]->disconnect();
+                        this->hBox_myPlaylist->removeWidget(this->home_myPlaylist[i]);
+                    }
+                }
+                GSCommon::clearLayout(this->hBox_myPlaylist);
+
+                QString subTitle = tr("My playlists");
+                if(this->list_myPlaylist->size() > 0){
+                    this->lb_subTitle[BTN_IDX_SUBTITLE_myPlaylists]->setText(subTitle + QString(" (%1)").arg(this->list_myPlaylist->at(0).totalCount));
+                }
+                else{
+                    this->lb_subTitle[BTN_IDX_SUBTITLE_myPlaylists]->setText(subTitle + QString(" (0)"));
+                }
+
+                int maxCount = 0;
+                if(this->list_myPlaylist->size() > 15){
+                    maxCount = 15;
+                }
+                else{
+                    maxCount = this->list_myPlaylist->size();
+                }
+
+                if(maxCount > 0){
+                    for(int i = 0; i < maxCount; i++){
+                        this->home_myPlaylist[i] = new roseHome::ItemPlaylist_rosehome(i, BTN_IDX_SUBTITLE_myPlaylists, tidal::AbstractItem::ImageSizeMode::Square_200x200, 5, true);
+                        QCoreApplication::processEvents();
+                    }
+
+                    for(int i = 0; i < maxCount; i++){
+                        this->home_myPlaylist[i]->setData(this->list_myPlaylist->at(i));
+                        QCoreApplication::processEvents();
+                    }
+
+                    for(int i = 0; i < maxCount; i++){
+                        connect(this->home_myPlaylist[i], &roseHome::ItemPlaylist_rosehome::signal_clicked, this, &QobuzHome::slot_clickedItemPlaylist);
+                        this->hBox_myPlaylist->addWidget(this->home_myPlaylist[i]);
+                    }
+                }
+                else{
+                    NoData_Widget *noData_widget = new NoData_Widget(NoData_Widget::NoData_Message::Playlist_NoData);
+                    noData_widget->setFixedSize(1500, 311);
+                    noData_widget->setObjectName("Nodata");
+
+                    this->hBox_myPlaylist->addWidget(noData_widget);
+                }
+            }
+
+            this->slot_hide_msg();
+            ContentLoadingwaitingMsgHide();//c230323
         }
     }
 
@@ -1268,22 +1884,22 @@ namespace qobuz {
 
         for(int i = 0; i < 15; i++){
             this->home_newReleases[i] = new qobuz::ItemAlbum_qobuz(i, SECTION_FOR_MORE_POPUP___new_releases, tidal::AbstractItem::ImageSizeMode::Square_200x200);
-            connect(this->home_newReleases[i], &qobuz::ItemAlbum_qobuz::signal_clicked, this, &QobuzHome::slot_clickedItemAlbum);
+            QCoreApplication::processEvents();
         }
 
         for(int i = 0; i < 15; i++){
             this->home_editorPicks[i] = new qobuz::ItemPlaylist_qobuz(i, SECTION_FOR_MORE_POPUP___editor_picks, tidal::AbstractItem::ImageSizeMode::Ractangle_360x176);
-            connect(this->home_editorPicks[i], &qobuz::ItemPlaylist_qobuz::signal_clicked, this, &QobuzHome::slot_clickedItemPlaylist);
+            QCoreApplication::processEvents();
         }
 
         for(int i = 0; i < 15; i++){
             this->home_idealDiscography[i] = new qobuz::ItemAlbum_qobuz(i, SECTION_FOR_MORE_POPUP___idealdiscography, tidal::AbstractItem::ImageSizeMode::Square_200x200);
-            connect(this->home_idealDiscography[i], &qobuz::ItemAlbum_qobuz::signal_clicked, this, &QobuzHome::slot_clickedItemAlbum);
+            QCoreApplication::processEvents();
         }
 
         for(int i = 0; i < 15; i++){
             this->home_qobuzIssime[i] = new qobuz::ItemAlbum_qobuz(i, SECTION_FOR_MORE_POPUP___qobuzissime, tidal::AbstractItem::ImageSizeMode::Square_200x200);
-            connect(this->home_qobuzIssime[i], &qobuz::ItemAlbum_qobuz::signal_clicked, this, &QobuzHome::slot_clickedItemAlbum);
+            QCoreApplication::processEvents();
         }
     }
 
@@ -1379,7 +1995,7 @@ namespace qobuz {
         tmp_scrollArea->setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
         tmp_scrollArea->setStyleSheet("background-color:transparent; border:0px;");
         tmp_scrollArea->setContentsMargins(0, 0, 0, 0);
-        tmp_scrollArea->setFixedHeight(275);
+        tmp_scrollArea->setFixedHeight(285);
 
         QScroller::grabGesture(tmp_scrollArea, QScroller::LeftMouseButtonGesture);
         //----------------------------------------------------------------------------------------------------  BODY : END
@@ -1416,7 +2032,7 @@ namespace qobuz {
         tmp_scrollArea->setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
         tmp_scrollArea->setStyleSheet("background-color:transparent; border:0px;");
         tmp_scrollArea->setContentsMargins(0, 0,0 ,0);
-        tmp_scrollArea->setFixedHeight(293);
+        tmp_scrollArea->setFixedHeight(303);
 
         QScroller::grabGesture(tmp_scrollArea, QScroller::LeftMouseButtonGesture);
         //----------------------------------------------------------------------------------------------------
@@ -1514,7 +2130,6 @@ namespace qobuz {
 
         this->flag_qobuz[0] = true;
         this->setUIControl_appendWidget();
-        this->slot_hide_msg();
     }
 
 
@@ -1566,6 +2181,37 @@ namespace qobuz {
     }
 
 
+    void QobuzHome::slot_applyResult_recentlyArtist(const QList<roseHome::ArtistItemData> &list_data, const QJsonArray &jsonArr_dataToPlay, const bool flag_lastPage){
+
+        Q_UNUSED(jsonArr_dataToPlay);
+        Q_UNUSED(flag_lastPage);
+
+        if(list_data.length() > 0)
+        {
+            this->list_recentlyArtist->append(list_data);
+            this->flag_artist[1] = true;
+        }
+
+        this->flag_artist[0] = true;
+        this->setUIControl_appendWidget_rose();
+    }
+
+
+    void QobuzHome::slot_applyResult_historylist(const QList<roseHome::HistoryItemData> &list_data, const QJsonArray &jsonArr_dataToPlay){
+
+        Q_UNUSED(jsonArr_dataToPlay);
+
+        if(list_data.length() > 0)
+        {
+            this->list_Historylist->append(list_data);
+            this->flag_historylist[1] = true;
+        }
+
+        this->flag_historylist[0] = true;
+        this->setUIControl_appendWidget_rose();
+    }
+
+
     void QobuzHome::slot_applyResult_myPlaylist(const QList<roseHome::PlaylistItemData> &list_data, const QJsonArray &jsonArr_dataToPlay, const bool flag_lastPage){
 
         Q_UNUSED(jsonArr_dataToPlay);
@@ -1595,7 +2241,223 @@ namespace qobuz {
 
         this->flag_userPlaylist[0] = true;
         this->setUIControl_appendWidget_rose();
-        this->slot_hide_msg();
+    }
+
+
+    void QobuzHome::slot_applyResult_recentlyAlbumCheck(const QList<roseHome::AlbumItemData> &list_data, const QJsonArray &jsonArr_dataToPlay, const bool flag_lastPage){
+
+        Q_UNUSED(jsonArr_dataToPlay);
+        Q_UNUSED(flag_lastPage);
+
+        int change_flag = 0;
+
+        if(list_data.size() > 0){
+            if(this->list_recentlyAlbum->count() == 0){
+                this->list_recentlyAlbum->clear();
+                this->list_recentlyAlbum->append(list_data);
+
+                this->flag_recentAlbum_check[1] = true;
+            }
+            else{
+                int maxCount = (list_data.count() > this->list_recentlyAlbum->count()) ? this->list_recentlyAlbum->count() : list_data.count();
+
+                for(int i = 0; i < maxCount; i++){
+                    if(list_data.at(i).id != this->list_recentlyAlbum->at(i).id || list_data.at(i).title != this->list_recentlyAlbum->at(i).title || list_data.at(i).star != this->list_recentlyAlbum->at(i).star){
+                        change_flag++;
+                    }
+                }
+
+                if((list_data.at(0).totalCount != this->list_recentlyAlbum->at(0).totalCount) || (change_flag > 0)){
+                    this->list_recentlyAlbum->clear();
+                    this->list_recentlyAlbum->append(list_data);
+
+                    this->flag_recentAlbum_check[1] = true;
+                }
+            }
+        }
+        else if(list_data.size() == 0 && this->list_recentlyAlbum->count() != 0){
+            this->list_recentlyAlbum->clear();
+
+            this->flag_recentAlbum_check[1] = true;
+        }
+
+        this->flag_recentAlbum_check[0] = true;
+        this->setUIControl_checkWidget_rose();
+    }
+
+
+    void QobuzHome::slot_applyResult_recentlyPlaylistCheck(const QList<roseHome::PlaylistItemData> &list_data, const QJsonArray &jsonArr_dataToPlay, const bool flag_lastPage){
+
+        Q_UNUSED(jsonArr_dataToPlay);
+        Q_UNUSED(flag_lastPage);
+
+        int change_flag = 0;
+
+        if(list_data.size() > 0){
+            if(this->list_recentlyPlaylist->count() == 0){
+                this->list_recentlyPlaylist->clear();
+                this->list_recentlyPlaylist->append(list_data);
+
+                this->flag_recentPlaylist_check[1] = true;
+            }
+            else{
+                int maxCount = (list_data.count() > this->list_recentlyPlaylist->count()) ? this->list_recentlyPlaylist->count() : list_data.count();
+
+                for(int i = 0; i < maxCount; i++){
+                    if(list_data.at(i).id != this->list_recentlyPlaylist->at(i).id || list_data.at(i).title != this->list_recentlyPlaylist->at(i).title || list_data.at(i).star != this->list_recentlyPlaylist->at(i).star){
+                        change_flag++;
+                    }
+                }
+
+                if((list_data.at(0).totalCount != this->list_recentlyPlaylist->at(0).totalCount) || (change_flag > 0)){
+                    this->list_recentlyPlaylist->clear();
+                    this->list_recentlyPlaylist->append(list_data);
+
+                    this->flag_recentPlaylist_check[1] = true;
+                }
+            }
+        }
+        else if(list_data.size() == 0 && this->list_recentlyPlaylist->count() != 0){
+            this->list_recentlyPlaylist->clear();
+
+            this->flag_recentPlaylist_check[1] = true;
+        }
+
+        this->flag_recentPlaylist_check[0] = true;
+        this->setUIControl_checkWidget_rose();
+    }
+
+
+    void QobuzHome::slot_applyResult_recentlyTrackCheck(const QList<roseHome::TrackItemData> &list_data, const QJsonArray &jsonArr_dataToPlay, const bool flag_lastPage){
+
+        Q_UNUSED(jsonArr_dataToPlay);
+        Q_UNUSED(flag_lastPage);
+
+        int change_flag = 0;
+
+        if(list_data.size() > 0){
+            if(this->list_recentlytrack->count() == 0){
+                this->list_recentlytrack->clear();
+                this->jsonArr_tracks_toPlay = QJsonArray();
+
+                this->list_recentlytrack->append(list_data);
+                this->jsonArr_tracks_toPlay = jsonArr_dataToPlay;
+
+                this->flag_recentTrack_check[1] = true;
+            }
+            else{
+                int maxCount = (list_data.count() > this->list_recentlytrack->count()) ? this->list_recentlytrack->count() : list_data.count();
+
+                for(int i = 0; i < maxCount; i++){
+                    if(list_data.at(i).id != this->list_recentlytrack->at(i).id || list_data.at(i).title != this->list_recentlytrack->at(i).title || list_data.at(i).star != this->list_recentlytrack->at(i).star){
+                        change_flag++;
+                    }
+                }
+
+                if((list_data.at(0).totalCount != this->list_recentlytrack->at(0).totalCount) || (change_flag > 0)){
+                    this->list_recentlytrack->clear();
+                    this->jsonArr_tracks_toPlay = QJsonArray();
+
+                    this->list_recentlytrack->append(list_data);
+                    this->jsonArr_tracks_toPlay = jsonArr_dataToPlay;
+
+                    this->flag_recentTrack_check[1] = true;
+                }
+            }
+        }
+        else if(list_data.size() == 0 && this->list_recentlytrack->count() != 0){
+            this->list_recentlytrack->clear();
+            this->jsonArr_tracks_toPlay = QJsonArray();
+
+            this->flag_recentTrack_check[1] = true;
+        }
+
+        this->flag_recentTrack_check[0] = true;
+        this->setUIControl_checkWidget_rose();
+    }
+
+
+    void QobuzHome::slot_applyResult_recentlyArtistCheck(const QList<roseHome::ArtistItemData> &list_data, const QJsonArray &jsonArr_dataToPlay, const bool flag_lastPage){
+
+        Q_UNUSED(jsonArr_dataToPlay);
+        Q_UNUSED(flag_lastPage);
+
+        int change_flag = 0;
+
+        if(list_data.size() > 0){
+            if(this->list_recentlyArtist->count() == 0){
+                this->list_recentlyArtist->clear();
+                this->list_recentlyArtist->append(list_data);
+
+                this->flag_recentArtist_check[1] = true;
+            }
+            else{
+                int maxCount = (list_data.count() > this->list_recentlyArtist->count()) ? this->list_recentlyArtist->count() : list_data.count();
+
+                for(int i = 0; i < maxCount; i++){
+                    if(list_data.at(i).id != this->list_recentlyArtist->at(i).id || list_data.at(i).name != this->list_recentlyArtist->at(i).name || list_data.at(i).star != this->list_recentlyArtist->at(i).star){
+                        change_flag++;
+                    }
+                }
+
+                if((list_data.at(0).totalCount != this->list_recentlyArtist->at(0).totalCount) || (change_flag > 0)){
+                    this->list_recentlyArtist->clear();
+                    this->list_recentlyArtist->append(list_data);
+
+                    this->flag_recentArtist_check[1] = true;
+                }
+            }
+        }
+        else if(list_data.size() == 0 && this->list_recentlyArtist->count() != 0){
+            this->list_recentlyArtist->clear();
+
+            this->flag_recentArtist_check[1] = true;
+        }
+
+        this->flag_recentArtist_check[0] = true;
+        this->setUIControl_checkWidget_rose();
+    }
+
+
+    void QobuzHome::slot_applyResult_myPlaylistCheck(const QList<roseHome::PlaylistItemData> &list_data, const QJsonArray &jsonArr_dataToPlay, const bool flag_lastPage){
+
+        Q_UNUSED(jsonArr_dataToPlay);
+        Q_UNUSED(flag_lastPage);
+
+        int change_flag = 0;
+
+        if(list_data.size() > 0){
+            if(this->list_myPlaylist->count() == 0){
+                this->list_myPlaylist->clear();
+                this->list_myPlaylist->append(list_data);
+
+                this->flag_myPlaylist_check[1] = true;
+            }
+            else{
+                int maxCount = (list_data.count() > this->list_myPlaylist->count()) ? this->list_myPlaylist->count() : list_data.count();
+
+                for(int i = 0; i < maxCount; i++){
+                    if((list_data.at(i).id != this->list_myPlaylist->at(i).id) || (list_data.at(i).title != this->list_myPlaylist->at(i).title) || (list_data.at(i).star != this->list_myPlaylist->at(i).star)){
+                        change_flag++;
+                    }
+                }
+
+                if((list_data.at(0).totalCount != this->list_myPlaylist->at(0).totalCount) || (change_flag > 0)){
+                    this->list_myPlaylist->clear();
+                    this->list_myPlaylist->append(list_data);
+
+                    this->flag_myPlaylist_check[1] = true;
+                }
+            }
+        }
+        else if(list_data.size() == 0 && this->list_myPlaylist->size() != 0){
+            this->list_myPlaylist->clear();
+
+            this->flag_myPlaylist_check[1] = true;
+        }
+
+        this->flag_myPlaylist_check[0] = true;
+        this->setUIControl_checkWidget_rose();
     }
 
 
@@ -1604,6 +2466,49 @@ namespace qobuz {
         this->shareLink = link;
     }
 
+
+    void QobuzHome::slot_applyResult_myPlaylistDelete(const QJsonObject &jsonObj){
+
+        if(jsonObj.value("flagOk").toBool() == true && jsonObj.value("message").toString() == "정상"){
+            this->flag_recentAlbum_check[0] = true;
+            this->flag_recentPlaylist_check[0] = true;
+            this->flag_recentTrack_check[0] = true;
+            this->flag_recentArtist_check[0] = true;
+            this->flag_myPlaylist_check[0] = true;
+
+            this->flag_recentAlbum_check[1] = false;
+            this->flag_recentPlaylist_check[1] = false;
+            this->flag_recentTrack_check[1] = false;
+            this->flag_recentArtist_check[1] = false;
+            this->flag_myPlaylist_check[1] = false;
+
+            print_debug();ContentLoadingwaitingMsgShow(tr("Content is being loaded. Please wait."));
+
+            roseHome::ProcCommon *proc_myPlaylist = new roseHome::ProcCommon(this);
+            connect(proc_myPlaylist, &roseHome::ProcCommon::completeReq_list_myplaylists, this, &QobuzHome::slot_applyResult_myPlaylistCheck);
+            proc_myPlaylist->request_rose_getList_myPlaylists(ROSE_API_MYPLAYLIST_PATH , "QOBUZ", 0, GET_ITEM_SIZE___ONCE_FOR_MAIN);
+        }
+    }
+
+
+    void QobuzHome::slot_qobuz_completeReq_listAll_myFavoritesIds(const QJsonObject& contents){
+
+//        // Favorite 정보를 전달해줌. 알아서 처리하라고.
+//        if(contents.contains("flagOk") && ProcJsonEasy::get_flagOk(contents)){
+//            bool status  = ProcJsonEasy::getBool(contents, "status");
+
+//            // Qobuz favorite toggle check
+//            if(this->flag_send_track == true){
+//                if((status == true && this->flag_track_fav == false) || (status == false && this->flag_track_fav == true)){
+//                    // Qobuz Favorite toggle
+//                    ProcCommon *proc = new ProcCommon(this);
+//                    connect(proc, &qobuz::ProcCommon::completeReq_listAll_myFavoritesIds, this, &QobuzHome::slot_qobuz_completeReq_listAll_myFavoritesIds);
+//                    proc->request_qobuz_set_favorite("track", QString("%1").arg(this->track_id_fav), this->flag_track_fav);
+//                }
+//                this->flag_send_track = false;
+//            }
+//        }
+    }
 
     void QobuzHome::slot_applyResult_getRating_track(const QJsonArray &contents){
 
@@ -1725,41 +2630,55 @@ namespace qobuz {
             }
         }
         else if(btnId == BTN_IDX_SUBTITLE_recentlyTrack){
-            QString title = tr("Recently played tracks");
+            QString title = this->lb_subTitle[btnId]->text();
 
             QJsonObject tmp_data;
-            if(this->list_recentlytrack->size() > 0){
-                tmp_data.insert("title", QString(title + " (%1)").arg(this->list_recentlytrack->at(0).totalCount));
-            }
-            else{
-                tmp_data.insert("title", QString(title + " (0)"));
-            }
+            tmp_data.insert("title", title);
             tmp_data.insert(KEY_PAGE_CODE, PAGECODE_Q_MY_RECENTLY_TRACK_ALL_LIST);
             emit this->signal_clickedMovePage(tmp_data);                    // 페이지 이동 signal
         }
-        else if(btnId == BTN_IDX_SUBTITLE_myPlaylists){
-            QString title = tr("My playlists");
+        else if(btnId == BTN_IDX_SUBTITLE_recentlyArtist){
+            QString title = this->lb_subTitle[btnId]->text();
 
             QJsonObject tmp_data;
-            if(this->list_myPlaylist->size() > 0){
-                tmp_data.insert("title", QString(title + "(%1)").arg(this->list_myPlaylist->at(0).totalCount));
+            tmp_data.insert("title", title);
+            tmp_data.insert(KEY_PAGE_CODE, PAGECODE_Q_MY_RECENTLY_ARTIST_ALL_LIST);
+            emit this->signal_clickedMovePage(tmp_data);                // 페이지 이동 signal
+        }
+        else if(btnId == BTN_IDX_SUBTITLE_History){
+            QString title = this->lb_subTitle[btnId]->text();
+
+            QJsonArray histories;
+            for(int i = 0; i < this->list_Historylist->count(); i++){
+                QJsonObject tmphistory;
+                tmphistory.insert("yearMonth", this->list_Historylist->at(i).yearMonth);
+                tmphistory.insert("visible", this->list_Historylist->at(i).visible);
+
+                histories.append(tmphistory);
             }
-            else{
-                tmp_data.insert("title", QString(title + " (0)"));
-            }
+
+            QJsonObject tmp_data;
+            tmp_data.insert("pathTitle", title);
+            tmp_data.insert("type", "History");
+            tmp_data.insert("type_id", 8);
+            tmp_data.insert("filter_type", "QOBUZ");
+            tmp_data.insert("histories", histories);
+            tmp_data.insert(KEY_PAGE_CODE, PAGECODE_Q_HISTORY_LIST_VIEW);
+            emit this->signal_clickedMovePage(tmp_data);
+        }
+        else if(btnId == BTN_IDX_SUBTITLE_myPlaylists){
+            QString title = this->lb_subTitle[btnId]->text();
+
+            QJsonObject tmp_data;
+            tmp_data.insert("title", title);
             tmp_data.insert(KEY_PAGE_CODE, PAGECODE_Q_MY_ROSE_PLAYLIST_ALL_LIST);
             emit this->signal_clickedMovePage(tmp_data);                // 페이지 이동 signal
         }
         else if(btnId == BTN_IDX_SUBTITLE_userPlaylists){
-            QString title = tr("Qobuz Playlist On Rose");
+            QString title = this->lb_subTitle[btnId]->text();
 
             QJsonObject tmp_data;
-            if(this->list_userPlaylist->size() > 0){
-                tmp_data.insert("title", QString(title + "(%1)").arg(this->list_userPlaylist->at(0).totalCount));
-            }
-            else{
-                tmp_data.insert("title", QString(title + " (0)"));
-            }
+            tmp_data.insert("title", title);
             tmp_data.insert(KEY_PAGE_CODE, PAGECODE_Q_USER_ROSE_PLAYLIST_ALL_LIST);
             emit this->signal_clickedMovePage(tmp_data);                // 페이지 이동 signal
         }
@@ -1897,7 +2816,7 @@ namespace qobuz {
             }
             this->btn_filter_clear->setEnabled(false);
 
-            ContentLoadingwaitingMsgShow(tr("Content is being loaded. Please wait."));
+            print_debug();ContentLoadingwaitingMsgShow(tr("Content is being loaded. Please wait."));
 
             this->setUIControl_initialized();
 
@@ -1999,7 +2918,7 @@ namespace qobuz {
             this->widget_genre_filter->setGeometry(90, 23, 0, 0);
         }
         else{
-            int label_size = 0;//c220805
+            int label_size = 0;
             for(int i = 0; i < this->btn_filter_cnt; i++){
                 if(global.user_forQobuz.enable_main_filter[i] == 1){
                     this->lb_filter[i]->setText(this->str_genre_name[i]);
@@ -2013,32 +2932,6 @@ namespace qobuz {
                 }
                 filter_total += i;
             }
-
-            //c220805
-            /*if(global.LmtCnt > 1680){//c220805
-                widget_btnFilter->setFixedSize(global.LmtCnt, 75);
-            }else{
-                if(label_size < global.LmtCnt){
-                    widget_btnFilter->setFixedSize(global.LmtCnt, 75);
-                }else{
-                    widget_btnFilter->setFixedSize(global.LmtCnt, 100);
-                }
-
-            }
-
-            print_debug();
-            qDebug() << "this->btn_filter_cnt=" << this->btn_filter_cnt;
-
-            if(global.LmtCnt > 1500){//c220805
-                widget_genre_filter->setFixedSize(global.LmtCnt, 75);
-            }else{
-                if(label_size < global.LmtCnt){
-                    widget_genre_filter->setFixedSize(global.LmtCnt, 75);
-                }else{
-                    widget_genre_filter->setFixedSize(global.LmtCnt, 100);
-                }
-
-            }*/
 
             if(label_size > 1500){
                 this->widget_genre_filter->setGeometry(90, 5, 0, 0);
@@ -2089,7 +2982,7 @@ namespace qobuz {
             }
             this->btn_filter_clear->setEnabled(false);
 
-            ContentLoadingwaitingMsgShow(tr("Content is being loaded. Please wait."));
+            print_debug();ContentLoadingwaitingMsgShow(tr("Content is being loaded. Please wait."));
 
             this->setUIControl_initialized();
 
@@ -2196,10 +3089,48 @@ namespace qobuz {
                 emit this->signal_clickedMovePage(jsonObj_move);            // 페이지 이동 signal
             }
             else if(clickMode == tidal::AbstractItem::ClickMode::MoreBtn){
-                print_debug();
-
                 // OptionPopup 띄우기 필요
                 this->makeObj_optMorePopup(OptMorePopup::Rosehome_Album, roseHome::ConvertData::getConvertOptHeaderData(data), index, section);
+            }
+        }
+        else if(section == SECTION_FOR_MORE_POPUP___History){
+
+            for(int i = 0; i < this->list_Historylist->count(); i++){
+                roseHome::HistoryItemData tmpData;
+                tmpData.yearMonth = this->list_Historylist->at(i).yearMonth;
+                tmpData.visible = this->list_Historylist->at(i).visible;
+                tmpData.filter_type = "QOBUZ";
+
+                this->list_Historylist->replace(i, tmpData);
+            }
+
+            // ClickMode 별로 처리
+            this->proc_clicked_itemHistory(this->list_Historylist, clickMode, index, section);
+        }
+    }
+
+
+    void  QobuzHome::slot_clickedItemArtist(const tidal::AbstractItem::ClickMode clickMode){
+
+        int index = ((tidal::AbstractItem*)sender())->index();
+        int section = ((tidal::AbstractItem*)sender())->section();
+
+        // ClickMode 별로 처리 - Artist 파트가 여러개임
+        if(section == SECTION_FOR_MORE_POPUP___recentlyArtist){
+            roseHome::ArtistItemData data = this->list_recentlyArtist->at(index);
+
+            // ClickMode 별로 처리
+            if(clickMode == tidal::AbstractItem::ClickMode::AllBox){
+                // Artist Detail 페이지 진입
+                QJsonObject jsonObj_move = QJsonObject();
+                jsonObj_move.insert("id", data.clientKey.toInt());
+                jsonObj_move.insert(KEY_PAGE_CODE, PAGECODE_Q_ARTIST_DETAIL);
+
+                emit this->signal_clickedMovePage(jsonObj_move);            // 페이지 이동 signal
+            }
+            else if(clickMode == tidal::AbstractItem::ClickMode::MoreBtn){
+
+                this->makeObj_optMorePopup(OptMorePopup::Rosehome_Artist, roseHome::ConvertData::getConvertOptHeaderData(data), index, section);
             }
         }
     }
@@ -2264,8 +3195,6 @@ namespace qobuz {
                 }
             }
             else if(clickMode == tidal::AbstractItem::ClickMode::MoreBtn){
-                print_debug();
-
                 // OptionPopup 띄우기 필요
                 this->makeObj_optMorePopup(OptMorePopup::Rosehome_Playlist, roseHome::ConvertData::getConvertOptHeaderData(data), index, section);
             }
@@ -2288,8 +3217,6 @@ namespace qobuz {
                 emit this->signal_clickedMovePage(jsonObj_move);            // 페이지 이동 signal
             }
             else if(clickMode == tidal::AbstractItem::ClickMode::MoreBtn){
-                print_debug();
-
                 // OptionPopup 띄우기 필요
                 this->makeObj_optMorePopup(OptMorePopup::Rosehome_Playlist, roseHome::ConvertData::getConvertOptHeaderData(data), index, section);
             }
@@ -2312,8 +3239,6 @@ namespace qobuz {
                 emit this->signal_clickedMovePage(jsonObj_move);            // 페이지 이동 signal
             }
             else if(clickMode == tidal::AbstractItem::ClickMode::MoreBtn){
-                print_debug();
-
                 // OptionPopup 띄우기 필요
                 this->makeObj_optMorePopup(OptMorePopup::Rosehome_Playlist, roseHome::ConvertData::getConvertOptHeaderData(data), index, section);
             }
@@ -2339,6 +3264,16 @@ namespace qobuz {
                 else if(this->track_star_fav >= 0 && this->track_star_fav < 3){
                     this->track_star_fav++;
                     this->flag_track_fav = true;
+                }
+                if(this->track_star_fav == 0 || this->track_star_fav == 1){
+                    // Qobuz Favorite toggle
+                    this->track_id_fav = this->list_recentlytrack->at(idx).clientKey.toInt();
+
+                    ProcCommon *proc = new ProcCommon(this);
+                    connect(proc, &qobuz::ProcCommon::completeReq_listAll_myFavoritesIds, this, &QobuzHome::slot_qobuz_completeReq_listAll_myFavoritesIds);
+                    proc->request_qobuz_set_favorite("track", QString("%1").arg(this->track_id_fav), this->flag_track_fav);
+                    this->flag_send_track = true;
+
                 }
 
                 this->track_idx_fav = idx;
@@ -2457,16 +3392,13 @@ namespace qobuz {
     void QobuzHome::slot_optMorePopup_menuClicked(const OptMorePopup::ClickMode clickMode, const int index, const int section){
 
         if(section == SECTION_FOR_MORE_POPUP___recentlyAlbum){
-            if(clickMode == OptMorePopup::ClickMode::Share){//c220823
-                print_debug();
+            if(clickMode == OptMorePopup::ClickMode::Share){
                 setUIShare();
-                qDebug() << "this->shareLink="<<this->shareLink;
-
             }
-            if(clickMode == OptMorePopup::ClickMode::Play_RightNow
-                    || clickMode == OptMorePopup::ClickMode::SubMenu_QueueAdd_Last
-                    || clickMode == OptMorePopup::ClickMode::SubMenu_QueueAdd_Empty
-                    || clickMode == OptMorePopup::ClickMode::SubMenu_QueueAdd_CurrNext
+            else if(clickMode == OptMorePopup::ClickMode::Play_RightNow
+                || clickMode == OptMorePopup::ClickMode::SubMenu_QueueAdd_Last
+                || clickMode == OptMorePopup::ClickMode::SubMenu_QueueAdd_Empty
+                || clickMode == OptMorePopup::ClickMode::SubMenu_QueueAdd_CurrNext
             )
             {
                 // Rose Play 요청
@@ -2476,15 +3408,12 @@ namespace qobuz {
         }
         else if(section == SECTION_FOR_MORE_POPUP___recentlyPlaylist){
             if(clickMode == OptMorePopup::ClickMode::Share){//c220823
-                print_debug();
                 setUIShare();
-                qDebug() << "this->shareLink="<<this->shareLink;
-
             }
-            if(clickMode == OptMorePopup::ClickMode::Play_RightNow
-                    || clickMode == OptMorePopup::ClickMode::SubMenu_QueueAdd_Last
-                    || clickMode == OptMorePopup::ClickMode::SubMenu_QueueAdd_Empty
-                    || clickMode == OptMorePopup::ClickMode::SubMenu_QueueAdd_CurrNext
+            else if(clickMode == OptMorePopup::ClickMode::Play_RightNow
+                || clickMode == OptMorePopup::ClickMode::SubMenu_QueueAdd_Last
+                || clickMode == OptMorePopup::ClickMode::SubMenu_QueueAdd_Empty
+                || clickMode == OptMorePopup::ClickMode::SubMenu_QueueAdd_CurrNext
             )
             {
                 if(this->list_recentlyPlaylist->at(index).type == "QOBUZ" && this->list_recentlyPlaylist->at(index).isRose == false){
@@ -2500,61 +3429,95 @@ namespace qobuz {
                 }
             }
         }
-        else if(section == SECTION_FOR_MORE_POPUP___myPlaylists){
-            if(clickMode == OptMorePopup::ClickMode::Share){//c220823
-                print_debug();
-                setUIShare();
-                qDebug() << "this->shareLink="<<this->shareLink;
-
-            }
-            if(clickMode == OptMorePopup::ClickMode::Play_RightNow
-                    || clickMode == OptMorePopup::ClickMode::SubMenu_QueueAdd_Last
-                    || clickMode == OptMorePopup::ClickMode::SubMenu_QueueAdd_Empty
-                    || clickMode == OptMorePopup::ClickMode::SubMenu_QueueAdd_CurrNext
-            )
-            {
-                roseHome::ProcRosePlay_withRosehome *procRosePlay = new roseHome::ProcRosePlay_withRosehome(this);
-                procRosePlay->requestPlayRose_byPlaylistID(this->list_myPlaylist->at(index).id, clickMode);
-            }
-        }
-        else if(section == SECTION_FOR_MORE_POPUP___userPlaylists){
-            if(clickMode == OptMorePopup::ClickMode::Share){//c220823
-                print_debug();
-                setUIShare();
-                qDebug() << "this->shareLink="<<this->shareLink;
-
-            }
-            if(clickMode == OptMorePopup::ClickMode::Play_RightNow
-                    || clickMode == OptMorePopup::ClickMode::SubMenu_QueueAdd_Last
-                    || clickMode == OptMorePopup::ClickMode::SubMenu_QueueAdd_Empty
-                    || clickMode == OptMorePopup::ClickMode::SubMenu_QueueAdd_CurrNext
-            )
-            {
-                roseHome::ProcRosePlay_withRosehome *procRosePlay = new roseHome::ProcRosePlay_withRosehome(this);
-                procRosePlay->requestPlayRose_byPlaylistID(this->list_userPlaylist->at(index).id, clickMode);
-            }
-        }
         else if(section == SECTION_FOR_MORE_POPUP___recentlyTrack){
-            if(clickMode == OptMorePopup::ClickMode::Share){//c220823
-                print_debug();
+            if(clickMode == OptMorePopup::ClickMode::Share){
                 setUIShare();
-                qDebug() << "this->shareLink="<<this->shareLink;
-
             }
-            if(clickMode == OptMorePopup::ClickMode::Play_RightNow
-                    || clickMode == OptMorePopup::ClickMode::SubMenu_QueueAdd_Last_OnlyOne
-                    || clickMode == OptMorePopup::ClickMode::SubMenu_QueueAdd_Empty_OnlyOne
-                    || clickMode == OptMorePopup::ClickMode::SubMenu_Play_RightNow_OnlyOne
-                    || clickMode == OptMorePopup::ClickMode::SubMenu_QueueAdd_CurrNext_OnlyOne
-                    || clickMode == OptMorePopup::ClickMode::SubMenu_Play_FromHere
-                    || clickMode == OptMorePopup::ClickMode::SubMenu_Play_FromHere_procEmpty
-                    || clickMode == OptMorePopup::ClickMode::SubMenu_QueueAdd_FromHere_Last
-
+            else if(clickMode == OptMorePopup::ClickMode::Play_RightNow
+                || clickMode == OptMorePopup::ClickMode::SubMenu_QueueAdd_Last_OnlyOne
+                || clickMode == OptMorePopup::ClickMode::SubMenu_QueueAdd_Empty_OnlyOne
+                || clickMode == OptMorePopup::ClickMode::SubMenu_Play_RightNow_OnlyOne
+                || clickMode == OptMorePopup::ClickMode::SubMenu_QueueAdd_CurrNext_OnlyOne
+                || clickMode == OptMorePopup::ClickMode::SubMenu_Play_FromHere
+                || clickMode == OptMorePopup::ClickMode::SubMenu_Play_FromHere_procEmpty
+                || clickMode == OptMorePopup::ClickMode::SubMenu_QueueAdd_FromHere_Last
             )
             {
                 // Rose Play 요청
                 roseHome::ProcRosePlay_withRosehome *procRosePlay = new roseHome::ProcRosePlay_withRosehome(this);
                 procRosePlay->requestPlayRose_byTracks(this->list_recentlytrack->at(index), this->jsonArr_tracks_toPlay, index, clickMode);
+            }
+        }
+        else if(section == SECTION_FOR_MORE_POPUP___recentlyArtist){
+            if(clickMode == OptMorePopup::ClickMode::Share){
+                setUIShare();
+            }
+        }
+        else if(section == SECTION_FOR_MORE_POPUP___myPlaylists){
+            if(clickMode == OptMorePopup::ClickMode::Share){
+                setUIShare();
+            }
+            else if(clickMode == OptMorePopup::ClickMode::Play_RightNow
+                || clickMode == OptMorePopup::ClickMode::SubMenu_QueueAdd_Last
+                || clickMode == OptMorePopup::ClickMode::SubMenu_QueueAdd_Empty
+                || clickMode == OptMorePopup::ClickMode::SubMenu_QueueAdd_CurrNext
+            )
+            {
+                roseHome::ProcRosePlay_withRosehome *procRosePlay = new roseHome::ProcRosePlay_withRosehome(this);
+                procRosePlay->requestPlayRose_byPlaylistID(this->list_myPlaylist->at(index).id, clickMode);
+            }
+            else if(clickMode == OptMorePopup::ClickMode::Edit){
+                QString view_type = "edit";
+
+                QJsonObject data;
+                data.insert("view_type", view_type);
+                data.insert("playlist_id", this->list_myPlaylist->at(index).id);
+                data.insert("type", "ROSE");
+
+                QJsonObject jsonObj_move;
+                jsonObj_move.insert("data", data);
+
+                jsonObj_move.insert(KEY_PAGE_CODE, PAGECODE_Q_ADD_PLAYLIST);
+
+                emit this->signal_clickedMovePage(jsonObj_move);
+            }
+            else if(clickMode == OptMorePopup::ClickMode::Delete){
+
+                DialogConfirm *dlg = new DialogConfirm(this);
+                dlg->setFixedHeight(560);
+                dlg->setTitle(tr("PlayList Delete Notice"));
+                dlg->setText(tr("Are you sure you want to delete your selected playlist's track?"));
+
+                int latestWidth = global.width_mainwindow;
+                int latestHeight = global.height_mainwindow;
+                int left = global.left_mainwindow + ((latestWidth - dlg->sizeHint().width()) / 2);
+                int top = global.top_mainwindow + ((latestHeight - dlg->sizeHint().height()) / 2);
+
+                dlg->setGeometry(left, top, 0, 0);
+
+                int result = dlg->exec();
+
+                if(result == QDialog::Accepted){
+                    roseHome::ProcCommon *proc_myPlaylistDel = new roseHome::ProcCommon(this);
+                    connect(proc_myPlaylistDel, &roseHome::ProcCommon::completeReq_delete_playlist, this, &QobuzHome::slot_applyResult_myPlaylistDelete);
+                    proc_myPlaylistDel->request_rose_delete_myPlaylist(this->list_myPlaylist->at(index).id);
+                }
+
+                delete dlg;
+            }
+        }
+        else if(section == SECTION_FOR_MORE_POPUP___userPlaylists){
+            if(clickMode == OptMorePopup::ClickMode::Share){
+                setUIShare();
+            }
+            else if(clickMode == OptMorePopup::ClickMode::Play_RightNow
+                || clickMode == OptMorePopup::ClickMode::SubMenu_QueueAdd_Last
+                || clickMode == OptMorePopup::ClickMode::SubMenu_QueueAdd_Empty
+                || clickMode == OptMorePopup::ClickMode::SubMenu_QueueAdd_CurrNext
+            )
+            {
+                roseHome::ProcRosePlay_withRosehome *procRosePlay = new roseHome::ProcRosePlay_withRosehome(this);
+                procRosePlay->requestPlayRose_byPlaylistID(this->list_userPlaylist->at(index).id, clickMode);
             }
         }
         else if(section == SECTION_FOR_MORE_POPUP___new_releases){

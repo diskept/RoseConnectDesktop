@@ -78,7 +78,7 @@ namespace qobuz {
      */
     qobuz::RoseSessionInfo_forQobuz ConvertData::convertData_roseSessionInfo(const QJsonObject &jsonObj){
 
-        // test debug 17.02.2021 Added Jeon
+        // test debug 17.02.2021 Added diskept
         //qDebug() << "file_name: " << __FILE__ << "function_name: " << __FUNCTION__ << "line: " << __LINE__ << "\n";
 
         qobuz::RoseSessionInfo_forQobuz data_output;
@@ -325,6 +325,9 @@ namespace qobuz {
         data_output.composer_id = ProcJsonEasy::getInt(jsonPar_comporser, "id");
         data_output.composer_name = ProcJsonEasy::getString(jsonPar_comporser, "name");
 
+        data_output.parental_warning = ProcJsonEasy::getBool(jsonObj,"parental_warning");
+
+
         if(jsonObj.contains("qobuz_id"))
         {
             data_output.qobuz_id = ProcJsonEasy::getInt(jsonObj, "qobuz_id");
@@ -375,6 +378,7 @@ namespace qobuz {
         data_output.work = ProcJsonEasy::getString(jsonObj, "work");
         data_output.track_number = ProcJsonEasy::getInt(jsonObj, "track_number");
 
+
         return data_output;
     }
 
@@ -397,8 +401,8 @@ namespace qobuz {
         //data_output.id = ProcJsonEasy::getInt(jsonObj, "id");
         //data_output.numberOfTracks = ProcJsonEasy::getInt(jsonObj, "numberOfTracks");
 
-        // for album info       Added jeon 28/12/2020
-        data_output.id = ProcJsonEasy::getString(jsonObj, "id");                // Qobuz's Album ID is of type string   Added jeon 27/12/2020
+        // for album info       Added diskept 28/12/2020
+        data_output.id = ProcJsonEasy::getString(jsonObj, "id");                // Qobuz's Album ID is of type string   Added diskept 27/12/2020
         data_output.hires = ProcJsonEasy::getBool(jsonObj, "hires");
         data_output.hires_streamable = ProcJsonEasy::getBool(jsonObj, "hires_streamable");
         data_output.streamable = ProcJsonEasy::getBool(jsonObj, "streamable");
@@ -406,6 +410,7 @@ namespace qobuz {
         data_output.maximum_bit_depth = ProcJsonEasy::getInt(jsonObj, "maximum_bit_depth");//cheon210717-hires
         data_output.maximum_channel_count = ProcJsonEasy::getInt(jsonObj, "maximum_channel_count");//cheon210717-hires
         data_output.maximum_sampling_rate = ProcJsonEasy::getDouble(jsonObj, "maximum_sampling_rate");//cheon210717-hires
+
 
         //qDebug() << "\n\nAlbumItemData ConvertData::make_albumData_fromQobuzJsonObj---data_output.maximum_bit_depth" << data_output.maximum_bit_depth << "\n\n";//cheon210717-hires
 
@@ -469,6 +474,7 @@ namespace qobuz {
 
         //qDebug() << "Artist id : " << data_output.list_artist_id << "Name : " << data_output.list_artist_name << "\n";
 
+
         return data_output;
     }
 
@@ -496,7 +502,7 @@ namespace qobuz {
         bool img_rectangle = jsonObj.contains("image_rectangle");
         bool img_square = jsonObj.contains("images300");
 
-        // for album info       Added jeon 30/12/2020
+        // for album info       Added diskept 30/12/2020
         if(img_rectangle)
         {
             QJsonArray jsonArr_image_rect = ProcJsonEasy::getJsonArray(jsonObj, "image_rectangle");

@@ -4,9 +4,10 @@
 #include "apple/Apple_struct.h"
 #include "apple/AppleSettings.h"
 
+#include "home/topmenubar.h"
+
 #include "widget/AbstractImageDetailContents_RHV.h"
 #include "widget/AbstractAlbumTrackDetailInfo_RHV.h"
-#include "widget/dialogNotice.h"
 
 #include <QCoreApplication>
 

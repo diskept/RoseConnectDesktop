@@ -118,7 +118,7 @@ namespace apple {
 
                 this->flag_draw = false;
 
-                ContentLoadingwaitingMsgShow(tr("Content is being loaded. Please wait."));
+                print_debug();ContentLoadingwaitingMsgShow(tr("Content is being loaded. Please wait."));
 
                 apple::ProcCommon *proc_playlist = new apple::ProcCommon(this);
                 connect(proc_playlist, &apple::ProcCommon::completeReq_playlist, this, &ApplePlaylistDetail::slot_applyResult_playlist);
@@ -142,6 +142,10 @@ namespace apple {
 
             // 항상 부모클래스의 함수 먼저 호출
             AbstractAppleSubWidget::setActivePage();
+
+            GSCommon::clearLayout(this->box_contents);
+            this->box_contents->setAlignment(Qt::AlignTop);
+            this->scrollArea_main->setVerticalScrollBarPolicy(Qt::ScrollBarAsNeeded);
 
             this->box_main_contents = new QVBoxLayout();
             this->box_main_contents->setSpacing(0);
@@ -306,7 +310,7 @@ namespace apple {
 
             QJsonObject artwork = ProcJsonEasy::getJsonObject(this->jsonObj_playlistInfo, "artwork");
             QString url = ProcJsonEasy::getString(artwork, "url");
-            url.replace("{w}x{h}", "600x600SC");
+            url.replace("{w}x{h}", "600x600");
 
             QJsonObject playlist;
             playlist.insert("clientKey", ProcJsonEasy::getString(this->jsonObj_playlistInfo, "id"));
@@ -413,7 +417,7 @@ namespace apple {
                 QJsonObject artwork = ProcJsonEasy::getJsonObject(attributes, "artwork");
 
                 QString url = ProcJsonEasy::getString(artwork, "url");
-                url.replace("{w}x{h}", "600x600SC");
+                url.replace("{w}x{h}", "600x600");
 
                 QJsonArray albums = QJsonArray();
                 albums.append(ProcJsonEasy::getString(attributes, "albumName"));

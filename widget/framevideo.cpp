@@ -170,17 +170,33 @@ void FrameVideo::setData(const QJsonObject &p_jsonObject){
             tmp_wordwrap->setStyleSheet("font-size:16px; color:#FFFFFF;");
             tmp_wordwrap->setWordWrap(true);
             tmp_wordwrap->setText(GSCommon::getTextCutFromLabelWidth(data->getAlbum(), (IMG_WIDTH * 2)-30, this->lb_title->font()));
+            if(tmp_wordwrap->text().contains("…")){
+                tmp_wordwrap->setToolTip(data->getAlbum());
+                tmp_wordwrap->setToolTipDuration(2000);
+            }
 
             if(tmp_wordwrap->sizeHint().height() > this->LABEL_HEIGHT * 2){
                 this->lb_title->setText(GSCommon::getTextCutFromLabelWidth(data->getAlbum(), (IMG_WIDTH * 2)-80, this->lb_title->font()));
+                if(this->lb_title->text().contains("…")){
+                    this->lb_title->setToolTip(data->getAlbum());//c230321
+                    this->lb_title->setToolTipDuration(2000);//c230321
+                }
             }
             else{
                 this->lb_title->setText(GSCommon::getTextCutFromLabelWidth(data->getAlbum(), (IMG_WIDTH * 2)-30, this->lb_title->font()));
+                if(this->lb_title->text().contains("…")){
+                    this->lb_title->setToolTip(data->getAlbum());//c230321
+                    this->lb_title->setToolTipDuration(2000);//c230321
+                }
             }
         }
         else{
             this->lb_title->setGeometry(0, (this->SPACE_LABELS * 2), IMG_WIDTH, this->LABEL_HEIGHT);
             this->lb_title->setText(GSCommon::getTextCutFromLabelWidth(data->getAlbum(), IMG_WIDTH, lb_title->font()));//cheon-210708-album
+            if(this->lb_title->text().contains("…")){
+                this->lb_title->setToolTip(data->getAlbum());//c230321
+                this->lb_title->setToolTipDuration(2000);//c230321
+            }
         }
     }
     else if(tmp_wordwrap->sizeHint().width() == IMG_WIDTH){
@@ -190,6 +206,10 @@ void FrameVideo::setData(const QJsonObject &p_jsonObject){
     else {
         this->lb_title->setGeometry(0, (this->SPACE_LABELS * 2), IMG_WIDTH, this->LABEL_HEIGHT);
         this->lb_title->setText(GSCommon::getTextCutFromLabelWidth(data->getAlbum(), IMG_WIDTH, lb_title->font()));//cheon-210708-album
+        if(this->lb_title->text().contains("…")){
+            this->lb_title->setToolTip(data->getAlbum());//c230321
+            this->lb_title->setToolTipDuration(2000);//c230321
+        }
     }
 
     requestVideoThumbnail();

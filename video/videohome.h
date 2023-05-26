@@ -33,6 +33,8 @@ namespace video {
     protected:
         void proc_wheelEvent_to_getMoreData() override;
 
+        void resizeEvent(QResizeEvent *event) override;
+
     private slots:
         void slot_clickedItemVideo(const tidal::AbstractItem::ClickMode clickMode);
 
@@ -48,6 +50,9 @@ namespace video {
 
         video::ItemWidget_video *list_video[999999];
         QJsonArray jsonArr_tracks_toPlay;
+
+        int video_widget_width = 0;
+        int video_widget_margin = 0;
 
         int video_widget_cnt = 0;
 

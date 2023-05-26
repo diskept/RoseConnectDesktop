@@ -74,17 +74,20 @@ public:
     int enable_favorite_filter[30];
     int enable_favRTrack_filter = 0;
     int enable_favRAlbum_filter = 0;
+    int enable_favRArtist_filter = 0;
     int enable_favRPlaylist_filter = 0;
 
     int enable_favorite_order[10];
     int enable_favRTrack_order = 0;
     int enable_favRAlbum_order = 0;
+    int enable_favRArtist_order = 0;
     int enable_favRPlaylist_order = 0;
 
     bool flag_favMusic_order = false;
     int enable_favMusic_order[10];
     int enable_favMTrack_order = 0;
     int enable_favMAlbum_order = 0;
+    int enable_favMArtist_order = 0;
     int enable_favMPlaylist_order = 0;
 
 private:

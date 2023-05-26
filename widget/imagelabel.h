@@ -58,6 +58,7 @@ public:
     void setType(Type p_type);
     void setHover();
     void setHover2();
+    void setHover3();
     void setDuration(const QString &p_duration);
     void setFavorStatus(bool flagOn);
     void setMimeType(QString mime);
@@ -86,24 +87,24 @@ private :
     const int MARGIN = 10;
     const int IMG_WIDTH = 200;
     const int IMG_HEIGHT = 200;
-    const int IMG_WIDTH_ARTIST = 180;
-    const int IMG_HEIGTH_ARTIST = 180;
+    const int IMG_WIDTH_ARTIST = 200;
+    const int IMG_HEIGTH_ARTIST = 200;
     const int IMG_WIDTH_MUSIC_PLAYLISTDETAIL = 300;
     const int IMG_HEIGTH_MUSIC_PLAYLISTDETAIL = 300;
     const int IMG_WIDTH_AVATAR = 180;
     const int IMG_HEIGHT_AVATAR = 180;
-    const int IMG_WIDTH_VIDEO = 200;        //252;
-    const int IMG_HEIGHT_VIDEO = 281;       //140;
+    const int IMG_WIDTH_VIDEO = 200;            //252;
+    const int IMG_HEIGHT_VIDEO = 281;           //140;
     const int IMG_WIDTH_ROSETUBE_VIDEO = 284;   //252;
     const int IMG_HEIGHT_ROSETUBE_VIDEO = 157;  //140;
-    const int IMG_WIDTH_MUSIC_CATEGORY = 186;
-    const int IMG_HEIGHT_MUSIC_CATEGORY = 186;
-    const int IMG_WIDTH_ROSETUBE = 360;     //340;
-    const int IMG_HEIGHT_ROSETUBE = 200;    //188;
+    const int IMG_WIDTH_MUSIC_CATEGORY = 200;   //186
+    const int IMG_HEIGHT_MUSIC_CATEGORY = 200;  //186
+    const int IMG_WIDTH_ROSETUBE = 360;         //340;
+    const int IMG_HEIGHT_ROSETUBE = 200;        //188;
     const int IMG_WIDTH_ICON_SMALL = 60;
     const int IMG_HEIGTH_ICON_SMALL = 60;
-    const int IMG_WIDTH_PODCAST = 200;      //214;
-    const int IMG_HEIGHT_PODCAST = 200;     //214;
+    const int IMG_WIDTH_PODCAST = 200;          //214;
+    const int IMG_HEIGHT_PODCAST = 200;         //214;
     const int IMG_WIDTH_ROSETUBE_DETAIL = 300;
     const int IMG_HEIGHT_ROSETUBE_DETAIL = 166;
 
@@ -135,6 +136,7 @@ private :
 
     bool flagUseHover = false;
     bool flagUseHover2 = false;
+    bool flagUseHover3 = false;
     bool flagFavorOn = false;
     int imgWidth = IMG_WIDTH;
     int imgHeight = IMG_HEIGHT;

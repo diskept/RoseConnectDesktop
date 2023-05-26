@@ -53,7 +53,7 @@ namespace rosetube {
         this->avatarDownloader = new FileDownloader;
         connect(this->avatarDownloader, SIGNAL(downloaded()), this, SLOT(slot_fileDownload_avatarImage()));
 
-        ContentLoadingwaitingMsgShow(tr("Content is being loaded. Please wait."));
+        print_debug();ContentLoadingwaitingMsgShow(tr("Content is being loaded. Please wait."));
 
         // YoutubeChannelVideo 객체 생성
         //this->ytbChannelVideo = new YoutubeChannelVideo(this);
@@ -104,6 +104,9 @@ namespace rosetube {
                              , json
                              , false
                              , true);
+        }
+        else{
+            print_debug();ContentLoadingwaitingMsgHide();   //j230328
         }
     }
 
@@ -264,7 +267,7 @@ namespace rosetube {
                 && (this->scrollArea_main->verticalScrollBar()->value() == this->scrollArea_main->verticalScrollBar()->maximum())){
             this->flagReqMore_video = true;
 
-            ContentLoadingwaitingMsgShow(tr("Content is being loaded. Please wait."));
+            print_debug();ContentLoadingwaitingMsgShow(tr("Content is being loaded. Please wait."));
 
             // 더 가져오기 요청
             //this->ytbChannelVideo->getMoreData_youtubeChannel_video(30);
@@ -548,7 +551,6 @@ namespace rosetube {
 
             for(int i = start_index; i < this->jsonArr_tracks_tmp.size(); i++){
                 this->subscription_track[i] = new rosetube::ItemTrack_rosetube(i, SECTION_FOR_MORE_POPUP___SUBSCRIBE, tidal::AbstractItem::ImageSizeMode::Ractangle_284x157, true);
-                connect(this->subscription_track[i], &rosetube::ItemTrack_rosetube::signal_clicked, this, &RoseTube_Channel::slot_clickedItemPlaylist);
             }
 
             for(int i = start_index; i < this->jsonArr_tracks_tmp.size(); i++){
@@ -587,11 +589,16 @@ namespace rosetube {
                 jsonVideo.insert("viewCount", viewCount);
                 jsonVideo.insert("thumbnailUrl", thumbnail);
                 jsonVideo.insert("duration", duration);
+                jsonVideo.insert("favorite_view", false);
 
                 this->subscription_track[i]->setData(jsonVideo);
-                this->flow_subscription_track->addWidget(this->subscription_track[i]);
 
                 QCoreApplication::processEvents();
+            }
+
+            for(int i = start_index; i < this->jsonArr_tracks_tmp.size(); i++){
+                this->flow_subscription_track->addWidget(this->subscription_track[i]);
+                connect(this->subscription_track[i], &rosetube::ItemTrack_rosetube::signal_clicked, this, &RoseTube_Channel::slot_clickedItemPlaylist);
             }
 
             if(this->channelNext.isEmpty()){
@@ -687,7 +694,6 @@ namespace rosetube {
 
             for(int i = start_index; i < this->jsonArr_tracks_tmp.size(); i++){
                 this->subscription_track[i] = new rosetube::ItemTrack_rosetube(i, SECTION_FOR_MORE_POPUP___SUBSCRIBE, tidal::AbstractItem::ImageSizeMode::Ractangle_284x157, true);
-                connect(this->subscription_track[i], &rosetube::ItemTrack_rosetube::signal_clicked, this, &RoseTube_Channel::slot_clickedItemPlaylist);
             }
 
             for(int i = start_index; i < this->jsonArr_tracks_tmp.size(); i++){
@@ -713,9 +719,9 @@ namespace rosetube {
                 jsonVideo.insert("thumbnailUrl", thumbnail);
                 jsonVideo.insert("duration", duration);
                 jsonVideo.insert("subs_type", "subscribe");
+                jsonVideo.insert("favorite_view", false);
 
                 this->subscription_track[i]->setData(jsonVideo);
-                this->flow_subscription_track->addWidget(this->subscription_track[i]);
 
                 QJsonObject jsonTracks = QJsonObject();
                 jsonTracks.insert("channelId", this->channelId);
@@ -732,6 +738,11 @@ namespace rosetube {
                 this->jsonArr_tracks_toPlay.append(jsonTracks);
 
                 QCoreApplication::processEvents();
+            }
+
+            for(int i = start_index; i < this->jsonArr_tracks_tmp.size(); i++){
+                this->flow_subscription_track->addWidget(this->subscription_track[i]);
+                connect(this->subscription_track[i], &rosetube::ItemTrack_rosetube::signal_clicked, this, &RoseTube_Channel::slot_clickedItemPlaylist);
             }
 
             this->flagReqMore_video = false;

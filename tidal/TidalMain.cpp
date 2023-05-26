@@ -31,31 +31,34 @@ namespace tidal {
         connect(linker, SIGNAL(signal_search(QString)), SLOT(slot_search(QString)));
         connect(linker, SIGNAL(signal_dragEnterEvent_hide_show(bool)), SLOT(slot_dragEnterEvent_hide_show(bool)));//c220730
         connect(linker, SIGNAL(signal_dropEvent_hide_show(bool)), SLOT(slot_dropEvent_hide_show(bool)));//c220730
+        connect(linker, SIGNAL(signal_loginTidalAcount()), this, SLOT(slot_loginAcount()));//c230426
 
         make_CustomLineEdit();//c220730
-        if(global.user_forTidal.isLogined() == false)
-        {
-            // Rose 장비로부터 Session 정보를 요청
-            tidal::ProcRosePlay_withTidal *procRose = new tidal::ProcRosePlay_withTidal(this);
-            connect(procRose, &ProcRosePlay_withTidal::signal_completeReq_get_session_info, this, &TidalMain::slot_completeReq_get_session_info);
-            procRose->request_get_session_info();
-        }
-        else{
-            if(global.tidalloginChange){//cheon210617-login
-
-            }
-
-            //tidal::ProcCommon *procTidal = new tidal::ProcCommon(this);//cheon210617-login
-            //tidal::UserLoginInfo tidal_userLoginInfo = procTidal->getLoginInfo_tidalDB();//cheon210617-login
-            //connect(procTidal, SIGNAL(failedLogin(const QString&)), this, SLOT(slot_failedLogin(const QString&)));//cheon210617-login
-            //connect(procTidal, SIGNAL(successLogin()), this, SLOT(slot_successLogin()));//cheon210617-login
-            //procTidal->request_tidalLogin(tidal_userLoginInfo);//cheon210617-login
-            //qDebug() << "로그인이 되어 있고 기기가 로그인이 않되어 있으면 커넥트에서 기기를 자동로그인할것";//cheon210617-login
-        }
 
         this->setUIControl();
     }
 
+    void TidalMain::slot_loginAcount(){//c230426
+        print_debug();
+        QString pageCode_firstPage;
+        ToastMsg::show(this, "", tr("Your Tidal account status has been changed by another device."));
+        global.user_forTidal.set_logoutState();
+
+        if(global.enable_section_left == true){
+            global.enable_section_left = false;
+        }
+
+        pageCode_firstPage = PAGECODE_T_SETTINGS;
+
+
+        QJsonObject jsonObj_first;
+        jsonObj_first[KEY_PAGE_CODE] = pageCode_firstPage;
+
+        if(!pageCode_firstPage.isEmpty()){
+            this->goToMoveNewOrderPage(jsonObj_first);
+        }
+
+    }
     void TidalMain::slot_overrideSigalSearch(bool b){//c220728
         print_debug();
         if(b){
@@ -102,28 +105,6 @@ namespace tidal {
         this->le_search_back->clearFocus();
         this->curr_widget->show();
         this->le_search_back->hide();
-    }
-
-    void TidalMain::slot_failedLogin(const QString& errorMsg){//cheon210617-login
-
-        if(global.user_forTidal.isLogined() == false){
-            setUIControl2();
-            ToastMsg::show(this, "", errorMsg);
-        }
-        else{
-            emit successLogin();
-            setUIControl1();
-        }
-    }
-
-
-    /**
-     * @brief 로그인 성공! 성공 시그널 발생.
-     */
-    void TidalMain::slot_successLogin(){//cheon210617-login
-
-        emit successLogin();
-        setUIControl1();
     }
 
 
@@ -176,10 +157,6 @@ namespace tidal {
     void TidalMain::setUIControl(){
 
         // default : 첫번째 서브메뉴 - (TIDAL > Home)
-        //QString pageCode_firstPage = PAGECODE_T_HOME;
-        //QJsonObject jsonObj_first;
-        //jsonObj_first[KEY_PAGE_CODE] = pageCode_firstPage;
-
         QString pageCode_firstPage;
         if(global.user_forTidal.isLogined() == true)
         {
@@ -195,49 +172,10 @@ namespace tidal {
 
         QJsonObject jsonObj_first;
         jsonObj_first[KEY_PAGE_CODE] = pageCode_firstPage;
-        //this->stackedWidget_content->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Preferred);
 
         if(!pageCode_firstPage.isEmpty()){
             this->goToMoveNewOrderPage(jsonObj_first);
         }
-    }
-
-
-    void TidalMain::setUIControl1(){//cheon210617-login
-
-        // default : 첫번째 서브메뉴 - (Qobuz > Home)
-        //QString pageCode_firstPage = PAGECODE_Q_HOME;
-        //QJsonObject jsonObj_first;
-        //jsonObj_first[KEY_PAGE_CODE] = pageCode_firstPage;
-
-        QString pageCode_firstPage;
-
-        pageCode_firstPage = PAGECODE_T_HOME;
-
-        QJsonObject jsonObj_first;
-        jsonObj_first[KEY_PAGE_CODE] = pageCode_firstPage;
-
-        //this->stackedWidget_content->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Preferred);
-        this->goToMoveNewOrderPage(jsonObj_first);
-    }
-
-
-    void TidalMain::setUIControl2(){//cheon210617-login
-
-        // default : 첫번째 서브메뉴 - (Qobuz > Home)
-        //QString pageCode_firstPage = PAGECODE_Q_HOME;
-        //QJsonObject jsonObj_first;
-        //jsonObj_first[KEY_PAGE_CODE] = pageCode_firstPage;
-
-        QString pageCode_firstPage;
-
-        pageCode_firstPage = PAGECODE_T_SETTINGS;
-
-        QJsonObject jsonObj_first;
-        jsonObj_first[KEY_PAGE_CODE] = pageCode_firstPage;
-
-        //this->stackedWidget_content->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Preferred);
-        this->goToMoveNewOrderPage(jsonObj_first);
     }
 
 
@@ -381,8 +319,23 @@ namespace tidal {
             this->sub_videoAll = this->procCommon_showSubPage<tidal::TidalVideoListAll>(false, this->sub_videoAll, p_data);
         }else if(p_pageCode==PAGECODE_T_ADD_PLAYLIST){
             this->sub_addPlaylist = this->procCommon_showSubPage<tidal::TidalAddPlaylist>(false, this->sub_addPlaylist, p_data);
+        }else if(p_pageCode==PAGECODE_T_HISTORY_LIST_VIEW){
+            this->sub_historyListAll = this->procCommon_showSubPage<tidal::TidalHistoryListAll>(false, this->sub_historyListAll, p_data);
+        }else if(p_pageCode==PAGECODE_T_HISTORY_DETAIL){
+            this->sub_historyDetail = this->procCommon_showSubPage<tidal::TidalHistoryDetail>(false, this->sub_historyDetail, p_data);
+        }else if(p_pageCode==PAGECODE_T_HISTORY_PLAYLIST_VIEW){
+            this->sub_historyPlaylistAll = this->procCommon_showSubPage<tidal::TidalPlaylistHistoryAll>(false, this->sub_historyPlaylistAll, p_data);
+        }else if(p_pageCode==PAGECODE_T_HISTORY_ALBUM_VIEW){
+            this->sub_historyAlbumAll = this->procCommon_showSubPage<tidal::TidalAlbumHistoryAll>(false, this->sub_historyAlbumAll, p_data);
+        }else if(p_pageCode==PAGECODE_T_HISTORY_TRACK_VIEW){
+            this->sub_historyTrackAll = this->procCommon_showSubPage<tidal::TidalTrackHistoryAll>(false, this->sub_historyTrackAll, p_data);
+        }else if(p_pageCode==PAGECODE_T_HISTORY_ARTIST_VIEW){
+            this->sub_historyArtistAll = this->procCommon_showSubPage<tidal::TidalArtistHistoryAll>(false, this->sub_historyArtistAll, p_data);
+        }else if(p_pageCode==PAGECODE_T_MY_RECENTLY_LIST_DELETE){
+            this->sub_recentlyListDelete = this->procCommon_showSubPage<tidal::TidalRecentlyListDelete>(false, this->sub_recentlyListDelete, p_data);
 
-        }else if(p_pageCode==PAGECODE_T_MY_COLLECTION){
+        }
+        else if(p_pageCode==PAGECODE_T_MY_COLLECTION){
             this->sub_myCollection = this->procCommon_showSubPage<tidal::TidalMycollection>(true, this->sub_myCollection, p_data);
         }else if(p_pageCode==PAGECODE_T_MY_COLLECTION_TIDALPALYLIST_ALL_LIST){
             this->sub_myTidalPlaylistAll = this->procCommon_showSubPage<tidal::TidalMyTidalPlaylistAll>(false, this->sub_myTidalPlaylistAll, p_data);
@@ -412,6 +365,8 @@ namespace tidal {
             this->sub_recentlyPlaylistAll = this->procCommon_showSubPage<tidal::TidalRecentlyPlaylistAll>(false, this->sub_recentlyPlaylistAll, p_data);
         }else if(p_pageCode==PAGECODE_T_MY_RECENTLY_TRACK_ALL_LIST){
             this->sub_recentlyTrackAll = this->procCommon_showSubPage<tidal::TidalRecentlyTrackAll>(false, this->sub_recentlyTrackAll, p_data);
+        }else if(p_pageCode==PAGECODE_T_MY_RECENTLY_ARTIST_ALL_LIST){
+            this->sub_recentlyArtistAll = this->procCommon_showSubPage<tidal::TidalRecenltyArtistAll>(false, this->sub_recentlyArtistAll, p_data);
 
         }else if(p_pageCode==PAGECODE_T_SEARCH_MAIN){
             this->sub_searchMain = this->procCommon_showSubPage<tidal::TidalSearchMain>(false, this->sub_searchMain, p_data);
@@ -448,8 +403,8 @@ namespace tidal {
         }
 
         stackedWidget_content->setCurrentWidget(sub_widget);
-        if(ProcJsonEasy::getString(jsonObj_data, "pageCode") == PAGECODE_T_HOME || ProcJsonEasy::getString(jsonObj_data, "pageCode") == PAGECODE_T_EXPLORE
-                || ProcJsonEasy::getString(jsonObj_data, "pageCode") == PAGECODE_T_VIDEO){
+        if(ProcJsonEasy::getString(jsonObj_data, "pageCode") == PAGECODE_T_HOME || ProcJsonEasy::getString(jsonObj_data, "pageCode") == PAGECODE_T_EXPLORE || ProcJsonEasy::getString(jsonObj_data, "pageCode") == PAGECODE_T_VIDEO
+             || ProcJsonEasy::getString(jsonObj_data, "pageCode") == PAGECODE_T_MASTER  || ProcJsonEasy::getString(jsonObj_data, "pageCode") == PAGECODE_T_MY_COLLECTION){
             sub_widget->setJsonObject_forData(jsonObj_data);
         }
         else{
@@ -506,50 +461,6 @@ namespace tidal {
         AbstractMainContent::resizeEvent(event);
     }
 
-
-    /**
-     * @brief TidalMain::slot_completeReq_get_session_info
-     * @param sessionInfo
-     */
-    void TidalMain::slot_completeReq_get_session_info(const RoseSessionInfo_forTidal& sessionInfo){
-        // test debug 28.01.2021 Added Jeon
-        //qDebug() << "file_name: " << __FILE__ << "function_name: " << __FUNCTION__ << "line: " << __LINE__ << "\n";
-        //qDebug() << "global.user_forTidal.get_access_token() : " << global.user_forTidal.get_access_token() << "global.user_forTidal.get_refresh_token() : " << global.user_forTidal.get_refresh_token() << "\n";
-        //qDebug() << "global.user_forTidal.getSessionId() : " << global.user_forTidal.getSessionId() << "\n";
-
-        // Rose로부터 받은 Session 정보
-        if(!sessionInfo.TIDAL_AccessToken.isEmpty() && !sessionInfo.TIDAL_SessionId.isEmpty() && !sessionInfo.TIDAL_UserName.isEmpty()){
-            tidal::ProcCommon *procTidal = new tidal::ProcCommon(this);
-            tidal::UserLoginInfo tidal_userLoginInfo = procTidal->getLoginInfo_tidalDB();
-
-            // Rose 정보로 로그인 정보를 업데이트함
-            global.user_forTidal.setLogin(sessionInfo.TIDAL_AccessToken, sessionInfo.TIDAL_CountryCode, sessionInfo.TIDAL_UserID, sessionInfo.TIDAL_UserName, true);
-            global.user_forTidal.set_loginState(sessionInfo.TIDAL_AccessToken, sessionInfo.TIDAL_RefreshToken, sessionInfo.TIDAL_CountryCode, sessionInfo.TIDAL_SessionId, sessionInfo.TIDAL_UserID, sessionInfo.TIDAL_UserName);
-            global.user_forTidal.set_soundState(sessionInfo.TIDAL_HighestSoundQuality, sessionInfo.TIDAL_SoundQuality);
-
-            // DB 정보 처리
-            tidal_userLoginInfo.access_token = sessionInfo.TIDAL_AccessToken;
-            tidal_userLoginInfo.refresh_token = sessionInfo.TIDAL_RefreshToken;
-            tidal_userLoginInfo.email = sessionInfo.TIDAL_UserName;
-            tidal_userLoginInfo.token_type = "Bearer";
-            tidal_userLoginInfo.expires_in = 0;
-            tidal_userLoginInfo.flagSavedLoginInfo = true;
-
-            procTidal->saveLoginInfo_tidalDB(tidal_userLoginInfo);
-
-            // Genre 종류 요청 (Tidal 공통사용)
-            procTidal->request_tidal_getListGenres();
-            // Mood 종류 요청 (Tidal 공통사용)
-            procTidal->request_tidal_getListMoods();
-        }
-        else{
-            global.user_forTidal.flag_login_wait = false;
-            global.user_forTidal.setLogout();
-            global.user_forTidal.set_logoutState();
-        }
-
-        this->setUIControl();
-    }
 
     void TidalMain::slot_responseHttp(const int &p_id, const QJsonObject &p_jsonObj){
 
@@ -638,6 +549,10 @@ namespace tidal {
                 if(global.Queue_track_count != 0) {
                     print_debug();emit linker->signal_checkQueue(27, "");
 
+                    return;
+                }
+                if(global.user_forTidal.getHeighestSound() <= 0){//c230422
+                    print_debug();emit linker->signal_checkQueue(227, "");
                     return;
                 }
                 print_debug(); emit linker->signal_queuelist_mouse_trigger_menu_flag();

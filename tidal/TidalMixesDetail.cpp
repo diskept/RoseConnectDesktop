@@ -131,7 +131,7 @@ namespace tidal {
 
                 this->flag_draw = false;
 
-                ContentLoadingwaitingMsgShow(tr("Content is being loaded. Please wait."));
+                print_debug();ContentLoadingwaitingMsgShow(tr("Content is being loaded. Please wait."));
 
                 // Playlsit track 정보를 가져와야 하는 경우임.
                 ProcCommon *proc_tracks = new ProcCommon(this);
@@ -139,6 +139,8 @@ namespace tidal {
                 proc_tracks->request_tidal_getList_items_of_mixes(this->data_playlist.uuid, GET_MAX_ITEM_SIZE___ONCE, 0);
             }
             else{
+                print_debug();ContentLoadingwaitingMsgHide();   //j230328
+
                 // 리로드 하지 않는 경우에는, favorite 정보만 다시 요청한다. (playlist_id 가 변경되지 않고, 페이지가 다시 요청된 경우임)
                 // request HTTP API - get favorite for Rose Server
                 roseHome::ProcCommon *proc_fav_playlist = new roseHome::ProcCommon(this);
@@ -235,7 +237,7 @@ namespace tidal {
 
             this->flag_draw = true;
 
-            ContentLoadingwaitingMsgShow(tr("Content is being loaded. Please wait."));
+            print_debug();ContentLoadingwaitingMsgShow(tr("Content is being loaded. Please wait."));
             this->request_more_trackDraw();
         }
     }

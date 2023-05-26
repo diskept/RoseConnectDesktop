@@ -44,6 +44,9 @@ namespace qobuz {
             this->label_mainTitle->setText(data_pageInfo.pathTitle);
             this->api_subPath = data_pageInfo.api_subPath;
         }
+        else{
+            print_debug();ContentLoadingwaitingMsgHide();   //j230328
+        }
     }
 
 

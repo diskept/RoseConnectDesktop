@@ -71,6 +71,7 @@ private:
     QProgressBar *progress_searchBar;
 
     QLineEdit *le_search_ip;
+    QPushButton *btn_refresh_ico;
 
     QPushButton *btn_searchWidget_adjust;
 
@@ -84,6 +85,8 @@ private:
     int selectedIndex = 0;
 
     bool flag_adjust = false;
+    QTimer* buttonTimer =  nullptr;//c230405
+    int sectTerm = 0;
 };
 
 #endif // SEARCHDEVICEWIDGET_H

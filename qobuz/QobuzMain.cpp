@@ -34,49 +34,7 @@ namespace qobuz {
 
         make_CustomLineEdit();//c220730
 
-        if(global.user_forQobuz.isLogined() == false){
-            // Rose 장비로부터 Session 정보를 요청
-            qobuz::ProcRosePlay_withQobuz *procRose = new qobuz::ProcRosePlay_withQobuz(this);
-            connect(procRose, &qobuz::ProcRosePlay_withQobuz::signal_completeReq_get_session_info, this, &QobuzMain::slot_completeReq_get_session_info);
-            procRose->request_get_session_info();
-        }
-        else{//cheon210617-login
-            if(global.qobuzloginChange){//cheon210617-login
-
-            }
-
-            //qobuz::ProcCommon *procQobuz = new qobuz::ProcCommon(this);//cheon210617-login
-            //qobuz::UserLoginInfo qobuz_userLoginInfo = procQobuz->getLoginInfo_qobuzDB();//cheon210617-login
-            //connect(procQobuz, SIGNAL(failedLogin(const QString&)), this, SLOT(slot_failedLogin(const QString&)));//cheon210617-login
-            //connect(procQobuz, SIGNAL(successLogin()), this, SLOT(slot_successLogin()));//cheon210617-login
-            //procQobuz->request_qobuzLogin(qobuz_userLoginInfo);//cheon210617-login
-            //qDebug() << "로그인이 되어 있고 기기가 로그인이 않되어 있으면 커넥트에서 기기를 자동로그인할것";//cheon210617-login
-        }
-
         this->setUIControl();
-    }
-
-
-    void QobuzMain::slot_failedLogin(const QString& errorMsg){//cheon210617-login
-
-        if(global.user_forQobuz.isLogined() == false){
-            setUIControl2();
-            ToastMsg::show(this, "", errorMsg);
-        }
-        else{
-            emit successLogin();
-            setUIControl1();
-        }
-    }
-
-
-    /**
-     * @brief 로그인 성공! 성공 시그널 발생.
-     */
-    void QobuzMain::slot_successLogin(){//cheon210617-login
-
-        emit successLogin();
-        setUIControl1();
     }
 
 
@@ -129,10 +87,6 @@ namespace qobuz {
     void QobuzMain::setUIControl(){
 
         // default : 첫번째 서브메뉴 - (Qobuz > Home)
-        //QString pageCode_firstPage = PAGECODE_Q_HOME;
-        //QJsonObject jsonObj_first;
-        //jsonObj_first[KEY_PAGE_CODE] = pageCode_firstPage;
-
         QString pageCode_firstPage;
         if(global.user_forQobuz.isLogined()){
             pageCode_firstPage = PAGECODE_Q_HOME;
@@ -147,51 +101,10 @@ namespace qobuz {
 
         QJsonObject jsonObj_first;
         jsonObj_first[KEY_PAGE_CODE] = pageCode_firstPage;
-        //this->stackedWidget_content->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Preferred);
 
         if(!pageCode_firstPage.isEmpty()){
             this->goToMoveNewOrderPage(jsonObj_first);
         }
-    }
-
-
-    void QobuzMain::setUIControl1(){//cheon210617-login
-
-        // default : 첫번째 서브메뉴 - (Qobuz > Home)
-        //QString pageCode_firstPage = PAGECODE_Q_HOME;
-        //QJsonObject jsonObj_first;
-        //jsonObj_first[KEY_PAGE_CODE] = pageCode_firstPage;
-
-
-
-        QString pageCode_firstPage;
-
-        pageCode_firstPage = PAGECODE_Q_HOME;
-
-        QJsonObject jsonObj_first;
-        jsonObj_first[KEY_PAGE_CODE] = pageCode_firstPage;
-
-        //this->stackedWidget_content->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Preferred);
-        this->goToMoveNewOrderPage(jsonObj_first);
-    }
-
-
-    void QobuzMain::setUIControl2(){//cheon210617-login
-
-        // default : 첫번째 서브메뉴 - (Qobuz > Home)
-        //QString pageCode_firstPage = PAGECODE_Q_HOME;
-        //QJsonObject jsonObj_first;
-        //jsonObj_first[KEY_PAGE_CODE] = pageCode_firstPage;
-
-        QString pageCode_firstPage;
-
-        pageCode_firstPage = PAGECODE_Q_SETTINGS;
-
-        QJsonObject jsonObj_first;
-        jsonObj_first[KEY_PAGE_CODE] = pageCode_firstPage;
-
-        //this->stackedWidget_content->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Preferred);
-        this->goToMoveNewOrderPage(jsonObj_first);
     }
 
 
@@ -231,10 +144,10 @@ namespace qobuz {
      */
     QJsonArray QobuzMain::getJsonArray_forSubTitles(){
 
-        QJsonArray p_jsonArray_titlSub ;
+        QJsonArray p_jsonArray_titlSub;
         p_jsonArray_titlSub.push_back(QJsonObject{ {"name", tr("Home")}, {"code", PAGECODE_Q_HOME} });
         p_jsonArray_titlSub.push_back(QJsonObject{ {"name", tr("Explore")}, {"code", PAGECODE_Q_EXPLORE} });
-        p_jsonArray_titlSub.push_back(QJsonObject{ {"name", tr("My QOBUZ")}, {"code", PAGECODE_Q_MY_COLLECTION} });
+        p_jsonArray_titlSub.push_back(QJsonObject{ {"name", tr("My Qobuz")}, {"code", PAGECODE_Q_MY_COLLECTION} });
         p_jsonArray_titlSub.push_back(QJsonObject{ {"name", tr("Setting")}, {"code", PAGECODE_Q_SETTINGS} });
 
         return p_jsonArray_titlSub;
@@ -425,6 +338,18 @@ namespace qobuz {
             //this->sub_videoAll = this->procCommon_showSubPage<qobuz::QobuzVideoListAll>(false, this->sub_videoAll, p_data);
         }else if(p_pageCode==PAGECODE_Q_ADD_PLAYLIST){
             this->sub_AddPlaylist = this->procCommon_showSubPage<qobuz::QobuzAddPlaylist>(false, this->sub_AddPlaylist, p_data);
+        }else if(p_pageCode==PAGECODE_Q_HISTORY_LIST_VIEW){
+            this->sub_historyListAll = this->procCommon_showSubPage<qobuz::QobuzHistoryListAll>(false, this->sub_historyListAll, p_data);
+        }else if(p_pageCode==PAGECODE_Q_HISTORY_DETAIL){
+            this->sub_historyDetail = this->procCommon_showSubPage<qobuz::QobuzHistoryDetail>(false, this->sub_historyDetail, p_data);
+        }else if(p_pageCode==PAGECODE_Q_HISTORY_PLAYLIST_VIEW){
+            this->sub_historyPlaylistAll = this->procCommon_showSubPage<qobuz::QobuzPlaylistHistoryAll>(false, this->sub_historyPlaylistAll, p_data);
+        }else if(p_pageCode==PAGECODE_Q_HISTORY_ALBUM_VIEW){
+            this->sub_historyAlbumAll = this->procCommon_showSubPage<qobuz::QobuzAlbumHistoryAll>(false, this->sub_historyAlbumAll, p_data);
+        }else if(p_pageCode==PAGECODE_Q_HISTORY_TRACK_VIEW){
+            this->sub_historyTrackAll = this->procCommon_showSubPage<qobuz::QobuzTrackHistoryAll>(false, this->sub_historyTrackAll, p_data);
+        }else if(p_pageCode==PAGECODE_Q_HISTORY_ARTIST_VIEW){
+            this->sub_historyArtistAll = this->procCommon_showSubPage<qobuz::QobuzArtistHistoryAll>(false, this->sub_historyArtistAll, p_data);
 
         }else if(p_pageCode==PAGECODE_Q_MY_COLLECTION){
             this->sub_myCollection = this->procCommon_showSubPage<qobuz::QobuzMycollection>(true, this->sub_myCollection, p_data);
@@ -456,6 +381,10 @@ namespace qobuz {
             this->sub_recentlyPlaylistAll = this->procCommon_showSubPage<qobuz::QobuzRecentlyPlaylistAll>(false, this->sub_recentlyPlaylistAll, p_data);
         }else if(p_pageCode==PAGECODE_Q_MY_RECENTLY_TRACK_ALL_LIST){
             this->sub_recentlyTrackAll = this->procCommon_showSubPage<qobuz::QobuzRecentlyTrackAll>(false, this->sub_recentlyTrackAll, p_data);
+        }else if(p_pageCode==PAGECODE_Q_MY_RECENTLY_ARTIST_ALL_LIST){
+            this->sub_recenltyArtistAll = this->procCommon_showSubPage<qobuz::QobuzRecenltyArtistAll>(false, this->sub_recenltyArtistAll, p_data);
+        }else if(p_pageCode==PAGECODE_Q_MY_RECENTLY_LIST_DELETE){
+            this->sub_recentlyListDelete = this->procCommon_showSubPage<qobuz::QobuzRecentlyListDelete>(false, this->sub_recentlyListDelete, p_data);
         }else if(p_pageCode==PAGECODE_Q_MY_ROSE_PLAYLIST_DETAIL){
             this->sub_myRosePlaylistDetail = this->procCommon_showSubPage<qobuz::QobuzMyPlaylistDetail_ROSE>(false, this->sub_myRosePlaylistDetail, p_data);
         }else if(p_pageCode==PAGECODE_Q_MY_ROSE_PLAYLIST_ALL_LIST){
@@ -489,7 +418,7 @@ namespace qobuz {
 
         this->topMenuBar->setVisible(flagShow_topBar);
         //this->animate_fadeOut_forSubWidget(this->stackedWidget_content->currentWidget());
-        if(sub_widget == nullptr){
+        if(sub_widget == nullptr || ProcJsonEasy::getString(jsonObj_data, "pageCode") == PAGECODE_Q_ALBUM_DETAIL){
 
             sub_widget = new T_QobuzSub();
             this->stackedWidget_content->addWidget(sub_widget);
@@ -554,32 +483,6 @@ namespace qobuz {
     void QobuzMain::resizeEvent(QResizeEvent *event){
 
         AbstractMainContent::resizeEvent(event);
-    }
-
-
-    void QobuzMain::slot_completeReq_get_session_info(const RoseSessionInfo_forQobuz& sessionInfo){
-
-        if(!sessionInfo.user_auth_token.isEmpty() && !sessionInfo.user_id.isEmpty()){
-            qobuz::ProcCommon *procQobuz = new qobuz::ProcCommon(this);
-            qobuz::UserLoginInfo qobuz_userLoginInfo = procQobuz->getLoginInfo_qobuzDB();
-
-            // Rose 정보로 로그인 정보를 업데이트함
-            global.user_forQobuz.setLogin(sessionInfo.user_auth_token, sessionInfo.email, sessionInfo.user_id, true);
-
-            // DB 정보 처리
-            /*qobuz_userLoginInfo.auth_token = sessionInfo.user_auth_token;
-            qobuz_userLoginInfo.username = sessionInfo.email;
-            qobuz_userLoginInfo.user_id = sessionInfo.user_id;
-            qobuz_userLoginInfo.password = "";
-            qobuz_userLoginInfo.flagSavedLoginInfo = true;
-
-            procQobuz->saveLoginInfo_qobuzDB(qobuz_userLoginInfo);*/
-
-            // Genre 종류 요청 (Qobuz 공통사용)
-            procQobuz->request_qobuz_getListGenres();
-        }
-
-        this->setUIControl();
     }
 
 

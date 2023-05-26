@@ -290,6 +290,9 @@ void MetaInfo::slot_responseHttp(const int &p_id, const QJsonObject &p_jsonObjec
  */
 void MetaInfo::setData(QJsonObject p_data){
 
+    this->fileDownLoader = new FileDownloader(this);
+    connect(this->fileDownLoader, SIGNAL (downloaded()), this, SLOT (slot_loadImage()));
+
     // 초기화
     this->type_optionMenu = OptionPopup::TypeMenu::Music_Etc_AlbumDetailTrack;
     this->albumName = "";

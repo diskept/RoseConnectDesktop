@@ -254,7 +254,7 @@ void dialogsetting_hdmi_520::setUIControl(){
 
     comboBoxHdmiDSD->addItem(tr("Native DSD(Not suported)"), 0);//c220511
     comboBoxHdmiDSD->addItem(tr("DSD over PCM(Not suported)"), 1);//c220511
-    comboBoxHdmiDSD->addItem(tr("DSD to PCM(upto DSD128)"), 2);//c220511
+    comboBoxHdmiDSD->addItem(tr("DSD to PCM(upto DSD512)"), 2);//c220511
 
     QPushButton *btn_questionDSD;
     btn_questionDSD =  GSCommon::getUIBtnImg("question", ":images/setting/201/tip_icon.png");
@@ -549,7 +549,7 @@ void dialogsetting_hdmi_520::slot_clickedbit32question(){//c220511
     print_debug();
     dlgConfirmHdmi->setAlignment(Qt::AlignLeft);
     //dlgConfirmHdmi->setTitle(tr("Headphone Output Impedance"));
-    //dlgConfirmHdmi->setText(tr("This is a menu to set the Headphone Output Impedace.\nIf you select the output (16 Ohm, 32 Ohm, 50 Ohm, 100 Ohm) that matches your headphone specifications, you can enjoy better sound."));
+    //dlgConfirmHdmi->setText(tr("This is a menu to set the Headphone Output Impedace.\nIf you select the output (16 Ohm, 32 Ohm, 50 Ohm, 100 Ohm) that fits your headphone specifications, you can hear better sound quality."));
     dlgConfirmHdmi->setAlignment(Qt::AlignLeft);
     dlgConfirmHdmi->setTitle(tr("The low 8bits of a 32 bit sound sources\n will have correct"));
     dlgConfirmHdmi->setText(tr("Some DACs may generate noise when playing a 32-bit sound source with a high sampling rate.\nIn this case, it is used to reduce noise by correcting the lower 8 bits."));

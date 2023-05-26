@@ -57,8 +57,8 @@ namespace roseRadio {
         QVBoxLayout *box_popular_contents;
         QWidget *widget_popular_contents;
 
-        QLabel *lb_subTitle[5];
-        QPushButton *btnView_all[5];
+        QLabel *lb_subTitle[10];
+        QPushButton *btnView_all[10];
 
         QVBoxLayout *vBox_region;
         FlowLayout *flow_region;
@@ -67,7 +67,7 @@ namespace roseRadio {
         roseRadio::ItemSquare *region_popular[14];
 
         QVBoxLayout *vBox_popular;
-        FlowLayout *flow_popular;
+        QHBoxLayout *hBox_popular;
         QWidget *widget_popular;
 
         QJsonArray jsonArr_region;

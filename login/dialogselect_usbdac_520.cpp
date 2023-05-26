@@ -69,7 +69,7 @@ void DialogSelect_Usbdac_520::setUIControl(){
     radio_style += " QRadioButton::indicator::checked {image: url(:images/icon_che_on.png);}";
 
     radio_Unused = new QRadioButton;
-    radio_Unused->setText("Unused");
+    radio_Unused->setText(tr("Not in Use"));
     radio_Unused->setStyleSheet(radio_style);
     radio_Unused->setCursor(Qt::PointingHandCursor);
     radio_Unused->setProperty(PROPERTY_NAME_READABLE, "Unused");

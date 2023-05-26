@@ -132,6 +132,12 @@ namespace tidal {
         else if(clickMode == AbstractItemImage::BtnClickMode::Favorite_toAdd){
             emit this->signal_clicked(ClickMode::FavBtn_Add);
         }
+        else if(clickMode == AbstractItemImage::BtnClickMode::Favorite_toAddx2){
+            emit this->signal_clicked(ClickMode::FavBtn_Addx2);
+        }
+        else if(clickMode == AbstractItemImage::BtnClickMode::Favorite_toAddx3){
+            emit this->signal_clicked(ClickMode::FavBtn_Addx3);
+        }
         else if(clickMode == AbstractItemImage::BtnClickMode::Favorite_toDelete){
             emit this->signal_clicked(ClickMode::FavBtn_Delete);
         }

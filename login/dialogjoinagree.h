@@ -5,6 +5,9 @@
 #include <QDialog>
 #include <QLabel>
 #include <QWidget>
+#include <QVBoxLayout>
+#include <QScrollArea>
+#include <QTextEdit>
 
 
 namespace Dialog{
@@ -25,7 +28,7 @@ private slots:
     void slot_clickedCheckBox(int state);
 
 private:
-    QLabel *lb_agree_content;
+    QTextEdit *lb_agree_content;
     QCheckBox *checkbox_agree;
     QPushButton *btn_join;
     void setUIControl();

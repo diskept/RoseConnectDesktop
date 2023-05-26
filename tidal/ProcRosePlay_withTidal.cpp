@@ -138,6 +138,8 @@ namespace tidal {
 
         if(list_track.size() <= 0)
         {
+            print_debug();
+            emit linker->signal_checkQueue(35, tr("Tidal type is currently logged out."));//c221116_2
             return;
         }
 
@@ -228,6 +230,7 @@ namespace tidal {
 
             if(this->playlist_tracks_offset == 0 && list_track.size() <= 0)
             {
+                print_debug();
                 return;
             }
 
@@ -489,6 +492,11 @@ print_debug();
 
             return;
         }
+        if(global.user_forTidal.getHeighestSound() <= 0){//c230422
+            print_debug();emit linker->signal_checkQueue(227, "");
+
+            return;
+        }
 
         print_debug();
 
@@ -574,6 +582,12 @@ print_debug();
 
             return;
         }
+
+        if(global.user_forTidal.getHeighestSound() <= 0){//c230422
+            print_debug();emit linker->signal_checkQueue(227, "");
+            return;
+        }
+
         print_debug(); emit linker->signal_queuelist_mouse_trigger_menu_flag();
         global.Queue_track_count += jsonObj_toPlay.count();
 
@@ -612,7 +626,7 @@ print_debug();
 //print_debug();
         //Q_UNUSED(p_id);
 
-        // test debug 28.01.2021 Added Jeon
+        // test debug 28.01.2021 Added diskept
         //print_tidal_func();
         QJsonDocument doc(p_jsonObj);
         QString strJson(doc.toJson(QJsonDocument::Compact));

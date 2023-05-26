@@ -4,8 +4,9 @@
 #include "setting/settinginputoutput.h"
 
 #include <QLabel>
-#include <QRadioButton>
 #include <QDebug>
+#include <QRadioButton>
+
 
 using namespace Dialog;
 
@@ -64,12 +65,12 @@ void DialogSelect_Usbdac::setUIControl(){
 
 
     QString radio_style = "QRadioButton {font-size:20px;color:#CCCCCC;spacing:15px;padding:15px;border-bottom:1px solid #404040;}";
-    radio_style += " QRadioButton::indicator {width:40px;height:40px;}";
+    radio_style += " QRadioButton::indicator {width:60px;height:40px;}";
     radio_style += " QRadioButton::indicator::unchecked {image: url(:images/icon_che_off.png);}";
     radio_style += " QRadioButton::indicator::checked {image: url(:images/icon_che_on.png);}";
 
     radio_Unused = new QRadioButton;
-    radio_Unused->setText("Unused");
+    radio_Unused->setText(tr("Not in Use"));
     radio_Unused->setStyleSheet(radio_style);
     radio_Unused->setCursor(Qt::PointingHandCursor);
     radio_Unused->setProperty(PROPERTY_NAME_READABLE, "Unused");
@@ -142,7 +143,7 @@ void DialogSelect_Usbdac::setUIControl(){
 void DialogSelect_Usbdac::slot_clickedAdd(){
 
     if(radio_Unused->isChecked()){
-        selectedUsbName = "Unused";
+        selectedUsbName = "";
         setResult(QDialog::Accepted);
         hide();
     }

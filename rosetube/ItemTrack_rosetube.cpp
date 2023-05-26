@@ -49,18 +49,18 @@ namespace rosetube {
         this->label_title = new QLabel(label_base);
         this->label_title->setWordWrap(true);
         this->label_title->setTextInteractionFlags(Qt::TextSelectableByMouse);
-        this->label_title->setStyleSheet("font-size:16px;color:#FFFFFF;");
+        this->label_title->setStyleSheet("font-size:16px;  font-weight: normal;font-style: normal;line-height: 2.1;text-align: left;color:#FFFFFF;");
         this->label_title->setAlignment(Qt::AlignVCenter);
         this->label_title->setGeometry(0, 0, img_width, (LABEL_HEIGHT_RT_TRACK * 2));
 
         this->label_artist = new QLabel(label_base);
         this->label_artist->setTextInteractionFlags(Qt::TextSelectableByMouse);
-        this->label_artist->setStyleSheet("font-size:14px;color:#999999;");
+        this->label_artist->setStyleSheet("font-size:14px;  font-weight: normal;font-style: normal;line-height: 1.43;text-align: left;color:#999999;");
         this->label_artist->setAlignment(Qt::AlignVCenter);
         this->label_artist->setGeometry(0, (LABEL_HEIGHT_RT_TRACK * 2), img_width, this->LABEL_HEIGHT);
 
         this->label_number = new QLabel(label_base);
-        this->label_number->setStyleSheet("font-size:14px;color:#999999;");
+        this->label_number->setStyleSheet("font-size:14px;   font-weight: normal;font-style: normal;line-height: 1.43;text-align: left;color:#999999;");
         this->label_number->setGeometry(0, (LABEL_HEIGHT_RT_TRACK * 2) + this->LABEL_HEIGHT, img_width, this->LABEL_HEIGHT);
 
         QVBoxLayout *boxLayout = new QVBoxLayout;
@@ -97,6 +97,12 @@ namespace rosetube {
     }
 
 
+    void ItemTrack_rosetube::setFavorite_btnHeart(const bool fav, const int star){
+
+        this->itemImage->setUseBtn_favoriteRose(fav, star);
+    }
+
+
     /**
      * @brief ItemAlbum::get_fixedHeight
      * @return
@@ -110,6 +116,19 @@ namespace rosetube {
         return height;
     }
 
+    int ItemTrack_rosetube::get_fixedWidth(){
+
+        int width = this->get_imageWidth(this->m_imageSizeMode);
+
+        return width;
+    }
+
+
+    int ItemTrack_rosetube::get_rightMargin(){
+
+        return ITEM_BETWEEN_MARGIN_RIGHT;
+    }
+
 
     /**
      * @brief 페인트 이벤트 처리
@@ -120,6 +139,15 @@ namespace rosetube {
 
         if(this->flagInitDraw == false){
             this->flagInitDraw = true;
+
+            if(this->data_track.contains("favorite") && this->data_track.contains("star")){
+                bool flag_fav = ProcJsonEasy::getBool(this->data_track, "favorite");
+                int star_fav = ProcJsonEasy::getInt(this->data_track, "star");
+                this->itemImage->setUseBtn_favoriteRose(flag_fav, star_fav);
+            }
+            else if(this->data_track.contains("favorite_view") && this->data_track.value("favorite_view").toBool() == false){
+                this->itemImage->setUseBtn_favoriteRT(false);
+            }
 
             int all_width = 0;
 
@@ -175,6 +203,10 @@ namespace rosetube {
 
                 this->label_title->setGeometry(0, 0, all_width, (LABEL_HEIGHT_RT_TRACK * 2));
                 this->label_title->setText(GSCommon::getTextCutFromLabelWidth(title, title_width, this->label_title->font()));
+                if(this->label_title->text().contains("…")){
+                    this->label_title->setToolTip(title);//c230321
+                    this->label_title->setToolTipDuration(2000);//c230321
+                }
 
                 this->label_artist->setGeometry(0, (LABEL_HEIGHT_RT_TRACK * 2), all_width, this->LABEL_HEIGHT);
                 this->label_number->setGeometry(0, (LABEL_HEIGHT_RT_TRACK * 2) + this->LABEL_HEIGHT, all_width, this->LABEL_HEIGHT);
@@ -205,6 +237,10 @@ namespace rosetube {
             }
 
             this->label_artist->setText(GSCommon::getTextCutFromLabelWidth(tmpArtist, all_width, label_artist->font()));
+            if(this->label_artist->text().contains("…")){
+                this->label_artist->setToolTip(tmpArtist);//c230321
+                this->label_artist->setToolTipDuration(2000);//c230321
+            }
 
             QString tmpview = "";
             if(this->data_track.contains("data")){
@@ -214,6 +250,10 @@ namespace rosetube {
                 if(tmpview.toInt() > 0){
                     QString tmpNumber = QString(tr("View Count") +" %1").arg(QLocale(QLocale::English).toString(tmpview.toInt()));
                     this->label_number->setText(GSCommon::getTextCutFromLabelWidth(tmpNumber, all_width, label_number->font()));
+                    if(this->label_number->text().contains("…")){
+                        this->label_number->setToolTip(tmpNumber);//c230321
+                        this->label_number->setToolTipDuration(2000);//c230321
+                    }
                 }
             }
             else{
@@ -222,6 +262,10 @@ namespace rosetube {
                 if(viewCNT > 0){
                     QString tmpNumber = QString(tr("View Count") +" %1").arg(QLocale(QLocale::English).toString(viewCNT));
                     this->label_number->setText(GSCommon::getTextCutFromLabelWidth(tmpNumber, all_width, label_number->font()));
+                    if(this->label_number->text().contains("…")){
+                        this->label_number->setToolTip(tmpNumber);//c230321
+                        this->label_number->setToolTipDuration(2000);//c230321
+                    }
                 }
             }
 

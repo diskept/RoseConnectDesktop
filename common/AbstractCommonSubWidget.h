@@ -54,13 +54,16 @@ namespace common {
          */
         enum MainUIType {
             VerticalScroll,
-            VerticalScroll_filter,
             VerticalScroll_rosefilter,
+            VerticalScroll_roseviewAll,
+            VerticalScroll_musicviewAll,
+            VerticalScroll_filter,
             VerticalScroll_viewAll,
             VerticalScroll_rosetube,
             VerticalScroll_roseradio,
             NoneScroll,
-            NoneScroll_filter
+            NoneScroll_filter,
+            NoneScroll_viewAll
         };
         Q_ENUM(MainUIType);
 
@@ -73,7 +76,6 @@ namespace common {
             Unknown                         ///< Dummy.
         };
 
-
         explicit AbstractCommonSubWidget(MainUIType p_mainUIType, QWidget *parent = nullptr);
         ~AbstractCommonSubWidget();
 
@@ -85,6 +87,8 @@ namespace common {
         void setConnectSiganl_toMovePage(const QObject *receiver, const char *member);
         void setConnectSiganl_toShouldGoBackward(const QObject *receiver, const char *member);
 
+        void setFlowLayoutResize(QWidget *parent,FlowLayout *flowLayout_wg, int width, int mod);            ///< list count check - by diskept j230317
+
         void wheelEvent(QWheelEvent*) override;
 
     signals:
@@ -93,11 +97,7 @@ namespace common {
         void signal_shouldGoBackward(const QJsonObject&);
         void signal_dropEvent_hide_show(bool);//c220728
 
-
-
     protected slots:
-
-
         // 별도로 http 요청이 필요한 경우 slot. 왠만하면 사용하지 않는 것으로.
         virtual void slot_responseHttp(const int &p_id, const QJsonObject &p_jsonObj);
 
@@ -149,6 +149,7 @@ namespace common {
         void addUIControl_mainTitle(const QString mainTitle);
         QLabel* get_addUIControl_mainTitle(const QString mainTitle);
         QLabel* get_addUIControl_mainTitle(const QString mainTitle, QPushButton *a, QPushButton *b, QPushButton *c, QPushButton *d, QPushButton *e, QPushButton *f);//cheon211008-search
+        QWidget* getWidget_addUIControl_mainTitle();
         void addUIControl_dividedLine_onMain();
 
         VerticalScrollArea* get_UIControl_VerticalScrollArea();
@@ -217,7 +218,7 @@ namespace common {
 
         VerticalScrollArea *scrollArea_main;        ///< MainUIType = VerticalScroll 일때의 scroll
 
-        QDialog *dialog_box_share;//c220816
+        QDialog *dialog_box_share = nullptr;//c230501
         QString shareLink = "";
         void setUIShare();//c220816
 
@@ -230,8 +231,7 @@ namespace common {
 
         void ContentLoadingwaitingMsgShow(QString msg);//cheontidal
         void ContentLoadingwaitingMsgHide();//cheontidal
-
-
+        bool menuTableCheck_ForFilter(QString menu_Name);//c230329
 
     };
 };

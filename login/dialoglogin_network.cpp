@@ -64,7 +64,7 @@ void DialogLogin_network::setUIControl(){
     lineEdit_id->setMaxLength(30);
     lineEdit_id->setPlaceholderText(tr("ID"));
     lineEdit_id->setFixedHeight(50);
-    lineEdit_id->setTextMargins(23,14,23,14);
+    lineEdit_id->setTextMargins(23,10,23,10);
     lineEdit_id->setStyleSheet("font-size:20px;color:#777777;background-color:#212121;border-radius:2px;border:1px solid #4d4d4d;");
 
     // 패스워드
@@ -72,7 +72,7 @@ void DialogLogin_network::setUIControl(){
     lineEdit_pw->setMaxLength(30);
     lineEdit_pw->setPlaceholderText(tr("Password"));
     lineEdit_pw->setFixedHeight(50);
-    lineEdit_pw->setTextMargins(23,14,23,14);
+    lineEdit_pw->setTextMargins(23,10,23,10);
     lineEdit_pw->setEchoMode(QLineEdit::Password);
     lineEdit_pw->setStyleSheet("font-size:20px;color:#777777;background-color:#212121;border-radius:2px;border:1px solid #4d4d4d;");
 

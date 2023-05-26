@@ -23,6 +23,7 @@ public:
     static void show(QWidget *parent, const QString &p_title, const QString &p_msgText);
     static void show(QWidget *parent, const QString &p_title, const QString &p_msgText, int duration);
     static void show(QWidget *parent, const QString &p_title, const QString &p_msgText, int duration, int line2);
+    static void delay(QWidget *parent, const QString &p_title, const QString &p_msgText, int duration);//c230311
     static void show(QWidget *parent, const QString &p_title, const QString &p_msgText, int duration, int line2, int );//c220930_2
 
 private slots:

@@ -25,6 +25,7 @@ namespace tidal {
      * @brief 기본 생성자.
      */
     ProcCommon::ProcCommon(QWidget *parent) : QObject(parent) {
+        this->linker = Linker::getInstance();//c230421
     }
 
 
@@ -117,7 +118,7 @@ namespace tidal {
 
 
     void ProcCommon::request_tidal_getRefreshTokenAndSave(){
-
+print_debug();
         ProcCommon *proc = new ProcCommon();
         UserLoginInfo tidal_userLoginInfo = proc->getLoginInfo_tidalDB();
 
@@ -330,6 +331,30 @@ namespace tidal {
         //qDebug() << userLoginInfo.username;
         //qDebug() << userLoginInfo.password;
         network->request_forTidal(Login,
+                         QString("%1/login/username").arg(global.tidalAPI_url),
+                         NetworkHttp::HeaderOption::Tidal_X_Token,
+                         params,
+                         NetworkHttp::RequestMethod::Post);
+
+    }
+
+
+    void ProcCommon::request_tidalLogin_termCall(UserLoginInfo userLoginInfo){//c230422
+
+        // slot 에서 추가처리를 위해 멤버변수로 저장해둠
+        this->userLoginInfo = userLoginInfo;
+
+        NetworkHttp *network = new NetworkHttp;
+        connect(network, SIGNAL(response(int,QJsonObject)), SLOT(slot_responseHttp(int,QJsonObject)));
+
+        QUrlQuery params;
+        //params.addQueryItem("username", userLoginInfo.username);
+        //params.addQueryItem("password", userLoginInfo.password);
+        params.addQueryItem("clientUniqueKey", "");
+        //qDebug() << "ProcCommon::request_tidalLogin()--------------";//cheon_debug01
+        //qDebug() << userLoginInfo.username;
+        //qDebug() << userLoginInfo.password;
+        network->request_forTidal(Login_termCall,
                          QString("%1/login/username").arg(global.tidalAPI_url),
                          NetworkHttp::HeaderOption::Tidal_X_Token,
                          params,
@@ -568,6 +593,7 @@ namespace tidal {
 
         QUrlQuery params;
         params.addQueryItem("countryCode", global.user_forTidal.getCountryCode());
+
         if(limit >= 0){
             params.addQueryItem("limit", QString("%1").arg(limit));
         }
@@ -1514,6 +1540,23 @@ namespace tidal {
         //Debug() << "p_jsonObj" << strJson;                             //cheon4_code
         NetworkHttp* sender_http = qobject_cast<NetworkHttp*>(sender());
 
+        //print_debug();
+        //qDebug() << "p_id=" << p_id;
+        //qDebug() << "p_jsonObj=" << p_jsonObj;
+        if( (ProcJsonEasy::getString(p_jsonObj, "code")==202 || ProcJsonEasy::getString(p_jsonObj, "code")==401)){//c230421
+            print_debug();
+            //ProcCommon *procTidal = new tidal::ProcCommon(this);//
+            request_tidal_getRefreshTokenAndSave();//
+
+            //global.user_forTidal.set_logoutState();
+            emit linker->signal_clicked_movePage(global.user_forTidal.getPageData());
+            sender()->deleteLater();
+            if(global.abs_ani_dialog_wait->isHidden() != true){
+                global.abs_ani_dialog_wait->hide(); //cheontidal
+            }
+            return;
+        }
+
         switch (p_id) {
             case Login:             setResult_loginTidal(p_jsonObj);        break;
             case Get_Token:         setResult_getToken(p_jsonObj);          break;
@@ -1733,7 +1776,11 @@ namespace tidal {
 
             sqliteHelper->close();
             delete sqliteHelper;*/
-
+print_debug();
+            //tidal::ProcCommon *procTidal = new tidal::ProcCommon(this);//
+            //this->request_tidal_getRefreshTokenAndSave();//
+            //global.user_forTidal.set_logoutState();//
+            QTimer::singleShot(3000,this,[=](){emit linker->signal_loginTidalAcount();});//c230426
             emit this->signal_completeReq_getSession("error", p_jsonObj);
         }
     }
@@ -1782,20 +1829,23 @@ namespace tidal {
     void ProcCommon::setResult_listGenres(const QJsonObject &p_jsonObj){
 
         if(ProcJsonEasy::get_flagOk(p_jsonObj)){
-            QJsonArray jsonArr_list = ProcJsonEasy::getJsonArray(p_jsonObj, "array");
+            if(list_genre.length() == 0){
+                QJsonArray jsonArr_list = ProcJsonEasy::getJsonArray(p_jsonObj, "array");
 
-            for(int i = 0; i < jsonArr_list.count(); i++){
-                QJsonObject tmp_jsonObj = jsonArr_list.at(i).toObject();
-                QString tmp_name = ProcJsonEasy::getString(tmp_jsonObj, "name");
-                QString tmp_path = ProcJsonEasy::getString(tmp_jsonObj, "path");
+                for(int i = 0; i < jsonArr_list.count(); i++){
+                    QJsonObject tmp_jsonObj = jsonArr_list.at(i).toObject();
+                    QString tmp_name = ProcJsonEasy::getString(tmp_jsonObj, "name");
+                    QString tmp_path = ProcJsonEasy::getString(tmp_jsonObj, "path");
 
-                if(!tmp_name.isEmpty() && !tmp_path.isEmpty()){
-                    tidal::GenreInfo tmp_data;
-                    tmp_data.name = tmp_name;
-                    tmp_data.path = tmp_path;
-                    list_genre.append(tmp_data);
+                    if(!tmp_name.isEmpty() && !tmp_path.isEmpty()){
+                        tidal::GenreInfo tmp_data;
+                        tmp_data.name = tmp_name;
+                        tmp_data.path = tmp_path;
+                        list_genre.append(tmp_data);
+                    }
                 }
             }
+
             if(list_genre.count() > 0){
                 emit signal_completeReq_getListGenre(true, "");
             }
@@ -1849,18 +1899,20 @@ namespace tidal {
     void ProcCommon::setResult_listMoods(const QJsonObject &p_jsonObj){
 
         if(ProcJsonEasy::get_flagOk(p_jsonObj)){
-            QJsonArray jsonArr_list = ProcJsonEasy::getJsonArray(p_jsonObj, "array");
+            if(list_mood.length() == 0){
+                QJsonArray jsonArr_list = ProcJsonEasy::getJsonArray(p_jsonObj, "array");
 
-            for(int i = 0; i < jsonArr_list.count(); i++){
-                QJsonObject tmp_jsonObj = jsonArr_list.at(i).toObject();
-                QString tmp_name = ProcJsonEasy::getString(tmp_jsonObj, "name");
-                QString tmp_path = ProcJsonEasy::getString(tmp_jsonObj, "path");
+                for(int i = 0; i < jsonArr_list.count(); i++){
+                    QJsonObject tmp_jsonObj = jsonArr_list.at(i).toObject();
+                    QString tmp_name = ProcJsonEasy::getString(tmp_jsonObj, "name");
+                    QString tmp_path = ProcJsonEasy::getString(tmp_jsonObj, "path");
 
-                if(!tmp_name.isEmpty() && !tmp_path.isEmpty()){
-                    tidal::MoodInfo tmp_data;
-                    tmp_data.name = tmp_name;
-                    tmp_data.path = tmp_path;
-                    list_mood.append(tmp_data);
+                    if(!tmp_name.isEmpty() && !tmp_path.isEmpty()){
+                        tidal::MoodInfo tmp_data;
+                        tmp_data.name = tmp_name;
+                        tmp_data.path = tmp_path;
+                        list_mood.append(tmp_data);
+                    }
                 }
             }
 
@@ -2147,15 +2199,6 @@ namespace tidal {
 
                 flag_lastPage = this->get_flag_lastPage(tmpObj);
             }
-            else{
-                QJsonObject tmp_json = p_jsonObj;
-                jsonArr_item.append(tmp_json);
-
-                // 정보 담을 struct
-                tidal::TrackItemData tmp_data = ConvertData::make_trackData_fromTidalJsonObj(tmp_json);
-                tmp_data.totalCount = 1;
-                list_output.append(tmp_data);
-            }
         }
 
         emit this->completeReq_list_tracks(list_output, jsonArr_item, flag_lastPage);
@@ -2192,12 +2235,9 @@ namespace tidal {
                 flag_lastPage = this->get_flag_lastPage(tmpObj);
             }
             else{
-                QJsonObject tmp_json = p_jsonObj;
-                jsonArr_item.append(tmp_json);
-
                 // 정보 담을 struct
-                tidal::VideoItemData tmp_data = ConvertData::make_videoData_fromTidalJsonObj(tmp_json);
-                tmp_data.totalCount = 1;
+                tidal::VideoItemData tmp_data = ConvertData::make_videoData_fromTidalJsonObj(p_jsonObj);
+                tmp_data.totalCount = ProcJsonEasy::getInt(p_jsonObj, "totalNumberOfItems");
                 list_output.append(tmp_data);
             }
         }
@@ -2592,6 +2632,7 @@ namespace tidal {
 
                 // 정보 담을 struct
                 AlbumItemData tmp_data = ConvertData::make_albumData_fromTidalJsonObj(tmp_json);
+                tmp_data.totalCount = ProcJsonEasy::getInt(p_jsonObj, "totalNumberOfItems");
                 list_output.append(tmp_data);
             }
 
@@ -2628,6 +2669,7 @@ namespace tidal {
 
                 // 정보 담을 struct
                 TrackItemData tmp_data = ConvertData::make_trackData_fromTidalJsonObj(tmp_json);
+                tmp_data.totalCount = ProcJsonEasy::getInt(p_jsonObj, "totalNumberOfItems");
                 list_output.append(tmp_data);
             }
 
@@ -2660,6 +2702,7 @@ namespace tidal {
 
                 // 정보 담을 struct
                 ArtistItemData tmp_data = ConvertData::make_artistData_fromTidalJsonObj(tmp_json);
+                tmp_data.artist_total_cnt = ProcJsonEasy::getInt(p_jsonObj, "totalNumberOfItems");
                 list_output.append(tmp_data);
             }
 
@@ -2692,6 +2735,7 @@ namespace tidal {
 
                 // 정보 담을 struct
                 VideoItemData tmp_data = ConvertData::make_videoData_fromTidalJsonObj(tmp_json);
+                tmp_data.totalCount = ProcJsonEasy::getInt(p_jsonObj, "totalNumberOfItems");
                 list_output.append(tmp_data);
             }
 

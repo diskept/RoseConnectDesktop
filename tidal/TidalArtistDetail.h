@@ -54,14 +54,18 @@ namespace tidal {
     private slots :
         void slot_applyResult_artistInfo(tidal::ArtistItemData data_artist);
         void slot_applyResult_artist_bioText(const QString& bioText);
-
+        void slot_artistInfo_btnClicked();
         void slot_clickBtn_subTitle_viewAll();
+
+        void slot_applyResult_checkRating_artist(const QJsonObject&);
+        void slot_applyResult_getRating_artist(const QJsonArray&);
+        void slot_applyResult_addRating_artist(const QJsonObject&);
 
         void slot_applyResult_checkRating_track(const QJsonObject&);
         void slot_applyResult_addRating_track(const QJsonObject&);
         void slot_applyResult_getRating_track(const QJsonArray&);
 
-        /*void slot_tidal_completeReq_listAll_myFavoritesIds(const QJsonObject&);*/
+        void slot_tidal_completeReq_listAll_myFavoritesIds(const QJsonObject&);
 
     private:
         // function about UI
@@ -74,6 +78,7 @@ namespace tidal {
         QHBoxLayout* setUIControl_hBoxLayout_forArtist(QLayout *p_layout);
 
     private:
+        Linker *linker;
         DialogNotice *dlgArtistMore;
 
         AbstractImageDetailContents_RHV *artist_detail_info;

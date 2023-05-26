@@ -1,16 +1,19 @@
-#include "profileplaylistwidget.h"
+#include "home/profileplaylistwidget.h"
+
 #include "common/gscommon.h"
 #include "common/global.h"
+#include "common/filedownloader.h"
+#include "common/networkhttp.h"
+
+#include "roseHome/ProcCommon_forRosehome.h"
+
+#include "widget/ElidedLabel.h"
 
 #include <QJsonArray>
 #include <QJsonObject>
 #include <QKeyEvent>
 #include <QPainter>
 
-#include <common/filedownloader.h>
-#include <common/networkhttp.h>
-
-#include <widget/ElidedLabel.h>
 
 const int PROFILEIMG_SIZE = 30;
 const int HTTP_GET_PLAYLIST_MY = 88;
@@ -19,6 +22,7 @@ const int HTTP_FETCH_PLAYLIST_TRACK = 66;
 const int HTTP_FETCH_PLAYLIST_INFO = 55;
 const int HTTP_GET_PLAYLIST_MY_MORE = 44;
 const int HTTP_GET_PLAYLIST_FRIEND_MORE = 43;
+
 
 /** ===================================================================================================
  *              class ProfileRowBtn 프로필 닉네임 버튼
@@ -34,6 +38,8 @@ ProfileRowBtn::ProfileRowBtn(QWidget *parent) : QPushButton(parent)
     this->setCursor(Qt::PointingHandCursor);
     this->setUIControl();
 }
+
+
 void ProfileRowBtn::setUIControl(){
 
     lb_img = new QLabel();
@@ -71,6 +77,8 @@ void ProfileRowBtn::setUIControl(){
     connect(btn_close, &QPushButton::clicked, this, &ProfileRowBtn::clicked);
 
 }
+
+
 /**
  * @brief ProfileBtn::setDataProfileBtn 데이터 세팅
  * @param p_jsonObject
@@ -109,6 +117,7 @@ void ProfileRowBtn::setDataProfileBtn(QJsonObject p_jsonObject){
     }
 }
 
+
 void ProfileRowBtn::setMinSize(){
     this->lb_username->setVisible(false);
     if(this->flagExpanded){
@@ -117,6 +126,8 @@ void ProfileRowBtn::setMinSize(){
         this->btn_open->setVisible(false);
     }
 }
+
+
 void ProfileRowBtn::setMaxSize(){
     this->lb_username->setVisible(true);
     if(this->flagExpanded){
@@ -125,6 +136,8 @@ void ProfileRowBtn::setMaxSize(){
         this->btn_open->setVisible(true);
     }
 }
+
+
 void ProfileRowBtn::setToggle(){
     if(this->flagExpanded){
         this->btn_open->setVisible(true);
@@ -142,6 +155,7 @@ void ProfileRowBtn::setToggle(){
         this->setMaxSize();
     }
 }
+
 
 /**
  * @brief ProfileBtn::slot_loadImageMainProfile [SLOT] 프로필 메인 이미지 세팅
@@ -173,6 +187,8 @@ void ProfileRowBtn::slot_loadImageMainProfile(){
 
 
 
+
+
 /** ===================================================================================================
  *              class PlayListRowBtn 플레이리스트명 Row 버튼
  * ===================================================================================================
@@ -187,6 +203,8 @@ PlayListRowBtn::PlayListRowBtn(QWidget *parent) : QPushButton(parent)
     this->setCursor(Qt::PointingHandCursor);
     this->setUIControl();
 }
+
+
 /**
  * @brief PlayListRowBtn::setUIControl UI 생성
  */
@@ -195,11 +213,14 @@ void PlayListRowBtn::setUIControl(){
     // UI 세팅
     lb_icon = GSCommon::getUILabelImg(":/images/playlist/mus_mini_play_ico.png");
     lb_icon->setObjectName("lb_icon");
-    lb_icon->setStyleSheet("#lb_icon { background-color:#4C4C4C; }");
+    //lb_icon->setStyleSheet("#lb_icon { background-color:#4C4C4C; }");
+    lb_icon->setStyleSheet("#lb_icon { background-color:transparent; }");
     lb_title = new QLabel();
     lb_title->setMaximumWidth(180);
     //lb_title->setText(GSCommon::getTextCutFromLabelWidth(title, lb_title->width(), lb_title->font()));
+
     lb_title->setStyleSheet("font-size:14px;color:#E5E5E4;");
+
     QHBoxLayout *hl_total = new QHBoxLayout();
     hl_total->setContentsMargins(25,15,0,15);
     hl_total->setSpacing(0);
@@ -207,25 +228,66 @@ void PlayListRowBtn::setUIControl(){
     hl_total->addWidget(lb_icon, 0, Qt::AlignLeft);
     hl_total->addSpacing(10);
     hl_total->addWidget(lb_title, 1, Qt::AlignLeft);
+
     QWidget *widget_total = new QWidget();
     widget_total->setObjectName("widget_total");
     widget_total->setLayout(hl_total);
     widget_total->setStyleSheet("#widget_total { background-color:#171717; }");
     QVBoxLayout *vl_total = new QVBoxLayout();
+
     vl_total->setContentsMargins(0,0,0,0);
     vl_total->setSpacing(0);
     vl_total->addWidget(widget_total);
     vl_total->addWidget(GSCommon::getHorizontalBar("#252525", 2));
+
     this->setLayout(vl_total);
 }
+
 
 /**
  * @brief PlayListRowBtn::setDataPlayListRowBtn 외부로부터 데이터 세팅
  * @param p_jsonObject
  */
 void PlayListRowBtn::setDataPlayListRowBtn(QJsonObject p_jsonObject){
+
+    this->dataPlayListRow.title = ProcJsonEasy::getString(p_jsonObject, "title");
+    this->dataPlayListRow.type = ProcJsonEasy::getString(p_jsonObject, "type");
+    this->dataPlayListRow.no = ProcJsonEasy::getInt(p_jsonObject, "id");
+    this->dataPlayListRow.totalcount = ProcJsonEasy::getInt(p_jsonObject, "trackCount");
+
+    QPixmap *pixmap_icon;
+    if(this->dataPlayListRow.type=="MUSIC"){
+        pixmap_icon = GSCommon::getUIPixmapImg(":/images/rosehome/home_music.png");
+    }
+    else if(this->dataPlayListRow.type=="VIDEO"){
+        pixmap_icon = GSCommon::getUIPixmapImg(":/images/rosehome/home_video.png");
+    }
+    else if(this->dataPlayListRow.type=="YOUTUBE"){
+        pixmap_icon = GSCommon::getUIPixmapImg(":/images/rosehome/home_tube.png");
+    }
+    else if(this->dataPlayListRow.type=="POD"){
+        pixmap_icon = GSCommon::getUIPixmapImg(":/images/playlist/pod_mini_play_ico.png");
+    }
+    else if(this->dataPlayListRow.type=="TIDAL"){
+        pixmap_icon = GSCommon::getUIPixmapImg(":/images/rosehome/home_tidal.png");
+    }
+    else if(this->dataPlayListRow.type=="BUGS"){
+        pixmap_icon = GSCommon::getUIPixmapImg(":/images/rosehome/home_bugs.png");
+    }
+    else if(this->dataPlayListRow.type=="QOBUZ"){
+        pixmap_icon = GSCommon::getUIPixmapImg(":/images/rosehome/home_qobuz.png");
+    }
+    else if(this->dataPlayListRow.type=="APPLE_MUSIC"){
+        pixmap_icon = GSCommon::getUIPixmapImg(":/images/rosehome/home_apple.png");
+    }
+    else{
+        // default 추가하였음 by sunnyfish  (compiler checking point - warning)
+        pixmap_icon = GSCommon::getUIPixmapImg(":/images/rosehome/home_all.png");
+    }
+
+
     // 데이터 세팅
-    if(p_jsonObject.contains("title")){
+    /*if(p_jsonObject.contains("title")){
         this->dataPlayListRow.title = p_jsonObject["title"].toString();
     }
     if(p_jsonObject.contains("type")){
@@ -237,33 +299,53 @@ void PlayListRowBtn::setDataPlayListRowBtn(QJsonObject p_jsonObject){
     if(p_jsonObject.contains("totalcount")){
         this->dataPlayListRow.totalcount = p_jsonObject["totalcount"].toInt();
     }
+
     QPixmap *pixmap_icon;
     if(this->dataPlayListRow.type=="music"){
         pixmap_icon = GSCommon::getUIPixmapImg(":/images/playlist/mus_mini_play_ico.png");
-    }else if(this->dataPlayListRow.type=="video"){
+    }
+    else if(this->dataPlayListRow.type=="video"){
         pixmap_icon = GSCommon::getUIPixmapImg(":/images/playlist/video_mini_play_ico.png");
-    }else if(this->dataPlayListRow.type=="youtube"){
+    }
+    else if(this->dataPlayListRow.type=="youtube"){
         pixmap_icon = GSCommon::getUIPixmapImg(":/images/playlist/tube_mini_play_ico.png");
-    }else if(this->dataPlayListRow.type=="bugs"){
-        pixmap_icon = GSCommon::getUIPixmapImg(":/images/playlist/bugs_mini_play_ico.png");
-    }else if(this->dataPlayListRow.type=="pod"){
+    }
+    else if(this->dataPlayListRow.type=="pod"){
         pixmap_icon = GSCommon::getUIPixmapImg(":/images/playlist/pod_mini_play_ico.png");
+    }
+    else if(this->dataPlayListRow.type=="tidal"){
+        pixmap_icon = GSCommon::getUIPixmapImg(":/images/playlist/tidal_mini_play_ico.png");
+    }
+    else if(this->dataPlayListRow.type=="bugs"){
+        pixmap_icon = GSCommon::getUIPixmapImg(":/images/playlist/bugs_mini_play_ico.png");
     }
     else{
         // default 추가하였음 by sunnyfish  (compiler checking point - warning)
         pixmap_icon = GSCommon::getUIPixmapImg(":/images/playlist/mus_mini_play_ico.png");
+    }*/
+
+    this->lb_icon->setPixmap(*pixmap_icon);
+    //this->lb_icon->resize(PROFILEIMG_SIZE, PROFILEIMG_SIZE);
+    this->lb_title->setText(GSCommon::getTextCutFromLabelWidth(this->dataPlayListRow.title, lb_title->width(), lb_title->font()));
+    if(this->lb_title->text().contains("…")){
+        this->lb_title->setToolTip(this->dataPlayListRow.title);
+        this->lb_title->setToolTipDuration(2000);
     }
-    lb_icon->setPixmap(*pixmap_icon);
-    lb_icon->resize(PROFILEIMG_SIZE, PROFILEIMG_SIZE);
-    lb_title->setText(GSCommon::getTextCutFromLabelWidth(this->dataPlayListRow.title, lb_title->width(), lb_title->font()));
 }
+
 
 void PlayListRowBtn::setMinSize(){
     this->lb_title->setVisible(false);
 }
+
+
 void PlayListRowBtn::setMaxSize(){
     this->lb_title->setVisible(true);
 }
+
+
+
+
 
 /** ===================================================================================================
  *              class ProfilePlayListWidget 프로필 버튼 과 플레이리스트 포함된 클래스
@@ -280,6 +362,8 @@ ProfilePlayListWidget::ProfilePlayListWidget(ProfileWhoType p_profileWho, QWidge
 
     this->setUIControl();
 }
+
+
 /**
  * @brief ProfilePlayListWidget::setUIControl UI 세팅
  */
@@ -312,6 +396,8 @@ void ProfilePlayListWidget::setUIControl(){
     connect(this->profileRowBtn, &ProfileRowBtn::clicked, this, &ProfilePlayListWidget::slot_clickedProfileRowBtn);
     connect(this->btn_list_open_ico, &QPushButton::clicked, this, &ProfilePlayListWidget::slot_clickedMore);
 }
+
+
 /**
  * @brief ProfilePlayListWidget::setDataProfileInfo 데이터 세팅
  * @param p_jsonObject
@@ -330,6 +416,7 @@ void ProfilePlayListWidget::setDataProfileInfo(QJsonObject p_jsonObject){
     this->profileRowBtn->setDataProfileBtn(p_jsonObject);
 }
 
+
 /**
  * @brief ProfilePlayListWidget::slot_clickedProfileRow [SLOT] 프로필 Row 클릭시 처리
  */
@@ -344,9 +431,14 @@ void ProfilePlayListWidget::slot_clickedProfileRowBtn(){
 
     if(this->profileRowBtn->getFlagExpaneded()==true){
         // 펼쳐진 상태에는 API 호출하지 않고 클리어만 한다.
-    }else{
+    }
+    else{
         // 접혀진 상태일때만 API 호출한다.
-        NetworkHttp *network = new NetworkHttp();
+        roseHome::ProcCommon *proc_myPlaylist = new roseHome::ProcCommon(this);
+        connect(proc_myPlaylist, &roseHome::ProcCommon::completeReq_list_myplaylists, this, &ProfilePlayListWidget::slot_applyResult_MyPlaylist);
+        proc_myPlaylist->request_rose_getList_myPlaylists("member/playlist", "", this->cntMoreClicked, 20);
+
+        /*NetworkHttp *network = new NetworkHttp();
         connect(network, SIGNAL(response(int,QJsonObject)), SLOT(slot_responseHttp(int,QJsonObject)));
         QJsonObject json;
         json.insert("local_ip", global.device.getDeviceIP());
@@ -355,21 +447,34 @@ void ProfilePlayListWidget::slot_clickedProfileRowBtn(){
             // 마이 플레이리스트 경우
             network->request(HTTP_GET_PLAYLIST_MY, QString("%1/playlist/all/mod/?page=%2&size=20")
                              .arg(global.legacy_v3_api).arg(this->cntMoreClicked), json, true, true);
-        }else{
+        }
+        else{
             // 친구 플레이리스트 경우
             network->request(HTTP_GET_PLAYLIST_FRIEND, QString("%1/playlist/friend/mod/%2?page=0&size=20")
                              .arg(global.legacy_v3_api).arg(this->pkNo), json, true, true);
-        }
+        }*/
     }
+
     this->profileRowBtn->setToggle();
 }
+
 
 /**
  * @brief ProfilePlayListWidget::slot_clickedMore [SLOT] 더보기 버튼 클릭시
  */
 void ProfilePlayListWidget::slot_clickedMore(){
 
-    this->cntMoreClicked++;     // 더보기 클릭 횟수
+    if(this->flag_lastPage == false){
+        this->cntMoreClicked++;     // 더보기 클릭 횟수
+
+        // 접혀진 상태일때만 API 호출한다.
+        roseHome::ProcCommon *proc_myPlaylist = new roseHome::ProcCommon(this);
+        connect(proc_myPlaylist, &roseHome::ProcCommon::completeReq_list_myplaylists, this, &ProfilePlayListWidget::slot_applyResult_MyPlaylist);
+        proc_myPlaylist->request_rose_getList_myPlaylists("member/playlist", "", this->cntMoreClicked, 20);
+    }
+
+
+    /*this->cntMoreClicked++;     // 더보기 클릭 횟수
 
     NetworkHttp *network = new NetworkHttp();
     connect(network, SIGNAL(response(int,QJsonObject)), SLOT(slot_responseHttp(int,QJsonObject)));
@@ -382,13 +487,28 @@ void ProfilePlayListWidget::slot_clickedMore(){
         network->request(HTTP_GET_PLAYLIST_MY_MORE, QString("%1/playlist/all/mod/?page=%2&size=20")
                          .arg(global.legacy_v3_api).arg(cntMoreClicked), json, true, true);
 
-    }else if(this->type_profileWho == ProfileWhoType::Friend){
+    }
+    else if(this->type_profileWho == ProfileWhoType::Friend){
         // 친구 플레이리스트 경우
         network->request(HTTP_GET_PLAYLIST_FRIEND_MORE, QString("%1/playlist/friend/mod/%2?page=%3&size=20")
                          .arg(global.legacy_v3_api).arg(this->pkNo).arg(this->cntMoreClicked), json, true, true);
 
-    }
+    }*/
 }
+
+
+void ProfilePlayListWidget::slot_applyResult_MyPlaylist(const QList<roseHome::PlaylistItemData> &list_data, const QJsonArray &jsonArr_dataToPlay, const bool flag_lastPage){
+
+    Q_UNUSED(list_data);
+
+    this->flag_lastPage = flag_lastPage;
+
+    QJsonObject tmpJson;
+    tmpJson.insert("playlists", jsonArr_dataToPlay);
+    this->setAddPlayListRowBtn(tmpJson);
+}
+
+
 
 /**
  * @brief ProfilePlayListWidget::slot_responseHttp : Http 요청 결과 처리 함수
@@ -400,14 +520,15 @@ void ProfilePlayListWidget::slot_responseHttp(const int &p_id, const QJsonObject
     if(p_id==HTTP_GET_PLAYLIST_MY || p_id==HTTP_GET_PLAYLIST_FRIEND){
 
         this->setAddPlayListRowBtn(p_jsonObject);
-
-    }else if(p_id==HTTP_GET_PLAYLIST_MY_MORE || p_id==HTTP_GET_PLAYLIST_FRIEND_MORE){
+    }
+    else if(p_id==HTTP_GET_PLAYLIST_MY_MORE || p_id==HTTP_GET_PLAYLIST_FRIEND_MORE){
 
         this->setAddPlayListRowBtn(p_jsonObject);
+    }
+    else if(p_id==HTTP_FETCH_PLAYLIST_TRACK){
 
-    }else if(p_id==HTTP_FETCH_PLAYLIST_TRACK){
-
-    }else if(p_id==HTTP_FETCH_PLAYLIST_INFO){
+    }
+    else if(p_id==HTTP_FETCH_PLAYLIST_INFO){
 
     }
     sender()->deleteLater();
@@ -420,7 +541,29 @@ void ProfilePlayListWidget::slot_responseHttp(const int &p_id, const QJsonObject
  */
 void ProfilePlayListWidget::setAddPlayListRowBtn(QJsonObject p_jsonObject){
 
-    if(p_jsonObject.contains("totalcount")){
+    QJsonArray tmpArr = ProcJsonEasy::getJsonArray(p_jsonObject, "playlists");
+
+    for(int i = 0; i < tmpArr.size(); i++){
+        QJsonObject tmpObj = tmpArr.at(i).toObject();
+
+        // UI 세팅
+        PlayListRowBtn *playListRowBtn = new PlayListRowBtn();
+        playListRowBtn->setDataPlayListRowBtn(tmpObj);
+        connect(playListRowBtn, &PlayListRowBtn::clicked, this, &ProfilePlayListWidget::slot_clickedPlayListRowBtn);
+
+        this->list_playListRowBtn.append(playListRowBtn);
+        this->vl_playList->addWidget(playListRowBtn);
+    }
+
+    if(!this->flag_lastPage){
+        this->btn_list_open_ico->setVisible(true);
+    }
+    else{
+        this->btn_list_open_ico->setVisible(false);
+    }
+
+
+    /*if(p_jsonObject.contains("totalcount")){
         this->totalCount = p_jsonObject["totalcount"].toString().toInt();
     }
     if(p_jsonObject.contains("playlists")){
@@ -442,7 +585,7 @@ void ProfilePlayListWidget::setAddPlayListRowBtn(QJsonObject p_jsonObject){
         this->btn_list_open_ico->setVisible(true);
     }else{
         this->btn_list_open_ico->setVisible(false);
-    }
+    }*/
 }
 
 
@@ -450,9 +593,10 @@ void ProfilePlayListWidget::setAddPlayListRowBtn(QJsonObject p_jsonObject){
  * @brief ProfilePlayListWidget::slot_clickedPlayListRowBtn [SLOT] 플레이리스트 타이틀 Row 클릭시 처리
  */
 void ProfilePlayListWidget::slot_clickedPlayListRowBtn(){
+
     PlayListRowBtn *tmp_sender = dynamic_cast<PlayListRowBtn*>(sender());
     //int tmp_no = tmp_sender->getPlayListNoPK();
-    QString tmp_type = tmp_sender->getPlayListType();
+    /*QString tmp_type = tmp_sender->getPlayListType();
 
     QJsonObject tmp_json;
     QJsonObject tmp_plyListInfo;
@@ -461,7 +605,8 @@ void ProfilePlayListWidget::slot_clickedPlayListRowBtn(){
         tmp_json.insert("playListNo", tmp_sender->getPlayListNoPK());
         if(this->type_profileWho == ProfileWhoType::My){
             tmp_json.insert("flagPlayListMy", true); // false : 친구플레이리스트
-        }else if(this->type_profileWho == ProfileWhoType::Friend){
+        }
+        else if(this->type_profileWho == ProfileWhoType::Friend){
             tmp_json.insert("flagPlayListMy", false); // false : 친구플레이리스트
         }
         tmp_json.insert(KEY_MAIN_CODE, GSCommon::MainMenuCode::Music);
@@ -469,10 +614,19 @@ void ProfilePlayListWidget::slot_clickedPlayListRowBtn(){
     }else if(tmp_type=="youtube"){
 
         tmp_json.insert(KEY_MAIN_CODE, GSCommon::MainMenuCode::RoseTube);
-        tmp_plyListInfo.insert("no", tmp_sender->getPlayListNoPK());
+        //tmp_plyListInfo.insert("no", tmp_sender->getPlayListNoPK());
+        tmp_plyListInfo.insert("id", tmp_sender->getPlayListNoPK());
     }
     tmp_json.insert(KEY_PAGE_CODE, PAGECODE_OP_PLAYLISTINFO);
-    tmp_json.insert("playList_info", tmp_plyListInfo);
+    tmp_json.insert("playList_info", tmp_plyListInfo);*/
+
+    QJsonObject tmp_data;
+    tmp_data.insert("id", tmp_sender->getPlayListNoPK());
+
+    QJsonObject tmp_json;
+    tmp_json.insert(KEY_MAIN_CODE, GSCommon::MainMenuCode::RoseHome);
+    tmp_json.insert(KEY_PAGE_CODE, PAGECODE_RH_PLAYLIST_ROSE_DETAIL);
+    tmp_json.insert("data", tmp_data);
 
     emit this->signal_clickedPlayListTitle(tmp_json);
 }

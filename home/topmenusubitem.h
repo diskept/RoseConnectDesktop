@@ -23,6 +23,8 @@ public:
 
     void setSubMenuText(QString p_text){ this->btn_icon->setText(p_text); };
     QString getSubMenuCode(){ return this->subMenuCode; };
+    QString getSubMenuName(){ return this->subMenuName; };//c230321
+
 signals:
     void clickedBtn(QString p_subCode);
 
@@ -33,6 +35,7 @@ private:
     UIMode uiMode;
     /** * @brief subMenuCode 서브메뉴의 code */
     QString subMenuCode;
+    QString subMenuName;//c230321
     QPushButton *btn_icon;
 };
 

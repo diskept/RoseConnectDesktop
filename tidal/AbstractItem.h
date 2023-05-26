@@ -56,8 +56,6 @@ namespace tidal {
 
         virtual int get_fixedHeight() = 0;
 
-
-
     signals:
         void signal_clicked(ClickMode);
 
@@ -75,8 +73,8 @@ namespace tidal {
         int get_spaceImageAndTitle(ImageSizeMode& imageSizeMode);
 
 
-        const int LABEL_HEIGHT = 20;
-        const int SPACE_LABELS = 5;
+        const int LABEL_HEIGHT = 24;
+        const int SPACE_LABELS = 3;
         const int ICON_HEIGHT = 30;
 
     protected slots:

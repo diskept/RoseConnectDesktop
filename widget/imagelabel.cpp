@@ -421,6 +421,10 @@ void ImageLabel::setHover2(){
     flagUseHover2 = true;
 }
 
+void ImageLabel::setHover3(){
+    flagUseHover3 = true;
+}
+
 void ImageLabel::setDuration(const QString &p_duration){
     playTime->setText(p_duration);
     playTime->show();
@@ -553,6 +557,14 @@ void ImageLabel::enterEvent(QEvent *event){
         hoverWidget->setVisible(true);
         hoverWidget->setCursor(QCursor(Qt::PointingHandCursor));
     }
+    else if(flagUseHover3){
+        setHidden_play(true);
+        setHidden_favorite(true);
+        setHidden_more(true);
+
+        hoverWidget->setVisible(true);
+        hoverWidget->setCursor(QCursor(Qt::PointingHandCursor));
+    }
 }
 
 
@@ -568,6 +580,10 @@ void ImageLabel::leaveEvent(QEvent *event){
         hoverWidget->setCursor(QCursor(Qt::ArrowCursor));
     }
     else if(flagUseHover2){
+        hoverWidget->setVisible(false);
+        hoverWidget->setCursor(QCursor(Qt::ArrowCursor));
+    }
+    else if(flagUseHover3){
         hoverWidget->setVisible(false);
         hoverWidget->setCursor(QCursor(Qt::ArrowCursor));
     }

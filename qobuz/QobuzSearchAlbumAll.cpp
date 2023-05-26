@@ -69,9 +69,12 @@ namespace qobuz {
 
             this->flag_album_draw = false;
 
-            ContentLoadingwaitingMsgShow(tr("Content is being loaded. Please wait."));
+            print_debug();ContentLoadingwaitingMsgShow(tr("Content is being loaded. Please wait."));
 
             this->request_more_albumData();
+        }
+        else{
+            print_debug();ContentLoadingwaitingMsgHide();   //j230328
         }
     }
 
@@ -124,7 +127,7 @@ namespace qobuz {
 
             this->flag_album_draw = true;
 
-            ContentLoadingwaitingMsgShow(tr("Content is being loaded. Please wait."));
+            print_debug();ContentLoadingwaitingMsgShow(tr("Content is being loaded. Please wait."));
 
             this->request_more_albumDraw();
         }
@@ -245,12 +248,12 @@ namespace qobuz {
 
                     QCoreApplication::processEvents();
                 }
+                ContentLoadingwaitingMsgHide();
 
                 this->flag_flow_draw = true;
                 this->flag_album_draw = false;
             }
 
-            ContentLoadingwaitingMsgHide();
             this->request_more_albumData();
         }
         else{

@@ -42,24 +42,6 @@ private slots:
     void slot_responseHttp_play(const int &p_id, const QJsonObject &p_jsonObject);//c220714
 
 private:
-
-    Linker *linker;
-
-    bool flagIsMusic;
-
-    QJsonArray jsonArrMediaSrc;
-
-    Folder_TopDirPath *topDirPath;
-
-    USBFileDelegate *delegate;
-    QListWidget *listWidget;
-
-    DataNetworkFolder *data;
-    QList<DataNetworkFolder*> *listFileData;
-
-    QPixmap pixmapThumb;
-    Proc_AddTackInPlayList *procAdd_playlist;
-
     void setInit();
     void setInitMediaSrcData();
     void setUIControl();
@@ -76,7 +58,7 @@ private:
     QJsonObject getJsonObject_TrackData(const int &p_index);
     QJsonArray getPlayMusicInfoArray(const int &p_index);
     void dialog_comfirmCD_Stop();//c220714
-    void playMusic(QJsonArray jsonArrMusic, bool flagPlayShuffle=false);
+    void playMusic(QJsonArray jsonArrMusic, int type, bool flagPlayShuffle=false);
     void showOptionPopup(int);
     void showDlgOfAddFaroviteFolder(const QString &p_name, const QString &p_path);
 
@@ -86,6 +68,24 @@ private:
     QJsonArray get_rearrangeJsonArray_toPlayData(const QJsonArray& jsonArr_toPlayAll, const int curr_index, OptMorePopup::ClickMode clickMode);
     QJsonArray subRange_JsonArray(const QJsonArray &p_jsonArr, const int startIndex);
     QJsonArray reorderJsonArray(const QJsonArray &p_jsonArr, const int startIndex);
+
+private:
+    Linker *linker;
+
+    bool flagIsMusic;
+
+    QJsonArray jsonArrMediaSrc;
+
+    Folder_TopDirPath *topDirPath;
+
+    USBFileDelegate *delegate;
+    QListWidget *listWidget;
+
+    DataNetworkFolder *data;
+    QList<DataNetworkFolder*> *listFileData;
+
+    QPixmap pixmapThumb;
+    Proc_AddTackInPlayList *procAdd_playlist;
 
     QPushButton *btn_play;
     QPushButton *btn_shuffle;

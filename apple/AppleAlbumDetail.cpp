@@ -115,7 +115,7 @@ namespace apple {
 
                 this->flag_credit_ok = false;
 
-                ContentLoadingwaitingMsgShow(tr("Content is being loaded. Please wait."));
+                print_debug();ContentLoadingwaitingMsgShow(tr("Content is being loaded. Please wait."));
 
                 apple::ProcCommon *proc_album = new apple::ProcCommon(this);
                 connect(proc_album, &apple::ProcCommon::completeReq_album, this, &AppleAlbumDetail::slot_applyResult_album);
@@ -139,6 +139,10 @@ namespace apple {
 
             // 항상 부모클래스의 함수 먼저 호출
             AbstractAppleSubWidget::setActivePage();
+
+            GSCommon::clearLayout(this->box_contents);
+            this->box_contents->setAlignment(Qt::AlignTop);
+            this->scrollArea_main->setVerticalScrollBarPolicy(Qt::ScrollBarAsNeeded);
 
             this->box_main_contents = new QVBoxLayout();
             this->box_main_contents->setSpacing(0);

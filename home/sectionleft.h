@@ -25,27 +25,32 @@ public:
     void setBigSize();
     void requestPlayList();
 
-
 signals:
     void changedMenu(QString menuCode);
     void signal_goPagePlayListDetail(const QJsonObject &p_jsonObject);
 
 public slots:
     void clickedMenu(QString p_menuCode);
-    void slot_setSelectMenu(QString p_menuCode);//cheon211008
+    void slot_setSelectMenu(QString p_menuCode);
+    void slot_setLoginedSelectMenu(int index);//c230329
+    void slot_setOnOffSelectMenu(QString p_menuCode, bool f);//c230329
 
 private slots:
     void slot_responseHttp(const int &p_id, const QJsonObject &p_jsonObject);
     void slot_clickedProfileRow();
+    void slot_hoveredMenu();//c230518
 
 private:
     void setUIControl();
     void appendMenuItem(const QString p_menuName, const QString p_menuCode, const QString p_iconPath);
+    void selectTableLeftmenu();//c230329
+    //void music_downloadNotice();
 
 private:
     Linker *linker;//cheon211008
 
     QList<MenuItem*> list_menuItem;     ///< list_subMenuItem 메인메뉴 객체 리스트
+    QList<QSpacerItem*> list_menuItem_spacer; //bj230516
     QList<ProfilePlayListWidget*> list_profile_my;
     QList<ProfilePlayListWidget*> list_profile_friend;
 
@@ -61,6 +66,9 @@ private:
     QWidget *widget_bar_friend;
 
     QLabel *lb_logo;
+
+    QString current_munu;
+    int click_max_CNT = 0;//c230426
 };
 
 #endif // SECTIONLEFT_H

@@ -38,7 +38,7 @@ namespace roseHome {
     private slots:
         void slot_clickBtn_subTitle_side_friend();
         void slot_responseHttp(const int &p_id, const QJsonObject &p_jsonObject) override;;
-         void slot_applyResult_playlists(const QList<roseHome::PlaylistItemData>&, const QJsonArray&, const bool) override;
+        void slot_applyResult_playlists(const QList<roseHome::PlaylistItemData>&, const QJsonArray&, const bool) override;
         void slot_applyResult_albums(const QList<roseHome::AlbumItemData>&, const QJsonArray&, const bool) override;
         void slot_thumbnailDownloaded();
         void slot_thumbnailDownloaded_All();

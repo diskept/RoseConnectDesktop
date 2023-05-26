@@ -24,13 +24,18 @@ namespace music {
         void slot_applyResult_artists(const QList<roseHome::ArtistItemData>&, const QJsonArray&, const bool) override;
         void slot_clickedItemArtist(const tidal::AbstractItem::ClickMode) override;
 
+    protected:
+        //void proc_wheelEvent_to_getMoreData() override;
+
+        void resizeEvent(QResizeEvent *event) override;
+
     private slots:
         //void slot_filterClicked();
         //void slot_chooseFilterOption(QVariant selected_filterCode, QString selected_filterName);
 
     private:
         void setUIControl_artists();
-        void setUiControl_filter();
+        void setUIControl_filter();
 
         void initAll();
 
@@ -41,7 +46,7 @@ namespace music {
         FlowLayout *flowLayout_artists;    ///< artist's items
 
         // Data
-        roseHome::ItemArtist_roseHome *listArtist_all[99999];
+        roseHome::ItemArtist_rosehome *listArtist_all[1000];
 
         QList<roseHome::ArtistItemData> *list_artist;
 
@@ -54,6 +59,11 @@ namespace music {
         QString curr_api_mainTitle;
 
         QJsonArray jsonArr_Artist;
+
+        int artist_widget_width = 0;
+        int artist_widget_margin = 0;
+
+        bool flag_flow_draw = false;
     };
 };
 

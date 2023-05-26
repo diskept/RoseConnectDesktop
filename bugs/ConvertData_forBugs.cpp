@@ -873,10 +873,16 @@ namespace bugs {
                                                                         , ProcJsonEasy::getString(jsonObj_albumImg, "path")
                                                                         , ImageSize_Square::Size_350x350);
 
+        // rank_code
+        QJsonObject tmp_list_attr = ProcJsonEasy::getJsonObject(jsonObj,"list_attr");
+        data_output.rank_code = ProcJsonEasy::getString(tmp_list_attr,"rank_code");
+        data_output.rank_code_value = ProcJsonEasy::getString(tmp_list_attr, "rank_code_value");
+
         // rights obj
         QJsonObject jsonObj_rights = ProcJsonEasy::getJsonObject(jsonObj, "rights");
         QJsonObject jsonObj_streaming = ProcJsonEasy::getJsonObject(jsonObj_rights, "streaming");
         data_output.service_yn = ProcJsonEasy::getBool(jsonObj_streaming, "service_yn");
+
 
         // Adhoc Obj
         QJsonObject jsonObj_adhoc_attr = ProcJsonEasy::getJsonObject(jsonObj, "adhoc_attr");
@@ -1052,7 +1058,7 @@ namespace bugs {
         QJsonObject jsonObj_albumImg = ProcJsonEasy::getJsonObject(jsonObj, "image");
         data_output.album_image = ConvertData_forBugs::convertImagePath(ProcJsonEasy::getString(jsonObj_albumImg, "url")
                                                                         , ProcJsonEasy::getString(jsonObj_albumImg, "path")
-                                                                        , ImageSize_Square::Size_1000x1000);
+                                                                        , ImageSize_Square::Size_500x500);
 
         QJsonObject jsonObj_adhoc_attr = ProcJsonEasy::getJsonObject(jsonObj, "adhoc_attr");
         data_output.likes_yn = ProcJsonEasy::getBool(jsonObj_adhoc_attr, "likes_yn");
@@ -1078,16 +1084,20 @@ namespace bugs {
      */
     bugs::ArtistItemData ConvertData_forBugs::make_artistData_fromBugsJsonObj(const QJsonObject &jsonObj){
 
+        //qDebug() << "[Debug]" << __FUNCTION__ << __LINE__ << jsonObj;
         // 정보 담을 struct
         bugs::ArtistItemData data_output;
         data_output.artist_id = ProcJsonEasy::getInt(jsonObj, "artist_id");
         data_output.artist_nm = ProcJsonEasy::getString(jsonObj, "artist_nm");
+        data_output.biography = ProcJsonEasy::getString(jsonObj, "descr");
 
         // Artist 이미지
         QJsonObject jsonObj_img = ProcJsonEasy::getJsonObject(jsonObj, "image");
         data_output.image = ConvertData_forBugs::convertImagePath(ProcJsonEasy::getString(jsonObj_img, "url")
                                                                         , ProcJsonEasy::getString(jsonObj_img, "path")
-                                                                        , ImageSize_Square::Size_1000x1000);
+                                                                        , ImageSize_Square::Size_500x500);
+
+        //qDebug() << "[Debug]" << __FUNCTION__ << __LINE__ << data_output.image;
 
         QJsonObject jsonObj_adhoc_attr = ProcJsonEasy::getJsonObject(jsonObj, "adhoc_attr");
         data_output.likes_yn = ProcJsonEasy::getBool(jsonObj_adhoc_attr, "likes_yn");

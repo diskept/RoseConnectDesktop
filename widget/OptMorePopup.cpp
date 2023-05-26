@@ -182,13 +182,7 @@ void OptMorePopup::setMenuMode(const OptMorePopup::PopupMenuMode menuMode, const
     // UI 관련 세팅
     this->setUIControl_header();
     this->createActionMenu();
-
-
 }
-
-
-
-
 
 
 /**
@@ -711,6 +705,10 @@ void OptMorePopup::setUIControl_header(){
             ){
         // MUSIC > Playlist, Album, Track, Artist
         this->lb_title->setText(GSCommon::getTextCutFromLabelWidth(this->data_header.main_title, lb_title->width(), lb_title->font()));
+        if(this->lb_title->text().contains("…")){
+            this->lb_title->setToolTip(this->data_header.main_title);//c230321
+            this->lb_title->setToolTipDuration(2000);//c230321
+        }
         this->lb_singer->setText(GSCommon::getTextCutFromLabelWidth(this->data_header.sub_title, lb_singer->width(), lb_singer->font()));
         this->setThumbnailImage(this->data_header.imageUrl);
         this->resetUI_showStarRate(this->data_header.flagProcStar);
@@ -722,7 +720,15 @@ void OptMorePopup::setUIControl_header(){
             ){
         // VIDEO > Playlist, Album, Track
         this->lb_title->setText(GSCommon::getTextCutFromLabelWidth(this->data_header.main_title, lb_title->width(), lb_title->font()));
+        if(this->lb_title->text().contains("…")){
+            this->lb_title->setToolTip(this->data_header.main_title);//c230321
+            this->lb_title->setToolTipDuration(2000);//c230321
+        }
         this->lb_singer->setText(GSCommon::getTextCutFromLabelWidth(this->data_header.sub_title, lb_singer->width(), lb_singer->font()));
+        if(this->lb_singer->text().contains("…")){
+            this->lb_singer->setToolTip(this->data_header.sub_title);//c230321
+            this->lb_singer->setToolTipDuration(2000);//c230321
+        }
         this->setThumbnailImage(this->data_header.imageUrl);
         this->resetUI_showStarRate(this->data_header.flagProcStar);
     }
@@ -735,7 +741,15 @@ void OptMorePopup::setUIControl_header(){
             ){
         // ROSETUBE > Video, Playlist, Track
         this->lb_title->setText(GSCommon::getTextCutFromLabelWidth(this->data_header.main_title, lb_title->width(), lb_title->font()));
+        if(this->lb_title->text().contains("…")){
+            this->lb_title->setToolTip(this->data_header.main_title);//c230321
+            this->lb_title->setToolTipDuration(2000);//c230321
+        }
         this->lb_singer->setText(GSCommon::getTextCutFromLabelWidth(this->data_header.sub_title, lb_singer->width(), lb_singer->font()));
+        if(this->lb_singer->text().contains("…")){
+            this->lb_singer->setToolTip(this->data_header.sub_title);//c230321
+            this->lb_singer->setToolTipDuration(2000);//c230321
+        }
         this->setThumbnailImage(this->data_header.imageUrl);
         this->resetUI_showStarRate(this->data_header.flagProcStar);
 
@@ -750,7 +764,15 @@ void OptMorePopup::setUIControl_header(){
     ){
         // TIDAL > Playlist, Album, Track, Artist
         this->lb_title->setText(GSCommon::getTextCutFromLabelWidth(this->data_header.main_title, lb_title->width(), lb_title->font()));
+        if(this->lb_title->text().contains("…")){
+            this->lb_title->setToolTip(this->data_header.main_title);//c230321
+            this->lb_title->setToolTipDuration(2000);//c230321
+        }
         this->lb_singer->setText(GSCommon::getTextCutFromLabelWidth(this->data_header.sub_title, lb_singer->width(), lb_singer->font()));
+        if(this->lb_singer->text().contains("…")){
+            this->lb_singer->setToolTip(this->data_header.sub_title);//c230321
+            this->lb_singer->setToolTipDuration(2000);//c230321
+        }
         this->setThumbnailImage(this->data_header.imageUrl);
         this->resetUI_showStarRate(this->data_header.flagProcStar);
 
@@ -758,7 +780,15 @@ void OptMorePopup::setUIControl_header(){
     else if(this->curr_menuMode == OptMorePopup::PopupMenuMode::Tidal_Video){
         // TIDAL > Video
         this->lb_title->setText(GSCommon::getTextCutFromLabelWidth(this->data_header.main_title, lb_title->width(), lb_title->font()));
+        if(this->lb_title->text().contains("…")){
+            this->lb_title->setToolTip(this->data_header.main_title);//c230321
+            this->lb_title->setToolTipDuration(2000);//c230321
+        }
         this->lb_singer->setText(GSCommon::getTextCutFromLabelWidth(this->data_header.sub_title, lb_singer->width(), lb_singer->font()));
+        if(this->lb_singer->text().contains("…")){
+            this->lb_singer->setToolTip(this->data_header.sub_title);//c230321
+            this->lb_singer->setToolTipDuration(2000);//c230321
+        }
         this->setThumbnailImage(this->data_header.imageUrl);
         this->resetUI_showStarRate(this->data_header.flagProcStar);
     }    
@@ -777,7 +807,15 @@ void OptMorePopup::setUIControl_header(){
 
         // Bugs
         this->lb_title->setText(GSCommon::getTextCutFromLabelWidth(this->data_header.main_title, lb_title->width(), lb_title->font()));
+        if(this->lb_title->text().contains("…")){
+            this->lb_title->setToolTip(this->data_header.main_title);//c230321
+            this->lb_title->setToolTipDuration(2000);//c230321
+        }
         this->lb_singer->setText(GSCommon::getTextCutFromLabelWidth(this->data_header.sub_title, lb_singer->width(), lb_singer->font()));
+        if(this->lb_singer->text().contains("…")){
+            this->lb_singer->setToolTip(this->data_header.sub_title);//c230321
+            this->lb_singer->setToolTipDuration(2000);//c230321
+        }
         this->setThumbnailImage(this->data_header.imageUrl);
         this->resetUI_showStarRate(this->data_header.flagProcStar);
     }
@@ -791,7 +829,15 @@ void OptMorePopup::setUIControl_header(){
     ){
         // QOBUZ > Playlist, Album, Track, Artist
         this->lb_title->setText(GSCommon::getTextCutFromLabelWidth(this->data_header.main_title, lb_title->width(), lb_title->font()));
+        if(this->lb_title->text().contains("…")){
+            this->lb_title->setToolTip(this->data_header.main_title);//c230321
+            this->lb_title->setToolTipDuration(2000);//c230321
+        }
         this->lb_singer->setText(GSCommon::getTextCutFromLabelWidth(this->data_header.sub_title, lb_singer->width(), lb_singer->font()));
+        if(this->lb_singer->text().contains("…")){
+            this->lb_singer->setToolTip(this->data_header.sub_title);//c230321
+            this->lb_singer->setToolTipDuration(2000);//c230321
+        }
         this->setThumbnailImage(this->data_header.imageUrl);
         this->resetUI_showStarRate(this->data_header.flagProcStar);
 
@@ -799,7 +845,15 @@ void OptMorePopup::setUIControl_header(){
     else if(this->curr_menuMode == OptMorePopup::PopupMenuMode::Qobuz_Video){
         // QOBUZ > Video
         this->lb_title->setText(GSCommon::getTextCutFromLabelWidth(this->data_header.main_title, lb_title->width(), lb_title->font()));
+        if(this->lb_title->text().contains("…")){
+            this->lb_title->setToolTip(this->data_header.main_title);//c230321
+            this->lb_title->setToolTipDuration(2000);//c230321
+        }
         this->lb_singer->setText(GSCommon::getTextCutFromLabelWidth(this->data_header.sub_title, lb_singer->width(), lb_singer->font()));
+        if(this->lb_singer->text().contains("…")){
+            this->lb_singer->setToolTip(this->data_header.sub_title);//c230321
+            this->lb_singer->setToolTipDuration(2000);//c230321
+        }
         this->setThumbnailImage(this->data_header.imageUrl);
         this->resetUI_showStarRate(this->data_header.flagProcStar);
     }
@@ -813,7 +867,15 @@ void OptMorePopup::setUIControl_header(){
     ){
         // ROSEHOME > Playlist, Album, Track, Artist
         this->lb_title->setText(GSCommon::getTextCutFromLabelWidth(this->data_header.main_title, lb_title->width(), lb_title->font()));
+        if(this->lb_title->text().contains("…")){
+            this->lb_title->setToolTip(this->data_header.main_title);//c230321
+            this->lb_title->setToolTipDuration(2000);//c230321
+        }
         this->lb_singer->setText(GSCommon::getTextCutFromLabelWidth(this->data_header.sub_title, lb_singer->width(), lb_singer->font()));
+        if(this->lb_singer->text().contains("…")){
+            this->lb_singer->setToolTip(this->data_header.sub_title);//c230321
+            this->lb_singer->setToolTipDuration(2000);//c230321
+        }
         this->setThumbnailImage(this->data_header.imageUrl);
         this->resetUI_showStarRate(this->data_header.flagProcStar);
 
@@ -821,7 +883,15 @@ void OptMorePopup::setUIControl_header(){
     else if(this->curr_menuMode == OptMorePopup::PopupMenuMode::Rosehome_Video){
         // ROSEHOME > Video
         this->lb_title->setText(GSCommon::getTextCutFromLabelWidth(this->data_header.main_title, lb_title->width(), lb_title->font()));
+        if(this->lb_title->text().contains("…")){
+            this->lb_title->setToolTip(this->data_header.main_title);//c230321
+            this->lb_title->setToolTipDuration(2000);//c230321
+        }
         this->lb_singer->setText(GSCommon::getTextCutFromLabelWidth(this->data_header.sub_title, lb_singer->width(), lb_singer->font()));
+        if(this->lb_singer->text().contains("…")){
+            this->lb_singer->setToolTip(this->data_header.sub_title);//c230321
+            this->lb_singer->setToolTipDuration(2000);//c230321
+        }
         this->setThumbnailImage(this->data_header.imageUrl);
         this->resetUI_showStarRate(this->data_header.flagProcStar);
     }
@@ -835,7 +905,15 @@ void OptMorePopup::setUIControl_header(){
     ){
         // APPLE > Playlist, Album, Track, Artist
         this->lb_title->setText(GSCommon::getTextCutFromLabelWidth(this->data_header.main_title, lb_title->width(), lb_title->font()));
+        if(this->lb_title->text().contains("…")){
+            this->lb_title->setToolTip(this->data_header.main_title);//c230321
+            this->lb_title->setToolTipDuration(2000);//c230321
+        }
         this->lb_singer->setText(GSCommon::getTextCutFromLabelWidth(this->data_header.sub_title, lb_singer->width(), lb_singer->font()));
+        if(this->lb_singer->text().contains("…")){
+            this->lb_singer->setToolTip(this->data_header.sub_title);//c230321
+            this->lb_singer->setToolTipDuration(2000);//c230321
+        }
         this->setThumbnailImage(this->data_header.imageUrl);
         this->resetUI_showStarRate(this->data_header.flagProcStar);
 
@@ -843,7 +921,15 @@ void OptMorePopup::setUIControl_header(){
     else if(this->curr_menuMode == OptMorePopup::PopupMenuMode::Apple_Video){
         // APPLE > Video
         this->lb_title->setText(GSCommon::getTextCutFromLabelWidth(this->data_header.main_title, lb_title->width(), lb_title->font()));
+        if(this->lb_title->text().contains("…")){
+            this->lb_title->setToolTip(this->data_header.main_title);//c230321
+            this->lb_title->setToolTipDuration(2000);//c230321
+        }
         this->lb_singer->setText(GSCommon::getTextCutFromLabelWidth(this->data_header.sub_title, lb_singer->width(), lb_singer->font()));
+        if(this->lb_singer->text().contains("…")){
+            this->lb_singer->setToolTip(this->data_header.sub_title);//c230321
+            this->lb_singer->setToolTipDuration(2000);//c230321
+        }
         this->setThumbnailImage(this->data_header.imageUrl);
         this->resetUI_showStarRate(this->data_header.flagProcStar);
     }
@@ -930,13 +1016,13 @@ void OptMorePopup::createActionMenu(){
         this->add_subAction(ClickMode::SubMenu_Play_FromHere_procEmpty);
         this->add_subAction(ClickMode::SubMenu_QueueAdd_FromHere_Last);
 
-
-        //this->add_mainAction(ClickMode::Add_MyCollection);
         /*if(!this->flagForceHide_favorite){
             this->add_mainAction(ClickMode::Add_Favorite);
             this->add_mainAction(ClickMode::Delete_Favorite);
             this->act_deleteFavorite->setVisible(false);            // 우선 삭제를 가림 (기본값)
         }*/
+
+        this->add_mainAction(ClickMode::Add_MyCollection);
 
         if(!this->data_header.sub_title.isEmpty()){
             this->add_mainAction(ClickMode::SubscribInfo);          // Subscrition
@@ -944,6 +1030,7 @@ void OptMorePopup::createActionMenu(){
         if(global.debugCHK > 3){
             this->add_mainAction(ClickMode::Caching_ahead);             // Caching
         }
+
         this->add_mainAction(ClickMode::Share); //c220818
     }
     else if(this->curr_menuMode == PopupMenuMode::Rosetube_Playlist){
@@ -973,7 +1060,6 @@ void OptMorePopup::createActionMenu(){
         this->add_subAction(ClickMode::SubMenu_Play_FromHere_procEmpty);
         this->add_subAction(ClickMode::SubMenu_QueueAdd_FromHere_Last);
 
-        //this->add_mainAction(ClickMode::Add_MyCollection);
         /*if(!this->flagForceHide_favorite){
             this->add_mainAction(ClickMode::Add_Favorite);
             this->add_mainAction(ClickMode::Delete_Favorite);
@@ -982,6 +1068,8 @@ void OptMorePopup::createActionMenu(){
 
         //this->add_mainAction(ClickMode::Go_Album);
         //this->add_mainAction(ClickMode::Go_Artist);
+
+        this->add_mainAction(ClickMode::Add_MyCollection);
 
         if(global.debugCHK > 3){
             this->add_mainAction(ClickMode::Caching_ahead);             // Caching
@@ -1325,6 +1413,11 @@ void OptMorePopup::createActionMenu(){
         this->add_subAction(ClickMode::SubMenu_QueueAdd_Empty);
         this->add_subAction(ClickMode::SubMenu_QueueAdd_CurrNext);
 
+        if(data_header.sub_title == global.user.getUsername()){
+            this->add_mainAction(ClickMode::Edit);
+            this->add_mainAction(ClickMode::Delete);
+        }
+
         //this->add_mainAction(ClickMode::Share); //c220818
         if(data_header.type != "MUSIC" && data_header.isShare == true){            //j220905
             this->add_mainAction(ClickMode::Share);
@@ -1347,6 +1440,7 @@ void OptMorePopup::createActionMenu(){
         this->add_subAction(ClickMode::SubMenu_QueueAdd_Empty);
         this->add_subAction(ClickMode::SubMenu_QueueAdd_CurrNext);
 
+        //this->add_mainAction(ClickMode::Add_MyCollection);
         //this->add_mainAction(ClickMode::Edit);
         //this->add_mainAction(ClickMode::Delete);
 
@@ -1404,8 +1498,9 @@ void OptMorePopup::createActionMenu(){
 
     }
     else if(this->curr_menuMode == PopupMenuMode::Rosehome_Artist){
+        this->add_mainAction(ClickMode::Share);
 
-        this->add_mainAction(ClickMode::Play_RightNow);
+        /*this->add_mainAction(ClickMode::Play_RightNow);
 
         this->add_subAction(ClickMode::SubMenu_QueueAdd_Last_OnlyOne);
         this->add_subAction(ClickMode::SubMenu_QueueAdd_Empty_OnlyOne);
@@ -1415,7 +1510,7 @@ void OptMorePopup::createActionMenu(){
         this->add_subAction(ClickMode::SubMenu_Play_FromHere_procEmpty);
         this->add_subAction(ClickMode::SubMenu_QueueAdd_FromHere_Last);
 
-        /*if(!this->flagForceHide_favorite){
+        if(!this->flagForceHide_favorite){
             this->add_mainAction(ClickMode::Add_Favorite);
             this->add_mainAction(ClickMode::Delete_Favorite);
             this->act_deleteFavorite->setVisible(false);            // 우선 삭제를 가림 (기본값)

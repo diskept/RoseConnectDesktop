@@ -13,6 +13,8 @@ sectionbottomSlider::sectionbottomSlider(QWidget* parent)
     linker = Linker::getInstance();//c220521
 
 }
+
+
 sectionbottomSlider::sectionbottomSlider(Qt::Orientation  orientation, QWidget *parent)
 
    : QSlider(orientation, parent)
@@ -21,9 +23,12 @@ sectionbottomSlider::sectionbottomSlider(Qt::Orientation  orientation, QWidget *
     linker = Linker::getInstance();//c220521
 
 }
+
+
 sectionbottomSlider::~sectionbottomSlider()
 {
 }
+
 
 void sectionbottomSlider::mousePressEvent ( QMouseEvent * e )//c220521
 {
@@ -41,6 +46,8 @@ void sectionbottomSlider::mousePressEvent ( QMouseEvent * e )//c220521
 
 
 }
+
+
 void sectionbottomSlider::mouseReleaseEvent ( QMouseEvent * e )//c220521
 {
     //Pass mouse events to the parent control; otherwise, other mouse events will fail

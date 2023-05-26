@@ -5,6 +5,8 @@
 #include <QImage>
 #include <QPixmap>
 #include <QMessageBox>
+#include "widget/toastmsg.h"
+#include "common/global.h"
 
 //const int TEXTSIZE_W = 175;
 /**
@@ -44,7 +46,7 @@ MenuItem::MenuItem(const QString p_menuName, const QString p_menuCode, const QSt
     this->lb_text->setContentsMargins(10,0,0,0);
     this->lb_text->setObjectName("lb_menuName");
     this->lb_text->setText(p_menuName);
-    this->lb_text->setStyleSheet("#lb_menuName { color:white;  }");
+    this->lb_text->setStyleSheet("#lb_menuName { color:white; font-size:16px;font:bold;}"); //c230223_1
 
     this->hl_menu = new QHBoxLayout;
     this->hl_menu->setContentsMargins(0,0,0,0);
@@ -63,23 +65,73 @@ MenuItem::MenuItem(const QString p_menuName, const QString p_menuCode, const QSt
     this->setStyleSheet("#menuItem QLabel { font-size:14px; } #menuItem:enabled { background-color:#000000; border:1px solid #000000; border-radius:3px;} #menuItem:hover:enabled { background-color:#b18658; border:1px solid #b18658; border-radius:3px;} ");
     this->setFixedHeight(40);
     this->setLayout(vl_total);
+    this->setProperty("menuCode", this->menuCode);//c230518
 }
+
+
+MenuItem::~MenuItem(){
+
+    this->deleteLater();
+}
+
 
 /**
  * @brief MenuItem::mousePressEvent 클릭 시그널 발생
  */
-void MenuItem::mousePressEvent(QMouseEvent *event){
+//void MenuItem::mousePressEvent(QMouseEvent *event){
+void MenuItem::mouseReleaseEvent(QMouseEvent *event){
+
     Q_UNUSED(event);
-    emit clicked(this->menuCode);
+    if(global.window_activate_flag) {//c221001_1
+    }else {
+        return;
+    }
+    //if(global.dialog_delay == nullptr) return;//c230429
+    //if(!global.dialog_delay->isHidden()) return;//c230429
+    ToastMsg::delay(this,"", tr("delay"), 2000);
+    if(global.isDrawingMainContent == true){
+        emit clicked(this->menuCode);
+    }
 }
+
+
+void MenuItem::enterEvent(QEvent *event)//c230518
+{
+    Q_UNUSED(event);
+    //qDebug() << "Mouse entered the widget";
+    emit this->signal_ttt();
+    // Perform actions when the mouse enters the widget
+}
+
+void MenuItem::leaveEvent(QEvent *event)//c230518
+{
+    Q_UNUSED(event);
+    //qDebug() << "Mouse left the widget";
+    // Perform actions when the mouse leaves the widget
+}
+
+void MenuItem::setLoginedSelectedMenu(){//c230223_2
+
+    this->flagSelected = false;
+    //this->lb_icon->setPixmap(*pixmap_buffer);
+    //this->lb_icon->resize(pixmap_buffer->width(), pixmap_buffer->height());
+    this->lb_text->setStyleSheet("#lb_menuName { color:#cccccc; font:bold; }");
+    this->setStyleSheet("#menuItem QLabel { font-size:16px;  } #menuItem:enabled { background-color:#000000; border:1px solid #000000; border-radius:3px;} #menuItem:hover:enabled { background-color:#999999; border:1px solid #999999; border-radius:3px;} ");//cheon211114-01
+}
+
+
 void MenuItem::setSelectedMenu(){
+
     this->flagSelected = true;
     //this->lb_icon->setPixmap(*pixmap_buffer_selected);
     //this->lb_icon->resize(pixmap_buffer_selected->width(), pixmap_buffer_selected->height());
     //this->lb_text->setStyleSheet("#lb_menuName { color:#B18658;   }");
     this->setStyleSheet("#menuItem QLabel { font-size:14px; } #menuItem:enabled { background-color:#b18658; border:1px solid #b18658; border-radius:3px;} #menuItem:hover:enabled { background-color:#333333; border:1px solid #333333; border-radius:3px;} ");
 }
+
+
 void MenuItem::setUnSelectedMenu(){
+
     this->flagSelected = false;
     //this->lb_icon->setPixmap(*pixmap_buffer);
     //this->lb_icon->resize(pixmap_buffer->width(), pixmap_buffer->height());
@@ -89,9 +141,13 @@ void MenuItem::setUnSelectedMenu(){
 
 
 void MenuItem::showMenuName(){
+
     this->lb_text->setVisible(true);
 }
+
+
 void MenuItem::hideMenuName(){
+
     this->lb_text->setVisible(false);
 }
 

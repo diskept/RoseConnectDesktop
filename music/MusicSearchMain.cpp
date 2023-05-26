@@ -18,7 +18,7 @@
 
 namespace music {
 
-    const QString tmp_btnStyle      = "padding:10px;border:1px solid #707070;color:#CCCCCC;font-size:18px;";//cheon211008
+    const QString tmp_btnStyle      = "padding:8px;border:1px solid #707070;color:#CCCCCC;font-size:16px;";//cheon211008
     //const QString tmp_btnStyleHover = "background-color:#B18658;color:#FFFFFF;";//cheon211115-01
     const QString tmp_btnStyleHover = "background-color:#CCCCCC;color:#FFFFFF;";//cheon211115-01
     const QString tmp_btnStyleHover_selected = "background-color:#B18658;color:#FFFFFF;";//cheon211115-01
@@ -84,6 +84,9 @@ namespace music {
             this->jsonArr_tracks = QJsonArray();
             this->jsonArr_tracks_toPlay = QJsonArray();
         }
+        else{
+            print_debug();ContentLoadingwaitingMsgHide();   //j230328
+        }
     }
 
 
@@ -143,8 +146,8 @@ namespace music {
             GSCommon::clearLayout(this->hBox_search_album);
 
             for(int i = 0; i < 15; i++){
-                this->search_artist[i] = new roseHome::ItemArtist_roseHome(i, BTN_IDX_SUBTITLE_ARTIST, tidal::AbstractItem::ImageSizeMode::Square_200x200);
-                connect(this->search_artist[i], &roseHome::ItemArtist_roseHome::signal_clicked, this, &MusicSearch::slot_clickedItemArtist);
+                this->search_artist[i] = new roseHome::ItemArtist_rosehome(i, BTN_IDX_SUBTITLE_ARTIST, tidal::AbstractItem::ImageSizeMode::Square_200x200);
+                connect(this->search_artist[i], &roseHome::ItemArtist_rosehome::signal_clicked, this, &MusicSearch::slot_clickedItemArtist);
             }
 
             for(int i = 0; i < 15; i++){
@@ -160,7 +163,7 @@ namespace music {
                 this->search_track[i]->setObjectName("search_tracks");
             }
 
-            ContentLoadingwaitingMsgShow(tr("Content is being loaded. Please wait."));
+            print_debug();ContentLoadingwaitingMsgShow(tr("Content is being loaded. Please wait."));
 
             this->setUIControl_requestArtist();
             this->setUIControl_requestAlbum();
@@ -729,7 +732,7 @@ namespace music {
         tmp_scrollArea->setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
         tmp_scrollArea->setStyleSheet("background-color:transparent; border:0px;");
         tmp_scrollArea->setContentsMargins(0, 0, 0, 0);
-        tmp_scrollArea->setFixedHeight(275);
+        tmp_scrollArea->setFixedHeight(285);
 
         QScroller::grabGesture(tmp_scrollArea, QScroller::LeftMouseButtonGesture);
         //----------------------------------------------------------------------------------------------------  BODY : END
@@ -1123,9 +1126,12 @@ namespace music {
         QSqlError err = sqlite->addConnectionRose();
         if(err.type() == QSqlError::NoError){
             QString strQuery = "";
-            strQuery += " SELECT A.album, A.album_key, A.artist_key, A.artist_id, A.album_id, A._id AS id, A._data AS data, A.title, A.artist, A.duration, A.mime_type, A.samplerate, A.bitdepth, ART._data AS album_art ";
+            /*strQuery += " SELECT A.album, A.album_key, A.artist_key, A.artist_id, A.album_id, A._id AS id, A._data AS data, A.title, A.artist, A.duration, A.mime_type, A.samplerate, A.bitdepth, ART._data AS album_art ";
             strQuery += " FROM audio AS A LEFT JOIN album_art AS ART ON A.album_id=ART.album_id ";
-            strQuery += " WHERE A.album_id=%1 ORDER BY A.track ";
+            strQuery += " WHERE A.album_id=%1 ORDER BY A.track ";*/
+            strQuery += " SELECT A.album, A.album_key, A.artist_key, A.artist_id, A.album_id, A._id AS id, A._display_name AS orderName, A._data AS data, A.title, A.artist, A.duration, A.bookmark, A.track, A.mime_type, A.samplerate, A.bitdepth, ART._data AS album_art ";
+            strQuery += " FROM audio AS A LEFT JOIN album_art AS ART ON A.album_id=ART.album_id ";
+            strQuery += " WHERE A.album_id=%1 ORDER BY A.bookmark ASC, A.track ASC, orderName ASC ";
 
             QVariantList dataDB;
             sqlite->exec(strQuery.arg(album_id), dataDB);

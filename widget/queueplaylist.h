@@ -234,7 +234,7 @@ private:
     QJsonArray jsonArr_editPositon;
     bool showEvent_showFlag = false;
     QPushButton *lb_onOfftitle;                 //cheon211120-2
-    OnOffWidget *onOff;
+    OnOffWidget *onOff = nullptr; //bj230515
 
     QList<DataTrackforDelegate> list_dataTrackForDelegate_recomm[10];
     int indexStartSetThumb_recomm = 0;
@@ -371,7 +371,7 @@ private:
     QHBoxLayout *hl_listl3layout_lineItem;
     QWidget *widget_listl3layout_lineItem;
 
-    QListWidget *listWidget_total[10];
+    ListWidget *listWidget_total[10];//c221205_1
     int pre_now_Section = -1;
     int curr_sliderPosition = 0;
     int pre_sliderPosition = 0;
@@ -379,6 +379,7 @@ private:
 
     QStackedWidget *stackWidget_queue;//c220625
     QWidget *temp_menuWidget;
+
 
 
 

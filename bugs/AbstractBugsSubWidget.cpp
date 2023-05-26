@@ -11,6 +11,7 @@
 #include "bugs/ProcBugsAPI.h"
 #include "bugs/ProcRoseAPI_withBugs.h"
 
+#include "roseHome/ConvertData_rosehome.h"
 #include "roseHome/ProcCommon_forRosehome.h"//c220825_1
 
 #include "common/global.h"
@@ -36,9 +37,9 @@ namespace bugs {
 
 
     /**
-     * @brief Bugs 서브페이지 위젯을 위한 부모 클래스
-     * @param parent
-     */
+         * @brief Bugs 서브페이지 위젯을 위한 부모 클래스
+         * @param parent
+         */
     AbstractBugsSubWidget::AbstractBugsSubWidget(MainUIType p_mainUIType, QWidget *parent) : common::AbstractCommonSubWidget(p_mainUIType, parent) {
 
         // to check memory address number
@@ -52,8 +53,8 @@ namespace bugs {
     }
 
     /**
-     * @brief 소멸자
-     */
+         * @brief 소멸자
+         */
     AbstractBugsSubWidget::~AbstractBugsSubWidget(){
 
         // to check memory address number
@@ -62,8 +63,8 @@ namespace bugs {
 
 
     /**
-     * @brief Bugs의 페이지들의 공통처리
-     */
+         * @brief Bugs의 페이지들의 공통처리
+         */
     void AbstractBugsSubWidget::setActivePage(){
 
         // 항상 부모클래스의 함수 먼저 호출
@@ -75,8 +76,8 @@ namespace bugs {
 
 
     /**
-     * @brief 사용자가 Bugs 로그인하지 않았을 경우의 화면을 위한 Widget
-     */
+         * @brief 사용자가 Bugs 로그인하지 않았을 경우의 화면을 위한 Widget
+         */
     void AbstractBugsSubWidget::setUIControl_notLogin(){
         // 로그인 하지 않았을 때의 화면
         QLabel *label_topComment = new QLabel("로그인하시면 다양한 서비스를 이용하실 수 있습니다.");
@@ -114,8 +115,8 @@ namespace bugs {
 
 
     /**
-     * @brief 로그인 되었을 때의화면
-     */
+         * @brief 로그인 되었을 때의화면
+         */
     void AbstractBugsSubWidget::setUIControl_logined(){
 
         // 전체 Widget에 넣기
@@ -139,8 +140,8 @@ namespace bugs {
 
 
     /**
-     * @brief 플레이 관련 버튼 구성 (전체재생, 셔플재생)
-     */
+         * @brief 플레이 관련 버튼 구성 (전체재생, 셔플재생)
+         */
     QWidget* AbstractBugsSubWidget::get_UIControl_btnPlays(const bool flagShowPlay, const bool flagShowShuffle){
 
         // layout & widget
@@ -197,8 +198,8 @@ namespace bugs {
     //-----------------------------------------------------------------------------------------------------------------------
 
     /**
-     * @brief "로그아웃" 버튼 클릭에 대한 처리
-     */
+         * @brief "로그아웃" 버튼 클릭에 대한 처리
+         */
     void AbstractBugsSubWidget::slot_clickBtnLogout(){
         // 로그아웃 처리 (PC 상태)
         ProcBugsAPI *proc = new ProcBugsAPI(this);
@@ -214,8 +215,8 @@ namespace bugs {
     }
 
     /**
-     * @brief "로그인" 버튼 클릭 처리 - 로그인 다이얼로그 띄우기
-     */
+         * @brief "로그인" 버튼 클릭 처리 - 로그인 다이얼로그 띄우기
+         */
     void AbstractBugsSubWidget::slot_clickBtnLogin_toShowDialog(){
         // Bugs 로그인 다이얼로그
         DialogLogin_forBugs *dlg_login = new DialogLogin_forBugs(this);
@@ -225,8 +226,8 @@ namespace bugs {
 
 
     /**
-     * @brief [Slot] 벅스 로그인 Dialog에서 authCode 정상적으로 발급된 경우의 처리
-     */
+         * @brief [Slot] 벅스 로그인 Dialog에서 authCode 정상적으로 발급된 경우의 처리
+         */
     void AbstractBugsSubWidget::slot_dialogLogin_acceptedAuthCode(){
         // token 요청
         ProcBugsAPI *proc = new ProcBugsAPI(this);
@@ -236,10 +237,10 @@ namespace bugs {
 
 
     /**
-     * @brief AbstractBugsSubWidget::slot_success_getToken
-     * @param p_bugsTokenInfo
-     */
-    void AbstractBugsSubWidget::slot_getToken(const bool flagSuccess, const QString errorMsg){
+         * @brief AbstractBugsSubWidget::slot_success_getToken
+         * @param p_bugsTokenInfo
+         */
+    void AbstractBugsSubWidget::slot_getToken(const bool flagSuccess, const QString errorMsg){//벅스 서버에서 토큰을 가져옮
         if(flagSuccess){
             ToastMsg::show(this, "", "벅스 서비스 로그인에 성공했습니다.");
 
@@ -266,11 +267,11 @@ namespace bugs {
     }
 
     /**
-     * @brief AbstractBugsSubWidget::slot_completeReq_getMemberInfo
-     * @param errorMsg
-     * @param jsonObj_member
-     * @param jsonObj_product
-     */
+         * @brief AbstractBugsSubWidget::slot_completeReq_getMemberInfo
+         * @param errorMsg
+         * @param jsonObj_member
+         * @param jsonObj_product
+         */
     void AbstractBugsSubWidget::slot_completeReq_getMemberInfo(const QString errorMsg, const QJsonObject& jsonObj_member, const QJsonObject& jsonObj_product){
         if(!errorMsg.isEmpty()){
             this->showToastMsg(errorMsg);
@@ -315,17 +316,17 @@ namespace bugs {
     }
 
     /**
-     * @brief Bugs 로그인 여부 반환
-     * @return
-     */
+         * @brief Bugs 로그인 여부 반환
+         * @return
+         */
     bool AbstractBugsSubWidget::is_bugs_logined(){
         return global.user_forBugs.isLogined();
     }
 
 
     /**
-     * @brief 화면에 로그인이 필요하다고 알려줌
-     */
+         * @brief 화면에 로그인이 필요하다고 알려줌
+         */
     void AbstractBugsSubWidget::showNeededLoginBugs(){
         this->showToastMsg("      Bugs 계정 로그인이 필요합니다.      ");
     }
@@ -340,11 +341,11 @@ namespace bugs {
     //-----------------------------------------------------------------------------------------------------------------------
 
     /**
-     * @brief AbstractBugsSubWidget::createList_itemTrackSqure_applyingWithData
-     * @param list_data
-     * @param p_layout
-     * @param section
-     */
+         * @brief AbstractBugsSubWidget::createList_itemTrackSqure_applyingWithData
+         * @param list_data
+         * @param p_layout
+         * @param section
+         */
     void AbstractBugsSubWidget::createList_itemTrackSqure_applyingWithData(const QList<bugs::TrackItemData> &list_data, tidal::AbstractItem::ImageSizeMode imageSizeMode, QLayout *p_layout, const int section){
         for(int i=0 ; i<list_data.size() ; i++){
 
@@ -364,12 +365,12 @@ namespace bugs {
 
 
     /**
-     * @brief AbstractBugsSubWidget::createList_itemAlbum_applyingWithData
-     * @param list_data
-     * @param imageSizeMode
-     * @param p_layout
-     * @param section
-     */
+         * @brief AbstractBugsSubWidget::createList_itemAlbum_applyingWithData
+         * @param list_data
+         * @param imageSizeMode
+         * @param p_layout
+         * @param section
+         */
     void AbstractBugsSubWidget::createList_itemAlbum_applyingWithData(const QList<bugs::AlbumItemData> &list_data, tidal::AbstractItem::ImageSizeMode imageSizeMode, QLayout *p_layout, const int start_index, const int section){
         for(int i=0 ; i<list_data.size() ; i++){
             bugs::ItemAlbum_bugs *tmp_widget = new bugs::ItemAlbum_bugs(start_index + i, section, imageSizeMode);
@@ -387,13 +388,13 @@ namespace bugs {
 
 
     /**
-     * @brief AbstractBugsSubWidget::createList_itemPD_Album_applyingWithData
-     * @param list_data
-     * @param imageSizeMode
-     * @param p_layout
-     * @param start_index
-     * @param section
-     */
+         * @brief AbstractBugsSubWidget::createList_itemPD_Album_applyingWithData
+         * @param list_data
+         * @param imageSizeMode
+         * @param p_layout
+         * @param start_index
+         * @param section
+         */
     void AbstractBugsSubWidget::createList_itemPD_Album_applyingWithData(const QList<bugs::PD_AlbumItemData> &list_data, tidal::AbstractItem::ImageSizeMode imageSizeMode, QLayout *p_layout, const int start_index, const int section){
         for(int i=0 ; i<list_data.size() ; i++){
             bugs::ItemPD_Album_bugs *tmp_widget = new bugs::ItemPD_Album_bugs(start_index + i, section, imageSizeMode);
@@ -411,13 +412,13 @@ namespace bugs {
 
 
     /**
-     * @brief AbstractBugsSubWidget::createList_itemMyAlbum_applyingWithData
-     * @param list_data
-     * @param imageSizeMode
-     * @param p_layout
-     * @param start_index
-     * @param section
-     */
+         * @brief AbstractBugsSubWidget::createList_itemMyAlbum_applyingWithData
+         * @param list_data
+         * @param imageSizeMode
+         * @param p_layout
+         * @param start_index
+         * @param section
+         */
     void AbstractBugsSubWidget::createList_itemMyAlbum_applyingWithData(const QList<bugs::MyAlbumItemData> &list_data, tidal::AbstractItem::ImageSizeMode imageSizeMode, QLayout *p_layout, const int start_index, const int section){
         for(int i=0 ; i<list_data.size() ; i++){
             bugs::ItemMyAlbum_bugs *tmp_widget = new bugs::ItemMyAlbum_bugs(start_index + i, section, imageSizeMode);
@@ -436,13 +437,13 @@ namespace bugs {
 
 
     /**
-     * @brief AbstractBugsSubWidget::createList_itemArtist_applyingWithData
-     * @param list_data
-     * @param imageSizeMode
-     * @param p_layout
-     * @param start_index
-     * @param section
-     */
+         * @brief AbstractBugsSubWidget::createList_itemArtist_applyingWithData
+         * @param list_data
+         * @param imageSizeMode
+         * @param p_layout
+         * @param start_index
+         * @param section
+         */
     void AbstractBugsSubWidget::createList_itemArtist_applyingWithData(const QList<bugs::ArtistItemData> &list_data, tidal::AbstractItem::ImageSizeMode imageSizeMode, QLayout *p_layout, const int start_index, const int section){
         for(int i=0 ; i<list_data.size() ; i++){
             bugs::ItemArtist_bugs *tmp_widget = new bugs::ItemArtist_bugs(start_index + i, section, imageSizeMode);
@@ -460,12 +461,12 @@ namespace bugs {
 
 
     /**
-     * @brief AbstractBugsSubWidget::createList_itemVideo_applyingWithData
-     * @param list_data
-     * @param imageSizeMode
-     * @param p_layout
-     * @param section
-     */
+         * @brief AbstractBugsSubWidget::createList_itemVideo_applyingWithData
+         * @param list_data
+         * @param imageSizeMode
+         * @param p_layout
+         * @param section
+         */
     void AbstractBugsSubWidget::createList_itemVideo_applyingWithData(const QList<bugs::VideoItemData> &list_data, tidal::AbstractItem::ImageSizeMode imageSizeMode, QLayout *p_layout, const int start_index, const int section){
         for(int i=0 ; i<list_data.size() ; i++){
             bugs::ItemVideo_bugs *tmp_widget = new bugs::ItemVideo_bugs(start_index + i, section, imageSizeMode);
@@ -483,11 +484,11 @@ namespace bugs {
 
 
     /**
-     * @brief TrackItemData 데이터로 ListWidgetItem 생성하여 ListWidget에 추가한다. 이미지 없음. (slot 연결도 없음)
-     * @param list_data
-     * @param p_listWidget
-     * @param flagAdjustHeight
-     */
+         * @brief TrackItemData 데이터로 ListWidgetItem 생성하여 ListWidget에 추가한다. 이미지 없음. (slot 연결도 없음)
+         * @param list_data
+         * @param p_listWidget
+         * @param flagAdjustHeight
+         */
     void AbstractBugsSubWidget::createList_itemTrackDelegate_applyingWithData(const QList<bugs::TrackItemData> &list_data, QListWidget *p_listWidget, bool flagAdjustHeight){
         for(int i=0 ; i<list_data.size() ; i++){
             QListWidgetItem *item = new QListWidgetItem();
@@ -510,11 +511,11 @@ namespace bugs {
 
 
     /**
-     * @brief TrackItemData 데이터로 ListWidgetItem 생성하여 ListWidget에 추가한다. 이미지 처리가 포함됨. (slot 연결이 있음)
-     * @param list_data
-     * @param p_listWidget
-     * @param flagAdjustHeight 기본값은 false. list_data 개수에 맞춰서 ListWidget의 사이즈를 조정할지의 여부임
-     */
+         * @brief TrackItemData 데이터로 ListWidgetItem 생성하여 ListWidget에 추가한다. 이미지 처리가 포함됨. (slot 연결이 있음)
+         * @param list_data
+         * @param p_listWidget
+         * @param flagAdjustHeight 기본값은 false. list_data 개수에 맞춰서 ListWidget의 사이즈를 조정할지의 여부임
+         */
     void AbstractBugsSubWidget::createList_itemTrackDelegate_applyingWithData_showImage(const QList<bugs::TrackItemData>& list_data, QListWidget *p_listWidget, const int start_index, const int section, bool flagAdjustHeight){
         // Track 기본 이미지
         QPixmap pixmap_default = this->getDefaultImage_forTrack();
@@ -558,10 +559,10 @@ namespace bugs {
 
 
     /**
-     * @brief ListWidget과 관련 - Image 다운로드가 완료되면 ListWidget에 보이도록 하기 위한 처리 (DecorationRole 로 설정)
-     * @param p_listWidget
-     * @param p_list_track
-     */
+         * @brief ListWidget과 관련 - Image 다운로드가 완료되면 ListWidget에 보이도록 하기 위한 처리 (DecorationRole 로 설정)
+         * @param p_listWidget
+         * @param p_list_track
+         */
     void AbstractBugsSubWidget::applyImageData_itemTrackDelegate_withFileDownload(FileDownloader *fileDownload_sender, QListWidget *p_listWidget, QList<bugs::TrackItemData>* p_list_track){
         int tmp_index = fileDownload_sender->property("index").toInt();
 
@@ -583,13 +584,13 @@ namespace bugs {
 
 
     /**
-     * @brief ArtistItemData 데이터로 ListWidgetItem 생성하여 ListWidget에 추가한다. 이미지 처리가 포함됨. (slot 연결이 있음)
-     * @param list_data
-     * @param p_listWidget
-     * @param start_index
-     * @param section
-     * @param flagAdjustHeight
-     */
+         * @brief ArtistItemData 데이터로 ListWidgetItem 생성하여 ListWidget에 추가한다. 이미지 처리가 포함됨. (slot 연결이 있음)
+         * @param list_data
+         * @param p_listWidget
+         * @param start_index
+         * @param section
+         * @param flagAdjustHeight
+         */
     void AbstractBugsSubWidget::createList_itemArtistDelegate_applyingWithData_showImage(const QList<bugs::ArtistItemData>& list_data, QListWidget *p_listWidget, const int start_index, const int section, bool flagAdjustHeight){
         // Track 기본 이미지
         QPixmap pixmap_default = this->getDefaultImage_forTrack();
@@ -633,10 +634,10 @@ namespace bugs {
 
 
     /**
-     * @brief ListWidget과 관련 - Image 다운로드가 완료되면 ListWidget에 보이도록 하기 위한 처리 (DecorationRole 로 설정)
-     * @param p_listWidget
-     * @param p_list_artist
-     */
+         * @brief ListWidget과 관련 - Image 다운로드가 완료되면 ListWidget에 보이도록 하기 위한 처리 (DecorationRole 로 설정)
+         * @param p_listWidget
+         * @param p_list_artist
+         */
     void AbstractBugsSubWidget::applyImageData_itemArtistDelegate_withFileDownload(FileDownloader *fileDownload_sender, QListWidget *p_listWidget, QList<bugs::ArtistItemData>* p_list_artist){
         int tmp_index = fileDownload_sender->property("index").toInt();
 
@@ -650,19 +651,19 @@ namespace bugs {
                 tmp_pixmap = tmp_pixmap.scaled(IMAGE_SIZE_OF_TRACK, IMAGE_SIZE_OF_TRACK, Qt::IgnoreAspectRatio, Qt::SmoothTransformation);
                 p_listWidget->item(tmp_index)->setData(Qt::DecorationRole, tmp_pixmap);
                 QPixmapCache::insert(p_list_artist->at(tmp_index).image, tmp_pixmap);
-//                QPixmap tmp_pixmap;
-//                tmp_pixmap = tmp_pixmap.fromImage(image);
+                //                QPixmap tmp_pixmap;
+                //                tmp_pixmap = tmp_pixmap.fromImage(image);
 
-//                // 빈 Pixmap
-//                QPixmap pixmap_painter = QPixmap(QSize(IMAGE_SIZE_OF_TRACK, IMAGE_SIZE_OF_TRACK));
-//                pixmap_painter.fill(Qt::transparent);
+                //                // 빈 Pixmap
+                //                QPixmap pixmap_painter = QPixmap(QSize(IMAGE_SIZE_OF_TRACK, IMAGE_SIZE_OF_TRACK));
+                //                pixmap_painter.fill(Qt::transparent);
 
-//                QPainter painter (&pixmap_painter);
-//                painter.setRenderHint(QPainter::Antialiasing, true);
-//                QBrush brush = QBrush(tmp_pixmap);
-//                painter.setBrush(brush);
-//                painter.drawRoundedRect(0, 0, IMAGE_SIZE_OF_TRACK, IMAGE_SIZE_OF_TRACK, IMAGE_SIZE_OF_TRACK/2, IMAGE_SIZE_OF_TRACK/2);
-//                p_listWidget->item(tmp_index)->setData(Qt::DecorationRole, pixmap_painter);
+                //                QPainter painter (&pixmap_painter);
+                //                painter.setRenderHint(QPainter::Antialiasing, true);
+                //                QBrush brush = QBrush(tmp_pixmap);
+                //                painter.setBrush(brush);
+                //                painter.drawRoundedRect(0, 0, IMAGE_SIZE_OF_TRACK, IMAGE_SIZE_OF_TRACK, IMAGE_SIZE_OF_TRACK/2, IMAGE_SIZE_OF_TRACK/2);
+                //                p_listWidget->item(tmp_index)->setData(Qt::DecorationRole, pixmap_painter);
 
             }
         }
@@ -678,10 +679,10 @@ namespace bugs {
     // 자식 클래스에서 Track목록 바로 재생 ---------------------------------------------------------------------------------------------
 
     /**
-     * @brief JsonArr_dataToPlay 에 대해서, 전체재생 or 셔플재생을 Rose로 요청.
-     * @param jsonArr_dataToPlay
-     * @param flagShuffle
-     */
+         * @brief JsonArr_dataToPlay 에 대해서, 전체재생 or 셔플재생을 Rose로 요청.
+         * @param jsonArr_dataToPlay
+         * @param flagShuffle
+         */
     void AbstractBugsSubWidget::proc_play_allTrack(const QJsonArray& jsonArr_trackToPlay, const bool flagShuffle){
         ProcRoseAPI_withBugs::PlayShuffleMode shuffleMode = ProcRoseAPI_withBugs::PlayShuffleMode::JustPlay;
         if(flagShuffle){
@@ -696,10 +697,10 @@ namespace bugs {
 
 
     /**
-     * @brief AbstractBugsSubWidget::proc_play_allVideo
-     * @param jsonArr_videoToPlay
-     * @param flagShuffle
-     */
+         * @brief AbstractBugsSubWidget::proc_play_allVideo
+         * @param jsonArr_videoToPlay
+         * @param flagShuffle
+         */
     void AbstractBugsSubWidget::proc_play_allVideo(const QJsonArray& jsonArr_videoToPlay, const bool flagShuffle){
         ProcRoseAPI_withBugs::PlayShuffleMode shuffleMode = ProcRoseAPI_withBugs::PlayShuffleMode::JustPlay;
         if(flagShuffle){
@@ -717,12 +718,12 @@ namespace bugs {
     // Item 클릭 관련 처리 of Album ---------------------------------------------------------------------------------------------
 
     /**
-     * @brief AbstractBugsSubWidget::proc_clicked_itemAlbum
-     * @param data_album
-     * @param clickMode
-     * @param index
-     * @param section
-     */
+         * @brief AbstractBugsSubWidget::proc_clicked_itemAlbum
+         * @param data_album
+         * @param clickMode
+         * @param index
+         * @param section
+         */
     void AbstractBugsSubWidget::proc_clicked_itemAlbum(bugs::AlbumItemData& data_album, const tidal::AbstractItem::ClickMode clickMode, const int index, const int section){
         if(this->is_bugs_logined() == false){
             this->showNeededLoginBugs();               // Bugs 로그인 안된 경우
@@ -735,12 +736,23 @@ namespace bugs {
                     procRosePlay->requestPlayRose_byAlbumID(data_album.album_id, OptMorePopup::ClickMode::Play_RightNow);
                 }
                 else if(clickMode == tidal::AbstractItem::ClickMode::AllBox){
-                    // Album Detail 페이지 진입
-                    this->movePage_album_detailView(data_album.album_id);
+
+                    if(global.user_forBugs.flag_rosehome == true){
+                        global.user_forBugs.rosehome_obj = QJsonObject();
+                        global.user_forBugs.rosehome_obj.insert(KEY_PAGE_CODE, PAGECODE_BUGS___ALBUM_DETAIL);
+                        bugs::AlbumItemData tmp_data_album;
+                        tmp_data_album.album_id = data_album.album_id;
+                        QJsonObject tmp_data = ConvertData_forBugs::getObjectJson_albumData(tmp_data_album);
+                        global.user_forBugs.rosehome_obj.insert(KEY_DATA, tmp_data);
+
+                        emit linker->signal_RoseHome_movePage(QString(GSCommon::MainMenuCode::Bugs));
+                    }
+                    else{
+                        // Album Detail 페이지 진입
+                        this->movePage_album_detailView(data_album.album_id);
+                    }
                 }
                 else if(clickMode == tidal::AbstractItem::ClickMode::MoreBtn){
-                    print_debug();
-
                     // OptionPopup 띄우기 필요
                     this->makeObj_optMorePopup(OptMorePopup::Bugs_Album, ConvertData_forBugs::getConvertOptHeaderData(data_album), index, section);
                 }
@@ -774,12 +786,12 @@ namespace bugs {
     }
 
     /**
-     * @brief AbstractBugsSubWidget::proc_clicked_itemAlbum
-     * @param list_album
-     * @param clickMode
-     * @param index
-     * @param section
-     */
+         * @brief AbstractBugsSubWidget::proc_clicked_itemAlbum
+         * @param list_album
+         * @param clickMode
+         * @param index
+         * @param section
+         */
     void AbstractBugsSubWidget::proc_clicked_itemAlbum(QList<bugs::AlbumItemData>* list_album, const tidal::AbstractItem::ClickMode clickMode, const int index, const int section){
         if(this->is_bugs_logined() == false){
             this->showNeededLoginBugs();               // Bugs 로그인 안된 경우
@@ -801,12 +813,12 @@ namespace bugs {
     // Item 클릭 관련 처리 of PD_Album ---------------------------------------------------------------------------------------------
 
     /**
-     * @brief AbstractBugsSubWidget::proc_clicked_itemPD_Album
-     * @param data_album
-     * @param clickMode
-     * @param index
-     * @param section
-     */
+         * @brief AbstractBugsSubWidget::proc_clicked_itemPD_Album
+         * @param data_album
+         * @param clickMode
+         * @param index
+         * @param section
+         */
     void AbstractBugsSubWidget::proc_clicked_itemPD_Album(bugs::PD_AlbumItemData& data_pd_album, const tidal::AbstractItem::ClickMode clickMode, const int index, const int section){
         if(this->is_bugs_logined() == false){
             this->showNeededLoginBugs();               // Bugs 로그인 안된 경우
@@ -858,12 +870,12 @@ namespace bugs {
     }
 
     /**
-     * @brief AbstractBugsSubWidget::proc_clicked_itemPD_Album
-     * @param list_album
-     * @param clickMode
-     * @param index
-     * @param section
-     */
+         * @brief AbstractBugsSubWidget::proc_clicked_itemPD_Album
+         * @param list_album
+         * @param clickMode
+         * @param index
+         * @param section
+         */
     void AbstractBugsSubWidget::proc_clicked_itemPD_Album(QList<bugs::PD_AlbumItemData>* list_pd_album, const tidal::AbstractItem::ClickMode clickMode, const int index, const int section){
         if(this->is_bugs_logined() == false){
             this->showNeededLoginBugs();               // Bugs 로그인 안된 경우
@@ -882,12 +894,12 @@ namespace bugs {
     // Item 클릭 관련 처리 of My Album ---------------------------------------------------------------------------------------------
 
     /**
-     * @brief AbstractBugsSubWidget::proc_clicked_itemMyAlbum
-     * @param data_album
-     * @param clickMode
-     * @param index
-     * @param section
-     */
+         * @brief AbstractBugsSubWidget::proc_clicked_itemMyAlbum
+         * @param data_album
+         * @param clickMode
+         * @param index
+         * @param section
+         */
     void AbstractBugsSubWidget::proc_clicked_itemMyAlbum(bugs::MyAlbumItemData& data_my_album, const tidal::AbstractItem::ClickMode clickMode, const int index, const int section){
         if(this->is_bugs_logined() == false){
             this->showNeededLoginBugs();               // Bugs 로그인 안된 경우
@@ -912,12 +924,12 @@ namespace bugs {
     }
 
     /**
-     * @brief AbstractBugsSubWidget::proc_clicked_itemMyAlbum
-     * @param list_album
-     * @param clickMode
-     * @param index
-     * @param section
-     */
+         * @brief AbstractBugsSubWidget::proc_clicked_itemMyAlbum
+         * @param list_album
+         * @param clickMode
+         * @param index
+         * @param section
+         */
     void AbstractBugsSubWidget::proc_clicked_itemMyAlbum(QList<bugs::MyAlbumItemData>* list_my_album, const tidal::AbstractItem::ClickMode clickMode, const int index, const int section){
         if(this->is_bugs_logined() == false){
             this->showNeededLoginBugs();               // Bugs 로그인 안된 경우
@@ -939,12 +951,12 @@ namespace bugs {
     // Item 클릭 관련 처리 of Artist ---------------------------------------------------------------------------------------------
 
     /**
-     * @brief AbstractBugsSubWidget::proc_clicked_itemArtist
-     * @param data_album
-     * @param clickMode
-     * @param index
-     * @param section
-     */
+         * @brief AbstractBugsSubWidget::proc_clicked_itemArtist
+         * @param data_album
+         * @param clickMode
+         * @param index
+         * @param section
+         */
     void AbstractBugsSubWidget::proc_clicked_itemArtist(bugs::ArtistItemData& data_artist, const tidal::AbstractItem::ClickMode clickMode, const int index, const int section){
         if(this->is_bugs_logined() == false){
             this->showNeededLoginBugs();               // Bugs 로그인 안된 경우
@@ -990,12 +1002,12 @@ namespace bugs {
     }
 
     /**
-     * @brief AbstractBugsSubWidget::proc_clicked_itemArtist
-     * @param list_album
-     * @param clickMode
-     * @param index
-     * @param section
-     */
+         * @brief AbstractBugsSubWidget::proc_clicked_itemArtist
+         * @param list_album
+         * @param clickMode
+         * @param index
+         * @param section
+         */
     void AbstractBugsSubWidget::proc_clicked_itemArtist(QList<bugs::ArtistItemData>* list_artist, const tidal::AbstractItem::ClickMode clickMode, const int index, const int section){
         if(this->is_bugs_logined() == false){
             this->showNeededLoginBugs();               // Bugs 로그인 안된 경우
@@ -1022,33 +1034,33 @@ namespace bugs {
             if(index >= 0){
                 if(clickMode == tidal::AbstractItem::ClickMode::PlayBtn
                         || clickMode == tidal::AbstractItem::ClickMode::AllBox
-                ){
+                        ){
                     int curr_clickMode = global.device.getMusicPlayType();
 
                     OptMorePopup::ClickMode playType = OptMorePopup::ClickMode::SubMenu_Play_RightNow_OnlyOne;
                     switch(curr_clickMode)
                     {
-                        case 13:
-                            playType = OptMorePopup::ClickMode::SubMenu_QueueAdd_Last_OnlyOne;
-                            break;
-                        case 12:
-                            playType = OptMorePopup::ClickMode::SubMenu_QueueAdd_Empty_OnlyOne;
-                            break;
-                        case 15:
-                            playType = OptMorePopup::ClickMode::SubMenu_Play_RightNow_OnlyOne;
-                            break;
-                        case 16:
-                            playType = OptMorePopup::ClickMode::SubMenu_QueueAdd_CurrNext_OnlyOne;
-                            break;
-                        case 17:
-                            playType = OptMorePopup::ClickMode::SubMenu_Play_FromHere;
-                            break;
-                        case 18:
-                            playType = OptMorePopup::ClickMode::SubMenu_Play_FromHere_procEmpty;
-                            break;
-                        case 19:
-                            playType = OptMorePopup::ClickMode::SubMenu_QueueAdd_FromHere_Last;
-                            break;
+                    case 13:
+                        playType = OptMorePopup::ClickMode::SubMenu_QueueAdd_Last_OnlyOne;
+                        break;
+                    case 12:
+                        playType = OptMorePopup::ClickMode::SubMenu_QueueAdd_Empty_OnlyOne;
+                        break;
+                    case 15:
+                        playType = OptMorePopup::ClickMode::SubMenu_Play_RightNow_OnlyOne;
+                        break;
+                    case 16:
+                        playType = OptMorePopup::ClickMode::SubMenu_QueueAdd_CurrNext_OnlyOne;
+                        break;
+                    case 17:
+                        playType = OptMorePopup::ClickMode::SubMenu_Play_FromHere;
+                        break;
+                    case 18:
+                        playType = OptMorePopup::ClickMode::SubMenu_Play_FromHere_procEmpty;
+                        break;
+                    case 19:
+                        playType = OptMorePopup::ClickMode::SubMenu_QueueAdd_FromHere_Last;
+                        break;
                     }
 
                     // Video 바로 재생
@@ -1069,12 +1081,12 @@ namespace bugs {
 
 
     /**
-     * @brief AbstractBugsSubWidget::proc_clicked_itemVideo
-     * @param list_video
-     * @param clickMode
-     * @param index
-     * @param section
-     */
+         * @brief AbstractBugsSubWidget::proc_clicked_itemVideo
+         * @param list_video
+         * @param clickMode
+         * @param index
+         * @param section
+         */
     void AbstractBugsSubWidget::proc_clicked_itemVideo(QList<bugs::VideoItemData>* list_video, const QJsonArray& jsonArray_toPlayAll, const tidal::AbstractItem::ClickMode clickMode, const int index, const int section){
         if(this->is_bugs_logined() == false){
             this->showNeededLoginBugs();               // Bugs 로그인 안된 경우
@@ -1093,12 +1105,12 @@ namespace bugs {
     // Item 클릭 관련 처리 of Track_Square ---------------------------------------------------------------------------------------------
 
     /**
-     * @brief ItemVideo에서 발생한 custom click 이벤트에 대한 실제 처리를 진행함
-     * @param data_video
-     * @param clickMode
-     * @param index
-     * @param section
-     */
+         * @brief ItemVideo에서 발생한 custom click 이벤트에 대한 실제 처리를 진행함
+         * @param data_video
+         * @param clickMode
+         * @param index
+         * @param section
+         */
     void AbstractBugsSubWidget::proc_clicked_itemTrackSquare(bugs::TrackItemData &data_track, const QJsonArray& jsonArray_toPlayAll, const tidal::AbstractItem::ClickMode clickMode, const int index, const int section){
         if(this->is_bugs_logined() == false){
             this->showNeededLoginBugs();               // Bugs 로그인 안된 경우
@@ -1107,14 +1119,42 @@ namespace bugs {
             if(index >= 0){
                 if(clickMode == tidal::AbstractItem::ClickMode::PlayBtn
                         || clickMode == tidal::AbstractItem::ClickMode::AllBox
-                ){
-                     // Track 바로 재생 - OptMorePopup의 Play_RightNow와 같음
-                     ProcRoseAPI_withBugs *procRosePlay = new ProcRoseAPI_withBugs(this);
-                     procRosePlay->requestPlayRose_byTracks(jsonArray_toPlayAll, index, OptMorePopup::ClickMode::Play_RightNow_withReorder);
+                        ){
+                    // Track 바로 재생 - OptMorePopup의 Play_RightNow와 같음
+                    int curr_clickMode = global.device.getMusicPlayType();
+
+                    OptMorePopup::ClickMode playType = OptMorePopup::ClickMode::SubMenu_Play_RightNow_OnlyOne;
+                    switch(curr_clickMode)
+                    {
+                    case 13:
+                        playType = OptMorePopup::ClickMode::SubMenu_QueueAdd_Last_OnlyOne;
+                        break;
+                    case 12:
+                        playType = OptMorePopup::ClickMode::SubMenu_QueueAdd_Empty_OnlyOne;
+                        break;
+                    case 15:
+                        playType = OptMorePopup::ClickMode::SubMenu_Play_RightNow_OnlyOne;
+                        break;
+                    case 16:
+                        playType = OptMorePopup::ClickMode::SubMenu_QueueAdd_CurrNext_OnlyOne;
+                        break;
+                    case 17:
+                        playType = OptMorePopup::ClickMode::SubMenu_Play_FromHere;
+                        break;
+                    case 18:
+                        playType = OptMorePopup::ClickMode::SubMenu_Play_FromHere_procEmpty;
+                        break;
+                    case 19:
+                        playType = OptMorePopup::ClickMode::SubMenu_QueueAdd_FromHere_Last;
+                        break;
+                    }
+
+                    ProcRoseAPI_withBugs *procRosePlay = new ProcRoseAPI_withBugs(this);
+                    procRosePlay->requestPlayRose_byTracks(jsonArray_toPlayAll, index, playType);
+                    //ProcRoseAPI_withBugs *procRosePlay = new ProcRoseAPI_withBugs(this);
+                    //procRosePlay->requestPlayRose_byTracks(jsonArray_toPlayAll, index, OptMorePopup::ClickMode::Play_RightNow_withReorder);
                 }
                 else if(clickMode == tidal::AbstractItem::ClickMode::MoreBtn){
-
-                    //---------------------------------//c220825_1
 
                     // OptMorePopup 띄우기 필요 - (연관 영상 있는지의 여부에 따라 다름)
                     if(data_track.list_mv_id.count() > 0){
@@ -1157,13 +1197,13 @@ namespace bugs {
 
 
     /**
-     * @brief ItemVideo에서 발생한 custom click 이벤트에 대한 실제 처리를 진행함  [overloading]
-     * @details 편의 제공을 위해 overloading.
-     * @param list_artist
-     * @param clickMode
-     * @param index
-     * @param section
-     */
+         * @brief ItemVideo에서 발생한 custom click 이벤트에 대한 실제 처리를 진행함  [overloading]
+         * @details 편의 제공을 위해 overloading.
+         * @param list_artist
+         * @param clickMode
+         * @param index
+         * @param section
+         */
     void AbstractBugsSubWidget::proc_clicked_itemTrackSquare(QList<bugs::TrackItemData>* list_track, const QJsonArray& jsonArray_toPlayAll, const tidal::AbstractItem::ClickMode clickMode, const int index, const int section){
         if(this->is_bugs_logined() == false){
             this->showNeededLoginBugs();               // Bugs 로그인 안된 경우
@@ -1183,12 +1223,12 @@ namespace bugs {
     //      AbstractItem 상속 아님.  - AbstractTidalTrackDelegate 상속 구조 참고
 
     /**
-     * @brief AbstractTidalTrackDelegate 에서 발생한 custom click 이벤트에 대한 실제 처리를 진행함
-     * @param data_track
-     * @param clickMode
-     * @param index
-     * @param section
-     */
+         * @brief AbstractTidalTrackDelegate 에서 발생한 custom click 이벤트에 대한 실제 처리를 진행함
+         * @param data_track
+         * @param clickMode
+         * @param index
+         * @param section
+         */
     void AbstractBugsSubWidget::proc_clicked_itemTrack_inList(bugs::TrackItemData& data_track, const QJsonArray& jsonArr_toPlayAll, const tidal::AbstractTidalTrackDelegate::ClickMode clickMode, const int index, const int section){
         if(this->is_bugs_logined() == false){
             this->showNeededLoginBugs();               // Bugs 로그인 안된 경우
@@ -1198,60 +1238,60 @@ namespace bugs {
                 if(clickMode == tidal::AbstractTidalTrackDelegate::ClickMode::AllBox){
                     // Track 바로 재생 - OptMorePopup의 Play_RightNow와 같음. index에 따라서 reorder 처리 필요함.
                     /*QSettings *settings = new QSettings(rosesettings.ORGANIZATION_NAME, rosesettings.APPLICATION_NAME);
-                    int curr_clickMode = settings->value(rosesettings.SETTINGS_TRACK_OPTION).toInt();
+                        int curr_clickMode = settings->value(rosesettings.SETTINGS_TRACK_OPTION).toInt();
 
-                    OptMorePopup::ClickMode playType = OptMorePopup::ClickMode::SubMenu_Play_RightNow_OnlyOne;
-                    switch(curr_clickMode)
-                    {
-                        case 0:
-                            playType = OptMorePopup::ClickMode::SubMenu_QueueAdd_Last_OnlyOne;
-                            break;
-                        case 1:
-                            playType = OptMorePopup::ClickMode::SubMenu_QueueAdd_Empty_OnlyOne;
-                            break;
-                        case 2:
-                            playType = OptMorePopup::ClickMode::SubMenu_Play_RightNow_OnlyOne;
-                            break;
-                        case 3:
-                            playType = OptMorePopup::ClickMode::SubMenu_QueueAdd_CurrNext_OnlyOne;
-                            break;
-                        case 4:
-                            playType = OptMorePopup::ClickMode::SubMenu_Play_FromHere;
-                            break;
-                        case 5:
-                            playType = OptMorePopup::ClickMode::SubMenu_Play_FromHere_procEmpty;
-                            break;
-                        case 6:
-                            playType = OptMorePopup::ClickMode::SubMenu_QueueAdd_FromHere_Last;
-                            break;
-                    }*/
+                        OptMorePopup::ClickMode playType = OptMorePopup::ClickMode::SubMenu_Play_RightNow_OnlyOne;
+                        switch(curr_clickMode)
+                        {
+                            case 0:
+                                playType = OptMorePopup::ClickMode::SubMenu_QueueAdd_Last_OnlyOne;
+                                break;
+                            case 1:
+                                playType = OptMorePopup::ClickMode::SubMenu_QueueAdd_Empty_OnlyOne;
+                                break;
+                            case 2:
+                                playType = OptMorePopup::ClickMode::SubMenu_Play_RightNow_OnlyOne;
+                                break;
+                            case 3:
+                                playType = OptMorePopup::ClickMode::SubMenu_QueueAdd_CurrNext_OnlyOne;
+                                break;
+                            case 4:
+                                playType = OptMorePopup::ClickMode::SubMenu_Play_FromHere;
+                                break;
+                            case 5:
+                                playType = OptMorePopup::ClickMode::SubMenu_Play_FromHere_procEmpty;
+                                break;
+                            case 6:
+                                playType = OptMorePopup::ClickMode::SubMenu_QueueAdd_FromHere_Last;
+                                break;
+                        }*/
 
                     int curr_clickMode = global.device.getMusicPlayType();
 
                     OptMorePopup::ClickMode playType = OptMorePopup::ClickMode::SubMenu_Play_RightNow_OnlyOne;
                     switch(curr_clickMode)
                     {
-                        case 13:
-                            playType = OptMorePopup::ClickMode::SubMenu_QueueAdd_Last_OnlyOne;
-                            break;
-                        case 12:
-                            playType = OptMorePopup::ClickMode::SubMenu_QueueAdd_Empty_OnlyOne;
-                            break;
-                        case 15:
-                            playType = OptMorePopup::ClickMode::SubMenu_Play_RightNow_OnlyOne;
-                            break;
-                        case 16:
-                            playType = OptMorePopup::ClickMode::SubMenu_QueueAdd_CurrNext_OnlyOne;
-                            break;
-                        case 17:
-                            playType = OptMorePopup::ClickMode::SubMenu_Play_FromHere;
-                            break;
-                        case 18:
-                            playType = OptMorePopup::ClickMode::SubMenu_Play_FromHere_procEmpty;
-                            break;
-                        case 19:
-                            playType = OptMorePopup::ClickMode::SubMenu_QueueAdd_FromHere_Last;
-                            break;
+                    case 13:
+                        playType = OptMorePopup::ClickMode::SubMenu_QueueAdd_Last_OnlyOne;
+                        break;
+                    case 12:
+                        playType = OptMorePopup::ClickMode::SubMenu_QueueAdd_Empty_OnlyOne;
+                        break;
+                    case 15:
+                        playType = OptMorePopup::ClickMode::SubMenu_Play_RightNow_OnlyOne;
+                        break;
+                    case 16:
+                        playType = OptMorePopup::ClickMode::SubMenu_QueueAdd_CurrNext_OnlyOne;
+                        break;
+                    case 17:
+                        playType = OptMorePopup::ClickMode::SubMenu_Play_FromHere;
+                        break;
+                    case 18:
+                        playType = OptMorePopup::ClickMode::SubMenu_Play_FromHere_procEmpty;
+                        break;
+                    case 19:
+                        playType = OptMorePopup::ClickMode::SubMenu_QueueAdd_FromHere_Last;
+                        break;
                     }
 
                     ProcRoseAPI_withBugs *procRosePlay = new ProcRoseAPI_withBugs(this);
@@ -1291,16 +1331,16 @@ namespace bugs {
 
                     // Case 1 : Http 요청을 하고, 응답에 따라 Data, View에 동기화
                     /*
-                    ProcBugsAPI *proc = new ProcBugsAPI(this);
-                    if(data_track.likes_yn){
-                        connect(proc, &ProcBugsAPI::completeReq_favarite_track, this, &AbstractBugsSubWidget::slot_completedReg_favorite_track);
-                        proc->request_tidal_deleteFavorite_track(data_track.track_id, ConvertData_forBugs::getObjectJson_itemPositionData(itemPosData));
-                    }
-                    else{
-                        connect(proc, &ProcBugsAPI::completeReq_favarite_track, this, &AbstractBugsSubWidget::slot_completedReg_favorite_track);
-                        proc->request_tidal_addFavorite_track(data_track.track_id, ConvertData_forBugs::getObjectJson_itemPositionData(itemPosData));
-                    }
-                    */
+                        ProcBugsAPI *proc = new ProcBugsAPI(this);
+                        if(data_track.likes_yn){
+                            connect(proc, &ProcBugsAPI::completeReq_favarite_track, this, &AbstractBugsSubWidget::slot_completedReg_favorite_track);
+                            proc->request_tidal_deleteFavorite_track(data_track.track_id, ConvertData_forBugs::getObjectJson_itemPositionData(itemPosData));
+                        }
+                        else{
+                            connect(proc, &ProcBugsAPI::completeReq_favarite_track, this, &AbstractBugsSubWidget::slot_completedReg_favorite_track);
+                            proc->request_tidal_addFavorite_track(data_track.track_id, ConvertData_forBugs::getObjectJson_itemPositionData(itemPosData));
+                        }
+                        */
                 }
                 else if(clickMode == tidal::AbstractTidalTrackDelegate::ClickMode::MusicVideoBtn){
 
@@ -1337,27 +1377,27 @@ namespace bugs {
                     OptMorePopup::ClickMode playType = OptMorePopup::ClickMode::SubMenu_Play_RightNow_OnlyOne;
                     switch(curr_clickMode)
                     {
-                        case 13:
-                            playType = OptMorePopup::ClickMode::SubMenu_QueueAdd_Last_OnlyOne;
-                            break;
-                        case 12:
-                            playType = OptMorePopup::ClickMode::SubMenu_QueueAdd_Empty_OnlyOne;
-                            break;
-                        case 15:
-                            playType = OptMorePopup::ClickMode::SubMenu_Play_RightNow_OnlyOne;
-                            break;
-                        case 16:
-                            playType = OptMorePopup::ClickMode::SubMenu_QueueAdd_CurrNext_OnlyOne;
-                            break;
-                        case 17:
-                            playType = OptMorePopup::ClickMode::SubMenu_Play_FromHere;
-                            break;
-                        case 18:
-                            playType = OptMorePopup::ClickMode::SubMenu_Play_FromHere_procEmpty;
-                            break;
-                        case 19:
-                            playType = OptMorePopup::ClickMode::SubMenu_QueueAdd_FromHere_Last;
-                            break;
+                    case 13:
+                        playType = OptMorePopup::ClickMode::SubMenu_QueueAdd_Last_OnlyOne;
+                        break;
+                    case 12:
+                        playType = OptMorePopup::ClickMode::SubMenu_QueueAdd_Empty_OnlyOne;
+                        break;
+                    case 15:
+                        playType = OptMorePopup::ClickMode::SubMenu_Play_RightNow_OnlyOne;
+                        break;
+                    case 16:
+                        playType = OptMorePopup::ClickMode::SubMenu_QueueAdd_CurrNext_OnlyOne;
+                        break;
+                    case 17:
+                        playType = OptMorePopup::ClickMode::SubMenu_Play_FromHere;
+                        break;
+                    case 18:
+                        playType = OptMorePopup::ClickMode::SubMenu_Play_FromHere_procEmpty;
+                        break;
+                    case 19:
+                        playType = OptMorePopup::ClickMode::SubMenu_QueueAdd_FromHere_Last;
+                        break;
                     }
 
                     ProcRoseAPI_withBugs *procRosePlay = new ProcRoseAPI_withBugs(this);
@@ -1395,16 +1435,16 @@ namespace bugs {
 
                     // Case 1 : Http 요청을 하고, 응답에 따라 Data, View에 동기화
                     /*
-                    ProcBugsAPI *proc = new ProcBugsAPI(this);
-                    if(data_track.likes_yn){
-                        connect(proc, &ProcBugsAPI::completeReq_favarite_track, this, &AbstractBugsSubWidget::slot_completedReg_favorite_track);
-                        proc->request_tidal_deleteFavorite_track(data_track.track_id, ConvertData_forBugs::getObjectJson_itemPositionData(itemPosData));
-                    }
-                    else{
-                        connect(proc, &ProcBugsAPI::completeReq_favarite_track, this, &AbstractBugsSubWidget::slot_completedReg_favorite_track);
-                        proc->request_tidal_addFavorite_track(data_track.track_id, ConvertData_forBugs::getObjectJson_itemPositionData(itemPosData));
-                    }
-                    */
+                        ProcBugsAPI *proc = new ProcBugsAPI(this);
+                        if(data_track.likes_yn){
+                            connect(proc, &ProcBugsAPI::completeReq_favarite_track, this, &AbstractBugsSubWidget::slot_completedReg_favorite_track);
+                            proc->request_tidal_deleteFavorite_track(data_track.track_id, ConvertData_forBugs::getObjectJson_itemPositionData(itemPosData));
+                        }
+                        else{
+                            connect(proc, &ProcBugsAPI::completeReq_favarite_track, this, &AbstractBugsSubWidget::slot_completedReg_favorite_track);
+                            proc->request_tidal_addFavorite_track(data_track.track_id, ConvertData_forBugs::getObjectJson_itemPositionData(itemPosData));
+                        }
+                        */
                 }
                 else if(clickMode == PlaylistTrackDetailInfo_RHV::ClickMode::MusicVideoBtn){
 
@@ -1424,7 +1464,7 @@ namespace bugs {
 
         QJsonArray tmp_artist_id = ProcJsonEasy::getJsonArray(p_jsonObject, "list_artist_id");
 
-        if(tmp_artist_id.count() == 1){            
+        if(tmp_artist_id.count() == 1){
             this->movePage_artist_detailView(tmp_artist_id.at(0).toInt());
             global.user_forBugs.dlg_set_state(true);
         }
@@ -1451,12 +1491,12 @@ namespace bugs {
 
 
     /**
-     * @brief AbstractTidalTrackDelegate 에서 발생한 custom click 이벤트에 대한 실제 처리를 진행함 [overloading]
-     * @param list_track
-     * @param clickMode
-     * @param index
-     * @param section
-     */
+         * @brief AbstractTidalTrackDelegate 에서 발생한 custom click 이벤트에 대한 실제 처리를 진행함 [overloading]
+         * @param list_track
+         * @param clickMode
+         * @param index
+         * @param section
+         */
     void AbstractBugsSubWidget::proc_clicked_itemTrack_inList(QList<bugs::TrackItemData>* list_track, const QJsonArray& jsonArr_toPlayAll, const tidal::AbstractTidalTrackDelegate::ClickMode clickMode, const int index, const int section){
         if(this->is_bugs_logined() == false){
             this->showNeededLoginBugs();               // Bugs 로그인 안된 경우
@@ -1488,17 +1528,64 @@ namespace bugs {
     }
 
 
+    // Item 클릭 관련 처리 of History ---------------------------------------------------------------------------------------------
+
+    /**
+     * @brief ItemHistroy에서 발생한 custom click 이벤트에 대한 실제 처리를 진행함  [overloading]
+     * @details 편의 제공을 위해 overloading.
+     * @param data_history
+     * @param clickMode
+     * @param index
+     * @param section
+     */
+    void AbstractBugsSubWidget::proc_clicked_itemHistory(roseHome::HistoryItemData& data_history, const tidal::AbstractItem::ClickMode clickMode, const int index, const int section){
+
+        Q_UNUSED(section);
+
+        if(index >= 0){
+            if(clickMode == tidal::AbstractItem::ClickMode::AllBox){
+                // History 페이지 진입
+                QJsonObject jsonObj_move = roseHome::ConvertData::getObjectJson_historyData(data_history);
+                jsonObj_move.insert(KEY_PAGE_CODE, PAGECODE_BUGS___HISTORY_DETAIL);
+                emit this->signal_clickedMovePage(jsonObj_move);            // 페이지 이동 signal
+            }
+            else if(clickMode == tidal::AbstractItem::ClickMode::MoreBtn){
+                // OptionPopup 띄우기 필요
+                //this->makeObj_optMorePopup(OptMorePopup::Rosehome_Album, ConvertData::getConvertOptHeaderData(data_history), index, section);
+            }
+        }
+    }
+
+
+    /**
+     * @brief ItemHistory에서 발생한 custom click 이벤트에 대한 실제 처리를 진행함  [overloading]
+     * @details 편의 제공을 위해 overloading.
+     * @param list_history
+     * @param clickMode
+     * @param index
+     * @param section
+     */
+    void AbstractBugsSubWidget::proc_clicked_itemHistory(QList<roseHome::HistoryItemData>* list_history, const tidal::AbstractItem::ClickMode clickMode, const int index, const int section){
+
+        int real_index = this->checkValid_index(list_history->length(), index);
+
+        if(real_index >= 0){
+            roseHome::HistoryItemData data = list_history->at(real_index);
+            this->proc_clicked_itemHistory(data, clickMode, real_index, section);
+        }
+    }
+
 
     // Item 클릭 관련 처리 of Track (ListWidget with Delegate) ---------------------------------------------------------------------------------------------
     //      AbstractItem 상속 아님.  - AbstractTidalTrackDelegate 상속 구조 참고
 
     /**
-     * @brief AbstractTidalTrackDelegate 에서 발생한 custom click 이벤트에 대한 실제 처리를 진행함
-     * @param data_track
-     * @param clickMode
-     * @param index
-     * @param section
-     */
+         * @brief AbstractTidalTrackDelegate 에서 발생한 custom click 이벤트에 대한 실제 처리를 진행함
+         * @param data_track
+         * @param clickMode
+         * @param index
+         * @param section
+         */
     void AbstractBugsSubWidget::proc_clicked_itemArtist_inList(bugs::ArtistItemData& data_artist, const tidal::AbstractTidalTrackDelegate::ClickMode clickMode, const int index, const int section){
         if(this->is_bugs_logined() == false){
             this->showNeededLoginBugs();               // Bugs 로그인 안된 경우
@@ -1542,12 +1629,12 @@ namespace bugs {
 
 
     /**
-     * @brief AbstractTidalTrackDelegate 에서 발생한 custom click 이벤트에 대한 실제 처리를 진행함 [overloading]
-     * @param list_track
-     * @param clickMode
-     * @param index
-     * @param section
-     */
+         * @brief AbstractTidalTrackDelegate 에서 발생한 custom click 이벤트에 대한 실제 처리를 진행함 [overloading]
+         * @param list_track
+         * @param clickMode
+         * @param index
+         * @param section
+         */
     void AbstractBugsSubWidget::proc_clicked_itemArtist_inList(QList<bugs::ArtistItemData>* list_artist, const tidal::AbstractTidalTrackDelegate::ClickMode clickMode, const int index, const int section){
         if(this->is_bugs_logined() == false){
             this->showNeededLoginBugs();               // Bugs 로그인 안된 경우
@@ -1574,23 +1661,23 @@ namespace bugs {
     // OptMorePopup 관련 처리 of Album ---------------------------------------------------------------------------------------------
 
     /**
-     * @brief AlbumItemData 를 활용하여 OptMorePopup 의 signal 을 처리한다.
-     * @param data_album
-     * @param clickMode
-     */
+         * @brief AlbumItemData 를 활용하여 OptMorePopup 의 signal 을 처리한다.
+         * @param data_album
+         * @param clickMode
+         */
     void AbstractBugsSubWidget::proc_clicked_optMorePopup_fromAlbum(bugs::AlbumItemData& data_album, const OptMorePopup::ClickMode clickMode){
 
         if(clickMode == OptMorePopup::ClickMode::Share){//c220823
-                print_debug();
-                setUIShare();
-                qDebug() << "this->shareLink="<<this->shareLink;
+            print_debug();
+            setUIShare();
+            qDebug() << "this->shareLink="<<this->shareLink;
 
-            }
-            if(clickMode == OptMorePopup::ClickMode::Play_RightNow
+        }
+        if(clickMode == OptMorePopup::ClickMode::Play_RightNow
                 || clickMode == OptMorePopup::ClickMode::SubMenu_QueueAdd_Last
                 || clickMode == OptMorePopup::ClickMode::SubMenu_QueueAdd_Empty
                 || clickMode == OptMorePopup::ClickMode::SubMenu_QueueAdd_CurrNext
-        )
+                )
         {
             // Rose Play 요청
             ProcRoseAPI_withBugs *procRosePlay = new ProcRoseAPI_withBugs(this);
@@ -1629,18 +1716,39 @@ namespace bugs {
                 }
             }
         }
+        else if(clickMode == OptMorePopup::ClickMode::Add_MyCollection){
 
+            ProcBugsAPI *proc = new ProcBugsAPI(this);
+            //connect(proc, &ProcBugsAPI::completeReq_list_items_of_album, this, &AbstractBugsSubWidget::slot_applyResult_tracks);
+            proc->request_bugs_getList_items_of_album(data_album.album_id);
+
+            /*QJsonArray tracks = QJsonArray();
+            //tracks.append(jsonArr_toPlayAll.at(index).toObject());
+            tracks = p_jsonArr_toPlay;
+
+            QJsonObject json = QJsonObject();
+            json.insert("tracks", tracks);
+
+            Dialog::Dialog_Playlist_onRose *dialog_playlist = new Dialog::Dialog_Playlist_onRose(Dialog::Dialog_Playlist_onRose::QOBUZ, json, this);
+            dialog_playlist->request_playlist_fetch();
+            connect(dialog_playlist, &Dialog::Dialog_Playlist_onRose::signal_clicked_playlist, this, &AbstractQobuzSubWidget::slot_add_rosePlaylist_withQobuz);
+            int result = dialog_playlist->exec();
+
+            if(result == QDialog::Accepted){
+                delete dialog_playlist;
+            }*/
+        }
     }
 
 
 
     /**
-     * @brief AlbumItemData 를 활용하여 OptMorePopup 의 signal 을 처리한다.  [Overloading]
-     * @details 편의 제공을 위해 overloading.
-     * @param list_album
-     * @param index
-     * @param clickMode
-     */
+         * @brief AlbumItemData 를 활용하여 OptMorePopup 의 signal 을 처리한다.  [Overloading]
+         * @details 편의 제공을 위해 overloading.
+         * @param list_album
+         * @param index
+         * @param clickMode
+         */
     void AbstractBugsSubWidget::proc_clicked_optMorePopup_fromAlbum(QList<bugs::AlbumItemData>* list_album, const int index, const OptMorePopup::ClickMode clickMode){
         if(this->is_bugs_logined() == false){
             this->showNeededLoginBugs();               // Bugs 로그인 안된 경우
@@ -1662,23 +1770,23 @@ namespace bugs {
     // OptMorePopup 관련 처리 of PD's Album ---------------------------------------------------------------------------------------------
 
     /**
-     * @brief PD_AlbumItemData 를 활용하여 OptMorePopup 의 signal 을 처리한다.
-     * @param data_album
-     * @param clickMode
-     */
+         * @brief PD_AlbumItemData 를 활용하여 OptMorePopup 의 signal 을 처리한다.
+         * @param data_album
+         * @param clickMode
+         */
     void AbstractBugsSubWidget::proc_clicked_optMorePopup_fromPD_Album(bugs::PD_AlbumItemData& data_pd_album, const OptMorePopup::ClickMode clickMode){
 
         if(clickMode == OptMorePopup::ClickMode::Share){//c220823
-                print_debug();
-                setUIShare();
-                qDebug() << "this->shareLink="<<this->shareLink;
+            print_debug();
+            setUIShare();
+            qDebug() << "this->shareLink="<<this->shareLink;
 
-            }
-            if(clickMode == OptMorePopup::ClickMode::Play_RightNow
+        }
+        if(clickMode == OptMorePopup::ClickMode::Play_RightNow
                 || clickMode == OptMorePopup::ClickMode::SubMenu_QueueAdd_Last
                 || clickMode == OptMorePopup::ClickMode::SubMenu_QueueAdd_Empty
                 || clickMode == OptMorePopup::ClickMode::SubMenu_QueueAdd_CurrNext
-        )
+                )
         {
             // Rose Play 요청
             ProcRoseAPI_withBugs *procRosePlay = new ProcRoseAPI_withBugs(this);
@@ -1690,12 +1798,12 @@ namespace bugs {
 
 
     /**
-     * @brief PD_AlbumItemData 를 활용하여 OptMorePopup 의 signal 을 처리한다.  [Overloading]
-     * @details 편의 제공을 위해 overloading.
-     * @param list_album
-     * @param index
-     * @param clickMode
-     */
+         * @brief PD_AlbumItemData 를 활용하여 OptMorePopup 의 signal 을 처리한다.  [Overloading]
+         * @details 편의 제공을 위해 overloading.
+         * @param list_album
+         * @param index
+         * @param clickMode
+         */
     void AbstractBugsSubWidget::proc_clicked_optMorePopup_fromPD_Album(QList<bugs::PD_AlbumItemData>* list_pd_album, const int index, const OptMorePopup::ClickMode clickMode){
         if(this->is_bugs_logined() == false){
             this->showNeededLoginBugs();               // Bugs 로그인 안된 경우
@@ -1717,23 +1825,23 @@ namespace bugs {
     // OptMorePopup 관련 처리 of My Album ---------------------------------------------------------------------------------------------
 
     /**
-     * @brief PD_AlbumItemData 를 활용하여 OptMorePopup 의 signal 을 처리한다.
-     * @param data_album
-     * @param clickMode
-     */
+         * @brief PD_AlbumItemData 를 활용하여 OptMorePopup 의 signal 을 처리한다.
+         * @param data_album
+         * @param clickMode
+         */
     void AbstractBugsSubWidget::proc_clicked_optMorePopup_fromMyAlbum(bugs::MyAlbumItemData& data_my_album, const OptMorePopup::ClickMode clickMode){
 
         if(clickMode == OptMorePopup::ClickMode::Share){//c220823
-                print_debug();
-                setUIShare();
-                qDebug() << "this->shareLink="<<this->shareLink;
+            print_debug();
+            setUIShare();
+            qDebug() << "this->shareLink="<<this->shareLink;
 
-            }
-            if(clickMode == OptMorePopup::ClickMode::Play_RightNow
+        }
+        if(clickMode == OptMorePopup::ClickMode::Play_RightNow
                 || clickMode == OptMorePopup::ClickMode::SubMenu_QueueAdd_Last
                 || clickMode == OptMorePopup::ClickMode::SubMenu_QueueAdd_Empty
                 || clickMode == OptMorePopup::ClickMode::SubMenu_QueueAdd_CurrNext
-        )
+                )
         {
             // Rose Play 요청
             ProcRoseAPI_withBugs *procRosePlay = new ProcRoseAPI_withBugs(this);
@@ -1745,12 +1853,12 @@ namespace bugs {
 
 
     /**
-     * @brief PD_AlbumItemData 를 활용하여 OptMorePopup 의 signal 을 처리한다.  [Overloading]
-     * @details 편의 제공을 위해 overloading.
-     * @param list_album
-     * @param index
-     * @param clickMode
-     */
+         * @brief PD_AlbumItemData 를 활용하여 OptMorePopup 의 signal 을 처리한다.  [Overloading]
+         * @details 편의 제공을 위해 overloading.
+         * @param list_album
+         * @param index
+         * @param clickMode
+         */
     void AbstractBugsSubWidget::proc_clicked_optMorePopup_fromMyAlbum(QList<bugs::MyAlbumItemData>* list_my_album, const int index, const OptMorePopup::ClickMode clickMode){
         if(this->is_bugs_logined() == false){
             this->showNeededLoginBugs();               // Bugs 로그인 안된 경우
@@ -1771,16 +1879,16 @@ namespace bugs {
     // OptMorePopup 관련 처리 of Video ---------------------------------------------------------------------------------------------
 
     /**
-     * @brief TrackItemData 를 활용하여 OptMorePopup 의 signal 을 처리한다.
-     * @param data_album
-     * @param clickMode
-     */
+         * @brief TrackItemData 를 활용하여 OptMorePopup 의 signal 을 처리한다.
+         * @param data_album
+         * @param clickMode
+         */
     void AbstractBugsSubWidget::proc_clicked_optMorePopup_fromVideo(bugs::VideoItemData& data_video, const QJsonArray& jsonArr_toPlayAll, const int index, const OptMorePopup::ClickMode clickMode){
 
         if(clickMode == OptMorePopup::ClickMode::Share){//c220823
-                print_debug();
-                setUIShare();
-                qDebug() << "this->shareLink="<<this->shareLink;
+            print_debug();
+            setUIShare();
+            qDebug() << "this->shareLink="<<this->shareLink;
 
         }
         if(clickMode == OptMorePopup::ClickMode::Play_RightNow
@@ -1792,7 +1900,7 @@ namespace bugs {
                 || clickMode == OptMorePopup::ClickMode::SubMenu_Play_FromHere_procEmpty
                 || clickMode == OptMorePopup::ClickMode::SubMenu_QueueAdd_FromHere_Last
 
-        )
+                )
         {
             // Rose Play 요청
             ProcRoseAPI_withBugs *procRosePlay = new ProcRoseAPI_withBugs(this);
@@ -1824,12 +1932,12 @@ namespace bugs {
 
 
     /**
-     * @brief TrackItemData 를 활용하여 OptMorePopup 의 signal 을 처리한다.  [Overloading]
-     * @details 편의 제공을 위해 overloading.
-     * @param list_album
-     * @param index
-     * @param clickMode
-     */
+         * @brief TrackItemData 를 활용하여 OptMorePopup 의 signal 을 처리한다.  [Overloading]
+         * @details 편의 제공을 위해 overloading.
+         * @param list_album
+         * @param index
+         * @param clickMode
+         */
     void AbstractBugsSubWidget::proc_clicked_optMorePopup_fromVideo(QList<bugs::VideoItemData>* list_track, const QJsonArray& jsonArr_toPlayAll, const int index, const OptMorePopup::ClickMode clickMode){
         if(this->is_bugs_logined() == false){
             this->showNeededLoginBugs();               // Bugs 로그인 안된 경우
@@ -1848,19 +1956,19 @@ namespace bugs {
     // OptMorePopup 관련 처리 of Track ---------------------------------------------------------------------------------------------
 
     /**
-     * @brief TrackItemData 를 활용하여 OptMorePopup 의 signal 을 처리한다.
-     * @param data_album
-     * @param clickMode
-     */
+         * @brief TrackItemData 를 활용하여 OptMorePopup 의 signal 을 처리한다.
+         * @param data_album
+         * @param clickMode
+         */
     void AbstractBugsSubWidget::proc_clicked_optMorePopup_fromTrack(bugs::TrackItemData& data_track, const QJsonArray& jsonArr_toPlayAll, const int index, const OptMorePopup::ClickMode clickMode){
 
         if(clickMode == OptMorePopup::ClickMode::Share){//c220823
-                print_debug();
-                setUIShare();
-                qDebug() << "this->shareLink="<<this->shareLink;
+            print_debug();
+            setUIShare();
+            qDebug() << "this->shareLink="<<this->shareLink;
 
-            }
-            if(clickMode == OptMorePopup::ClickMode::Play_RightNow
+        }
+        if(clickMode == OptMorePopup::ClickMode::Play_RightNow
                 || clickMode == OptMorePopup::ClickMode::SubMenu_QueueAdd_Last_OnlyOne
                 || clickMode == OptMorePopup::ClickMode::SubMenu_QueueAdd_Empty_OnlyOne
                 || clickMode == OptMorePopup::ClickMode::SubMenu_Play_RightNow_OnlyOne
@@ -1869,31 +1977,11 @@ namespace bugs {
                 || clickMode == OptMorePopup::ClickMode::SubMenu_Play_FromHere_procEmpty
                 || clickMode == OptMorePopup::ClickMode::SubMenu_QueueAdd_FromHere_Last
 
-        )
+                )
         {
-            if(clickMode == OptMorePopup::ClickMode::SubMenu_Play_FromHere
-                    || clickMode == OptMorePopup::ClickMode::SubMenu_Play_FromHere_procEmpty
-                    || clickMode == OptMorePopup::ClickMode::SubMenu_QueueAdd_FromHere_Last)
-            {
-                QJsonArray tmpJsonArr = QJsonArray();
-                for(int i = index; i < jsonArr_toPlayAll.size(); i++){
-                    QJsonObject tmpJsonObj = jsonArr_toPlayAll.at(i).toObject();
-                    tmpJsonArr.append(tmpJsonObj);
-                }
-
-                // Rose Play 요청
-                ProcRoseAPI_withBugs *procRosePlay = new ProcRoseAPI_withBugs(this);
-                procRosePlay->requestPlayRose_byTracks(tmpJsonArr, 0, clickMode);
-            }
-            else{
-                QJsonObject tmpJsonObj = jsonArr_toPlayAll.at(index).toObject();
-                QJsonArray tmpJsonArr = QJsonArray();
-                tmpJsonArr.append(tmpJsonObj);
-
-                // Rose Play 요청
-                ProcRoseAPI_withBugs *procRosePlay = new ProcRoseAPI_withBugs(this);
-                procRosePlay->requestPlayRose_byTracks(tmpJsonArr, 0, clickMode);
-            }
+            // Rose Play 요청
+            ProcRoseAPI_withBugs *procRosePlay = new ProcRoseAPI_withBugs(this);
+            procRosePlay->requestPlayRose_byTracks(jsonArr_toPlayAll, index, clickMode);
         }
         else if(clickMode == OptMorePopup::ClickMode::Go_Artist){
             // Artist DetailView
@@ -1953,12 +2041,12 @@ namespace bugs {
 
 
     /**
-     * @brief TrackItemData 를 활용하여 OptMorePopup 의 signal 을 처리한다.  [Overloading]
-     * @details 편의 제공을 위해 overloading.
-     * @param list_album
-     * @param index
-     * @param clickMode
-     */
+         * @brief TrackItemData 를 활용하여 OptMorePopup 의 signal 을 처리한다.  [Overloading]
+         * @details 편의 제공을 위해 overloading.
+         * @param list_album
+         * @param index
+         * @param clickMode
+         */
     void AbstractBugsSubWidget::proc_clicked_optMorePopup_fromTrack(QList<bugs::TrackItemData>* list_track, const QJsonArray& jsonArr_toPlayAll, const int index, const OptMorePopup::ClickMode clickMode){
         if(this->is_bugs_logined() == false){
             this->showNeededLoginBugs();               // Bugs 로그인 안된 경우
@@ -1979,10 +2067,10 @@ namespace bugs {
     // OptMorePopup 관련 처리 of Artist ---------------------------------------------------------------------------------------------
 
     /**
-     * @brief ArtistItemData 를 활용하여 OptMorePopup 의 signal 을 처리한다.
-     * @param data_album
-     * @param clickMode
-     */
+         * @brief ArtistItemData 를 활용하여 OptMorePopup 의 signal 을 처리한다.
+         * @param data_album
+         * @param clickMode
+         */
     void AbstractBugsSubWidget::proc_clicked_optMorePopup_fromArtist(bugs::ArtistItemData& data_artist, const OptMorePopup::ClickMode clickMode){
 
         if(clickMode == OptMorePopup::ClickMode::Go_Artist){
@@ -2002,12 +2090,12 @@ namespace bugs {
 
 
     /**
-     * @brief ArtistItemData 를 활용하여 OptMorePopup 의 signal 을 처리한다.  [Overloading]
-     * @details 편의 제공을 위해 overloading.
-     * @param list_album
-     * @param index
-     * @param clickMode
-     */
+         * @brief ArtistItemData 를 활용하여 OptMorePopup 의 signal 을 처리한다.  [Overloading]
+         * @details 편의 제공을 위해 overloading.
+         * @param list_album
+         * @param index
+         * @param clickMode
+         */
     void AbstractBugsSubWidget::proc_clicked_optMorePopup_fromArtist(QList<bugs::ArtistItemData>* list_artist, const int index, const OptMorePopup::ClickMode clickMode){
         if(this->is_bugs_logined() == false){
             this->showNeededLoginBugs();               // Bugs 로그인 안된 경우
@@ -2031,16 +2119,16 @@ namespace bugs {
 
 
     /**
-     * @brief AbstractBugsSubWidget::proc_clicked_imageDetailInfo_fromAlbum
-     * @param data_album - 현재는 id만 사용하지만, 차후 확장 고려위해 AlbumItemData 을 받도록함
-     * @param btnClickMode
-     */
+         * @brief AbstractBugsSubWidget::proc_clicked_imageDetailInfo_fromAlbum
+         * @param data_album - 현재는 id만 사용하지만, 차후 확장 고려위해 AlbumItemData 을 받도록함
+         * @param btnClickMode
+         */
     void AbstractBugsSubWidget::proc_clicked_imageDetailInfo_fromAlbum(bugs::AlbumItemData& data_album, const QJsonArray p_jsonArr_toPlay, const int section, AbstractImageDetailInfo::BtnClickMode btnClickMode){
         // 데이터 유효할 때에만
         if(data_album.album_id > 0){
             if(btnClickMode == AbstractImageDetailInfo::BtnClickMode::Favorite_toAdd
                     || btnClickMode == AbstractImageDetailInfo::BtnClickMode::Favorite_toDelete
-            ){
+                    ){
 
                 // 즐겨찾기 추가/삭제 - Album
 
@@ -2092,18 +2180,18 @@ namespace bugs {
 
 
     /**
-     * @brief AbstractBugsSubWidget::proc_clicked_imageDetailInfo_fromPDAlbum
-     * @param data_pd_album
-     * @param p_jsonArr_toPlay
-     * @param section
-     * @param btnClickMode
-     */
+         * @brief AbstractBugsSubWidget::proc_clicked_imageDetailInfo_fromPDAlbum
+         * @param data_pd_album
+         * @param p_jsonArr_toPlay
+         * @param section
+         * @param btnClickMode
+         */
     void AbstractBugsSubWidget::proc_clicked_imageDetailInfo_fromPDAlbum(bugs::PD_AlbumItemData& data_pd_album, const QJsonArray p_jsonArr_toPlay, const int section, AbstractImageDetailInfo::BtnClickMode btnClickMode){
         // 데이터 유효할 때에만
         if(data_pd_album.es_album_id > 0){
             if(btnClickMode == AbstractImageDetailInfo::BtnClickMode::Favorite_toAdd
                     || btnClickMode == AbstractImageDetailInfo::BtnClickMode::Favorite_toDelete
-            ){
+                    ){
 
                 // 즐겨찾기 추가/삭제 - Album
 
@@ -2153,18 +2241,18 @@ namespace bugs {
 
 
     /**
-     * @brief AbstractBugsSubWidget::proc_clicked_imageDetailInfo_fromArtist
-     * @param data_artist
-     * @param p_jsonArr_toPlay
-     * @param section
-     * @param btnClickMode
-     */
+         * @brief AbstractBugsSubWidget::proc_clicked_imageDetailInfo_fromArtist
+         * @param data_artist
+         * @param p_jsonArr_toPlay
+         * @param section
+         * @param btnClickMode
+         */
     void AbstractBugsSubWidget::proc_clicked_imageDetailInfo_fromArtist(bugs::ArtistItemData& data_artist, const QJsonArray p_jsonArr_toPlay, const int section, AbstractImageDetailInfo::BtnClickMode btnClickMode){
         // 데이터 유효할 때에만
         if(data_artist.artist_id > 0){
             if(btnClickMode == AbstractImageDetailInfo::BtnClickMode::Favorite_toAdd
                     || btnClickMode == AbstractImageDetailInfo::BtnClickMode::Favorite_toDelete
-            ){
+                    ){
 
                 // 즐겨찾기 추가/삭제 - Artist
 
@@ -2206,7 +2294,7 @@ namespace bugs {
         if(data_artist.artist_id > 0){
             if(btnClickMode == AbstractImageDetailContents_RHV::BtnClickMode::Favorite_toAdd
                     || btnClickMode == AbstractImageDetailContents_RHV::BtnClickMode::Favorite_toDelete
-            ){
+                    ){
 
                 // 즐겨찾기 추가/삭제 - Artist
 
@@ -2254,33 +2342,41 @@ namespace bugs {
     //-----------------------------------------------------------------------------------------------------------------------
 
     /**
-     * @brief AbstractBugsSubWidget::movePage_track_allView
-     * @param data_pageInfo
-     */
+         * @brief AbstractBugsSubWidget::movePage_track_allView
+         * @param data_pageInfo
+         */
     void AbstractBugsSubWidget::movePage_track_allView(bugs::PageInfo_TrackAllView& data_pageInfo){
         QJsonObject jsonObj_move = ConvertData_forBugs::getObjectJson_pageInfo_trackAllView(data_pageInfo);
-        jsonObj_move.insert(KEY_PAGE_CODE, PAGECODE_BUGS___TRACK_ALL_VIEW);
+        if(data_pageInfo.api_subPath == "mymusic/track/listened/most"){
+            jsonObj_move.insert(KEY_PAGE_CODE, PAGECODE_BUGS___MOST_TRACK_ALL_VIEW);
+        }
+        else{
+            jsonObj_move.insert(KEY_PAGE_CODE, PAGECODE_BUGS___TRACK_ALL_VIEW);
+        }
+
+        print_debug();ContentLoadingwaitingMsgShow("BugsHome::setUIControl_appendWidget");
         emit this->signal_clickedMovePage(jsonObj_move);
     }
 
 
 
     /**
-     * @brief movePage_pd_album_allView
-     * @param data_pageInfo
-     */
+         * @brief movePage_pd_album_allView
+         * @param data_pageInfo
+         */
     void AbstractBugsSubWidget::movePage_pd_album_allView(bugs::PageInfo_PDAlbumAllView& data_pageInfo){
         QJsonObject jsonObj_move = ConvertData_forBugs::getObjectJson_pageInfo_pd_albumAllView(data_pageInfo);
         jsonObj_move.insert(KEY_PAGE_CODE, PAGECODE_BUGS___PD_ALBUM_ALL_VIEW);
+        print_debug();ContentLoadingwaitingMsgShow("BugsHome::setUIControl_appendWidget");
         emit this->signal_clickedMovePage(jsonObj_move);
     }
 
 
 
     /**
-     * @brief AbstractTidalSubWidget::movePage_artist_detailView
-     * @param artist_id
-     */
+         * @brief AbstractTidalSubWidget::movePage_artist_detailView
+         * @param artist_id
+         */
     void AbstractBugsSubWidget::movePage_artist_detailView(const QList<int>& list_artist_id, const QList<QString>& list_artist_name){
         Q_UNUSED(list_artist_name);
         if(list_artist_id.length() > 0){
@@ -2291,9 +2387,9 @@ namespace bugs {
 
 
     /**
-     * @brief AbstractBugsSubWidget::movePage_artist_detailView
-     * @param artist_id
-     */
+         * @brief AbstractBugsSubWidget::movePage_artist_detailView
+         * @param artist_id
+         */
     void AbstractBugsSubWidget::movePage_artist_detailView(const int artist_id){
         if(artist_id > 0){
             // Artist Detail 페이지 진입 (id 만 넣어서 진입)
@@ -2302,15 +2398,16 @@ namespace bugs {
 
             QJsonObject jsonObj_move = ConvertData_forBugs::getObjectJson_artistData(tmp_data_artist);
             jsonObj_move.insert(KEY_PAGE_CODE, PAGECODE_BUGS___ARTIST_DETAIL);
+            print_debug();ContentLoadingwaitingMsgShow("BugsHome::setUIControl_appendWidget");
             emit this->signal_clickedMovePage(jsonObj_move);
         }
     }
 
 
     /**
-     * @brief Album ID로, Album Detail View 페이지 이동을 위한 처리
-     * @param album_id
-     */
+         * @brief Album ID로, Album Detail View 페이지 이동을 위한 처리
+         * @param album_id
+         */
     void AbstractBugsSubWidget::movePage_album_detailView(const int album_id){
         if(album_id > 0){
             // Album Detail 페이지 진입 (id 만 넣어서 진입)
@@ -2319,15 +2416,16 @@ namespace bugs {
 
             QJsonObject jsonObj_move = ConvertData_forBugs::getObjectJson_albumData(tmp_data_album);
             jsonObj_move.insert(KEY_PAGE_CODE, PAGECODE_BUGS___ALBUM_DETAIL);
+            print_debug();ContentLoadingwaitingMsgShow("BugsHome::setUIControl_appendWidget");
             emit this->signal_clickedMovePage(jsonObj_move);
         }
     }
 
 
     /**
-     * @brief PD's Album ID로, PD's Album Detail View 페이지 이동을 위한 처리
-     * @param es_album_id
-     */
+         * @brief PD's Album ID로, PD's Album Detail View 페이지 이동을 위한 처리
+         * @param es_album_id
+         */
     void AbstractBugsSubWidget::movePage_pd_album_detailView(const int es_album_id){
         if(es_album_id > 0){
             // PD Album Detail 페이지 진입 (id 만 넣어서 진입)
@@ -2336,20 +2434,22 @@ namespace bugs {
 
             QJsonObject jsonObj_move = ConvertData_forBugs::getObjectJson_pd_albumData(tmp_data_pd_album);
             jsonObj_move.insert(KEY_PAGE_CODE, PAGECODE_BUGS___PD_ALBUM_DETAIL);
+            print_debug();ContentLoadingwaitingMsgShow("BugsHome::setUIControl_appendWidget");
             emit this->signal_clickedMovePage(jsonObj_move);
         }
     }
 
 
     /**
-     * @brief AbstractBugsSubWidget::movePage_my_album_detailView
-     * @param data_my_album
-     */
+         * @brief AbstractBugsSubWidget::movePage_my_album_detailView
+         * @param data_my_album
+         */
     void AbstractBugsSubWidget::movePage_my_album_detailView(bugs::MyAlbumItemData& data_my_album){
         if(data_my_album.playlist_id > 0){
             // My Album Detail 페이지 진입
             QJsonObject jsonObj_move = ConvertData_forBugs::getObjectJson_my_albumData(data_my_album);
             jsonObj_move.insert(KEY_PAGE_CODE, PAGECODE_BUGS___MY_ALBUM_DETAIL);
+            print_debug();ContentLoadingwaitingMsgShow("BugsHome::setUIControl_appendWidget");
             emit this->signal_clickedMovePage(jsonObj_move);
         }
     }
@@ -2357,25 +2457,34 @@ namespace bugs {
 
 
     /**
-     * @brief Video 영상 목록 페이지로 이동한다. (Track 과 관련된 영상목록)
-     * @param track_id
-     * @param track_title
-     */
+         * @brief Video 영상 목록 페이지로 이동한다. (Track 과 관련된 영상목록)
+         * @param track_id
+         * @param track_title
+         */
     void AbstractBugsSubWidget::movePage_video_allView_ofTrack(bugs::TrackItemData& data_track){
         if(data_track.track_id > 0){
             QJsonObject jsonObj_move = ConvertData_forBugs::getObjectJson_trackData(data_track);
             jsonObj_move.insert(KEY_PAGE_CODE, PAGECODE_BUGS___VIDEO_ALL_VIEW___OF_TRACK);
+            print_debug();ContentLoadingwaitingMsgShow("BugsHome::setUIControl_appendWidget");
             emit this->signal_clickedMovePage(jsonObj_move);
         }
+    }
+
+
+    void AbstractBugsSubWidget::movePage_rose_add_playlist(const QJsonObject& data){
+
+        QJsonObject jsonObj_move = data;
+        jsonObj_move.insert(KEY_PAGE_CODE, PAGECODE_BUGS__MY_PLAYLIST_ADD);
+        emit this->signal_clickedMovePage(jsonObj_move);
     }
 
 
     // MARK : about Filter Option Box -----------------------------------------------------------------------------------------------------
 
     /**
-     * @brief My Collection 에서 사용하는 Filter Option Data 목록 반환함
-     * @return
-     */
+         * @brief My Collection 에서 사용하는 Filter Option Data 목록 반환함
+         * @return
+         */
     QList<bugs::FilterOptionData> AbstractBugsSubWidget::get_list_filterOptData_forMyCollection(){
 
         QList<bugs::FilterOptionData> list_output;

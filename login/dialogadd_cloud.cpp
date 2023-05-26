@@ -74,7 +74,7 @@ void DialogAdd_Cloud::setUIControl(){
     edit_name->setMaxLength(30);
     edit_name->setPlaceholderText("Remote name");
     edit_name->setFixedHeight(50);
-    edit_name->setTextMargins(23,14,23,14);
+    edit_name->setTextMargins(23,10,23,10);
     edit_name->setStyleSheet(tmp_styleLineEdit);
 
     // 호스트 입력
@@ -85,7 +85,7 @@ void DialogAdd_Cloud::setUIControl(){
         edit_host->setText("http://");
     }
     edit_host->setFixedSize(410,50);
-    edit_host->setTextMargins(23,14,23,14);
+    edit_host->setTextMargins(23,10,23,10);
     edit_host->setStyleSheet(tmp_styleLineEdit);
 
     // 포트 입력
@@ -112,14 +112,14 @@ void DialogAdd_Cloud::setUIControl(){
     edit_userName->setMaxLength(50);
     edit_userName->setPlaceholderText(dlgType==DialogType::ADD_FTP ? "FTP Username" : "User name");
     edit_userName->setFixedHeight(50);
-    edit_userName->setTextMargins(23,14,23,14);
+    edit_userName->setTextMargins(23,10,23,10);
     edit_userName->setStyleSheet(tmp_styleLineEdit);
 
     edit_pw = new QLineEdit;
     edit_pw->setMaxLength(30);
     edit_pw->setPlaceholderText(dlgType==DialogType::ADD_FTP ? "FTP Password" : "Password");
     edit_pw->setFixedHeight(50);
-    edit_pw->setTextMargins(23,14,23,14);
+    edit_pw->setTextMargins(23,10,23,10);
     edit_pw->setEchoMode(QLineEdit::Password);
     edit_pw->setStyleSheet(tmp_styleLineEdit);
 
@@ -129,11 +129,13 @@ void DialogAdd_Cloud::setUIControl(){
     btn_ok->setCursor(Qt::PointingHandCursor);
     btn_ok->setStyleSheet("font-size:18px;color:#FFFFFF;background-color:#B18658;border-radius:20px;");
     btn_ok->setFixedSize(140,40);
+
     QPushButton *btn_cancel = new QPushButton;
     btn_cancel->setText(tr("Cancel"));//btn_cancel->setText(tr("취소"));
     btn_cancel->setCursor(Qt::PointingHandCursor);
     btn_cancel->setStyleSheet("font-size:18px;color:#CCCCCC;border:1px solid #777777;border-radius:20px;");
     btn_cancel->setFixedSize(140,40);
+
     QHBoxLayout *hl_btn = new QHBoxLayout();
     hl_btn->setContentsMargins(0,0,0,0);
     hl_btn->setSpacing(0);
@@ -164,6 +166,7 @@ void DialogAdd_Cloud::setUIControl(){
     widget_total->setObjectName("widget_total");
     widget_total->setLayout(box_total);
     widget_total->setStyleSheet("#widget_total { background-color:#333333;border-radius:4px;border:1px solid #4D4D4D; }");
+
     QVBoxLayout *vboxlayout = new QVBoxLayout();
     vboxlayout->setContentsMargins(0,0,0,0);
     vboxlayout->setSpacing(0);

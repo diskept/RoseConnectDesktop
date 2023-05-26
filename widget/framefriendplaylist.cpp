@@ -400,23 +400,43 @@ void FrameFriendPlayList::paintEvent(QPaintEvent *event){
                 this->lb_title->setGeometry(0, (this->SPACE_LABELS * 2), all_width, (this->LABEL_HEIGHT * 2));
                 this->lb_user->setGeometry(0, (this->LABEL_HEIGHT * 2) + (this->SPACE_LABELS * 3), all_width, this->LABEL_HEIGHT);
                 this->lb_title->setText(GSCommon::getTextCutFromLabelWidth(dataPlayList->getTitle(), all_width * 2, lb_title->font()));//cheon-210708-album
+                if(this->lb_title->text().contains("…")){
+                    this->lb_title->setToolTip(dataPlayList->getTitle());
+                    this->lb_title->setToolTipDuration(2000);
+                }
 
                 tmp_wordwrap->clear();
                 tmp_wordwrap->setStyleSheet("font-size:16px; color:#FFFFFF;");
                 tmp_wordwrap->setWordWrap(true);
                 tmp_wordwrap->setText(GSCommon::getTextCutFromLabelWidth(dataPlayList->getTitle(), (all_width * 2)-30, this->lb_title->font()));
+                if(tmp_wordwrap->text().contains("…")){
+                    tmp_wordwrap->setToolTip(dataPlayList->getTitle());
+                    tmp_wordwrap->setToolTipDuration(2000);
+                }
 
                 if(tmp_wordwrap->sizeHint().height() > this->LABEL_HEIGHT * 2){
                     this->lb_title->setText(GSCommon::getTextCutFromLabelWidth(dataPlayList->getTitle(), (all_width * 2)-80, this->lb_title->font()));
+                    if(this->lb_title->text().contains("…")){
+                        this->lb_title->setToolTip(dataPlayList->getTitle());
+                        this->lb_title->setToolTipDuration(2000);
+                    }
                 }
                 else{
                     this->lb_title->setText(GSCommon::getTextCutFromLabelWidth(dataPlayList->getTitle(), (all_width * 2)-30, this->lb_title->font()));
+                    if(this->lb_title->text().contains("…")){
+                        this->lb_title->setToolTip(dataPlayList->getTitle());
+                        this->lb_title->setToolTipDuration(2000);
+                    }
                 }
             }
             else{
                 this->lb_title->setGeometry(0, (this->SPACE_LABELS * 2), all_width, this->LABEL_HEIGHT);
                 this->lb_user->setGeometry(0, (this->LABEL_HEIGHT * 2) + (this->SPACE_LABELS * 3), all_width, this->LABEL_HEIGHT);
                 this->lb_title->setText(GSCommon::getTextCutFromLabelWidth(dataPlayList->getTitle(), all_width, lb_title->font()));//cheon-210708-album
+                if(this->lb_title->text().contains("…")){
+                    this->lb_title->setToolTip(dataPlayList->getTitle());
+                    this->lb_title->setToolTipDuration(2000);
+                }
             }
         }
         else if(tmp_wordwrap->sizeHint().width() == all_width){
@@ -428,8 +448,16 @@ void FrameFriendPlayList::paintEvent(QPaintEvent *event){
             this->lb_title->setGeometry(0, (this->SPACE_LABELS * 2), all_width, this->LABEL_HEIGHT);
             this->lb_user->setGeometry(0, this->LABEL_HEIGHT + (this->SPACE_LABELS * 3), all_width, this->LABEL_HEIGHT);
             this->lb_title->setText(GSCommon::getTextCutFromLabelWidth(dataPlayList->getTitle(), all_width, lb_title->font()));//cheon-210708-album
+            if(this->lb_title->text().contains("…")){
+                this->lb_title->setToolTip(dataPlayList->getTitle());
+                this->lb_title->setToolTipDuration(2000);
+            }
         }
 
         this->lb_user->setText(GSCommon::getTextCutFromLabelWidth(dataPlayList->getUsername(), all_width, lb_user->font()));
+        if(this->lb_user->text().contains("…")){
+            this->lb_user->setToolTip(dataPlayList->getUsername());
+            this->lb_user->setToolTipDuration(2000);
+        }
     }
 }

@@ -43,6 +43,8 @@ namespace rosetube {
     protected:
         void proc_wheelEvent_to_getMoreData() override;
 
+        //void resizeEvent(QResizeEvent *event) override;
+
     private slots:
         void slot_fileDownload_bannerImage();
         void slot_fileDownload_avatarImage();

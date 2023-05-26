@@ -83,12 +83,14 @@ namespace radio {
         QWidget *widget_country;
         QWidget *widget_combobox;
 
-        QWidget *widget_radio;
         FlowLayout *flowLayout_radio;
 
         QList<QString> favorUrlList;
         QList<DataRadio*> dataList;
         QList<QWidget*> *listConntry;
+
+        int radio_widget_width = 0;
+        int radio_widget_margin = 0;
     };
 };
 

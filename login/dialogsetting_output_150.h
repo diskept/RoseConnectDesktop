@@ -60,6 +60,11 @@ private slots:
 
 private:
 
+    QDialog *loding_ani_dialog = nullptr;
+    void loding_ani_init();
+    void loding_ani_show();
+    void loding_ani_hide();
+
     QComboBox *comboBoxOutputDSD;
     QComboBox *comboBoxOutputPreoutLevel;
     QComboBox *comboBoxHOI, *comboBoxFIR, *comboBoxPhaseInvert;//c220708

@@ -1,9 +1,12 @@
-#include "framemusicgenre.h"
+#include "widget/framemusicgenre.h"
+
 #include "common/global.h"
 #include "common/sqlitehelper.h"
+
 #include "widget/optionpopup.h"
 
 #include <QJsonArray>
+
 
 FrameMusicGenre::FrameMusicGenre(QWidget *parent)
     : FrameWidget(Type::MusicGenre, parent)
@@ -12,14 +15,17 @@ FrameMusicGenre::FrameMusicGenre(QWidget *parent)
     setUIControl();
 }
 
+
 /**
  * @brief FrameAlbum::setInit : 초기 세팅
  */
 void FrameMusicGenre::setInit(){
+
     linker = Linker::getInstance();
     data = new DataMusicGenre(this);
     dataPopupList = new QList<DataPopup*>();
 }
+
 
 /**
  * @brief FrameAlbum::setUIControl : UI 세팅
@@ -36,34 +42,33 @@ void FrameMusicGenre::setUIControl(){
     this->lb_img->setHidden_favorite(true);
 
     img_width = this->lb_img->sizeHint().width();
-    base_height = this->LABEL_HEIGHT * 3 + this->SPACE_LABELS * 3;
+    base_height = this->LABEL_HEIGHT * 3 + this->SPACE_LABELS;
     label_base->setFixedSize(img_width, base_height);
 
     this->lb_genre = new QLabel(label_base);
     this->lb_genre->setWordWrap(true);
     this->lb_genre->setTextInteractionFlags(Qt::TextSelectableByMouse);//cheon210714-mousecopy
-    this->lb_genre->setStyleSheet("font-size:16px;color:#FFFFFF;");
-    this->lb_genre->setFixedWidth(IMG_WIDTH);
-    this->lb_genre->setGeometry(0, (this->SPACE_LABELS * 2), img_width, this->LABEL_HEIGHT);
+    this->lb_genre->setStyleSheet("font-size:16px;font-weight: normal;font-style: normal;line-height: 1.25;text-align: left; color:#FFFFFF;");
+    this->lb_genre->setGeometry(0, 0, img_width, (this->LABEL_HEIGHT * 2));
 
     this->lb_numSongs = new QLabel(label_base);
-    this->lb_numSongs->setStyleSheet("font-size:16px;color:#999999;");
-    this->lb_numSongs->setFixedWidth(IMG_WIDTH);
-    this->lb_numSongs->setGeometry(0, this->LABEL_HEIGHT + (this->SPACE_LABELS * 3), img_width, this->LABEL_HEIGHT);
+    this->lb_numSongs->setStyleSheet("font-size:16px; font-weight: 300;font-style: normal;line-height: 1.88;text-align: left; color: #999999;");
+    this->lb_numSongs->setGeometry(0, (this->LABEL_HEIGHT * 2) + this->SPACE_LABELS, img_width, this->LABEL_HEIGHT);
 
     QVBoxLayout *boxLayout = new QVBoxLayout;
-    boxLayout->setContentsMargins(0,0,0,0);
+    boxLayout->setContentsMargins(0, 0, this->MARGIN, 0);
     boxLayout->setSpacing(0);
-    boxLayout->addWidget(lb_img);
-    //boxLayout->addWidget(lb_genre);
-    //boxLayout->addWidget(lb_numSongs);
+    boxLayout->addWidget(this->lb_img);
+    boxLayout->addSpacing(10);
     boxLayout->addWidget(label_base);
+    boxLayout->setAlignment(Qt::AlignTop);
 
     this->setLayout(boxLayout);
 
     connect(lb_img, SIGNAL(clickedHoverItem(QString)), SLOT(slot_clickedHover(QString)));
     connect(lb_img, SIGNAL(clickedItem()), SLOT(slot_clickedItem()));
 }
+
 
 /**
  * @brief FrameAlbum::setData : [override] 데이터 세팅
@@ -74,11 +79,13 @@ void FrameMusicGenre::setData(const QJsonObject &p_jsonObject){
     data->setData(p_jsonObject);
 }
 
+
 /**
  * @brief FrameAlbum::setPopupData : 옵션 팝업용 데이터 클래스 세팅
  * @details DataAlbum 세팅 이후에 호출
  */
 void FrameMusicGenre::setPopupData(){
+
     if(dataPopupList->size()==0){
         SqliteHelper *sqlite = new SqliteHelper(this);
         QSqlError err = sqlite->addConnectionRose();
@@ -105,6 +112,7 @@ void FrameMusicGenre::setPopupData(){
     }
 }
 
+
 /**
  * @brief FrameWidget::getDataForPopup : [override] 데이터 반환
  * @return
@@ -129,17 +137,20 @@ QJsonObject FrameMusicGenre::getDataForPopup(){
     return jsonData;
 }
 
+
 /**
  * @brief FrameMusicGenre::getDataForAddInPlaylist : 플레이리스트 담기를 위한 데이터 구성 반환
  * @return
  */
 QJsonArray FrameMusicGenre::getDataForAddInPlaylist(){
+
     QJsonArray tmp_jsonArrTrack;
     for(int i = 0; i < dataPopupList->size(); i++){
         tmp_jsonArrTrack.append(convertDataPopupToJsonObject(dataPopupList->at(i)));
     }
     return tmp_jsonArrTrack;
 }
+
 
 /**
  * @brief FrameMusicGenre::convertDataPopupToJsonObject : DataPopup 데이터를 QJsonObject 변환
@@ -148,6 +159,7 @@ QJsonArray FrameMusicGenre::getDataForAddInPlaylist(){
  * @return QJsonObject
  */
 QJsonObject FrameMusicGenre::convertDataPopupToJsonObject(DataPopup *p_dataPopup){
+
     QJsonObject jsonTrack;
 
     // 앨범
@@ -186,13 +198,15 @@ QJsonObject FrameMusicGenre::convertDataPopupToJsonObject(DataPopup *p_dataPopup
     return jsonTrack;
 }
 
+
 /**
  * @brief FrameWidget::setHover : [override] 호버 세팅
  */
 void FrameMusicGenre::setHover(){
 
-    lb_img->setHover();
+    lb_img->setHover3();
 }
+
 
 /**
  * @brief FrameRecentAlbum::slot_clickedHover : [슬롯] Hover 아이템 클릭
@@ -219,6 +233,7 @@ void FrameMusicGenre::slot_clickedHover(const QString &p_code){
     emit linker->signal_clickedHoverItem(p_code, jsonForPopup);
 }
 
+
 /**
  * @brief FrameMusicArtist::slot_clickedItem : [슬롯] 아이템 클릭
  * @details 앨범 상세보기 페이지로 이동
@@ -227,6 +242,7 @@ void FrameMusicGenre::slot_clickedHover(const QString &p_code){
  * @note hover item(하트/재생/더보기)를 제외한 영역 클릭
  */
 void FrameMusicGenre::slot_clickedItem(){
+
     setPopupData();
 
     QJsonObject jsonData = getDataForPopup();
@@ -235,53 +251,83 @@ void FrameMusicGenre::slot_clickedItem(){
     emit linker->signal_clickedMovePage(jsonData);
 }
 
+
 void FrameMusicGenre::paintEvent(QPaintEvent *event){
 
     FrameWidget::paintEvent(event);
 
-    if(flagNeedDraw){
+    if(flagNeedDraw == true){
         flagNeedDraw = false;
 
-        lb_img->setImageUrl(QString("http://%1:%2%3").arg(global.device.getDeviceIP()).arg(global.port_img).arg(data->getAlbum_art()));
+        int all_width = 0;
 
-        int all_width = IMG_WIDTH;
+        this->lb_img->setImageUrl(QString("http://%1:%2%3").arg(global.device.getDeviceIP()).arg(global.port_img).arg(data->getAlbum_art()));
+
+        all_width = IMG_WIDTH;
+
+        QString title = data->getName();
+
         QLabel *tmp_wordwrap = new QLabel();
-        tmp_wordwrap->setText(data->getName());
+        tmp_wordwrap->setStyleSheet("font-size:16px; color:#FFFFFF;");
+        tmp_wordwrap->setText(title);
 
-        if(tmp_wordwrap->sizeHint().width() > all_width){
-            if(data->getName().contains(" ")){
-                this->lb_genre->setGeometry(0, (this->SPACE_LABELS * 2), all_width, (this->LABEL_HEIGHT * 2));
-                this->lb_numSongs->setGeometry(0, (this->LABEL_HEIGHT * 2) + (this->SPACE_LABELS * 3), all_width, this->LABEL_HEIGHT);
+        int title_width = tmp_wordwrap->sizeHint().width();
 
-                tmp_wordwrap->clear();
-                tmp_wordwrap->setStyleSheet("font-size:16px; color:#FFFFFF;");
-                tmp_wordwrap->setWordWrap(true);
-                tmp_wordwrap->setText(GSCommon::getTextCutFromLabelWidth(data->getName(), (all_width * 2)-30, this->lb_genre->font()));
+        if(title_width > all_width){
 
-                if(tmp_wordwrap->sizeHint().height() > this->LABEL_HEIGHT * 2){
-                    this->lb_genre->setText(GSCommon::getTextCutFromLabelWidth(data->getName(), (all_width * 2)-80, this->lb_genre->font()));
-                }
-                else{
-                    this->lb_genre->setText(GSCommon::getTextCutFromLabelWidth(data->getName(), (all_width * 2)-30, this->lb_genre->font()));
+            QString tmp_split = "";
+            QStringList splitToken;
+            QString tmp_title_line1 = "";
+
+            tmp_split = title;
+            splitToken = tmp_split.split(" ");
+
+            tmp_wordwrap->setText("");
+            int i = 0;
+            if(splitToken.size() > 1){
+
+                for(i = 0; i < splitToken.count(); i++){
+                    if(i == 0){
+                        tmp_title_line1 = splitToken.at(i);
+                    }
+                    else{
+                        tmp_title_line1 += " " + splitToken.at(i);
+                    }
+                    tmp_wordwrap->setText(tmp_title_line1);
+
+                    if(tmp_wordwrap->sizeHint().width() > all_width){
+                        tmp_wordwrap->setText("");
+                        tmp_title_line1.replace(splitToken.at(i), "");
+                        break;
+                    }
                 }
             }
-            else{
-                this->lb_genre->setGeometry(0, (this->SPACE_LABELS * 2), all_width, this->LABEL_HEIGHT);
-                this->lb_numSongs->setGeometry(0, this->LABEL_HEIGHT + (this->SPACE_LABELS * 3), all_width, this->LABEL_HEIGHT);
-                this->lb_genre->setText(GSCommon::getTextCutFromLabelWidth(data->getName(), all_width, lb_genre->font()));//cheon-210708-album
+
+            tmp_wordwrap->setText("");
+            tmp_wordwrap->setText(tmp_title_line1);
+
+            title_width = tmp_wordwrap->sizeHint().width() + all_width;
+
+            this->lb_genre->setGeometry(0, 0, all_width, this->LABEL_HEIGHT * 2);
+            this->lb_genre->setText(GSCommon::getTextCutFromLabelWidth(title, title_width, this->lb_genre->font()));
+            if(this->lb_genre->text().contains("…")){
+                this->lb_genre->setToolTip(title);
+                this->lb_genre->setToolTipDuration(2000);
             }
-        }
-        else if(tmp_wordwrap->sizeHint().width() == all_width){
-            this->lb_genre->setGeometry(0, (this->SPACE_LABELS * 2), all_width, this->LABEL_HEIGHT);
-            this->lb_numSongs->setGeometry(0, this->LABEL_HEIGHT + (this->SPACE_LABELS * 3), all_width, this->LABEL_HEIGHT);
-            this->lb_genre->setText(data->getName());
+
+            this->lb_numSongs->setGeometry(0, (this->LABEL_HEIGHT * 2) + this->SPACE_LABELS, all_width, this->LABEL_HEIGHT);
         }
         else{
-            this->lb_genre->setGeometry(0, (this->SPACE_LABELS * 2), all_width, this->LABEL_HEIGHT);
-            this->lb_numSongs->setGeometry(0, this->LABEL_HEIGHT + (this->SPACE_LABELS * 3), all_width, this->LABEL_HEIGHT);
-            this->lb_genre->setText(GSCommon::getTextCutFromLabelWidth(data->getName(), all_width, lb_genre->font()));
+            this->lb_genre->setGeometry(0, 0, all_width, this->LABEL_HEIGHT);
+            this->lb_genre->setText(title);
+
+            this->lb_numSongs->setGeometry(0, this->LABEL_HEIGHT + this->SPACE_LABELS, all_width, this->LABEL_HEIGHT);
         }
 
         this->lb_numSongs->setText(GSCommon::getTextCutFromLabelWidth(QString("%1 %2").arg(data->getNumber_of_album()).arg(QString(tr("Album"))), all_width, lb_numSongs->font()));
+        if(this->lb_numSongs->text().contains("…")){
+            this->lb_numSongs->setToolTip(QString("%1 %2").arg(data->getNumber_of_album()).arg(QString(tr("Album"))));
+            this->lb_numSongs->setToolTipDuration(2000);
+        }
     }
 }

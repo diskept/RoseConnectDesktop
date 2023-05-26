@@ -139,6 +139,7 @@ private:
     QJsonObject jsonData_other;             ///< 로즈튜브 플레이리스트(마이/친구)를 위한 데이터 객체
     QJsonObject jsonData_other_rosetubeSub; ///< 로즈튜브 구독정보 위한 데이터 객체
     QString playurl = "";                   ///< 로즈튜브의 별정보 GET 을 위한 값
+    QString duration = "";
     QJsonArray jsonData_other_music_add_playlist; ///< 음악-플레이리스트 담기를 위한 값
     // <<<<<<<<<< DATA <<<<<<<<<<<
 

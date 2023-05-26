@@ -35,6 +35,8 @@ namespace tidal {
      */
     TidalArtistDetail::TidalArtistDetail(QWidget *parent) : AbstractTidalSubWidget(MainUIType::VerticalScroll_filter, parent) {
 
+        this->linker = Linker::getInstance();
+
         // data
         this->list_track = new QList<tidal::TrackItemData>();
         this->list_album = new QList<tidal::AlbumItemData>();
@@ -95,7 +97,7 @@ namespace tidal {
 
             this->data_artist = tmp_data_artist;
 
-            ContentLoadingwaitingMsgShow(tr("Content is being loaded. Please wait."));
+            print_debug();ContentLoadingwaitingMsgShow(tr("Content is being loaded. Please wait."));
 
             if(this->data_artist.name.isEmpty()){
                 // Artist 기본 정보를 가져와야 하는 경우임. (id만 전달받은 상태)
@@ -107,6 +109,11 @@ namespace tidal {
                 ProcCommon *proc_bio = new ProcCommon(this);
                 connect(proc_bio, &ProcCommon::completeReq_artist_bioText, this, &TidalArtistDetail::slot_applyResult_artist_bioText);
                 proc_bio->request_tidal_get_artist_bioText(this->data_artist.id);
+
+                // request HTTP API - get favorite for Rose Server
+                roseHome::ProcCommon *proc_favCheck_artist = new roseHome::ProcCommon(this);
+                connect(proc_favCheck_artist, &roseHome::ProcCommon::completeCheck_rating_artist, this, &TidalArtistDetail::slot_applyResult_checkRating_artist);
+                proc_favCheck_artist->request_rose_checkRating_Artist("TIDAL", QString("%1").arg(this->data_artist.id));
             }
 
             // request HTTP API
@@ -136,6 +143,8 @@ namespace tidal {
             proc_artist->request_tidal_getList_artists(this->api_subPath_relatedArtist, 50, 0);
         }
         else{
+            print_debug();ContentLoadingwaitingMsgHide();   //j230328
+
             this->flag_reload_page = true;
 
             // 리로드 하지 않는 경우에는, favorite 정보만 다시 요청한다. (artist_id 가 변경되지 않고, 페이지가 다시 요청된 경우임)
@@ -190,7 +199,7 @@ namespace tidal {
 
         this->artist_detail_info = new AbstractImageDetailContents_RHV(AbstractImageDetailContents_RHV::Tidal_artist);
         connect(this->artist_detail_info, &AbstractImageDetailContents_RHV::signal_clicked, this, &TidalArtistDetail::slot_detailInfo_btnClicked);
-        //connect(this->artist_detail_info, &AbstractImageDetailContents_RHV::signal_clicked_artistMore, this, &TidalArtistDetail::slot_artistInfo_btnClicked);
+        connect(this->artist_detail_info, &AbstractImageDetailContents_RHV::signal_clicked_artistMore, this, &TidalArtistDetail::slot_artistInfo_btnClicked);
 
         this->artist_detail_info->initView();
 
@@ -253,7 +262,7 @@ namespace tidal {
 
             if(this->flag_track[1] == true){
                 this->widget_track = new QWidget();
-                this->widget_track = this->setUIControl_subTitle_withSideBtn(QString(tr("Top Tracks") + " (%1)").arg(this->list_track->at(0).id), "View All", BTN_IDX_SUBTITLE_tracks, this->vBox_track);
+                this->widget_track = this->setUIControl_subTitle_withSideBtn(QString(tr("Top Tracks") + " (%1)").arg(this->list_track->at(0).totalCount), "View All", BTN_IDX_SUBTITLE_tracks, this->vBox_track);
 
                 this->vBox_track->addSpacing(10);
 
@@ -262,11 +271,18 @@ namespace tidal {
                     max_cnt = 5;
                 }
 
+                QList<QString> tmp_clientkey;
                 for(int i = 0; i < max_cnt; i++){
                     this->track[i]->setDataTrackInfo_Tidal(this->list_track->at(i));
+                    tmp_clientkey.append(QString("%1").arg(this->list_track->at(i).id));
 
                     this->vBox_track->addWidget(this->track[i]);
                 }
+
+                // request HTTP API - get favorite for Rose Server
+                roseHome::ProcCommon *proc_fav_track = new roseHome::ProcCommon(this);
+                connect(proc_fav_track, &roseHome::ProcCommon::completeReq_rating_track, this, &TidalArtistDetail::slot_applyResult_getRating_track);
+                proc_fav_track->request_rose_getRating_Track("TIDAL", tmp_clientkey);
 
                 this->box_main_contents->addLayout(this->vBox_track);
                 this->box_main_contents->addSpacing(30);
@@ -397,7 +413,7 @@ namespace tidal {
         tmp_scrollArea->setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
         tmp_scrollArea->setStyleSheet("background-color:transparent; border:0px;");
         tmp_scrollArea->setContentsMargins(0,0,0,0);
-        tmp_scrollArea->setFixedHeight(275);
+        tmp_scrollArea->setFixedHeight(285);
 
         QScroller::grabGesture(tmp_scrollArea, QScroller::LeftMouseButtonGesture);
         //----------------------------------------------------------------------------------------------------  BODY : END
@@ -441,6 +457,11 @@ namespace tidal {
             this->artist_detail_info->setData_fromTidalData(artistObj);
             this->artist_detail_info->setFavorite(false, 0);
         }
+
+        // request HTTP API - get favorite for Rose Server
+        roseHome::ProcCommon *proc_favCheck_artist = new roseHome::ProcCommon(this);
+        connect(proc_favCheck_artist, &roseHome::ProcCommon::completeCheck_rating_artist, this, &TidalArtistDetail::slot_applyResult_checkRating_artist);
+        proc_favCheck_artist->request_rose_checkRating_Artist("TIDAL", QString("%1").arg(this->data_artist.id));
     }
 
 
@@ -450,7 +471,39 @@ namespace tidal {
      */
     void TidalArtistDetail::slot_applyResult_artist_bioText(const QString& bioText){
 
-        this->data_artist.biography = bioText;
+        QStringList arrStr = bioText.split("[");
+
+        for(int i = 0; i < arrStr.count(); i++){
+            if(arrStr.at(i).contains("wimpLink")){
+                //qDebug() << arrStr.at(i);
+                QStringList arrStr2 = arrStr.at(i).split("]");
+
+                for(int j = 0; j < arrStr2.count(); j++){
+                    //qDebug() << arrStr2.at(j);
+                    if(!arrStr2.at(j).contains("wimpLink")){
+                        if(i == 0){
+                            this->data_artist.biography = arrStr2.at(j);
+                        }
+                        else{
+                            this->data_artist.biography += arrStr2.at(j);
+                        }
+                    }
+                }
+            }
+            else{
+                //qDebug() << arrStr.at(i);
+                if(i == 0){
+                    this->data_artist.biography = arrStr.at(i);
+                }
+                else{
+                    this->data_artist.biography += arrStr.at(i);
+                }
+            }
+        }
+
+        //qDebug() << "biography origin " << bioText << "\n";
+        //qDebug() << "biography change " << this->data_artist.biography << "\n";
+        //this->data_artist.biography = bioText;
 
         QJsonObject artistObj;
         artistObj.insert("name", this->data_artist.name);
@@ -468,10 +521,34 @@ namespace tidal {
      * @brief TidalArtistDetail::slot_tidal_completeReq_listAll_myFavoritesIds
      * @param p_jsonObj
      */
-    /*void TidalArtistDetail::slot_tidal_completeReq_listAll_myFavoritesIds(const QJsonObject& p_jsonObj){
+    void TidalArtistDetail::slot_tidal_completeReq_listAll_myFavoritesIds(const QJsonObject& p_jsonObj){
         // Favorite 정보를 전달해줌. 알아서 처리하라고.
-        this->artistImageDetailInfo->setFavoritesIds_forTidal(ProcJsonEasy::getJsonArray(p_jsonObj, "ARTIST").toVariantList());
-    }*/
+        if(p_jsonObj.contains("flagOk") && ProcJsonEasy::get_flagOk(p_jsonObj)){
+
+            // Tidal favorite check
+            if(this->flag_send_track == true){
+                QVariantList arr_myFavoriteIds = ProcJsonEasy::getJsonArray(p_jsonObj, "TRACK").toVariantList();
+                bool status = arr_myFavoriteIds.contains(this->track_id_fav);
+
+                if(status == true && this->flag_track_fav == false){
+                    // Tidal track Favorite del
+                    ProcCommon *proc = new ProcCommon(this);
+                    connect(proc, &tidal::ProcCommon::completeReq_listAll_myFavoritesIds, this, &TidalArtistDetail::slot_tidal_completeReq_listAll_myFavoritesIds);
+                    proc->request_tidal_del_favorite("tracks", QString("%1").arg(this->track_id_fav));
+                }
+                else if(status == false && this->flag_track_fav == true){
+                    // Tidal track Favorite add
+                    ProcCommon *proc = new ProcCommon(this);
+                    connect(proc, &tidal::ProcCommon::completeReq_listAll_myFavoritesIds, this, &TidalArtistDetail::slot_tidal_completeReq_listAll_myFavoritesIds);
+                    proc->request_tidal_set_favorite("tracks", QString("%1").arg(this->track_id_fav));
+                }
+                this->flag_send_track = false;
+            }
+            else{
+
+            }
+        }
+    }
 
 
     /**
@@ -577,44 +654,186 @@ namespace tidal {
             data_page.pathTitle = QString("%1 - Top Tracks").arg(this->data_artist.name);
             data_page.api_subPath = this->api_subPath_topTrack;
 
-            QJsonObject jsonObj_move = ConvertData::getObjectJson_pageInfo_trackAllView(data_page);
-            jsonObj_move.insert(KEY_PAGE_CODE, PAGECODE_T_TRACK_ALL_LIST_VIEW);
-            emit this->signal_clickedMovePage(jsonObj_move);            // 페이지 이동 signal
+            if(global.user_forTidal.flag_rosehome == true){
+                global.user_forTidal.rosehome_obj = QJsonObject();
+                global.user_forTidal.rosehome_obj.insert(KEY_PAGE_CODE, PAGECODE_T_TRACK_ALL_LIST_VIEW);
+                QJsonObject jsonObj_move = ConvertData::getObjectJson_pageInfo_trackAllView(data_page);
+                global.user_forTidal.rosehome_obj.insert(KEY_DATA, jsonObj_move);
+
+                emit linker->signal_RoseHome_movePage(QString(GSCommon::MainMenuCode::Tidal));
+            }
+            else{
+                QJsonObject jsonObj_move = ConvertData::getObjectJson_pageInfo_trackAllView(data_page);
+                jsonObj_move.insert(KEY_PAGE_CODE, PAGECODE_T_TRACK_ALL_LIST_VIEW);
+                emit this->signal_clickedMovePage(jsonObj_move);            // 페이지 이동 signal
+            }
         }
         else if(btnId == BTN_IDX_SUBTITLE_albums){
-            PageInfo_TrackAllView data_page;
+            PageInfo_AlbumAllView data_page;
             data_page.pathTitle = QString("%1 - Albums").arg(this->data_artist.name);
             data_page.api_subPath = this->api_subPath_album;
 
-            QJsonObject jsonObj_move = ConvertData::getObjectJson_pageInfo_trackAllView(data_page);
-            jsonObj_move.insert(KEY_PAGE_CODE, PAGECODE_T_ALBUM_ALL_LIST_VIEW);
-            emit this->signal_clickedMovePage(jsonObj_move);            // 페이지 이동 signal
+            if(global.user_forTidal.flag_rosehome == true){
+                global.user_forTidal.rosehome_obj = QJsonObject();
+                global.user_forTidal.rosehome_obj.insert(KEY_PAGE_CODE, PAGECODE_T_ALBUM_ALL_LIST_VIEW);
+                QJsonObject jsonObj_move = ConvertData::getObjectJson_pageInfo_albumAllView(data_page);
+                global.user_forTidal.rosehome_obj.insert(KEY_DATA, jsonObj_move);
 
+                emit linker->signal_RoseHome_movePage(QString(GSCommon::MainMenuCode::Tidal));
+            }
+            else{
+                QJsonObject jsonObj_move = ConvertData::getObjectJson_pageInfo_albumAllView(data_page);
+                jsonObj_move.insert(KEY_PAGE_CODE, PAGECODE_T_ALBUM_ALL_LIST_VIEW);
+                emit this->signal_clickedMovePage(jsonObj_move);            // 페이지 이동 signal
+            }
         }
         else if(btnId == BTN_IDX_SUBTITLE_videos){
             PageInfo_VideoAllView data_page;
             data_page.pathTitle = QString("%1 - Videos").arg(this->data_artist.name);
             data_page.api_subPath = this->api_subPath_video;
 
-            QJsonObject jsonObj_move = ConvertData::getObjectJson_pageInfo_videoAllView(data_page);
-            jsonObj_move.insert(KEY_PAGE_CODE, PAGECODE_T_VIDEO_ALL_LIST_VIEW);
-            emit this->signal_clickedMovePage(jsonObj_move);            // 페이지 이동 signal
+            if(global.user_forTidal.flag_rosehome == true){
+                global.user_forTidal.rosehome_obj = QJsonObject();
+                global.user_forTidal.rosehome_obj.insert(KEY_PAGE_CODE, PAGECODE_T_VIDEO_ALL_LIST_VIEW);
+                QJsonObject jsonObj_move = ConvertData::getObjectJson_pageInfo_videoAllView(data_page);
+                global.user_forTidal.rosehome_obj.insert(KEY_DATA, jsonObj_move);
 
+                emit linker->signal_RoseHome_movePage(QString(GSCommon::MainMenuCode::Tidal));
+            }
+            else{
+                QJsonObject jsonObj_move = ConvertData::getObjectJson_pageInfo_videoAllView(data_page);
+                jsonObj_move.insert(KEY_PAGE_CODE, PAGECODE_T_VIDEO_ALL_LIST_VIEW);
+                emit this->signal_clickedMovePage(jsonObj_move);            // 페이지 이동 signal
+            }
         }
         else if(btnId == BTN_IDX_SUBTITLE_artists){
-            PageInfo_TrackAllView data_page;
+            PageInfo_ArtistAllView data_page;
             data_page.pathTitle = QString("%1 - Related Artists").arg(this->data_artist.name);
             data_page.api_subPath = this->api_subPath_relatedArtist;
 
-            QJsonObject jsonObj_move = ConvertData::getObjectJson_pageInfo_trackAllView(data_page);
-            jsonObj_move.insert(KEY_PAGE_CODE, PAGECODE_T_ARTIST_ALL_LIST_VIEW);
-            emit this->signal_clickedMovePage(jsonObj_move);            // 페이지 이동 signal
+            if(global.user_forTidal.flag_rosehome == true){
+                global.user_forTidal.rosehome_obj = QJsonObject();
+                global.user_forTidal.rosehome_obj.insert(KEY_PAGE_CODE, PAGECODE_T_ARTIST_ALL_LIST_VIEW);
+                QJsonObject jsonObj_move = ConvertData::getObjectJson_pageInfo_artistAllView(data_page);
+                global.user_forTidal.rosehome_obj.insert(KEY_DATA, jsonObj_move);
+
+                emit linker->signal_RoseHome_movePage(QString(GSCommon::MainMenuCode::Tidal));
+            }
+            else{
+                QJsonObject jsonObj_move = ConvertData::getObjectJson_pageInfo_artistAllView(data_page);
+                jsonObj_move.insert(KEY_PAGE_CODE, PAGECODE_T_ARTIST_ALL_LIST_VIEW);
+                emit this->signal_clickedMovePage(jsonObj_move);            // 페이지 이동 signal
+            }
         }
 
     }
 
 
+    void TidalArtistDetail::slot_applyResult_checkRating_artist(const QJsonObject &jsonObj){
+
+        int artistID = ProcJsonEasy::getInt(jsonObj, "id");
+
+        if(artistID > 0){
+
+            if(this->flag_check_artist == true){
+
+                QJsonObject artist;
+                artist.insert("id", artistID);
+
+                QJsonObject ratingInfo;
+                ratingInfo.insert("favorite", this->flag_artist_fav);
+                ratingInfo.insert("star", this->artist_star_fav);
+                ratingInfo.insert("type", "TIDAL");
+
+                QJsonObject json;
+                json.insert("artist", artist);
+                json.insert("ratingInfo", ratingInfo);
+
+                // request HTTP API - get favorite for Rose Server
+                roseHome::ProcCommon *proc_fav_album = new roseHome::ProcCommon(this);
+                connect(proc_fav_album, &roseHome::ProcCommon::completeReq_rating_artist, this, &TidalArtistDetail::slot_applyResult_getRating_artist);
+                proc_fav_album->request_rose_setRating_Artist(json, this->flag_artist_fav, this->artist_star_fav);
+            }
+            else{
+
+                QJsonObject artist_id;
+                artist_id.insert("id", artistID);
+
+                QJsonObject json;
+                json.insert("artist", artist_id);
+
+                roseHome::ProcCommon *proc_fav_album = new roseHome::ProcCommon(this);
+                connect(proc_fav_album, &roseHome::ProcCommon::completeReq_rating_artist, this, &TidalArtistDetail::slot_applyResult_getRating_artist);
+                proc_fav_album->request_rose_getRating_Artist("TIDAL", json);
+            }
+        }
+        else{
+
+            QJsonArray thumbnail;
+            thumbnail.append(this->data_artist.image);
+
+            QJsonObject artist;
+            artist.insert("name", this->data_artist.name);
+            artist.insert("type", "TIDAL");
+            artist.insert("comment", "");
+            artist.insert("clientKey", QString("%1").arg(this->data_artist.id));
+            artist.insert("thumbnail", thumbnail);
+
+            QJsonObject json;
+            json.insert("artist", artist);
+
+            // request HTTP API - get favorite for Rose Server
+            roseHome::ProcCommon *proc_fav_album = new roseHome::ProcCommon(this);
+            connect(proc_fav_album, &roseHome::ProcCommon::completeCheck_rating_artist, this, &TidalArtistDetail::slot_applyResult_addRating_artist);
+            proc_fav_album->request_rose_addRating_Artist(json);
+        }
+    }
+
+
+    void TidalArtistDetail::slot_applyResult_getRating_artist(const QJsonArray &contents){
+
+        if(contents.size() > 0){
+
+            QJsonObject tmp_star = contents.at(0).toObject();
+
+            if(tmp_star.contains("star")){
+                int star = ProcJsonEasy::getInt(tmp_star, "star");
+                bool flag = star > 0 ? true : false;
+
+                this->artist_detail_info->setFavorite(flag, star);
+            }
+            else{
+                this->artist_detail_info->setFavorite(this->flag_artist_fav, this->artist_star_fav);
+            }
+
+            if(this->flag_check_artist == true){
+                this->flag_check_artist = false;
+            }
+        }
+    }
+
+
+    void TidalArtistDetail::slot_applyResult_addRating_artist(const QJsonObject &jsonObj){
+
+        if(jsonObj.contains("flagOk")){
+
+            // request HTTP API - favorite for Rose Server
+            roseHome::ProcCommon *proc_fav = new roseHome::ProcCommon(this);
+            connect(proc_fav, &roseHome::ProcCommon::completeCheck_rating_artist, this, &TidalArtistDetail::slot_applyResult_checkRating_artist);
+            proc_fav->request_rose_checkRating_Artist("TIDAL", QString("%1").arg(this->data_artist.id));
+
+            if(this->flag_check_artist == true){
+                this->flag_check_artist = false;
+            }
+        }
+        else{
+            this->flag_check_artist = false;
+        }
+    }
+
+
     void TidalArtistDetail::slot_applyResult_checkRating_track(const QJsonObject &jsonObj){
+
         int id = ProcJsonEasy::getInt(jsonObj, "id");
 
         QJsonObject jsonObj_track = QJsonObject();
@@ -853,22 +1072,19 @@ namespace tidal {
      */
     void TidalArtistDetail::slot_detailInfo_btnClicked(const AbstractImageDetailContents_RHV::BtnClickMode clickMode){
 
-        /*if(clickMode == AbstractImageDetailContents_RHV::BtnClickMode::Favorite_toAdd || clickMode == AbstractImageDetailContents_RHV::BtnClickMode::Favorite_toAddx2 ||
-                clickMode == AbstractImageDetailContents_RHV::BtnClickMode::Favorite_toAddx3 || clickMode == AbstractImageDetailContents_RHV::BtnClickMode::Favorite_toDelete){*/
-        if(clickMode == AbstractImageDetailContents_RHV::BtnClickMode::Favorite_toAdd || clickMode == AbstractImageDetailContents_RHV::BtnClickMode::Favorite_toDelete){
+        if(clickMode == AbstractImageDetailContents_RHV::BtnClickMode::Favorite_toAdd || clickMode == AbstractImageDetailContents_RHV::BtnClickMode::Favorite_toAddx2 ||
+                clickMode == AbstractImageDetailContents_RHV::BtnClickMode::Favorite_toAddx3 || clickMode == AbstractImageDetailContents_RHV::BtnClickMode::Favorite_toDelete){
 
             if(this->flag_check_artist == false){
 
                 this->artist_star_fav = this->artist_detail_info->getFavoritesStars();
                 this->flag_artist_fav = false;
 
-                //if(this->artist_star_fav == 3){
-                if(this->artist_star_fav == 1){
+                if(this->artist_star_fav == 3){
                     this->artist_star_fav = 0;
                     this->flag_artist_fav = false;
                 }
-                //else if(this->artist_star_fav >= 0 && this->artist_star_fav < 3){
-                else if(this->artist_star_fav == 0){
+                else if(this->artist_star_fav >= 0 && this->artist_star_fav < 3){
                     this->artist_star_fav++;
                     this->flag_artist_fav = true;
                 }
@@ -879,10 +1095,10 @@ namespace tidal {
                 }
 
                 // request HTTP API - get favorite for Rose Server
-                /*roseHome::ProcCommon *proc_favCheck_artist = new roseHome::ProcCommon(this);
-                connect(proc_favCheck_artist, &roseHome::ProcCommon::completeCheck_rating_album, this, &QobuzArtistDetail::slot_applyResult_checkRating_artist);
-                proc_favCheck_artist->request_rose_checkRating_Artist("QOBUZ", this->data_artist.id);
-                this->flag_check_artist = true;*/
+                roseHome::ProcCommon *proc_favCheck_artist = new roseHome::ProcCommon(this);
+                connect(proc_favCheck_artist, &roseHome::ProcCommon::completeCheck_rating_artist, this, &TidalArtistDetail::slot_applyResult_checkRating_artist);
+                proc_favCheck_artist->request_rose_checkRating_Artist("TIDAL", QString("%1").arg(this->data_artist.id));
+                this->flag_check_artist = true;
 
                 this->artist_detail_info->setFavorite(this->flag_artist_fav, this->artist_star_fav);
             }
@@ -898,6 +1114,19 @@ namespace tidal {
             this->proc_clicked_imageDetailInfo_fromArtist(this->data_artist, this->jsonArr_tracks_toPlay, SECTION_FOR_MORE_POPUP___artists_main, clickMode);
         }
     }
+
+
+    void TidalArtistDetail::slot_artistInfo_btnClicked(){
+
+        QJsonObject tmpData;
+        tmpData.insert("artist", this->data_artist.name);
+        tmpData.insert("biography", this->data_artist.biography);
+
+        this->dlgArtistMore = new DialogNotice(this, DialogNotice::DlgNotice::Tidal_artist_more);
+        this->dlgArtistMore->setData_formJsonObj(tmpData);
+        this->dlgArtistMore->exec();
+    }
+
 
 
     /**
@@ -924,26 +1153,33 @@ namespace tidal {
                     this->flag_track_fav = true;
                 }
 
-                if(this->track_star_fav == 0 || this->track_star_fav == 1){
-                    // Qobuz Favorite toggle
-                    this->track_id_fav = this->list_track->at(idx).id;
+                this->track_idx_fav = idx;
+                this->track_id_fav = this->list_track->at(idx).id;
 
-                    /*ProcCommon *proc = new ProcCommon(this);
-                    connect(proc, &qobuz::ProcCommon::completeReq_listAll_myFavoritesIds, this, &TidalArtistDetail::slot_tidal_completeReq_listAll_myFavoritesIds);
-                    proc->request_qobuz_set_favorite("track", QString("%1").arg(this->track_id_fav), this->flag_track_fav);
-                    this->flag_send_track = true;*/
+                if(this->track_star_fav == 1){
+                    // Tidal Track Favorite add
+                    ProcCommon *proc = new ProcCommon(this);
+                    proc->request_tidal_set_favorite("tracks", QString("%1").arg(this->track_id_fav));
+                }
+                else if(this->track_star_fav == 0){
+                    // Tidal Track Favorite del
+                    ProcCommon *proc = new ProcCommon(this);
+                    proc->request_tidal_del_favorite("tracks", QString("%1").arg(this->track_id_fav));
                 }
 
-                this->track_idx_fav = idx;
-                QJsonObject jsonObj = this->jsonArr_tracks_toPlay.at(idx).toObject();
+                // favorite 정보 가져오기
+                ProcCommon *proc_fav = new ProcCommon(this);
+                connect(proc_fav, &ProcCommon::completeReq_listAll_myFavoritesIds, this, &TidalArtistDetail::slot_tidal_completeReq_listAll_myFavoritesIds);
+                proc_fav->request_tidal_getAll_favorites();
+                this->flag_send_track = true;
 
                 // request HTTP API - get favorite for Rose Server
                 roseHome::ProcCommon *proc_favCheck_track = new roseHome::ProcCommon(this);
                 connect(proc_favCheck_track, &roseHome::ProcCommon::completeCheck_rating_track, this, &TidalArtistDetail::slot_applyResult_checkRating_track);
-                proc_favCheck_track->request_rose_checkRating_Track("TIDAL", QString("%1").arg(ProcJsonEasy::getInt(jsonObj, "id")));
+                proc_favCheck_track->request_rose_checkRating_Track("TIDAL", QString("%1").arg(this->track_id_fav));
                 this->flag_check_track = true;
 
-                //this->track[idx]->setFavoritesIds(this->flag_track_fav, this->track_star_fav);
+                this->track[idx]->setFavoritesIds(this->flag_track_fav, this->track_star_fav);
             }
         }
         else{

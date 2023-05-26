@@ -53,7 +53,7 @@ public:
     QLabel *getThumnailLabel();
 
 signals:
-    void clicked(const int index, const ClickMode clickMode);
+    void clicked(const int index, const PlaylistTrackDetailInfo_RHV::ClickMode clickMode);
 
 private slots:
 
@@ -80,10 +80,13 @@ private:
     QLabel *label_track_hires;
     QLabel *label_track_resolution;
     QLabel *label_rank;
+    QLabel *label_rank_ico;
+    QLabel *label_rank_value;
     QLabel *label_title;
     QLabel *label_artist;
     QLabel *label_album;
     QLabel *label_duration;
+    QLabel *label_adult_certification;
 
     QPushButton *btn_music_video;
     QPushButton *btn_play_list_add;

@@ -24,6 +24,9 @@ public:
     void setLogin(const QString &user_auth_token, const QString &user_name, const QString &user_Id, const bool flagSavedLoginInfo);
     void setLogout();
 
+    void savePageData(QJsonObject p_data){this->page_data = p_data;};//c230421
+    QJsonObject getPageData(){ return this->page_data;};//c230421
+
     QString getUsername() const;
     void setUsername(const QString &value);
 
@@ -49,6 +52,7 @@ public:
 
 private :
 
+    QJsonObject page_data;//c230421
     // 로그인을 위한 정보
     bool flagSavedLoginInfo = false;    ///< 로그인을 위한 정보 - qobuz 사용자 정보를 저장할지의 여부. (자동로그인에서 사용)
 

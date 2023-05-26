@@ -142,6 +142,10 @@ void Dialog_Radio::setUIControl(){
  */
 void Dialog_Radio::setTitle(const QString &p_title){
     lb_title->setText(GSCommon::getTextCutFromLabelWidth(p_title, DLG_WIDTH-150, lb_title->font()));
+    if(lb_title->text().contains("…")){
+        lb_title->setToolTip(p_title);
+        lb_title->setToolTipDuration(2000);
+    }
 }
 
 /**

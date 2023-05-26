@@ -1,17 +1,18 @@
-#include "framerecentadd.h"
+#include "widget/framerecentadd.h"
 #include "common/global.h"
 #include "common/sqlitehelper.h"
 #include "widget/optionpopup.h"
 
 #include <QJsonArray>
 
+
 FrameRecentAdd::FrameRecentAdd(QWidget *parent)
     : FrameWidget(Type::AddedAlbum,  parent)
 {
     setInit();
     setUIControl();
-
 }
+
 
 FrameRecentAdd::FrameRecentAdd(bool flagIsViewAllSize, QWidget *parent)
     : FrameWidget(Type::AddedAlbum, parent)
@@ -21,10 +22,12 @@ FrameRecentAdd::FrameRecentAdd(bool flagIsViewAllSize, QWidget *parent)
     setUIControl();
 }
 
+
 FrameRecentAdd::~FrameRecentAdd(){
 
     this->deleteLater();
 }
+
 
 /**
  * @brief FrameWidget::setInit : [override] 초기 세팅
@@ -36,31 +39,11 @@ void FrameRecentAdd::setInit(){
     dataPopup = new DataPopup(this);
 }
 
+
 /**
  * @brief FrameWidget::setUIControl : [override] UI 세팅
  */
 void FrameRecentAdd::setUIControl(){
-    /*lb_title = new QLabel;
-    lb_title->setStyleSheet("font-size:16px;color:#FFFFFF;margin-top:15px;");
-    lb_title->setFixedWidth(flagIsViewAllSize ? IMG_WIDTH_S : IMG_WIDTH);
-
-    lb_artist = new QLabel;
-    lb_artist->setStyleSheet("font-size:16px;color:#999999;margin-top:5px;");
-    lb_artist->setFixedWidth(flagIsViewAllSize ? IMG_WIDTH_S : IMG_WIDTH);
-
-    lb_img = new ImageLabel;
-    lb_img->setType(flagIsViewAllSize ? ImageLabel::Type::MusicCategory : ImageLabel::Type::Album);
-    lb_img->setHidden_favorite(true);
-
-
-    QVBoxLayout *boxLayout = new QVBoxLayout;
-    boxLayout->setContentsMargins(MARGIN,MARGIN,MARGIN,MARGIN);
-    boxLayout->setSpacing(0);
-    boxLayout->addWidget(lb_img);
-    boxLayout->addWidget(lb_title);
-    boxLayout->addWidget(lb_artist);
-
-    this->setLayout(boxLayout);*/
 
     int base_height = 0;
     int img_width = 0;
@@ -72,24 +55,24 @@ void FrameRecentAdd::setUIControl(){
     this->lb_img->setHidden_favorite(true);
 
     img_width = this->lb_img->sizeHint().width();
-    base_height = this->LABEL_HEIGHT * 3 + this->SPACE_LABELS * 3;
+    base_height = this->LABEL_HEIGHT * 3 + this->SPACE_LABELS;
     label_base->setFixedSize(img_width, base_height);
 
     this->lb_title = new QLabel(label_base);
-    this->lb_title->setWordWrap(true);
-    this->lb_title->setStyleSheet("font-size:16px;color:#FFFFFF;");
-    this->lb_title->setFixedWidth(flagIsViewAllSize ? IMG_WIDTH_S : IMG_WIDTH);
-    this->lb_title->setGeometry(0, (this->SPACE_LABELS * 2), img_width, this->LABEL_HEIGHT);
+    this->lb_title->setTextInteractionFlags(Qt::TextSelectableByMouse);//cheon210714-mousecopy
+    this->lb_title->setStyleSheet("font-size:16px;font-weight: normal;font-style: normal;line-height: 1.25;text-align: left; color:#FFFFFF;");
+    this->lb_title->setGeometry(0, 0, img_width, (this->LABEL_HEIGHT * 2));
 
     this->lb_artist = new QLabel(label_base);
-    this->lb_artist->setStyleSheet("font-size:16px;color:#999999;");
     this->lb_artist->setFixedWidth(flagIsViewAllSize ? IMG_WIDTH_S : IMG_WIDTH);
-    this->lb_artist->setGeometry(0, this->LABEL_HEIGHT + (this->SPACE_LABELS * 3), img_width, this->LABEL_HEIGHT);
+    this->lb_artist->setStyleSheet("font-size:16px; font-weight: 300;font-style: normal;line-height: 1.88;text-align: left; color: #999999;");
+    this->lb_artist->setGeometry(0, (this->LABEL_HEIGHT * 2) + this->SPACE_LABELS, img_width, this->LABEL_HEIGHT);
 
     QVBoxLayout *boxLayout = new QVBoxLayout;
-    boxLayout->setContentsMargins(MARGIN,MARGIN,MARGIN,MARGIN);
+    boxLayout->setContentsMargins(0, 0, this->MARGIN, 0);
     boxLayout->setSpacing(0);
     boxLayout->addWidget(this->lb_img);
+    boxLayout->addSpacing(10);
     boxLayout->addWidget(label_base);
     boxLayout->setAlignment(Qt::AlignTop);
 
@@ -98,6 +81,7 @@ void FrameRecentAdd::setUIControl(){
     connect(lb_img, SIGNAL(clickedHoverItem(QString)), SLOT(slot_clickedHover(QString)));
     connect(lb_img, SIGNAL(clickedItem()), SLOT(slot_clickedItem()));
 }
+
 
 /**
  * @brief FrameRecentAlbum::setData : [override] 데이터 세팅
@@ -109,15 +93,15 @@ void FrameRecentAdd::setData(const QJsonObject &p_jsonObject){
 
     lb_img->setFavorStatus(data->getFavorite() > 0 ? true : false);
     //setPopupData();
-
-
 }
+
 
 /**
  * @brief FrameRecentAlbum::setPopupData : 옵션 팝업용 데이터 클래스 세팅
  * @details DataAlbum 세팅 이후에 호출
  */
 void FrameRecentAdd::setPopupData(){
+
     /*
     dataPopup->setId(data->getId());
     dataPopup->setAlbum(data->getAlbum());
@@ -166,14 +150,16 @@ QJsonObject FrameRecentAdd::getDataForPopup(){
 
     return jsonData;
 }
+
+
 /**
  * @brief FrameWidget::setHover : [override] 호버 세팅
  */
 void FrameRecentAdd::setHover(){
 
-
     lb_img->setHover();
 }
+
 
 /**
  * @brief FrameRecentAdd::getDataForPlayMusic : 바로듣기에 필요한 데이터 반환
@@ -209,12 +195,14 @@ QJsonArray FrameRecentAdd::getDataForPlayMusic(){
     return jsonArray;
 }
 
+
 /**
  * @brief FrameRecentAdd::getDataForAddInPlaylist : 플레이리스트 담기에 필요한 데이터 반환
  * @return QJsonArray Track info
  * @note 재생과 JsonObject 구조 다름.
  */
 QJsonArray FrameRecentAdd::getDataForAddInPlaylist(){
+
     QJsonArray jsonArray;
 
     SqliteHelper *sqlite = new SqliteHelper(this);
@@ -265,7 +253,6 @@ QJsonArray FrameRecentAdd::getDataForAddInPlaylist(){
                 jsonTrack.insert("type","music");
 
                 jsonArray.append(jsonTrack);
-
             }
         }
     }
@@ -275,6 +262,7 @@ QJsonArray FrameRecentAdd::getDataForAddInPlaylist(){
 
     return  jsonArray;
 }
+
 
 /**
  * @brief FrameRecentAlbum::slot_clickedHover : [슬롯] Hover 아이템 클릭
@@ -291,6 +279,7 @@ void FrameRecentAdd::slot_clickedHover(const QString &p_code){
     emit linker->signal_clickedHoverItem(p_code, jsonForPopup);
 }
 
+
 /**
  * @brief FrameRecentAdd::slot_clickedItem : [슬롯] 아이템 클릭
  * @details 앨범 상세보기 페이지로 이동
@@ -302,8 +291,10 @@ void FrameRecentAdd::slot_clickedItem(){
 
     QJsonObject jsonData = getDataForPopup();
     jsonData.insert(KEY_PAGE_CODE, PAGECODE_OP_ALBUMINFO);
+
     emit linker->signal_clickedMovePage(jsonData);
 }
+
 
 void FrameRecentAdd::paintEvent(QPaintEvent *event){
 
@@ -313,8 +304,10 @@ void FrameRecentAdd::paintEvent(QPaintEvent *event){
         flagNeedDraw = false;
 
         if(global.flagConnected){
-            lb_img->setImageUrl(QString("http://%1:%2%3").arg(global.device.getDeviceIP()).arg(global.port_img).arg(data->getAlbum_art()));
+            this->lb_img->setImageUrl(QString("http://%1:%2%3").arg(global.device.getDeviceIP()).arg(global.port_img).arg(data->getAlbum_art()));
         }
+
+        int all_width = flagIsViewAllSize ? IMG_WIDTH_S : IMG_WIDTH;
 
         if(data->getSection() == "recent_add" || data->getSection() == "album" || data->getSection() == "search_album"){
             QString tmp_mime = data->getMimeType();
@@ -359,44 +352,69 @@ void FrameRecentAdd::paintEvent(QPaintEvent *event){
             lb_img->setMimeType(snd_mime);
         }
 
-        int all_width = flagIsViewAllSize ? IMG_WIDTH_S : IMG_WIDTH;
+        QString title = data->getAlbum();
+
         QLabel *tmp_wordwrap = new QLabel();
+        tmp_wordwrap->setStyleSheet("font-size:16px; color:#FFFFFF;");
         tmp_wordwrap->setText(data->getAlbum());
 
-        if(tmp_wordwrap->sizeHint().width() > all_width){
-            if(data->getAlbum().contains(" ")){
-                this->lb_title->setGeometry(0, (this->SPACE_LABELS * 2), all_width, (this->LABEL_HEIGHT * 2));
-                this->lb_artist->setGeometry(0, (this->LABEL_HEIGHT * 2) + (this->SPACE_LABELS * 3), all_width, this->LABEL_HEIGHT);
+        int title_width = tmp_wordwrap->sizeHint().width();
 
-                tmp_wordwrap->clear();
-                tmp_wordwrap->setStyleSheet("font-size:16px; color:#FFFFFF;");
-                tmp_wordwrap->setWordWrap(true);
-                tmp_wordwrap->setText(GSCommon::getTextCutFromLabelWidth(data->getAlbum(), (all_width * 2)-30, this->lb_title->font()));
+        if(title_width > all_width){
 
-                if(tmp_wordwrap->sizeHint().height() > this->LABEL_HEIGHT * 2){
-                    this->lb_title->setText(GSCommon::getTextCutFromLabelWidth(data->getAlbum(), (all_width * 2)-80, this->lb_title->font()));
-                }
-                else{
-                    this->lb_title->setText(GSCommon::getTextCutFromLabelWidth(data->getAlbum(), (all_width * 2)-30, this->lb_title->font()));
+            QString tmp_split = "";
+            QStringList splitToken;
+            QString tmp_title_line1 = "";
+
+            tmp_split = title;
+            splitToken = tmp_split.split(" ");
+
+            tmp_wordwrap->setText("");
+            int i = 0;
+            if(splitToken.size() > 1){
+
+                for(i = 0; i < splitToken.count(); i++){
+                    if(i == 0){
+                        tmp_title_line1 = splitToken.at(i);
+                    }
+                    else{
+                        tmp_title_line1 += " " + splitToken.at(i);
+                    }
+                    tmp_wordwrap->setText(tmp_title_line1);
+
+                    if(tmp_wordwrap->sizeHint().width() > all_width){
+                        tmp_wordwrap->setText("");
+                        tmp_title_line1.replace(splitToken.at(i), "");
+                        break;
+                    }
                 }
             }
-            else{
-                this->lb_title->setGeometry(0, (this->SPACE_LABELS * 2), all_width, this->LABEL_HEIGHT);
-                this->lb_artist->setGeometry(0, (this->LABEL_HEIGHT * 2) + (this->SPACE_LABELS * 3), all_width, this->LABEL_HEIGHT);
-                this->lb_title->setText(GSCommon::getTextCutFromLabelWidth(data->getAlbum(), all_width, lb_title->font()));//cheon-210708-album
+
+            tmp_wordwrap->setText("");
+            tmp_wordwrap->setText(tmp_title_line1);
+
+            title_width = tmp_wordwrap->sizeHint().width() + all_width;
+
+            this->lb_title->setGeometry(0, 0, all_width, this->LABEL_HEIGHT * 2);
+            this->lb_title->setText(GSCommon::getTextCutFromLabelWidth(title, title_width, this->lb_title->font()));
+            if(this->lb_title->text().contains("…")){
+                this->lb_title->setToolTip(title);//c230321
+                this->lb_title->setToolTipDuration(2000);//c230321
             }
+
+            this->lb_artist->setGeometry(0, (this->LABEL_HEIGHT * 2) + this->SPACE_LABELS, all_width, this->LABEL_HEIGHT);
         }
-        else if(tmp_wordwrap->sizeHint().width() == all_width){
-            this->lb_title->setGeometry(0, (this->SPACE_LABELS * 2), all_width, this->LABEL_HEIGHT);
-            this->lb_artist->setGeometry(0, this->LABEL_HEIGHT + (this->SPACE_LABELS * 3), all_width, this->LABEL_HEIGHT);
-            this->lb_title->setText(data->getAlbum());
-        }
-        else {
-            this->lb_title->setGeometry(0, (this->SPACE_LABELS * 2), all_width, this->LABEL_HEIGHT);
-            this->lb_artist->setGeometry(0, this->LABEL_HEIGHT + (this->SPACE_LABELS * 3), all_width, this->LABEL_HEIGHT);
-            this->lb_title->setText(GSCommon::getTextCutFromLabelWidth(data->getAlbum(), all_width, lb_title->font()));//cheon-210708-album
+        else{
+            this->lb_title->setGeometry(0, 0, all_width, this->LABEL_HEIGHT);
+            this->lb_title->setText(title);
+
+            this->lb_artist->setGeometry(0, this->LABEL_HEIGHT + this->SPACE_LABELS, all_width, this->LABEL_HEIGHT);
         }
 
-        this->lb_artist->setText(GSCommon::getTextCutFromLabelWidth(data->getArtist(), all_width, lb_artist->font()));
+        this->lb_artist->setText(GSCommon::getTextCutFromLabelWidth(data->getArtist(), all_width, this->lb_artist->font()));
+        if(this->lb_artist->text().contains("…")){
+            this->lb_artist->setToolTip(data->getArtist());//c230321
+            this->lb_artist->setToolTipDuration(2000);//c230321
+        }
     }
 }

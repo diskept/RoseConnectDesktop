@@ -50,11 +50,11 @@ namespace tidal {
 
         this->label_title = new QLabel(label_base);
         this->label_title->setWordWrap(true);
-        this->label_title->setStyleSheet("font-size:16px; color:#FFFFFF;");
+        this->label_title->setStyleSheet("font-size:16px;  font-weight: normal;font-style: normal;line-height: 3.75;text-align: left; color:#FFFFFF;");
         this->label_title->setGeometry(0, 0, img_width, this->LABEL_HEIGHT * 2);
 
         this->label_artist = new QLabel(label_base);
-        this->label_artist->setStyleSheet("font-size:16px; color:#999999;");
+        this->label_artist->setStyleSheet("font-size:16px;  font-weight: normal;font-style: normal;line-height: 1.88;text-align: left; color:#999999;");
         this->label_artist->setGeometry(0, (this->LABEL_HEIGHT * 2) + this->SPACE_LABELS, img_width, this->LABEL_HEIGHT);
 
         QVBoxLayout *boxLayout = new QVBoxLayout;
@@ -98,6 +98,18 @@ namespace tidal {
         return height;
     }
 
+    int ItemAlbum::get_fixedWidth(){
+
+        int width = this->get_imageWidth(this->m_imageSizeMode);
+
+        return width;
+    }
+
+
+    int ItemAlbum::get_rightMargin(){
+
+        return ITEM_BETWEEN_MARGIN_RIGHT;
+    }
 
     /**
      * @brief 페인트 이벤트 처리
@@ -168,9 +180,17 @@ namespace tidal {
 
                     this->label_title->setGeometry(0, 0, all_width, this->LABEL_HEIGHT * 2);
                     this->label_title->setText(GSCommon::getTextCutFromLabelWidth(title_ver, title_width, this->label_title->font()));
+                    if(this->label_title->text().contains("…")){
+                        this->label_title->setToolTip(title_ver);//c230321
+                        this->label_title->setToolTipDuration(2000);//c230321
+                    }
 
                     this->label_artist->setGeometry(0, (this->LABEL_HEIGHT * 2) + this->SPACE_LABELS, all_width, this->LABEL_HEIGHT);
                     this->label_artist->setText(GSCommon::getTextCutFromLabelWidth(data_album.list_artist_name.join(","), all_width, this->label_artist->font()));
+                    if(this->label_artist->text().contains("…")){
+                        this->label_artist->setToolTip(data_album.list_artist_name.join(","));//c230321
+                        this->label_artist->setToolTipDuration(2000);//c230321
+                    }
 
                     this->label_mqa->setGeometry(136, 17, 0, 0);
                 }
@@ -180,6 +200,10 @@ namespace tidal {
 
                     this->label_artist->setGeometry(0, this->LABEL_HEIGHT + this->SPACE_LABELS, all_width, this->LABEL_HEIGHT);
                     this->label_artist->setText(GSCommon::getTextCutFromLabelWidth(data_album.list_artist_name.join(","), all_width, this->label_artist->font()));
+                    if(this->label_artist->text().contains("…")){
+                        this->label_artist->setToolTip(data_album.list_artist_name.join(","));//c230321
+                        this->label_artist->setToolTipDuration(2000);//c230321
+                    }
 
                     this->label_mqa->setGeometry(136, 8, 0, 0);
                 }
@@ -225,9 +249,17 @@ namespace tidal {
 
                     this->label_title->setGeometry(0, 0, all_width, this->LABEL_HEIGHT * 2);
                     this->label_title->setText(GSCommon::getTextCutFromLabelWidth(title_ver, title_width, this->label_title->font()));
+                    if(this->label_title->text().contains("…")){
+                        this->label_title->setToolTip(title_ver);//c230321
+                        this->label_title->setToolTipDuration(2000);//c230321
+                    }
 
                     this->label_artist->setGeometry(0, (this->LABEL_HEIGHT * 2) + this->SPACE_LABELS, all_width, this->LABEL_HEIGHT);
                     this->label_artist->setText(GSCommon::getTextCutFromLabelWidth(data_album.list_artist_name.join(","), all_width, this->label_artist->font()));
+                    if(this->label_artist->text().contains("…")){
+                        this->label_artist->setToolTip(data_album.list_artist_name.join(","));//c230321
+                        this->label_artist->setToolTipDuration(2000);//c230321
+                    }
                 }
                 else{
                     this->label_title->setGeometry(0, 0, all_width, this->LABEL_HEIGHT);
@@ -235,6 +267,10 @@ namespace tidal {
 
                     this->label_artist->setGeometry(0, this->LABEL_HEIGHT + this->SPACE_LABELS, all_width, this->LABEL_HEIGHT);
                     this->label_artist->setText(GSCommon::getTextCutFromLabelWidth(data_album.list_artist_name.join(","), all_width, this->label_artist->font()));
+                    if(this->label_artist->text().contains("…")){
+                        this->label_artist->setToolTip(data_album.list_artist_name.join(","));//c230321
+                        this->label_artist->setToolTipDuration(2000);//c230321
+                    }
                 }
 
                 this->label_mqa->hide();

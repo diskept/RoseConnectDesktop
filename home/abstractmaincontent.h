@@ -35,6 +35,7 @@ public:
 
     void showhideRemoteWidget(bool flagShow);
     void resetCurrPlayData(const QJsonObject &p_jsonData);
+    void changeCurrHdmiData(const bool flag);
 
     // 각 메뉴의 Main 클래스에서 search 검색어 처리하는 함수. 각 클래스에서 재정의
     virtual void process_searchWord(const QString&){ }
@@ -143,25 +144,29 @@ protected:
 
     // 로즈튜브 배경 위젯 추가하면서.. TopNaviBar의 부모가 메인윈도우가 아닌 빈위젯으로 설정하였기 때문에 리사이즈 필요함
     void showEvent(QShowEvent *event) override {
+
         Q_UNUSED(event);
+
         // resizeEvent만 해도 되는데.. resize호출 시점이 최초 show된 이후 호출안되므로... showEvent override 받았음
         this->topNaviBar->setFixedWidth(this->widget_roseTubeBG->size().width());
     }
+
     void resizeEvent(QResizeEvent *event) override {
 
         Q_UNUSED(event);
+
         // 리사이즈 될때마다 사이즈 재조정해야함
         this->topNaviBar->setFixedWidth(this->widget_roseTubeBG->size().width());
 
         if(this->flagSetRoseTubeBG){
             // 배경Height가 변동
-            QPixmap tmp_pixmap = this->pixmap_roseTubeBG->scaled(this->widget_roseTubeBG->size().width(), 200, Qt::KeepAspectRatioByExpanding, Qt::SmoothTransformation);
-            this->lb_roseTubeBG->setPixmap(tmp_pixmap);
+            //QPixmap tmp_pixmap = this->pixmap_roseTubeBG->scaled(this->widget_roseTubeBG->size().width(), 200, Qt::KeepAspectRatioByExpanding, Qt::SmoothTransformation);
+            //this->lb_roseTubeBG->setPixmap(tmp_pixmap);
             this->lb_roseTubeBG->resize(this->widget_roseTubeBG->size());
         }
 
-        lb_BG->hide();
-        lb_BGOpacity->hide();
+        //lb_BG->hide();
+        //lb_BGOpacity->hide();
     }
 
     virtual void showPlayScreenBG();

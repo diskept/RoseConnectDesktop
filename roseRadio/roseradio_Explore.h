@@ -26,6 +26,7 @@ namespace roseRadio {
         ~RoseRadioExplore();
 
         void setActivePage() override;
+        void resizeEvent(QResizeEvent *event) override;
 
     protected:
         void proc_wheelEvent_to_getMoreData() override;
@@ -65,6 +66,11 @@ namespace roseRadio {
         roseRadio::ItemExplore *explore_genre[9999];
 
         QJsonArray jsonArr_Genre;
+
+        int genre_widget_width = 0;
+        int genre_widget_margin = 0;
+
+        int genre_widget_cnt = 0;
 
         int next_offset = 0;
         int genre_total_cnt = 0;

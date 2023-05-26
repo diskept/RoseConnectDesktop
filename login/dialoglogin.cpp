@@ -381,7 +381,7 @@ void DialogLogin::slot_clickedLogin(){
         jsonData.insert("email", tmp_id);
         jsonData.insert("password", tmp_pw);
 
-        // roseaudio api change      22/02/2021    fixed jeon
+        // roseaudio api change      22/02/2021    fixed diskept
         network->request(HTTP_LOGIN
                          , QString("%1/member/member/login").arg(global.legacy_v1)
                          , jsonData

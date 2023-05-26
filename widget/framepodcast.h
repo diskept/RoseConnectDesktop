@@ -32,7 +32,7 @@ private:
     const int IMG_HEIGHT = 214;
     const int MARGIN = 10;
 
-    const int LABEL_HEIGHT = 18;
+    const int LABEL_HEIGHT = 22;
     const int SPACE_LABELS = 5;
 
     Data_PC_Channel *data;

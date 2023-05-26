@@ -67,16 +67,16 @@ namespace roseRadio {
 
         this->label_title = new QLabel(label_base);
         this->label_title->setWordWrap(true);
-        this->label_title->setStyleSheet("font-size:20px; line-height:1.25; color:#FFFFFF;");
+        this->label_title->setStyleSheet("font-size:20px; font-weight: normal;font-style: normal;line-height: 1.25;text-align: left; color:#FFFFFF;");
         this->label_title->setGeometry(25, 17, ITEM_TITLE_WIDTH, ITEM_TITLE_HEIGHT);
 
         this->label_name = new QLabel(label_base);
-        this->label_name->setStyleSheet("font-size:16px; font-weight:300; line-height:3.38; color: #999999;");
+        this->label_name->setStyleSheet("font-size:16px;   font-weight: 300;font-style: normal;line-height: 3.38;text-align: left; color: #999999;");
         this->label_name->setGeometry(25, 17 + ITEM_TITLE_HEIGHT, ITEM_TITLE_WIDTH, ITEM_RESOLUTIION_HEIGHT);
 
-        /*this->label_resolution = new QLabel(label_base);
-        this->label_resolution->setStyleSheet("font-size:16px; font-weight:300; line-height:3.38; color: #999999;");
-        this->label_resolution->setGeometry(145, 80, ITEM_TITLE_WIDTH, ITEM_RESOLUTIION_HEIGHT);*/
+        this->label_resolution = new QLabel(label_base);
+        this->label_resolution->setStyleSheet("font-size:16px;   font-weight: 300;font-style: normal;line-height: 3.38;text-align: left; color: #999999;");
+        this->label_resolution->setGeometry(25, 17 + ITEM_TITLE_HEIGHT + ITEM_RESOLUTIION_HEIGHT, ITEM_TITLE_WIDTH, ITEM_RESOLUTIION_HEIGHT);
 
         if(baseWidth > 330){
             this->btn_reservation = GSCommon::getUIBtnImg("btn_reservation", ICON_PATH___rectangle_reservation, label_base);
@@ -142,12 +142,23 @@ namespace roseRadio {
 
         QString title = ProcJsonEasy::getString(this->data_channel, "title");
         QString name = "";
+        QString resolution = "";
 
         QJsonArray tmpGenres = ProcJsonEasy::getJsonArray(this->data_channel, "genres");
         QString genres = ProcJsonEasy::getString(tmpGenres.at(0).toObject(), "name");
 
         QJsonArray tmpRegions = ProcJsonEasy::getJsonArray(this->data_channel, "regions");
         QString regions = ProcJsonEasy::getString(tmpRegions.at(0).toObject(), "name");
+
+        QString bitrate = ProcJsonEasy::getString(this->data_channel, "bitrate");
+        QString codec = ProcJsonEasy::getString(this->data_channel, "codec");
+
+        if(bitrate.isNull()){
+            resolution = codec;
+        }
+        else{
+            resolution = bitrate + "kbps · " +codec;
+        }
 
         this->flag_fav = ProcJsonEasy::getBool(this->data_channel, "favorite");
 
@@ -160,6 +171,10 @@ namespace roseRadio {
         else if(genres.isNull() && !regions.isNull()){
             name = regions;
         }
+
+        /*if(){
+
+        }*/
 
         QLabel *tmp_wordwrap = new QLabel();
         tmp_wordwrap->setStyleSheet("font-size:20px; line-height:1.25; color:#FFFFFF;");
@@ -202,11 +217,26 @@ namespace roseRadio {
 
             title_width = tmp_wordwrap->sizeHint().width() + ITEM_TITLE_WIDTH;
 
-            this->label_title->setGeometry(25, 17, ITEM_TITLE_WIDTH, ITEM_TITLE_HEIGHT * 2);
+            this->label_title->setGeometry(25, 5, ITEM_TITLE_WIDTH, ITEM_TITLE_HEIGHT * 2);
             this->label_title->setText(GSCommon::getTextCutFromLabelWidth(title, title_width, this->label_title->font()));
+            if(this->label_title->text().contains("…")){
+                this->label_title->setToolTip(title);//c230321
+                this->label_title->setToolTipDuration(2000);//c230321
+            }
 
-            this->label_name->setGeometry(25, 17 + (ITEM_TITLE_HEIGHT * 2) + (ITEM_SPACE_LABEL * 2), ITEM_TITLE_WIDTH, ITEM_RESOLUTIION_HEIGHT);
+            this->label_name->setGeometry(25, 5 + (ITEM_TITLE_HEIGHT * 2), ITEM_TITLE_WIDTH, ITEM_RESOLUTIION_HEIGHT);
             this->label_name->setText(GSCommon::getTextCutFromLabelWidth(name, ITEM_TITLE_WIDTH, this->label_name->font()));
+            if(this->label_name->text().contains("…")){
+                this->label_name->setToolTip(name);//c230321
+                this->label_name->setToolTipDuration(2000);//c230321
+            }
+
+            this->label_resolution->setGeometry(25, 5 + (ITEM_TITLE_HEIGHT * 2) + ITEM_RESOLUTIION_HEIGHT, ITEM_TITLE_WIDTH, ITEM_RESOLUTIION_HEIGHT);
+            this->label_resolution->setText(GSCommon::getTextCutFromLabelWidth(resolution, ITEM_TITLE_WIDTH, this->label_resolution->font()));
+            if(this->label_resolution->text().contains("…")){
+                this->label_resolution->setToolTip(resolution);//c230321
+                this->label_resolution->setToolTipDuration(2000);//c230321
+            }
 
             if(this->flag_fav){
                 this->btn_favorite->setStyleSheet("#btn_favorite { background-color:rgba(0,0,0,0); background-image: url('" +
@@ -216,9 +246,30 @@ namespace roseRadio {
         else{
             this->label_title->setGeometry(25, 17, ITEM_TITLE_WIDTH, ITEM_TITLE_HEIGHT);
             this->label_title->setText(GSCommon::getTextCutFromLabelWidth(title, ITEM_TITLE_WIDTH, this->label_title->font()));
+            if(this->label_title->text().contains("…")){
+                this->label_title->setToolTip(title);//c230321
+                this->label_title->setToolTipDuration(2000);//c230321
+            }
 
             this->label_name->setGeometry(25, 17+ ITEM_TITLE_HEIGHT + (ITEM_SPACE_LABEL * 2), ITEM_TITLE_WIDTH, ITEM_RESOLUTIION_HEIGHT);
             this->label_name->setText(GSCommon::getTextCutFromLabelWidth(name, ITEM_TITLE_WIDTH, this->label_name->font()));
+            if(this->label_name->text().contains("…")){
+                this->label_name->setToolTip(name);//c230321
+                this->label_name->setToolTipDuration(2000);//c230321
+            }
+
+            this->label_resolution->setGeometry(25, 17 + ITEM_TITLE_HEIGHT + ITEM_RESOLUTIION_HEIGHT + (ITEM_SPACE_LABEL * 2), ITEM_TITLE_WIDTH, ITEM_RESOLUTIION_HEIGHT);
+            this->label_resolution->setText(GSCommon::getTextCutFromLabelWidth(resolution, ITEM_TITLE_WIDTH, this->label_resolution->font()));
+            if(this->label_resolution->text().contains("…")){
+                this->label_resolution->setToolTip(resolution);//c230321
+                this->label_resolution->setToolTipDuration(2000);//c230321
+            }
+            this->label_resolution->setGeometry(25, 5 + (ITEM_TITLE_HEIGHT * 2) + ITEM_RESOLUTIION_HEIGHT, ITEM_TITLE_WIDTH, ITEM_RESOLUTIION_HEIGHT);
+            this->label_resolution->setText(GSCommon::getTextCutFromLabelWidth(resolution, ITEM_TITLE_WIDTH, this->label_resolution->font()));
+            if(this->label_resolution->text().contains("…")){
+                this->label_resolution->setToolTip(resolution);//c230321
+                this->label_resolution->setToolTipDuration(2000);//c230321
+            }
 
             if(this->flag_fav){
                 this->btn_favorite->setStyleSheet("#btn_favorite { background-color:rgba(0,0,0,0); background-image: url('" +

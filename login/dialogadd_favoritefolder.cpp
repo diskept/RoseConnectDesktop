@@ -90,7 +90,7 @@ void DialogAdd_FavoriteFolder::setUIControl(){
     lineEdit_name->setMaxLength(15);
     lineEdit_name->setPlaceholderText(tr("Favorite name")); //lineEdit_name->setPlaceholderText(tr("즐겨찾기 이름"));
     lineEdit_name->setFixedHeight(50);
-    lineEdit_name->setTextMargins(23,14,23,14);
+    lineEdit_name->setTextMargins(23,10,23,10);
     lineEdit_name->setStyleSheet("font-size:20px;color:#777777;background-color:#212121;border-radius:2px;border:1px solid #4d4d4d;");
 
     // ------------------------------------------
@@ -102,7 +102,7 @@ void DialogAdd_FavoriteFolder::setUIControl(){
 
     lb_favorPath = new QLabel;
     lb_favorPath->setMinimumHeight(50);
-    lb_favorPath->setContentsMargins(23,14,23,14);
+    lb_favorPath->setContentsMargins(23,10,23,10);
     lb_favorPath->setStyleSheet("font-size:20px;color:#777777;background-color:#212121;border-radius:2px;border:1px solid #4d4d4d;");
     lb_favorPath->setWordWrap(true);
 

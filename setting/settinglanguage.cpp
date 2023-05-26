@@ -102,7 +102,7 @@ QWidget* SettingLanguage::getUIControlOption(QString p_title){
     comboBox_language->setObjectName("comboBox_timer");//cheon01
     comboBox_language->setFixedWidth(340);
     comboBox_language->addItem(tr("English"), 0);//cheon01_src
-    comboBox_language->addItem(tr("Korea"), 1);//cheon01_src
+    comboBox_language->addItem(tr("Korean"), 1);//cheon01_src
 
     comboBox_language->setStyleSheet("QComboBox { font-size:18px;color:#FFFFFF; background-color:#333333; padding:5px;  } "
                                 "QComboBox QListView { font-size:18px;color:#FFFFFF; background-color:#333333; } "
@@ -226,7 +226,7 @@ void SettingLanguage::slot_changedIndexLanguage(int index){
         dlg->setTitle(tr("Changing Language Notice"));
         QString lang = tr("English");
         if(sel == 1){
-            lang = tr("Korea");
+            lang = tr("Korean");
         }
         dlg->setText(QString(tr("Are you sure you want to change to %1 ? If accepted, Rose_Connect will be re-launched. ")).arg(lang));//c220511
         print_debug();
@@ -321,7 +321,7 @@ void SettingLanguage::slot_responseHttp(const int &p_id, const QJsonObject &p_js
                 this->lb_language_res->setText(tr("       Current Language :       ") + QString(tr("English:0")));
             }
             else {
-                this->lb_language_res->setText(tr("       Current Language :       ") + QString(tr("Korea:1")));
+                this->lb_language_res->setText(tr("       Current Language :       ") + QString(tr("Korean:1")));
             }
 
             //print_debug();//cheon01

@@ -1,5 +1,8 @@
-#include "dialogconfirm.h"
+#include "widget/dialogconfirm.h"
+
 #include "common/gscommon.h"
+
+#include <QDebug>
 
 const int DLG_WIDTH = 600;
 
@@ -35,6 +38,7 @@ void DialogConfirm::setInit(){
  * @brief DialogConfirm::setUIControl : UI 세팅
  */
 void DialogConfirm::setUIControl(){
+
     lb_title = new QLabel;
     lb_title->setAlignment(Qt::AlignCenter);
     lb_title->setStyleSheet("color:#FFFFFF;font-size:22px;background-color:transparent;");
@@ -67,7 +71,7 @@ void DialogConfirm::setUIControl(){
     lb_text = new QLabel;
     lb_text->setAlignment(Qt::AlignCenter);
     lb_text->setStyleSheet("color:#FFFFFF;font-size:20px;background-color:transparent; line-height:24px;");
-    lb_text->setContentsMargins(30,14,30,39);
+    //lb_text->setContentsMargins(30,14,30,39);
     lb_text->setWordWrap(true);
     //lb_text->setFixedHeight(100);//c220511
 
@@ -96,7 +100,7 @@ void DialogConfirm::setUIControl(){
     box_btn->addStretch(1);
     box_btn->addWidget(btn_save);
     if(this->confirmType == DlgConfirmType::OKCancel){
-    box_btn->addWidget(btn_cancel);
+        box_btn->addWidget(btn_cancel);
     }
     box_btn->addStretch(1);
 
@@ -107,7 +111,7 @@ void DialogConfirm::setUIControl(){
 
     QVBoxLayout *box_body = new QVBoxLayout;//c220709
     box_body->setSpacing(0);
-    box_body->setContentsMargins(0,0,0,0);
+    box_body->setContentsMargins(0, 0, 0, 0);
     box_body->setAlignment(Qt::AlignTop);
     box_body->addWidget(lb_text);
     box_body->addWidget(wg_body);
@@ -117,9 +121,11 @@ void DialogConfirm::setUIControl(){
 
     QVBoxLayout *box_contents = new QVBoxLayout;
     box_contents->setSpacing(0);
-    box_contents->setContentsMargins(25,25,25,30);
+    //box_contents->setContentsMargins(25,25,25,30);
+    box_contents->setContentsMargins(50, 30, 50, 30);
     box_contents->setAlignment(Qt::AlignTop);
     box_contents->addLayout(box_body);
+    box_contents->addSpacing(40);
     box_contents->addLayout(box_btn);
 
     QVBoxLayout *box_total = new QVBoxLayout;
@@ -165,36 +171,68 @@ void DialogConfirm::setText(const QString &p_text){
     wg_body->hide();
     lb_text->setText(p_text);
     lb_text->show();
-
 }
+
 void DialogConfirm::setLayoutMy(QLayout *a){//c220709
     lb_text->hide();
     wg_body->setLayout(a);
     wg_body->show();
-
 }
+
 void DialogConfirm::setLayoutMy_withText(QLayout *a){//c220804
     //lb_text->hide();
     wg_body->setLayout(a);
     wg_body->show();
-
 }
 
 void DialogConfirm::setTextHeight(const int &h){//c220511
     lb_text->setFixedHeight(h);
 }
+
 void DialogConfirm::setAlignment(Qt::Alignment a){//c220511
     lb_text->setAlignment(a);
 }
-
 
 void DialogConfirm::yellow_setStyleSheet(){//cheon211203
     wg_total->setStyleSheet("#wg_total { background-color:rgb(227,184,138);border-radius:4px;border:1px solid #4D4D4D; }");//#333333
 
 }
+
 /**
  * @brief DialogConfirm::setAlertMode : Alert Mode 변환
  */
 void DialogConfirm::setAlertMode(){
     btn_cancel->hide();
+}
+
+
+
+
+void DialogConfirm::setAlignmentTitle(Qt::Alignment align){
+    lb_title->setAlignment(align);
+}
+
+void DialogConfirm::setAlignmentContent(Qt::Alignment align){
+    lb_text->setAlignment(align);
+}
+
+void DialogConfirm::setStyleSheetTitle(QString style){
+    lb_title->setStyleSheet(style);
+}
+
+void DialogConfirm::setStyleSheetContent(QString style){
+    lb_text->setStyleSheet(style);
+}
+
+void DialogConfirm::setFixedDialogSize(int width, int height){
+
+    if(width > 0 && height <= 0){
+        this->setFixedWidth(width);
+    }
+    else if(width <= 0 && height > 0){
+        this->setFixedHeight(height);
+    }
+    else if(width > 0 && height > 0){
+        this->setFixedSize(width, height);
+    }
 }

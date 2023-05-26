@@ -48,7 +48,7 @@ namespace qobuz {
 
         // play by album_id
         //void requestPlayRose_byAlbumID(const int album_id, OptMorePopup::ClickMode clickMode);
-        //void requestPlayRose_byAlbumID(const int album_id, AbstractImageDetailInfo::BtnClickMode btnClickMode);   // Added Jeon 27/12/2020
+        //void requestPlayRose_byAlbumID(const int album_id, AbstractImageDetailInfo::BtnClickMode btnClickMode);   // Added diskept 27/12/2020
         void requestPlayRose_byAlbumID(const QString album_id, OptMorePopup::ClickMode clickMode);
         void requestPlayRose_byAlbumID(const QString album_id, AbstractImageDetailInfo::BtnClickMode btnClickMode);
 

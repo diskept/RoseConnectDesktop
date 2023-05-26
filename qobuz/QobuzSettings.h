@@ -22,6 +22,7 @@ namespace qobuz {
         ~QobuzSettings();
 
         void setActivePage() override;
+        void slot_clickBtnLogout();//c230329
 
     signals:
 
@@ -29,7 +30,7 @@ namespace qobuz {
         void slot_acceptedDialogLogin() override;
 
     private slots:
-        void slot_clickBtnLogout();
+        //void slot_clickBtnLogout();//c230329
         void slot_successProcLogout();
 
         void slot_change_device_state(const QString&);

@@ -91,7 +91,7 @@ namespace qobuz {
             this->flag_album[1] = false;
             this->flag_track[1] = false;
 
-            ContentLoadingwaitingMsgShow(tr("Content is being loaded. Please wait."));
+            print_debug();ContentLoadingwaitingMsgShow(tr("Content is being loaded. Please wait."));
 
             ProcCommon::DataOrderOption sortOpt = ProcCommon::DataOrderOption::DATE;      // 기본값
             ProcCommon::DataOrderDirection orderDirection = ProcCommon::DataOrderDirection::DESC;      // 기본값
@@ -108,6 +108,9 @@ namespace qobuz {
             qobuz::ProcCommon *proc_t = new qobuz::ProcCommon(this);
             connect(proc_t, &ProcCommon::completeReq_list_myFavoriteTracks, this, &QobuzMyFavorites::slot_applyResult_tracks);
             proc_t->request_qobuz_getList_myFavoriteTracks(sortOpt, orderDirection, 5, 0);
+        }
+        else{
+            print_debug();ContentLoadingwaitingMsgHide();   //j230328
         }
     }
 
@@ -217,7 +220,7 @@ namespace qobuz {
                 this->vBox_album->addSpacing(10);
 
                 NoData_Widget *noData_widget = new NoData_Widget(NoData_Widget::NoData_Message::Album_NoData);
-                noData_widget->setFixedHeight(275);
+                noData_widget->setFixedHeight(285);
                 this->vBox_album->addWidget(noData_widget, 0, Qt::AlignCenter);
 
                 this->box_main_contents->addLayout(this->vBox_album);
@@ -247,7 +250,7 @@ namespace qobuz {
                 this->vBox_artist->addSpacing(10);
 
                 NoData_Widget *noData_widget = new NoData_Widget(NoData_Widget::NoData_Message::Artist_NoData);
-                noData_widget->setFixedHeight(275);
+                noData_widget->setFixedHeight(260);
                 this->vBox_artist->addWidget(noData_widget, 0, Qt::AlignCenter);
 
                 this->box_main_contents->addLayout(this->vBox_artist);
@@ -358,7 +361,7 @@ namespace qobuz {
         tmp_scrollArea->setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
         tmp_scrollArea->setStyleSheet("background-color:transparent; border:0px;");
         tmp_scrollArea->setContentsMargins(0,0,0,0);
-        tmp_scrollArea->setFixedHeight(275);
+        tmp_scrollArea->setFixedHeight(285);
 
         QScroller::grabGesture(tmp_scrollArea, QScroller::LeftMouseButtonGesture);
         //----------------------------------------------------------------------------------------------------  BODY : END
@@ -390,7 +393,7 @@ namespace qobuz {
         tmp_scrollArea->setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
         tmp_scrollArea->setStyleSheet("background-color:transparent; border:0px;");
         tmp_scrollArea->setContentsMargins(0,0,0,0);
-        tmp_scrollArea->setFixedHeight(250);
+        tmp_scrollArea->setFixedHeight(260);
 
         QScroller::grabGesture(tmp_scrollArea, QScroller::LeftMouseButtonGesture);
         //----------------------------------------------------------------------------------------------------  BODY : END
@@ -509,23 +512,23 @@ namespace qobuz {
 
     void QobuzMyFavorites::slot_qobuz_completeReq_listAll_myFavoritesIds(const QJsonObject& p_jsonObj){
         // Favorite 정보를 전달해줌. 알아서 처리하라고. => OptMorePopup 에서 하라고, 가려줌
-        if(p_jsonObj.contains("flagOk") && ProcJsonEasy::get_flagOk(p_jsonObj)){
-            bool status  = ProcJsonEasy::getBool(p_jsonObj, "status");
+//        if(p_jsonObj.contains("flagOk") && ProcJsonEasy::get_flagOk(p_jsonObj)){
+//            bool status  = ProcJsonEasy::getBool(p_jsonObj, "status");
 
-            // Qobuz favorite toggle check
-            if(this->flag_send_track == true){
-                if((status == true && this->flag_track_fav == false) || (status == false && this->flag_track_fav == true)){
-                    // Qobuz Favorite toggle
-                    ProcCommon *proc = new ProcCommon(this);
-                    connect(proc, &qobuz::ProcCommon::completeReq_listAll_myFavoritesIds, this, &QobuzMyFavorites::slot_qobuz_completeReq_listAll_myFavoritesIds);
-                    proc->request_qobuz_set_favorite("track", QString("%1").arg(this->track_id_fav), this->flag_track_fav);
-                }
-                this->flag_send_track = false;
-            }
-            else{
+//            // Qobuz favorite toggle check
+//            if(this->flag_send_track == true){
+//                if((status == true && this->flag_track_fav == false) || (status == false && this->flag_track_fav == true)){
+//                    // Qobuz Favorite toggle
+//                    ProcCommon *proc = new ProcCommon(this);
+//                    connect(proc, &qobuz::ProcCommon::completeReq_listAll_myFavoritesIds, this, &QobuzMyFavorites::slot_qobuz_completeReq_listAll_myFavoritesIds);
+//                    proc->request_qobuz_set_favorite("track", QString("%1").arg(this->track_id_fav), this->flag_track_fav);
+//                }
+//                this->flag_send_track = false;
+//            }
+//            else{
 
-            }
-        }
+//            }
+//        }
     }
 
 

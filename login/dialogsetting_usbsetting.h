@@ -64,6 +64,12 @@ private:
     const int DLG_HEIGHT = 560;
     const char* PROPERTY_NAME_READABLE = "readableName";
 
+    QDialog *loding_ani_dialog = nullptr;
+
+    void loding_ani_init();
+    void loding_ani_show();
+    void loding_ani_hide();
+
     QString selected_deviceName;
 QString notice_msg;
 QLabel *lb_notice;

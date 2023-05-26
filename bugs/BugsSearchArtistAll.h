@@ -5,6 +5,9 @@
 
 #include "bugs/ItemArtist_bugs.h"
 
+#include "roseHome/ConvertData_rosehome.h"
+#include "roseHome/ItemArtist_rosehome.h"
+
 #include "common/common_struct.h"
 
 #include <QCoreApplication>
@@ -69,7 +72,6 @@ namespace bugs {
         bool flag_flow_draw = false;
         bool flag_artist_draw = false;
     };
-
 };
 
 #endif // BUGSSEARCHARTISTALL_H

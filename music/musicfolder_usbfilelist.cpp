@@ -215,7 +215,6 @@ void MusicFolder_USBFileList::setUIControl(){
     listWidget = new QListWidget(this);
     listWidget->setItemDelegate(delegate);
     listWidget->setCursor(Qt::PointingHandCursor);
-    listWidget->setCursor(Qt::PointingHandCursor);
     listWidget->setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
     listWidget->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
     listWidget->setStyleSheet("border:none;");
@@ -291,8 +290,8 @@ void MusicFolder_USBFileList::appendFileUI(const QJsonObject &p_jsonObject){
         item1->setData(Qt::DecorationRole, QPixmap(":images/icon_folder_bic.png"));
 
         listWidget->addItem(item1);
-    }else{
-
+    }
+    else{
         QJsonObject jsonDBData = getFileInfoFromDB(data->getPath());
         QString tmp_albumImg = jsonDBData["album_art"].toString();
 
@@ -366,7 +365,7 @@ QJsonObject MusicFolder_USBFileList::getFileInfoFromDB(const QString &p_path){
  * @brief MusicFolder_USBFileList::playMusic : 음원 재생
  * @param jsonArrMusic QJsonArray 재생음원 정보
  */
-void MusicFolder_USBFileList::playMusic(QJsonArray jsonArrMusic, bool flagPlayShuffle){//c220714
+void MusicFolder_USBFileList::playMusic(QJsonArray jsonArrMusic, int type, bool flagPlayShuffle){//c220714
 
     int playType = global.device.getMusicPlayType();
 
@@ -396,7 +395,18 @@ void MusicFolder_USBFileList::playMusic(QJsonArray jsonArrMusic, bool flagPlaySh
             break;
     }
 
-    QJsonArray jsonArr_toPlayReal = this->get_rearrangeJsonArray_toPlayData(jsonArrMusic, this->select_index, curr_clickMode);
+    QJsonArray jsonArr_toPlayReal;
+    if(type == 1){
+        if(playType < 17){
+            jsonArr_toPlayReal = this->get_rearrangeJsonArray_toPlayData(jsonArrMusic, 0, OptMorePopup::ClickMode::Play_RightNow);
+        }
+        else{
+            jsonArr_toPlayReal = this->get_rearrangeJsonArray_toPlayData(jsonArrMusic, 0, curr_clickMode);
+        }
+    }
+    else{
+        jsonArr_toPlayReal = this->get_rearrangeJsonArray_toPlayData(jsonArrMusic, this->select_index, curr_clickMode);
+    }
 
     QJsonObject examobj, examobjtmp;//cheon120812-iso
     examobjtmp = jsonArrMusic[0].toObject();//cheon120812-iso
@@ -433,7 +443,8 @@ void MusicFolder_USBFileList::playMusic(QJsonArray jsonArrMusic, bool flagPlaySh
             network->request(HTTP_NETWORK_PLAY, QString("http://%1:%2/%3").arg(global.device.getDeviceIP()).arg(global.port).arg("cd.play.stop"), tmp_json, true, true);
     */
 
-        }else{
+        }
+        else{
             print_debug();
             QJsonObject tmp_json;
 
@@ -467,7 +478,8 @@ void MusicFolder_USBFileList::playMusic(QJsonArray jsonArrMusic, bool flagPlaySh
 
         }
 
-    }else{//cheon120812-iso
+    }
+    else{//cheon120812-iso
         QJsonObject tmp_json;
         tmp_json.insert("musicPlayType", playType);
         tmp_json.insert("music", jsonArr_toPlayReal);
@@ -1068,7 +1080,7 @@ void MusicFolder_USBFileList::slot_delegateClicked(const int &p_index, const int
             print_debug();
             //playMusic(getPlayMusicInfoArray(p_index));
             this->select_index = p_index;
-            playMusic(getPlayMusicInfoArray(-1));
+            playMusic(getPlayMusicInfoArray(-1), 0);
         }
         else if(p_btnType == USBFileDelegate::BtnType::playListAdd){
             if(tmp_id > 0){
@@ -1129,7 +1141,7 @@ void MusicFolder_USBFileList::slot_thumbnailDownloaded(){
  */
 void MusicFolder_USBFileList::slot_clickedPlayAll(){
     print_debug();
-    playMusic(getPlayMusicInfoArray(-1));
+    playMusic(getPlayMusicInfoArray(-1), 1);
 }
 
 /**
@@ -1137,7 +1149,7 @@ void MusicFolder_USBFileList::slot_clickedPlayAll(){
  */
 void MusicFolder_USBFileList::slot_clickedPlayShuffle(){
     print_debug();
-    playMusic(getPlayMusicInfoArray(-1), true);
+    playMusic(getPlayMusicInfoArray(-1), 1, true);
 }
 
 /**

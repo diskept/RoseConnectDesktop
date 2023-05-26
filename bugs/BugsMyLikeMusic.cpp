@@ -3,6 +3,7 @@
 #include "DataCommon_Bugs.h"
 #include "ProcBugsAPI.h"
 #include "ProcRoseAPI_withBugs.h"
+#include "roseHome/ProcCommon_forRosehome.h"
 #include <QDebug>
 #include "common/global.h"
 #include "common/gscommon.h"
@@ -14,6 +15,9 @@
 #include <QScrollBar>
 #include <QResizeEvent>
 #include <QMouseEvent>
+#include <QCoreApplication>
+
+#include "widget/NoData_Widget.h"
 
 
 namespace bugs {
@@ -151,7 +155,20 @@ namespace bugs {
         this->flagReqMore_artist = false;
         this->flagReqMore_pd_album = false;
 
-        this->listWidget_track->clear();
+        this->flag_draw = false;
+        this->flag_check_track = false;
+        this->flag_track_fav = false;
+        this->flag_send_track = false;
+
+        this->track_id_fav = 0;
+        this->track_idx_fav = 0;
+        this->track_star_fav = 0;
+
+        this->track_totalCount = 0;
+        this->track_drawCount = 0;
+        this->track_favoriteOffset = 0;
+
+        GSCommon::clearLayout(this->Vbox_track);
         GSCommon::clearLayout(this->flowLayout_album);
         this->listWidget_artist->clear();
         GSCommon::clearLayout(this->flowLayout_pd_album);
@@ -168,12 +185,17 @@ namespace bugs {
         this->addUIControl_mainTitle("좋아한 음악");
         this->setUIControl_filterAndTab();
 
+        // 재생버튼 관련 - track용으로
+        this->widget_playBtn = this->get_UIControl_btnPlays(true, true);
+        this->widget_playBtn->setContentsMargins(50,0,0,0);
+        this->box_contents->addWidget(this->widget_playBtn);
+        this->widget_playBtn->hide();
 
         // 탭에 의해서 Widget 조절하기 위한 StackedWidget
         this->stackedWidget_content = new QStackedWidget();
         this->stackedWidget_content->setContentsMargins(0,0,0,0);          // bottom에 spacing 넣어둠
         this->stackedWidget_content->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
-        this->box_contents->addWidget(this->stackedWidget_content, 1);
+        this->box_contents->addWidget(this->stackedWidget_content);
 
         this->setUIControl_body_Track();
         this->setUIControl_body_Album();
@@ -203,7 +225,7 @@ namespace bugs {
         this->segmentTabWidget = new SegmentTabWidget();
         this->segmentTabWidget->setList_tabName(list_tab);
         this->segmentTabWidget->set_selectedIndex(0);
-        this->segmentTabWidget->set_fixedTabBtnSize(QSize(125,40));
+        this->segmentTabWidget->set_fixedTabBtnSize(QSize(150,40));
         connect(this->segmentTabWidget, &SegmentTabWidget::signal_clicked, this, &BugsMyLikeMusic::slot_segmentTag_clicked);
 
         QHBoxLayout *hBox_filter = new QHBoxLayout();
@@ -233,26 +255,19 @@ namespace bugs {
      */
     void BugsMyLikeMusic::setUIControl_body_Track(){
 
-        // 재생버튼 관련 - track용으로
-        QWidget *widget_playBtn = this->get_UIControl_btnPlays(true, false);
-
         // track
-        this->delegate_track = new BugsTrackDelegate(SECTION_FOR_MORE_POPUP___track, BugsTrackDelegate::Bugs_Track_General, this);
-        connect(delegate_track, &BugsTrackDelegate::clicked, this, &BugsMyLikeMusic::slot_clickedItemTrack_inList);
-        this->listWidget_track = this->get_UIControl_ListWidget(this->delegate_track);
-
-        QVBoxLayout *tmp_vBox = new QVBoxLayout();
-        tmp_vBox->setSpacing(0);
-        tmp_vBox->setContentsMargins(0,0,0,30);
-        tmp_vBox->addWidget(widget_playBtn, 0, Qt::AlignLeft);
-        tmp_vBox->addWidget(this->listWidget_track, 1, Qt::AlignTop);
+        this->Vbox_track = new QVBoxLayout();
+        this->Vbox_track->setSpacing(0);
+        this->Vbox_track->setContentsMargins(50,0,102,30);
+        this->Vbox_track->setAlignment(Qt::AlignTop);
 
         this->widget_inScroll_track = new QWidget();
-        this->widget_inScroll_track->setLayout(tmp_vBox);
+        this->widget_inScroll_track->setLayout(this->Vbox_track);
 
         // scrollArea
         this->scrollArea_track = this->get_UIControl_VerticalScrollArea();
         this->scrollArea_track->setWidget(this->widget_inScroll_track);
+        this->scrollArea_track->setAlignment(Qt::AlignTop);
 
         this->stackedWidget_content->addWidget(this->scrollArea_track);
     }
@@ -395,6 +410,39 @@ namespace bugs {
         }
     }
 
+    void BugsMyLikeMusic::request_more_trackDraw(){
+        int start_index = this->track_drawCount;
+        int max_cnt = ((this->track_totalCount - this->track_drawCount) > GET_ITEM_SIZE___ONCE ) ? GET_ITEM_SIZE___ONCE : (this->track_totalCount - this->track_drawCount);
+        this->track_drawCount += max_cnt;
+
+        for(int i = start_index; i < this->track_drawCount; i++){
+            this->track_listAll[i] = new PlaylistTrackDetailInfo_RHV;
+            connect(this->track_listAll[i], &PlaylistTrackDetailInfo_RHV::clicked, this, &BugsMyLikeMusic::slot_clickedItemTrack_inList2);
+            this->track_listAll[i]->setProperty("index", i);
+
+            this->Vbox_track->addWidget(this->track_listAll[i]);
+        }
+
+        QList<QString> tmp_clientkey;
+        for(int i = start_index; i < this->track_drawCount; i++){
+            this->track_listAll[i]->setDataTrackInfo_Bugs(this->list_track->at(i), "like");
+
+            tmp_clientkey.append(QString("%1").arg(this->list_track->at(i).track_id));
+            QCoreApplication::processEvents();
+        }
+
+        roseHome::ProcCommon *proc_fav_track = new roseHome::ProcCommon(this);
+        connect(proc_fav_track, &roseHome::ProcCommon::completeReq_rating_track, this, &BugsMyLikeMusic::slot_applyResult_getRating_track);
+        proc_fav_track->request_rose_getRating_Track("BUGS", tmp_clientkey);
+
+        if(this->track_totalCount == this->track_drawCount){
+            this->Vbox_track->addSpacing(30);
+        }
+
+        ContentLoadingwaitingMsgHide();
+        this->flag_draw = false;
+    }
+
 
     /**
      * @brief Album 정보를 요청 (Bugs API)
@@ -478,7 +526,13 @@ namespace bugs {
      */
     void BugsMyLikeMusic::proc_wheelEvent_to_getMoreData(){
         if(this->selected_tabIndex == 0){
-            this->request_more_trackData();
+            if((this->track_totalCount > this->track_drawCount) && (this->list_track->size() > this->track_drawCount) && (this->flag_draw == false)){
+
+                this->flag_draw = true;
+
+                print_debug();ContentLoadingwaitingMsgShow(tr("Content is being loaded. Please wait."));
+                this->request_more_trackDraw();
+            }
         }
         else if(this->selected_tabIndex == 1){
             this->request_more_albumData();
@@ -566,24 +620,28 @@ namespace bugs {
 
             if(clickedIndex == 0){
                 // track
+                this->widget_playBtn->show();
                 if(this->list_track->length() == 0){
                     this->request_more_trackData();
                 }
             }
             else if(clickedIndex == 1){
                 // album
+                this->widget_playBtn->hide();
                 if(this->list_album->length() == 0){
                     this->request_more_albumData();
                 }
             }
             else if(clickedIndex == 2){
                 // artist
+                this->widget_playBtn->hide();
                 if(this->list_artist->length() == 0){
                     this->request_more_artistData();
                 }
             }
             else if(clickedIndex == 3){
                 // PD's album
+                this->widget_playBtn->hide();
                 if(this->list_pd_album->length() == 0){
                     this->request_more_pd_albumData();
                 }
@@ -591,9 +649,6 @@ namespace bugs {
 
         }
     }
-
-
-
 
 
     /**
@@ -606,6 +661,15 @@ namespace bugs {
     }
 
 
+    /**
+     * @brief "셔플재생"  버튼 클릭
+     */
+    void BugsMyLikeMusic::slot_btnClicked_playShuffle(){
+        if(this->selected_tabIndex == 0){
+            this->proc_play_allTrack(this->jsonArr_tracks_toPlay, true);
+        }
+    }
+
 
     /**
      * @brief BugsMusicRecently::slot_applyResult_tracks
@@ -613,16 +677,74 @@ namespace bugs {
      * @param jsonObj_track
      */
     void BugsMyLikeMusic::slot_applyResult_tracks(const QList<bugs::TrackItemData>& list_data, const QJsonArray& jsonArr_dataToPlay, const bool flag_lastPage){
-        this->flag_lastPage_track = flag_lastPage;
-        this->flagReqMore_track = false;            // init
-        int section = sender()->property("section").toInt();
-        if(section == SECTION_FOR_MORE_POPUP___track){
-            ProcJsonEasy::mergeJsonArray(this->jsonArr_tracks_toPlay, jsonArr_dataToPlay);
+        if(list_data.size() > 0){
+            this->flag_lastPage_track = flag_lastPage;
+            this->flagReqMore_track = false;            // init
+            int section = sender()->property("section").toInt();
+            if(section == SECTION_FOR_MORE_POPUP___track){
+                if(this->list_track->count() == 0){
+                    this->jsonArr_tracks_toPlay = QJsonArray();
+                    this->track_totalCount = list_data.at(0).total_count;
+                }
 
-            int start_index = this->list_track->size();
-            this->list_track->append(list_data);
-            this->createList_itemTrackDelegate_applyingWithData_showImage(list_data, this->listWidget_track, start_index, section, true);
+                int start_index = this->list_track->count();
+
+                this->list_track->append(list_data);
+                ProcJsonEasy::mergeJsonArray(this->jsonArr_tracks_toPlay, jsonArr_dataToPlay);
+
+                if(start_index == 0){
+
+                    int max_cnt = this->list_track->size();
+                    this->track_drawCount = max_cnt;
+
+
+                    for(int i = start_index; i < max_cnt; i++){
+                        this->track_listAll[i] = new PlaylistTrackDetailInfo_RHV;
+                        connect(this->track_listAll[i], &PlaylistTrackDetailInfo_RHV::clicked, this, &BugsMyLikeMusic::slot_clickedItemTrack_inList2);
+                        this->track_listAll[i]->setProperty("index", i);
+
+                        this->Vbox_track->addWidget(this->track_listAll[i]);
+                    }
+
+                    QList<QString> tmp_clientkey;
+                    for(int i = start_index; i < max_cnt; i++){
+                        this->track_listAll[i]->setDataTrackInfo_Bugs(this->list_track->at(i), "like");
+                        this->track_listAll[i]->resize(1550, 70);
+
+                        tmp_clientkey.append(QString("%1").arg(this->list_track->at(i).track_id));
+                        QCoreApplication::processEvents();
+                    }
+
+                    roseHome::ProcCommon *proc_fav_track = new roseHome::ProcCommon(this);
+                    connect(proc_fav_track, &roseHome::ProcCommon::completeReq_rating_track, this, &BugsMyLikeMusic::slot_applyResult_getRating_track);
+                    proc_fav_track->request_rose_getRating_Track("BUGS", tmp_clientkey);
+
+                    ContentLoadingwaitingMsgHide();
+
+                    if(this->track_totalCount > this->list_track->count()){
+                        this->request_more_trackData();
+                    }
+                    else{
+                        this->Vbox_track->addSpacing(30);
+                    }
+                }
+                else{
+
+                    if(this->track_totalCount > this->list_track->count()){
+                        this->request_more_trackData();
+                    }
+                }
+            }
         }
+        else{
+            ContentLoadingwaitingMsgHide();      //cheon Tidal
+
+            NoData_Widget *noData_widget = new NoData_Widget(NoData_Widget::NoData_Message::Playlist_NoData);
+            noData_widget->setFixedSize(1500, 300);
+
+            this->Vbox_track->addWidget(noData_widget);
+        }
+
     }
 
 
@@ -635,6 +757,7 @@ namespace bugs {
         this->flagReqMore_album = false;            // init
         int section = sender()->property("section").toInt();
         if(section == SECTION_FOR_MORE_POPUP___album){
+
             int start_index = this->list_album->length();
             this->list_album->append(list_data);
             this->createList_itemAlbum_applyingWithData(list_data, tidal::AbstractItem::ImageSizeMode::Square_186x186, this->flowLayout_album, start_index, section);
@@ -652,6 +775,7 @@ namespace bugs {
         this->flagReqMore_artist = false;            // init
         int section = sender()->property("section").toInt();
         if(section == SECTION_FOR_MORE_POPUP___artist){
+
             int start_index = this->list_artist->size();
             this->list_artist->append(list_data);
             this->createList_itemArtistDelegate_applyingWithData_showImage(list_data, this->listWidget_artist, start_index, section, true);
@@ -665,6 +789,7 @@ namespace bugs {
      * @param flag_lastPage
      */
     void BugsMyLikeMusic::slot_applyResult_pd_albums(const QList<bugs::PD_AlbumItemData>& list_data, const bool flag_lastPage){
+
         this->flagReqMore_pd_album = false;            // init (ready to get more data)
         this->flag_lastPage_pd_album = flag_lastPage;
 
@@ -681,11 +806,136 @@ namespace bugs {
     void BugsMyLikeMusic::slot_thumbnailDownloaded_fotListWidget_delegate(){
         FileDownloader *fileDownloader_sender = qobject_cast<FileDownloader*>(sender());
         int section = fileDownloader_sender->property("section").toInt();
-        if(section == SECTION_FOR_MORE_POPUP___track){
-            this->applyImageData_itemTrackDelegate_withFileDownload(fileDownloader_sender, this->listWidget_track, this->list_track);
-        }
-        else if(section == SECTION_FOR_MORE_POPUP___artist){
+        if(section == SECTION_FOR_MORE_POPUP___artist){
             this->applyImageData_itemArtistDelegate_withFileDownload(fileDownloader_sender, this->listWidget_artist, this->list_artist);
+        }
+    }
+
+    void BugsMyLikeMusic::slot_bugs_completeReq_listAll_myFavoritesIds(const QJsonObject& p_jsonObj){
+        // Favorite 정보를 전달해줌.
+        int idx = ProcJsonEasy::getInt(p_jsonObj, "index");
+        int track_id = ProcJsonEasy::getString(p_jsonObj, "data_id").toInt();
+
+        if(track_id == this->list_track->at(idx).track_id){
+            qDebug() << "likes_yn : " << ProcJsonEasy::getBool(p_jsonObj, "likes_yn");
+        }
+
+        this->flag_send_track = false;
+    }
+
+    void BugsMyLikeMusic::slot_applyResult_checkRating_track(const QJsonObject &jsonObj){
+
+        if(jsonObj.contains("id")){
+
+            int id = ProcJsonEasy::getInt(jsonObj, "id");
+
+            if(id > 0){
+                QJsonObject ratingInfo;
+                ratingInfo.insert("favorite", this->flag_track_fav);
+                ratingInfo.insert("star", this->track_star_fav);
+                ratingInfo.insert("thumbup", false);
+                ratingInfo.insert("type", "BUGS");
+
+                QJsonObject track;
+                track.insert("duration", 0);
+                track.insert("favorite", false);
+                track.insert("id", id);
+                track.insert("ownerId", 0);
+                track.insert("sort", 0);
+                track.insert("star", 0);
+                track.insert("type", "BUGS");
+
+                QJsonObject json;
+                json.insert("ratingInfo", ratingInfo);
+                json.insert("track", track);
+
+                // request HTTP API - get favorite for Rose Server
+                roseHome::ProcCommon *proc_fav_track = new roseHome::ProcCommon(this);
+                connect(proc_fav_track, &roseHome::ProcCommon::completeReq_rating_track, this, &BugsMyLikeMusic::slot_applyResult_getRating_track);
+                proc_fav_track->request_rose_setRating_Track(json, this->flag_track_fav, this->track_star_fav);
+            }
+            else{
+
+                QJsonObject data = this->jsonArr_tracks_toPlay[this->track_idx_fav].toObject();
+
+
+                QJsonObject track;
+                track.insert("clientKey", ProcJsonEasy::getInt(data, "track_id"));
+                track.insert("duration", 0);
+                track.insert("favorite", true);
+                track.insert("ownerId", 0);
+                track.insert("sort", 0);
+                track.insert("star", 1);
+                track.insert("thumbnailUrl", this->list_track->at(this->track_idx_fav).album_image);
+                track.insert("title", ProcJsonEasy::getString(data, "track_title"));
+                track.insert("type", "BUGS");
+                track.insert("data", data);
+
+                QJsonArray tracks;
+                tracks.append(track);
+
+                QJsonObject json;
+                json.insert("tracks", tracks);
+
+                // request HTTP API - get favorite for Rose Server
+                roseHome::ProcCommon *proc_fav_track = new roseHome::ProcCommon(this);
+                connect(proc_fav_track, &roseHome::ProcCommon::completeCheck_rating_track, this, &BugsMyLikeMusic::slot_applyResult_addRating_track);
+                proc_fav_track->request_rose_addRating_Track(json);
+            }
+        }
+        else{
+
+            if(this->flag_check_track == true){
+                this->flag_check_track = false;
+            }
+        }
+    }
+
+    void BugsMyLikeMusic::slot_applyResult_getRating_track(const QJsonArray &contents){
+
+        if(contents.size() > 0){
+            QJsonObject track_info = contents.at(0).toObject();
+
+            if(track_info.contains("star")){
+                for(int i = 0; i < contents.size(); i++){
+                    QJsonObject track_info = contents.at(i).toObject();
+
+                    int star = ProcJsonEasy::getInt(track_info, "star");
+                    bool flag = star > 0 ? true : false;
+
+                    this->track_listAll[i]->setFavoritesIds(flag, star);
+                }
+
+            }
+            else if(track_info.contains("message") && (track_info["message"].toString() == "정상")){
+                this->track_listAll[this->track_idx_fav]->setFavoritesIds(this->flag_track_fav, this->track_star_fav);
+            }
+
+            if(this->flag_check_track == true){
+                this->flag_check_track = false;
+            }
+        }
+        else{
+            this->flag_check_track = false;
+        }
+    }
+
+
+    void BugsMyLikeMusic::slot_applyResult_addRating_track(const QJsonObject &jsonObj){
+
+
+        if(jsonObj.contains("flagOk")){
+
+            if(jsonObj.contains("message") && (jsonObj["message"].toString() == "정상")){
+                this->track_listAll[this->track_idx_fav]->setFavoritesIds(this->flag_track_fav, this->track_star_fav);
+
+            }
+            if(this->flag_check_track == true){
+                this->flag_check_track = false;
+            }
+        }
+        else{
+            this->flag_check_track = false;
         }
     }
 
@@ -704,6 +954,68 @@ namespace bugs {
         }
         else if(section == SECTION_FOR_MORE_POPUP___artist){
             this->proc_clicked_itemArtist_inList(this->list_artist, clickMode, idx, section);
+        }
+    }
+
+    void BugsMyLikeMusic::slot_clickedItemTrack_inList2(const int idx, const PlaylistTrackDetailInfo_RHV::ClickMode clickMode){
+
+        if(clickMode == PlaylistTrackDetailInfo_RHV::ClickMode::FavBtn){
+
+            if(this->flag_check_track == false){
+                if(this->flag_check_track == false){
+                    this->track_star_fav = this->track_listAll[idx]->getFavoritesStars();
+                    this->flag_track_fav = false;
+
+                    if(this->track_star_fav == 3){
+                        this->track_star_fav = 0;
+
+                        this->track_idx_fav = idx;
+                        this->flag_track_fav = false;
+                    }
+                    else if(this->track_star_fav >= 0 && this->track_star_fav < 3){
+                        this->track_star_fav++;
+
+                        this->track_idx_fav = idx;
+                        this->flag_track_fav = true;
+                    }
+
+                    if(this->track_star_fav == 0 || this->track_star_fav == 1){
+                        // Bugs Favorite
+                        ItemPositionData itemPosData;
+                        itemPosData.section = SECTION_FOR_MORE_POPUP___track;
+                        itemPosData.index = idx;
+                        itemPosData.data_id = QString("%1").arg(this->list_track->at(idx).track_id);
+
+                        ProcBugsAPI *proc = new ProcBugsAPI(this);
+                        connect(proc, &bugs::ProcBugsAPI::completeReq_favarite_track, this, &BugsMyLikeMusic::slot_bugs_completeReq_listAll_myFavoritesIds);
+
+                        if(this->track_star_fav == 0){
+                            itemPosData.likes_yn = false;
+
+                            proc->request_bugs_deleteFavorite_track(this->list_track->at(idx).track_id, ConvertData_forBugs::getObjectJson_itemPositionData(itemPosData));
+                        }
+                        else if(this->track_star_fav == 1){
+                            itemPosData.likes_yn = true;
+
+                            proc->request_bugs_addFavorite_track(this->list_track->at(idx).track_id, ConvertData_forBugs::getObjectJson_itemPositionData(itemPosData));
+                        }
+
+                        this->flag_send_track = true;
+                    }
+
+                    this->track_idx_fav = idx;
+
+                    // request HTTP API - get favorite for Rose Server
+                    roseHome::ProcCommon *proc_favCheck_track = new roseHome::ProcCommon(this);
+                    connect(proc_favCheck_track, &roseHome::ProcCommon::completeCheck_rating_track, this, &BugsMyLikeMusic::slot_applyResult_checkRating_track);
+                    proc_favCheck_track->request_rose_checkRating_Track("BUGS", QString("%1").arg(this->list_track->at(idx).track_id));
+
+                    this->flag_check_track = true;
+                }
+            }
+        }
+        else{
+            this->proc_clicked_itemTrack_inList(this->list_track, this->jsonArr_tracks_toPlay, clickMode, idx, SECTION_FOR_MORE_POPUP___track);
         }
     }
 
@@ -745,7 +1057,7 @@ namespace bugs {
             this->list_track->replace(data_itemPos.index, data_track);
 
             // Update ListWidget
-            this->listWidget_track->item(data_itemPos.index)->setData(Qt::UserRole, ConvertData_forBugs::getObjectJson_trackData(data_track));
+//            this->listWidget_track->item(data_itemPos.index)->setData(Qt::UserRole, ConvertData_forBugs::getObjectJson_trackData(data_track));
         }
     }
 

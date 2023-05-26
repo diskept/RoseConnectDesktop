@@ -28,7 +28,7 @@
 #include <QNetworkReply>
 #include <QDesktopServices>
 #include <QNetworkAccessManager>
-
+#include "common/global.h"
 #include <math.h>
 
 #include "Downloader.h"
@@ -224,23 +224,27 @@ void Downloader::installUpdate()
    m_ui->downloadLabel->setText(tr("Download complete!"));
    m_ui->timeLabel->setText(tr("The installer will open separately") + "...");
 
+   emit m_ui->stopButton->click();
    /* Ask the user to install the download */
    QMessageBox box;
+   //box.setWindowModality(Qt::WindowModal);
    box.setStyleSheet("font-size:12px;");
    box.setTextInteractionFlags(Qt::TextSelectableByMouse);
    box.setIcon(QMessageBox::Question);
    box.setDefaultButton(QMessageBox::Ok);
    box.setStandardButtons(QMessageBox::Ok | QMessageBox::Cancel);
    box.setInformativeText(tr("Click \"OK\" to begin installing the update"));
-
-   QString text = tr("In order to install the update, you may need to quit the application.");
+   int left = global.left_mainwindow+global.width_mainwindow/4;//c221007_1
+   int top = global.top_mainwindow+global.height_mainwindow/4;//c221007_1
+   box.setGeometry(left, top, 0, 0);//c221007_1
+   QString text = tr("Download complete! In order to install the update, you may need to quit the application.");
 
 
    if (m_mandatoryUpdate)
-      box.setText(tr("In order to install the update, you may need to quit the application. This is a mandatory update, exiting now will close the application"));
+      box.setText(tr("Download complete! In order to install the update, you may need to quit the application. This is a mandatory update, exiting now will close the application"));
 
 
-   else box.setText("<h3>" + tr("In order to install the update, you may need to quit the application.") + "</h3>");
+   else box.setText("<h3>" + tr("Download complete! In order to install the update, you may need to quit the application.") + "</h3>");
 
    /* User wants to install the download */
    if (box.exec() == QMessageBox::Ok)

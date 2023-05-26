@@ -32,7 +32,6 @@ namespace tidal {
     const int GET_MAX_ITEM_SIZE___ONCE = 99;
 
 
-
     /**
      * @brief
      * @param parent
@@ -95,14 +94,16 @@ namespace tidal {
 
             this->flag_draw = false;
 
-            ContentLoadingwaitingMsgShow(tr("Content is being loaded. Please wait."));
+            print_debug();ContentLoadingwaitingMsgShow(tr("Content is being loaded. Please wait."));
 
             // request HTTP API
             ProcCommon *proc = new ProcCommon(this);
             connect(proc, &ProcCommon::completeReq_list_items_of_playlist, this, &TidalMyPlaylistDetail::slot_applyResult_items_of_playlist);
             proc->request_tidal_getList_items_of_playlist(this->data_playlist.uuid, GET_MAX_ITEM_SIZE___ONCE, 0);
         }
-
+        else{
+            print_debug();ContentLoadingwaitingMsgHide();   //j230328
+        }
     }
 
 
@@ -125,6 +126,10 @@ namespace tidal {
 
                 this->flag_track_ok = false;
             }
+
+            GSCommon::clearLayout(this->box_contents);
+            this->box_contents->setAlignment(Qt::AlignTop);
+            this->scrollArea_main->setVerticalScrollBarPolicy(Qt::ScrollBarAsNeeded);
 
             this->box_main_contents = new QVBoxLayout();
             this->box_main_contents->setSpacing(0);
@@ -198,7 +203,7 @@ namespace tidal {
 
             this->flag_draw = true;
 
-            ContentLoadingwaitingMsgShow(tr("Content is being loaded. Please wait."));
+            print_debug();ContentLoadingwaitingMsgShow(tr("Content is being loaded. Please wait."));
             this->request_more_trackDraw();
         }
     }
@@ -230,7 +235,6 @@ namespace tidal {
      */
     void TidalMyPlaylistDetail::request_more_trackDraw(){
 
-
         int start_index = this->track_drawCount;
         int max_cnt = ((this->track_totalCount - this->track_drawCount) > GET_MAX_ITEM_SIZE___ONCE ) ? GET_MAX_ITEM_SIZE___ONCE : (this->track_totalCount - this->track_drawCount);
         this->track_drawCount += max_cnt;
@@ -255,8 +259,9 @@ namespace tidal {
             this->box_main_contents->addSpacing(30);
         }
 
+        this->track_favoriteOffset = start_index;
         roseHome::ProcCommon *proc_fav_track = new roseHome::ProcCommon(this);
-        //connect(proc_fav_track, &roseHome::ProcCommon::completeReq_rating_track, this, &TidalMyPlaylistDetail::slot_applyResult_getRating_track);
+        connect(proc_fav_track, &roseHome::ProcCommon::completeReq_rating_track, this, &TidalMyPlaylistDetail::slot_applyResult_getRating_track);
         proc_fav_track->request_rose_getRating_Track("TIDAL", tmp_clientkey);
 
         if(this->flag_track_ok == true && this->track_totalCount == this->track_drawCount){
@@ -332,8 +337,9 @@ namespace tidal {
                     QCoreApplication::processEvents();
                 }
 
+                this->track_favoriteOffset = start_index;
                 roseHome::ProcCommon *proc_fav_track = new roseHome::ProcCommon(this);
-                //connect(proc_fav_track, &roseHome::ProcCommon::completeReq_rating_track, this, &TidalMyPlaylistDetail::slot_applyResult_getRating_track);
+                connect(proc_fav_track, &roseHome::ProcCommon::completeReq_rating_track, this, &TidalMyPlaylistDetail::slot_applyResult_getRating_track);
                 proc_fav_track->request_rose_getRating_Track("TIDAL", tmp_clientkey);
             }
 
@@ -846,7 +852,7 @@ namespace tidal {
 
             this->flag_draw = false;
 
-            ContentLoadingwaitingMsgShow(tr("Content is being loaded. Please wait."));
+            print_debug();ContentLoadingwaitingMsgShow(tr("Content is being loaded. Please wait."));
 
             roseHome::ProcCommon *proc_playlist = new roseHome::ProcCommon(this);
             connect(proc_playlist, &roseHome::ProcCommon::completeReq_playlist, this, &TidalMyPlaylistDetail_ROSE::slot_applyResult_playlist);
@@ -859,6 +865,9 @@ namespace tidal {
                 connect(proc_thumb_playlist, &roseHome::ProcCommon::completeReq_rating_thumbup, this, &TidalMyPlaylistDetail_ROSE::slot_applyResult_getRating_thumbup);
                 proc_thumb_playlist->request_rose_getRating_Thumbup("PLAY_LIST", QString("%1").arg(tmp_data_playlist.id));
             }
+        }
+        else{
+            print_debug();ContentLoadingwaitingMsgHide();   //j230328
         }
     }
 
@@ -881,6 +890,10 @@ namespace tidal {
 
                 this->flag_track_ok = false;
             }
+
+            GSCommon::clearLayout(this->box_contents);
+            this->box_contents->setAlignment(Qt::AlignTop);
+            this->scrollArea_main->setVerticalScrollBarPolicy(Qt::ScrollBarAsNeeded);
 
 
             this->box_main_contents = new QVBoxLayout();
@@ -919,7 +932,7 @@ namespace tidal {
 
             this->flag_draw = true;
 
-            ContentLoadingwaitingMsgShow(tr("Content is being loaded. Please wait."));
+            print_debug();ContentLoadingwaitingMsgShow(tr("Content is being loaded. Please wait."));
             this->request_more_trackDraw();
         }
     }
@@ -1113,6 +1126,35 @@ namespace tidal {
         }
     }
 
+    void TidalMyPlaylistDetail_ROSE::slot_tidal_completeReq_listAll_myFavoritesIds(const QJsonObject& p_jsonObj){
+        // Favorite 정보를 전달해줌. 알아서 처리하라고.
+        if(p_jsonObj.contains("flagOk") && ProcJsonEasy::get_flagOk(p_jsonObj)){
+
+            // Tidal favorite check
+            if(this->flag_send_track == true){
+                QVariantList arr_myFavoriteIds = ProcJsonEasy::getJsonArray(p_jsonObj, "TRACK").toVariantList();
+                bool status = arr_myFavoriteIds.contains(this->track_id_fav);
+
+                if(status == true && this->flag_track_fav == false){
+                    // Tidal track Favorite del
+                    ProcCommon *proc = new ProcCommon(this);
+                    connect(proc, &tidal::ProcCommon::completeReq_listAll_myFavoritesIds, this, &TidalMyPlaylistDetail_ROSE::slot_tidal_completeReq_listAll_myFavoritesIds);
+                    proc->request_tidal_del_favorite("tracks", QString("%1").arg(this->track_id_fav));
+                }
+                else if(status == false && this->flag_track_fav == true){
+                    // Tidal track Favorite add
+                    ProcCommon *proc = new ProcCommon(this);
+                    connect(proc, &tidal::ProcCommon::completeReq_listAll_myFavoritesIds, this, &TidalMyPlaylistDetail_ROSE::slot_tidal_completeReq_listAll_myFavoritesIds);
+                    proc->request_tidal_set_favorite("tracks", QString("%1").arg(this->track_id_fav));
+                }
+                this->flag_send_track = false;
+            }
+            else{
+
+            }
+        }
+    }
+
 
     void TidalMyPlaylistDetail_ROSE::slot_applyResult_getRating_track(const QJsonArray &contents){
 
@@ -1297,20 +1339,38 @@ namespace tidal {
         if(clickMode == PlaylistTrackDetailInfo_RHV::ClickMode::FavBtn){
 
             if(this->flag_check_track == false){
-                int star_cnt = this->playlist_track_info[idx]->getFavoritesStars();
-
+                this->track_star_fav = this->playlist_track_info[idx]->getFavoritesStars();
                 this->flag_track_fav = false;
 
-                if(star_cnt == 3){
-                    star_cnt = 0;
+                if(this->track_star_fav == 3){
+                    this->track_star_fav = 0;
                     this->flag_track_fav = false;
 
                 }
-                else if(star_cnt >= 0 && star_cnt < 3){
-                    star_cnt++;
+                else if(this->track_star_fav >= 0 && this->track_star_fav < 3){
+                    this->track_star_fav++;
                     this->flag_track_fav = true;
-
                 }
+
+                this->track_idx_fav = idx;
+                this->track_id_fav = this->list_track->at(idx).clientKey.toInt();
+
+                if(this->track_star_fav == 1){
+                    // Tidal Track Favorite add
+                    ProcCommon *proc = new ProcCommon(this);
+                    proc->request_tidal_set_favorite("tracks", QString("%1").arg(this->track_id_fav));
+                }
+                else if(this->track_star_fav == 0){
+                    // Tidal Track Favorite del
+                    ProcCommon *proc = new ProcCommon(this);
+                    proc->request_tidal_del_favorite("tracks", QString("%1").arg(this->track_id_fav));
+                }
+
+                // favorite 정보 가져오기
+                ProcCommon *proc_fav = new ProcCommon(this);
+                connect(proc_fav, &ProcCommon::completeReq_listAll_myFavoritesIds, this, &TidalMyPlaylistDetail_ROSE::slot_tidal_completeReq_listAll_myFavoritesIds);
+                proc_fav->request_tidal_getAll_favorites();
+                this->flag_send_track = true;
 
                 QJsonObject track = this->jsonArr_tracks_toPlay.at(idx).toObject();
 
@@ -1318,7 +1378,7 @@ namespace tidal {
 
                 QJsonObject ratingInfo;
                 ratingInfo.insert("favorite", this->flag_track_fav);
-                ratingInfo.insert("star", star_cnt);
+                ratingInfo.insert("star", this->track_star_fav);
                 ratingInfo.insert("thumbup", false);
                 ratingInfo.insert("type", track_type);
 
@@ -1329,10 +1389,10 @@ namespace tidal {
                 // request HTTP API - get favorite for Rose Server
                 roseHome::ProcCommon *proc_fav_track = new roseHome::ProcCommon(this);
                 connect(proc_fav_track, &roseHome::ProcCommon::completeReq_rating_track, this, &TidalMyPlaylistDetail_ROSE::slot_applyResult_getRating_track);
-                proc_fav_track->request_rose_setRating_Track(json, this->flag_track_fav, star_cnt);
+                proc_fav_track->request_rose_setRating_Track(json, this->flag_track_fav, this->track_star_fav);
                 this->flag_check_track = true;
 
-                this->playlist_track_info[idx]->setFavoritesIds(this->flag_track_fav, star_cnt);
+                this->playlist_track_info[idx]->setFavoritesIds(this->flag_track_fav, this->track_star_fav);
             }
         }
         else{
@@ -1404,7 +1464,7 @@ namespace tidal {
                 qDebug() << "this->shareLink="<<this->shareLink;
 
             }
-            if(clickMode == OptMorePopup::ClickMode::Play_RightNow
+            else if(clickMode == OptMorePopup::ClickMode::Play_RightNow
                    || clickMode == OptMorePopup::ClickMode::SubMenu_QueueAdd_Last
                    || clickMode == OptMorePopup::ClickMode::SubMenu_QueueAdd_Empty
                    || clickMode == OptMorePopup::ClickMode::SubMenu_QueueAdd_CurrNext
@@ -1413,6 +1473,21 @@ namespace tidal {
                // Rose Play 요청
                roseHome::ProcRosePlay_withRosehome *procRosePlay = new roseHome::ProcRosePlay_withRosehome(this);
                procRosePlay->requestPlayRose_byPlaylist(this->data_playlist, this->jsonArr_tracks_toPlay, 0, clickMode, roseHome::ProcRosePlay_withRosehome::PlayShuffleMode::JustPlay);
+           }
+           else if(clickMode == OptMorePopup::ClickMode::Edit){
+               QString view_type = "edit";
+
+               QJsonObject data;
+               data.insert("view_type", view_type);
+               data.insert("playlist_id", this->data_playlist.id);
+               data.insert("type", "ROSE");
+
+               QJsonObject jsonObj_move;
+               jsonObj_move.insert("data", data);
+
+               jsonObj_move.insert(KEY_PAGE_CODE, PAGECODE_T_ADD_PLAYLIST);
+
+               emit this->signal_clickedMovePage(jsonObj_move);
            }
        }
        else if(section == SECTION_FOR_MORE_POPUP___tracks){

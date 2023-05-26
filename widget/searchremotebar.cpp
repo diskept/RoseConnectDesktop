@@ -63,7 +63,7 @@ void SearchRemoteBar::setSelectedRemoteBtnStyle(){
 void SearchRemoteBar::setInit(){
 
     linker = Linker::getInstance();
-    pixmapDelete.load(":images/icon_close_gray.png");//c220715
+    pixmapDelete.load(":/images/icon_close_gray.png");//c220715
 }
 
 /**
@@ -129,8 +129,15 @@ void SearchRemoteBar::setUIControl(){
 
     connect(linker, SIGNAL(signal_sugestionbarOld_sel(QString)), this, SLOT(slot_sugestionbarOld_sel(QString)));
     connect(linker, SIGNAL(signal_searchCopy(QString)), this, SLOT(slot_searchCopy(QString)));//c220904_1
+    connect(linker, SIGNAL(signal_searchBar_clearfocus()), this, SLOT(slot_searchBar_clearfocus()));//c230220
 
 
+}
+
+
+void SearchRemoteBar::slot_searchBar_clearfocus(){//c230220
+    print_debug();
+    le_search->clearFocus();
 }
 
 
@@ -269,7 +276,7 @@ void SearchRemoteBar::slot_get_dragDropText(){//c220930
                 print_debug();
                 //emit linker->signal_checkQueue(11, "");
                 //slot_overrideSigalSearch(true);
-                //emit linker->signal_clickedMovePageRoseTubeSearchCall();
+                emit linker->signal_clickedMovePageRoseTubeSearch();//c230228
                 print_debug();
                 //this->le_search_back->clear();
             }else{
@@ -707,10 +714,11 @@ void SearchRemoteBar::requestPlayAll(bool p_flagShuffle){//c220726
 
 void SearchRemoteBar::resizeEvent(QResizeEvent* ) {//c220726
 
-   btn_del->setGeometry(le_search->size().width()-60, 15, 40, 40);//c220719
-   print_debug();
-   //le_search->clear();//c22726
+    if(btn_del != nullptr){//c230322
+        btn_del->setGeometry(le_search->size().width()-60, 15, 40, 40);//c220719
+    }
 
+    print_debug();
 }
 
 void SearchRemoteBar::setsearchtext(QString a){//c220726
@@ -719,10 +727,16 @@ void SearchRemoteBar::setsearchtext(QString a){//c220726
     qDebug() << "setsearchtext---a = " << a;
     le_search->setText(a);
     le_search->clearFocus();//c220722
-    if(a.size()>1)//c220719
-        btn_del->show();
-    else
-        btn_del->hide();
+    if(a.size()>1){//c220719
+        if(btn_del != nullptr){//
+            btn_del->show();
+        }
+    }
+    else{
+        if(btn_del != nullptr){//c230423
+            btn_del->hide();
+        }
+    }
 }
 
 
@@ -732,10 +746,16 @@ void SearchRemoteBar::slot_searchCopy(QString a){//c220904_1
     qDebug() << "setsearchtext---a = " << a;
     le_search->setText(a);
     le_search->setFocus();//c220722
-    if(a.size()>1)//c220719
-        btn_del->show();
-    else
-        btn_del->hide();
+    if(a.size()>1){//c220719
+        if(btn_del != nullptr){//
+            btn_del->show();
+        }
+    }
+    else{
+        if(btn_del != nullptr){//
+            btn_del->hide();
+        }
+    }
 }
 
 void SearchRemoteBar::slot_sugestionbarOld_sel(const QString p_text){//c220726

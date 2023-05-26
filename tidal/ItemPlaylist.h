@@ -22,6 +22,8 @@ namespace tidal {
 
         void setData(const tidal::PlaylistItemData &p_data_playList);
         int get_fixedHeight() override;
+        int get_fixedWidth();
+        int get_rightMargin();
 
     private:
         void setUIControl();

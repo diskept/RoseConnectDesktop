@@ -47,11 +47,12 @@ namespace tidal {
         void setTypeMime(QString mime);
         void setTypeDuration(QString duration);
         void setTypeOnAir(QString imagePath);
-        void setFavorite(bool flagFavorite);        // 좋아요 초기값 설정
+        void setFavorite(bool flagFavorite);                    // 좋아요 초기값 설정
 
-
-        void setUseBtn_play(bool flagUse);              // protected -> public 으로 옮김. (Bugs > My Album 에서 제어 필요)
-        void setUseBtn_more(bool flagUse);              // protected -> public 으로 옮김. (Bugs > My Album 에서 제어 필요)
+        void setUseBtn_play(bool flagUse);                      // protected -> public 으로 옮김. (Bugs > My Album 에서 제어 필요)
+        void setUseBtn_more(bool flagUse);                      // protected -> public 으로 옮김. (Bugs > My Album 에서 제어 필요)
+        void setUseBtn_favoriteRT(bool flagUse);               // protected -> public 으로 옮김. (Bugs > My Album 에서 제어 필요)
+        void setUseBtn_favoriteRose(bool flagUse, int favCnt);  // protected -> public 으로 옮김. (Bugs > My Album 에서 제어 필요)
 
         QSize sizeHint() const override;
 
@@ -71,6 +72,8 @@ namespace tidal {
         bool flagUseHover;
         bool flagUseHover2;
         bool flagUseHoverRose;
+
+        bool flagArtist = false;
 
         int UseFavoriteRoseCnt;
 
@@ -101,7 +104,8 @@ namespace tidal {
         void setUseHover2(bool flagUse);
         void setUseHoverRose(bool flagUse);
         void setUseBtn_favorite(bool flagUse);
-        void setUseBtn_favoriteRose(bool flagUse, int favCnt);
+
+        void setUseArtist(bool flagUse);
 
 
 //        void setUseBtn_allBox(bool flagUse);

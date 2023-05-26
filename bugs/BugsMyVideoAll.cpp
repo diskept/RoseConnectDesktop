@@ -74,10 +74,13 @@ namespace bugs {
 
             this->flag_video_draw = false;
 
-            ContentLoadingwaitingMsgShow(tr("Content is being loaded. Please wait."));
+            print_debug();ContentLoadingwaitingMsgShow(tr("Content is being loaded. Please wait."));
 
             // request HTTP API
             this->request_more_videoData();
+        }
+        else{
+            print_debug();ContentLoadingwaitingMsgHide();   //j230328
         }
     }
 
@@ -131,7 +134,7 @@ namespace bugs {
         GSCommon::clearLayout(this->flowLayout_videos);
 
         // filtering
-        //this->setUiControl_filter();
+        //this->setUIControl_filter();
 
         // filter option box
         this->chooseFilterOpt = new bugs::BugsChooseFilterOpt(this);
@@ -141,9 +144,9 @@ namespace bugs {
 
 
     /**
-     * @brief QobuzMyvideoAll::setUiControl_filter
+     * @brief QobuzMyvideoAll::setUIControl_filter
      */
-    void BugsVideoRecentlyAll::setUiControl_filter(){
+    void BugsVideoRecentlyAll::setUIControl_filter(){
 
         // 필터링 부분
         this->filterWidget = new FilterWidget();
@@ -191,7 +194,7 @@ namespace bugs {
 
         GSCommon::clearLayout(this->flowLayout_videos);
 
-        ContentLoadingwaitingMsgShow(tr("Content is being loaded. Please wait."));
+        print_debug();ContentLoadingwaitingMsgShow(tr("Content is being loaded. Please wait."));
     }
 
 
@@ -207,7 +210,7 @@ namespace bugs {
 
             this->flag_video_draw = true;
 
-            ContentLoadingwaitingMsgShow(tr("Content is being loaded. Please wait."));
+            print_debug();ContentLoadingwaitingMsgShow(tr("Content is being loaded. Please wait."));
 
             this->request_more_videoDraw();
            // this->request_more_videoData();//c220716
@@ -219,10 +222,27 @@ namespace bugs {
      * @brief 스크롤링에 대해서, get more data 처리
      * @param event
      */
-    void BugsVideoRecentlyAll::resizeEvent(QResizeEvent *event){
+    void BugsVideoRecentlyAll::resizeEvent(QResizeEvent *event){//c230223
 
         AbstractBugsSubWidget::resizeEvent(event);
+        int w = flowLayout_videos->sizeHint().width();
+        int  l = 80, r = 60, scrollbarW = 0;
 
+        int mod_nn = (global.LmtCnt-l-r-scrollbarW)%(w+0);
+        //qDebug() << "mod_nn=" << mod_nn;
+        int i = 0;
+        while(1){
+
+            mod_nn = (global.LmtCnt-l-r-scrollbarW)%(w+0+i);
+            if(mod_nn > 20){
+
+                mod_nn = (global.LmtCnt-l-r-scrollbarW)%(w+(0+(i++)));
+            }else{
+                break;
+            }
+        }
+
+        flowLayout_videos->setSpacingHV(0+i,20);
         // BugsChooseFilterOpt 위젯의 사이즈를 업데이트 해줘야함
         if(this->chooseFilterOpt != nullptr){
             this->chooseFilterOpt->setFixedSize(event->size());
@@ -286,7 +306,12 @@ namespace bugs {
             this->flagReqMore_video = true;
 
             // j220913 list count check
-            int width_cnt = global.LmtCnt / 220;
+            int width_cnt;//c230223
+            if(flowLayout_videos->sizeHint().width() < 0) {//c230223
+                width_cnt = global.LmtCnt / 217;
+            }else{
+                width_cnt = global.LmtCnt / flowLayout_videos->sizeHint().width();//
+            }
             int mod = this->video_widget_cnt % width_cnt;
 
             if(mod == 0){
@@ -330,7 +355,12 @@ namespace bugs {
     void BugsVideoRecentlyAll::request_more_videoDraw(){
 
         // j220913 list count check
-        int width_cnt = global.LmtCnt / 220;
+        int width_cnt;//c230223
+        if(flowLayout_videos->sizeHint().width() < 0) {//c230223
+            width_cnt = global.LmtCnt / 217;
+        }else{
+            width_cnt = global.LmtCnt / flowLayout_videos->sizeHint().width();//
+        }
         int mod = this->video_widget_cnt % width_cnt;
 
         if(mod == 0){
@@ -407,15 +437,46 @@ namespace bugs {
                     QCoreApplication::processEvents();
                 }
 
+                //c230306_1-start
+                int w = flowLayout_videos->sizeHint().width();
+                int l = 80, r = 60, scrollbarW = 10, mod = 0;
+
+                int mod_nn = (global.LmtCnt-l-r-scrollbarW)%(w + mod);
+                int nn = (global.LmtCnt-l-r-scrollbarW)/(w + mod);
+                //qDebug() << "global.LmtCnt=" << global.LmtCnt;
+                //qDebug() << "this->width()=" << this->width();
+                //qDebug() << "nn=" << nn;
+                //qDebug() << "mod_nn=" << mod_nn;
+
+
+                int i = 0;
+                while(1){
+
+                    mod_nn = (global.LmtCnt-l-r-scrollbarW)%(w + mod + i);
+                    if(mod_nn > 20){
+
+                        mod_nn = (global.LmtCnt-l-r-scrollbarW)%(w + ( mod +(i++)));
+                    }else{
+                        break;
+                    }
+                }
+                //print_debug();
+                //qDebug() << "w=" << w;
+                //qDebug() << "i=" << i;
+                //qDebug() << "this->width()=" << this->width();
+                //this->resize(this->width()+1, this->height());
+                flowLayout_videos->setSpacingHV(mod+i,20);
+                //c230306_1-end
+
+                ContentLoadingwaitingMsgHide();
+
                 this->flag_flow_draw = true;
                 this->flag_video_draw = false;
             }
 
-            ContentLoadingwaitingMsgHide();
-
-            this->request_more_videoData();//c220716
-
-
+            if(this->flag_lastPage_video == false){
+                this->request_more_videoData();//c220716
+            }
         }
         else{
 
@@ -528,10 +589,13 @@ namespace bugs {
 
             this->flag_video_draw = false;
 
-            ContentLoadingwaitingMsgShow(tr("Content is being loaded. Please wait."));
+            print_debug();ContentLoadingwaitingMsgShow(tr("Content is being loaded. Please wait."));
 
             // request HTTP API
             this->request_more_videoData();
+        }
+        else{
+            print_debug();ContentLoadingwaitingMsgHide();   //j230328
         }
     }
 
@@ -585,7 +649,7 @@ namespace bugs {
         GSCommon::clearLayout(this->flowLayout_videos);
 
         // filtering
-        //this->setUiControl_filter();
+        //this->setUIControl_filter();
 
         // filter option box
         this->chooseFilterOpt = new bugs::BugsChooseFilterOpt(this);
@@ -595,9 +659,9 @@ namespace bugs {
 
 
     /**
-     * @brief QobuzMyvideoAll::setUiControl_filter
+     * @brief QobuzMyvideoAll::setUIControl_filter
      */
-    void BugsVideoChartAll::setUiControl_filter(){
+    void BugsVideoChartAll::setUIControl_filter(){
 
         // 필터링 부분
         this->filterWidget = new FilterWidget();
@@ -645,7 +709,7 @@ namespace bugs {
 
         GSCommon::clearLayout(this->flowLayout_videos);
 
-        ContentLoadingwaitingMsgShow(tr("Content is being loaded. Please wait."));
+        print_debug();ContentLoadingwaitingMsgShow(tr("Content is being loaded. Please wait."));
     }
 
 
@@ -659,7 +723,7 @@ namespace bugs {
 
             this->flag_video_draw = true;
 
-            ContentLoadingwaitingMsgShow(tr("Content is being loaded. Please wait."));
+            print_debug();ContentLoadingwaitingMsgShow(tr("Content is being loaded. Please wait."));
 
             this->request_more_videoDraw();
         }
@@ -857,12 +921,13 @@ namespace bugs {
 
                     QCoreApplication::processEvents();
                 }
+                ContentLoadingwaitingMsgHide();
 
                 this->flag_flow_draw = true;
                 this->flag_video_draw = false;
             }
 
-            ContentLoadingwaitingMsgHide();      //cheon Tidal
+
             this->request_more_videoData();
         }
         else{

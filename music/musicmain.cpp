@@ -226,26 +226,18 @@ namespace music {
 
         QJsonArray *p_jsonArray_titlSub = new QJsonArray();
         QJsonObject sub1 { {"name", tr("Home")}, {"code", PAGECODE_M_HOME} };
-        QJsonObject sub2 { {"name", tr("Classification")}, {"code", PAGECODE_M_CATEGORY} };
+        QJsonObject sub2 { {"name", tr("Recommendation")}, {"code", PAGECODE_M_RECOMMEND} };
         QJsonObject sub3 { {"name", tr("Album")}, {"code", PAGECODE_M_ALBUM} };
-        QJsonObject sub4 { {"name", tr("Folder")}, {"code", PAGECODE_M_FOLDER} };
-        QJsonObject sub5 { {"name", tr("My collection")}, {"code", PAGECODE_M_COLLECTION} };
-        /*
-         *     QJsonObject p_jsonObject_titleMain;
-        p_jsonObject_titleMain["name"] = "음악";
-        p_jsonObject_titleMain[KEY_MAIN_CODE] = GSCommon::MainMenuCode::Music;
-        QJsonArray *p_jsonArray_titlSub = new QJsonArray();
-        QJsonObject sub1 { {"name", "홈"}, {"code", PAGECODE_M_HOME} };
-        QJsonObject sub2 { {"name", "분류"}, {"code", PAGECODE_M_CATEGORY} };
-        QJsonObject sub3 { {"name", "앨범"}, {"code", PAGECODE_M_ALBUM} };
-        QJsonObject sub4 { {"name", "폴더"}, {"code", PAGECODE_M_FOLDER} };
-        QJsonObject sub5 { {"name", "My collection"}, {"code", PAGECODE_M_COLLECTION} };
-        */
+        QJsonObject sub4 { {"name", tr("Classification")}, {"code", PAGECODE_M_CATEGORY} };
+        QJsonObject sub5 { {"name", tr("Folder")}, {"code", PAGECODE_M_FOLDER} };
+        QJsonObject sub6 { {"name", tr("My collection")}, {"code", PAGECODE_M_COLLECTION} };
+
         p_jsonArray_titlSub->push_back(sub1);
         p_jsonArray_titlSub->push_back(sub2);
         p_jsonArray_titlSub->push_back(sub3);
         p_jsonArray_titlSub->push_back(sub4);
         p_jsonArray_titlSub->push_back(sub5);
+        p_jsonArray_titlSub->push_back(sub6);
 
         this->topMenuBar->setVisible(true);
 
@@ -260,7 +252,7 @@ namespace music {
                 this->musicHome = new MusicHome(this->topMenuBar);
                 this->stackedWidget_content->addWidget(musicHome);
                 connect(this->musicHome, SIGNAL(signal_clickedViewAll(QString)), this, SLOT(slot_clickedViewAll(QString)));
-                connect(this->musicHome, SIGNAL(signal_clickedViewAll_slot_clickedViewAll_Recommended(QString, QJsonObj)), this, SLOT(slot_clickedViewAll_Recommand(QString, QJsonObj)));
+                connect(this->musicHome, SIGNAL(signal_clickedViewAll_slot_clickedViewAll_Recommended(QString, QJsonObject)), this, SLOT(slot_clickedViewAll_Recommand(QString, QJsonObject)));
             }
 
             this->topMenuBar->setSelectedSubMenu(p_pageCode);
@@ -273,6 +265,97 @@ namespace music {
             if(global.device.getIsDbScanning() == false){
                 this->musicHome->show_topLabelControl();
             }
+
+        }else if(p_pageCode==PAGECODE_M_RECOMMEND){
+
+            if(this->musicRecommend==nullptr){
+                this->musicRecommend = new MusicRecommend(this);
+                this->stackedWidget_content->addWidget(musicRecommend);
+                connect(this->musicRecommend, SIGNAL(clickedSubTab(QJsonObject)), this, SLOT(goToMoveNewOrderPage_subStep(QJsonObject)));
+            }
+
+            this->topMenuBar->setSelectedSubMenu(p_pageCode);
+            this->topMenuBar->setDataTopMenuBar(p_jsonObject_titleMain, p_jsonArray_titlSub);
+            this->musicRecommend->setJsonObject_forData(p_data);
+            this->musicRecommend->setActivePage();
+
+            stackedWidget_content->setCurrentWidget(this->musicRecommend);
+
+        }else if(p_pageCode==PAGECODE_M_ALBUM){
+
+            if(this->musicAlbum==nullptr){
+                this->musicAlbum = new MusicAlbum(this);
+                this->stackedWidget_content->addWidget(musicAlbum);
+                connect(this->musicAlbum, SIGNAL(clickedSubTab(QJsonObject)), this, SLOT(goToMoveNewOrderPage_subStep(QJsonObject)));
+
+                /*if(ProcJsonEasy::getString(p_data, "pageCode2") != "albumInfo"){
+                    musicAlbum->setDataFromDB();
+                }*/
+            }
+
+            this->topMenuBar->setSelectedSubMenu(p_pageCode);
+            this->topMenuBar->setDataTopMenuBar(p_jsonObject_titleMain, p_jsonArray_titlSub);
+            this->musicAlbum->setJsonObject_forData(p_data);
+            this->musicAlbum->setActivePage();
+
+            stackedWidget_content->setCurrentWidget(musicAlbum);
+
+        }else if(p_pageCode==PAGECODE_M_CATEGORY){
+
+            if(this->musicCategory==nullptr){
+                this->musicCategory = new MusicCategory(this);
+                this->stackedWidget_content->addWidget(musicCategory);
+                connect(this->musicCategory, SIGNAL(clickedSubTab(QJsonObject)), this, SLOT(goToMoveNewOrderPage_subStep(QJsonObject)));
+            }
+
+            this->topMenuBar->setSelectedSubMenu(p_pageCode);
+            this->topMenuBar->setDataTopMenuBar(p_jsonObject_titleMain, p_jsonArray_titlSub);
+            this->musicCategory->setJsonObject_forData(p_data);
+            this->musicCategory->setActivePage();
+
+            //musicCategory->setDataABSPage(p_data);
+            stackedWidget_content->setCurrentWidget(musicCategory);
+
+        }else if(p_pageCode==PAGECODE_M_FOLDER){
+
+            if(this->musicFolder==nullptr){
+                this->musicFolder = new MusicFolder(this->topMenuBar);
+                //musicFolder->hide_topBtnFavorite();
+                this->stackedWidget_content->addWidget(musicFolder);
+                connect(musicFolder, SIGNAL(clickedSubTab(QJsonObject)), this, SLOT(goToMoveNewOrderPage_subStep(QJsonObject)));
+                connect(musicFolder, SIGNAL(signal_clickedFavoriteFolderEdit(QJsonArray)), this, SLOT(slot_clickedFavoriteFolderEdit(QJsonArray) ));
+                connect(this->topMenuBar, SIGNAL(signal_clickedSameSubMenu(QString)), this->musicFolder, SLOT(slot_goToInitiPageFolder(QString)));
+            }
+
+            this->topMenuBar->setSelectedSubMenu(p_pageCode);
+            this->topMenuBar->setDataTopMenuBar(p_jsonObject_titleMain, p_jsonArray_titlSub);
+            musicFolder->setDataABSPage(p_data);
+            stackedWidget_content->setCurrentWidget(musicFolder);
+
+        }else if(p_pageCode==PAGECODE_M_COLLECTION){
+
+            /*if(this->musicCollection==nullptr){
+                this->musicCollection = new MusicCollection();
+                this->stackedWidget_content->addWidget(musicCollection);
+                connect(musicCollection, SIGNAL(signal_clickedViewAll(QString)), this, SLOT(slot_clickedViewAll(QString)));
+            }
+
+            this->topMenuBar->setSelectedSubMenu(p_pageCode);
+            this->topMenuBar->setDataTopMenuBar(p_jsonObject_titleMain, p_jsonArray_titlSub);
+            musicCollection->requestFlagLoginInfo();
+            stackedWidget_content->setCurrentWidget(musicCollection);*/
+
+            if(this->musicMyCollection==nullptr){
+                this->musicMyCollection = new MusicMyCollection(this);
+                this->stackedWidget_content->addWidget(this->musicMyCollection);
+                connect(musicMyCollection, SIGNAL(signal_clickedViewAll(QString)), this, SLOT(slot_clickedViewAll(QString)));
+            }
+
+            this->topMenuBar->setSelectedSubMenu(p_pageCode);
+            this->topMenuBar->setDataTopMenuBar(p_jsonObject_titleMain, p_jsonArray_titlSub);
+            this->musicMyCollection->setJsonObject_forData(p_data);
+            this->musicMyCollection->setActivePage();
+            stackedWidget_content->setCurrentWidget(this->musicMyCollection);
 
         }else if(p_pageCode==PAGECODE_VA_PLAYALBUM){
 
@@ -331,6 +414,33 @@ namespace music {
             this->artistListAll->setJsonObject_forData(p_data);
             this->artistListAll->setActivePage();
             stackedWidget_content->setCurrentWidget(this->artistListAll);
+
+        }else if(p_pageCode == PAGECODE_VA_HISTORY_LIST_VIEW){
+
+            if(this->historyListAll==nullptr){
+                this->historyListAll = new HistoryListAll(this);
+                this->stackedWidget_content->addWidget(this->historyListAll);
+            }
+
+            this->topMenuBar->setVisible(false);
+
+            this->historyListAll->setJsonObject_forData(p_data);
+            this->historyListAll->setActivePage();
+            stackedWidget_content->setCurrentWidget(this->historyListAll);
+
+        }else if(p_pageCode == PAGECODE_VA_HISTORY_DETAIL){
+
+            if(this->historyDetail==nullptr){
+                this->historyDetail = new HistoryDetail(this);
+                this->stackedWidget_content->addWidget(this->historyDetail);
+                //connect(this->historyDetail, SIGNAL(signal_clickedViewAll(QString)), this, SLOT(slot_clickedViewAll(QString)));
+            }
+
+            this->topMenuBar->setVisible(false);
+
+            this->historyDetail->setJsonObject_forData(p_data);
+            this->historyDetail->setActivePage();
+            stackedWidget_content->setCurrentWidget(this->historyDetail);
 
         }else if(p_pageCode==PAGECODE_VA_MYPLAYLIST){
 
@@ -496,6 +606,45 @@ namespace music {
             this->artistTrackListAll->setActivePage();
             stackedWidget_content->setCurrentWidget(this->artistTrackListAll);
 
+        }else if(p_pageCode==PAGECODE_VA_ALBUM_HISTORY_ALL_VIEW){
+
+            if(this->histroyAlbumListAll==nullptr){
+                this->histroyAlbumListAll = new AlbumHistoryAll(this);
+                this->stackedWidget_content->addWidget(this->histroyAlbumListAll);
+            }
+
+            this->topMenuBar->setVisible(false);
+
+            this->histroyAlbumListAll->setJsonObject_forData(p_data);
+            this->histroyAlbumListAll->setActivePage();
+            stackedWidget_content->setCurrentWidget(this->histroyAlbumListAll);
+
+        }else if(p_pageCode==PAGECODE_VA_PLAYLIST_HISTORY_ALL_VIEW){
+
+            if(this->histroyPlaylistListAll==nullptr){
+                this->histroyPlaylistListAll = new PlaylistHistoryAll(this);
+                this->stackedWidget_content->addWidget(this->histroyPlaylistListAll);
+            }
+
+            this->topMenuBar->setVisible(false);
+
+            this->histroyPlaylistListAll->setJsonObject_forData(p_data);
+            this->histroyPlaylistListAll->setActivePage();
+            stackedWidget_content->setCurrentWidget(this->histroyPlaylistListAll);
+
+        }else if(p_pageCode==PAGECODE_VA_TRACK_HISTORY_ALL_VIEW){
+
+            if(this->histroyTrackListAll==nullptr){
+                this->histroyTrackListAll = new TrackHistoryAll(this);
+                this->stackedWidget_content->addWidget(this->histroyTrackListAll);
+            }
+
+            this->topMenuBar->setVisible(false);
+
+            this->histroyTrackListAll->setJsonObject_forData(p_data);
+            this->histroyTrackListAll->setActivePage();
+            stackedWidget_content->setCurrentWidget(this->histroyTrackListAll);
+
         }else if(p_pageCode==PAGECODE_VA_ARTIST_ALBUMLIST){
 
             /*if(this->viewAll_artistAlbum==nullptr){
@@ -534,75 +683,6 @@ namespace music {
             this->topMenuBar->setDataTopMenuBar(p_jsonObject_titleMain, new QJsonArray());
             this->viewAll_genreAlbum->requestInitData(p_data);
             stackedWidget_content->setCurrentWidget(this->viewAll_genreAlbum);
-
-        }else if(p_pageCode==PAGECODE_M_CATEGORY){
-
-            if(this->musicCategory==nullptr){
-                this->musicCategory = new MusicCategory(this);
-                this->stackedWidget_content->addWidget(musicCategory);
-                connect(this->musicCategory, SIGNAL(clickedSubTab(QJsonObject)), this, SLOT(goToMoveNewOrderPage_subStep(QJsonObject)));
-            }
-
-            this->topMenuBar->setSelectedSubMenu(p_pageCode);
-            this->topMenuBar->setDataTopMenuBar(p_jsonObject_titleMain, p_jsonArray_titlSub);
-            musicCategory->setDataABSPage(p_data);
-            stackedWidget_content->setCurrentWidget(musicCategory);
-
-        }else if(p_pageCode==PAGECODE_M_ALBUM){
-
-            if(this->musicAlbum==nullptr){
-                this->musicAlbum = new MusicAlbum(this);
-                this->stackedWidget_content->addWidget(musicAlbum);
-            }
-
-            this->topMenuBar->setSelectedSubMenu(p_pageCode);
-            this->topMenuBar->setDataTopMenuBar(p_jsonObject_titleMain, p_jsonArray_titlSub);
-
-            if(ProcJsonEasy::getString(p_data, "pageCode2") != "albumInfo"){
-                musicAlbum->setDataFromDB();
-            }
-            stackedWidget_content->setCurrentWidget(musicAlbum);
-
-        }else if(p_pageCode==PAGECODE_M_FOLDER){
-
-            if(this->musicFolder==nullptr){
-                this->musicFolder = new MusicFolder(this->topMenuBar);
-                //musicFolder->hide_topBtnFavorite();
-                this->stackedWidget_content->addWidget(musicFolder);
-                connect(musicFolder, SIGNAL(clickedSubTab(QJsonObject)), this, SLOT(goToMoveNewOrderPage_subStep(QJsonObject)));
-                connect(musicFolder, SIGNAL(signal_clickedFavoriteFolderEdit(QJsonArray)), this, SLOT(slot_clickedFavoriteFolderEdit(QJsonArray) ));
-                connect(this->topMenuBar, SIGNAL(signal_clickedSameSubMenu(QString)), this->musicFolder, SLOT(slot_goToInitiPageFolder(QString)));
-            }
-
-            this->topMenuBar->setSelectedSubMenu(p_pageCode);
-            this->topMenuBar->setDataTopMenuBar(p_jsonObject_titleMain, p_jsonArray_titlSub);
-            musicFolder->setDataABSPage(p_data);
-            stackedWidget_content->setCurrentWidget(musicFolder);
-
-        }else if(p_pageCode==PAGECODE_M_COLLECTION){
-
-            /*if(this->musicCollection==nullptr){
-                this->musicCollection = new MusicCollection();
-                this->stackedWidget_content->addWidget(musicCollection);
-                connect(musicCollection, SIGNAL(signal_clickedViewAll(QString)), this, SLOT(slot_clickedViewAll(QString)));
-            }
-
-            this->topMenuBar->setSelectedSubMenu(p_pageCode);
-            this->topMenuBar->setDataTopMenuBar(p_jsonObject_titleMain, p_jsonArray_titlSub);
-            musicCollection->requestFlagLoginInfo();
-            stackedWidget_content->setCurrentWidget(musicCollection);*/
-
-            if(this->musicMyCollection==nullptr){
-                this->musicMyCollection = new MusicMyCollection(this);
-                this->stackedWidget_content->addWidget(this->musicMyCollection);
-                connect(musicMyCollection, SIGNAL(signal_clickedViewAll(QString)), this, SLOT(slot_clickedViewAll(QString)));
-            }
-
-            this->topMenuBar->setSelectedSubMenu(p_pageCode);
-            this->topMenuBar->setDataTopMenuBar(p_jsonObject_titleMain, p_jsonArray_titlSub);
-            this->musicMyCollection->setJsonObject_forData(p_data);
-            this->musicMyCollection->setActivePage();
-            stackedWidget_content->setCurrentWidget(this->musicMyCollection);
 
         }else if(p_pageCode==PAGECODE_M_SEARCH){
 
@@ -650,6 +730,32 @@ namespace music {
             this->musicFavorite->setJsonObject_forData(p_data);
             this->musicFavorite->setActivePage();
             stackedWidget_content->setCurrentWidget(this->musicFavorite);
+
+        }else if(p_pageCode==PAGECODE_M_ADDPLAYLIST){
+
+            if(this->musicAddPlaylsit==nullptr){
+                this->musicAddPlaylsit = new MusicAddPlaylist(this);
+                this->stackedWidget_content->addWidget(this->musicAddPlaylsit);
+            }
+
+            this->topMenuBar->setVisible(false);
+
+            this->musicAddPlaylsit->setJsonObject_forData(p_data);
+            this->musicAddPlaylsit->setActivePage();
+            stackedWidget_content->setCurrentWidget(this->musicAddPlaylsit);
+
+        }else if(p_pageCode==PAGECODE_VA_RECENTLY_LIST_DELETE){
+
+            if(this->musicRecenltyDelete==nullptr){
+                this->musicRecenltyDelete = new MusicRecentlyListDelete(this);
+                this->stackedWidget_content->addWidget(this->musicRecenltyDelete);
+            }
+
+            this->topMenuBar->setVisible(false);
+
+            this->musicRecenltyDelete->setJsonObject_forData(ProcJsonEasy::getJsonObject(p_data, "data"));
+            this->musicRecenltyDelete->setActivePage();
+            stackedWidget_content->setCurrentWidget(this->musicRecenltyDelete);
 
         }else if(p_pageCode==PAGECODE_OP_ALBUMINFO){
 
@@ -756,7 +862,7 @@ namespace music {
 
         }else if(p_pageCode==PAGECODE_OP_PLAYLISTINFO){
 
-            if(this->musice_playlist==nullptr){
+            /*if(this->musice_playlist==nullptr){
                 this->musice_playlist = new Musice_playlist(this);
                 this->stackedWidget_content->addWidget(this->musice_playlist);
                 connect(this->musice_playlist, SIGNAL(signal_changedMenuName(QString)), this->topMenuBar, SLOT(slot_changedMenuNameText(QString)));
@@ -766,7 +872,20 @@ namespace music {
             this->topMenuBar->setSelectedSubMenu(p_pageCode);
             this->topMenuBar->setDataTopMenuBar(p_jsonObject_titleMain, new QJsonArray());
             musice_playlist->setPlayListData(p_data);
-            stackedWidget_content->setCurrentWidget(musice_playlist);
+            stackedWidget_content->setCurrentWidget(musice_playlist);*/
+
+            if(this->playlistDetail_rose==nullptr){
+                this->playlistDetail_rose = new PlaylistDetail_Rose(this);
+                this->stackedWidget_content->addWidget(this->playlistDetail_rose);
+                connect(this->playlistDetail_rose, SIGNAL(signal_changedMenuName(QString)), this->topMenuBar, SLOT(slot_changedMenuNameText(QString)));
+            }
+
+            this->topMenuBar->setVisible(false);
+
+            p_jsonObject_titleMain = QJsonObject();
+            this->playlistDetail_rose->setJsonObject_forData(p_data);
+            this->playlistDetail_rose->setActivePage();
+            stackedWidget_content->setCurrentWidget(this->playlistDetail_rose);
 
         }else if(p_pageCode==PAGECODE_OP_ARTISTINFO){
 

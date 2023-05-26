@@ -46,7 +46,7 @@ namespace apple {
 
     private:
         void setUIControl_albums();
-        void setUiControl_filter();
+        void setUIControl_filter();
 
         void request_more_albumData();
         void request_more_albumDraw();

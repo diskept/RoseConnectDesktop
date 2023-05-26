@@ -37,7 +37,7 @@ namespace qobuz {
         label_base->setFixedSize(img_width, base_height);
 
         this->label_artist = new QLabel(label_base);
-        this->label_artist->setStyleSheet("font-size:16px; color: #FFFFFF;");
+        this->label_artist->setStyleSheet("font-size:16px;  font-weight: normal;font-style: normal;line-height: 1.25;text-align: center; color: #FFFFFF;");
         this->label_artist->setAlignment(Qt::AlignHCenter | Qt::AlignTop);
         this->label_artist->setWordWrap(true);
         this->label_artist->setGeometry(0, 0, img_width, this->LABEL_HEIGHT * 2);
@@ -81,6 +81,19 @@ namespace qobuz {
         height += this->LABEL_HEIGHT;
 
         return height;
+    }
+
+    int ItemArtist_qobuz::get_fixedWidth(){
+
+        int width = this->get_imageWidth(this->m_imageSizeMode);
+
+        return width;
+    }
+
+
+    int ItemArtist_qobuz::get_rightMargin(){
+
+        return ITEM_BETWEEN_MARGIN_RIGHT;
     }
 
 
@@ -142,6 +155,10 @@ namespace qobuz {
                 title_width = tmp_wordwrap->sizeHint().width() + all_width;
 
                 this->label_artist->setText(GSCommon::getTextCutFromLabelWidth(artist, title_width, label_artist->font()));
+                if(this->label_artist->text().contains("…")){
+                    this->label_artist->setToolTip(artist);//c230321
+                    this->label_artist->setToolTipDuration(2000);//c230321
+                }
             }
             else{
                 this->label_artist->setText(artist);

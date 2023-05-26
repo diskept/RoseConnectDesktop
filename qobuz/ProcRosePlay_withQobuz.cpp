@@ -113,6 +113,8 @@ namespace qobuz {
 
         if(list_track.size() <= 0)
         {
+            print_debug();
+            emit linker->signal_checkQueue(35, tr("Qobuz type is currently logged out."));//c221116_2
             return;
         }
 

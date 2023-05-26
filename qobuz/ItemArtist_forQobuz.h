@@ -3,7 +3,7 @@
 
 #include "qobuz/qobuz_struct.h"
 
-#include "tidal/AbstractItem.h"     // TODO :: Added Jeon 16/12/2020
+#include "tidal/AbstractItem.h"     // TODO :: Added diskept 16/12/2020
 
 
 #define  print_qobuz_func() qDebug() << "[QOBUZ][FILE][INFO]" << "file_name: " << __FILE__ << "function_name: " << __FUNCTION__ << "line: " << __LINE__ << "\n";
@@ -23,6 +23,8 @@ namespace qobuz {
 
         void setData(const qobuz::ArtistItemData &p_data_artist);                               ///< 실제 사용함. 타이달에서만. struct 사용.
         int get_fixedHeight() override;
+        int get_fixedWidth();
+        int get_rightMargin();
 
     private:
         void setUIControl();

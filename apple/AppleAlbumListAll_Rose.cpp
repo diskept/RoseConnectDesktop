@@ -75,7 +75,7 @@ namespace apple {
 
             this->flag_album_draw = false;
 
-            ContentLoadingwaitingMsgShow(tr("Content is being loaded. Please wait."));
+            print_debug();ContentLoadingwaitingMsgShow(tr("Content is being loaded. Please wait."));
 
             // request HTTP API
             this->request_more_albumData();
@@ -127,7 +127,7 @@ namespace apple {
         this->flowLayout_albums = this->get_addUIControl_flowLayout(0, 20);
 
         // filtering
-        //this->setUiControl_filter();
+        //this->setUIControl_filter();
 
         // filter option box
         this->chooseFilterOpt = new bugs::BugsChooseFilterOpt(this);
@@ -137,9 +137,9 @@ namespace apple {
 
 
     /**
-     * @brief QobuzMyAlbumAll::setUiControl_filter
+     * @brief QobuzMyAlbumAll::setUIControl_filter
      */
-    void AppleAlbumListAll_Rose::setUiControl_filter(){
+    void AppleAlbumListAll_Rose::setUIControl_filter(){
 
         // 필터링 부분
         this->filterWidget = new FilterWidget();
@@ -187,7 +187,7 @@ namespace apple {
 
         GSCommon::clearLayout(this->flowLayout_albums);
 
-        ContentLoadingwaitingMsgShow(tr("Content is being loaded. Please wait."));
+        print_debug();ContentLoadingwaitingMsgShow(tr("Content is being loaded. Please wait."));
     }
 
 
@@ -200,7 +200,7 @@ namespace apple {
 
             this->flag_album_draw = true;
 
-            ContentLoadingwaitingMsgShow(tr("Content is being loaded. Please wait."));
+            print_debug();ContentLoadingwaitingMsgShow(tr("Content is being loaded. Please wait."));
 
             this->request_more_albumDraw();
         }

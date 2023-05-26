@@ -36,6 +36,7 @@ namespace bugs {
      */
     BugsAlbumDetail::BugsAlbumDetail(QWidget *parent) : AbstractBugsSubWidget(MainUIType::VerticalScroll_filter, parent) {
 
+        this->linker = Linker::getInstance();
         // data
         this->list_track = new QList<bugs::TrackItemData>();
         this->list_aritst_album = new QList<bugs::AlbumItemData>();
@@ -102,6 +103,9 @@ namespace bugs {
 
             this->flag_credit_ok = false;
         }
+        else{
+            print_debug();ContentLoadingwaitingMsgHide();   //j230328
+        }
     }
 
 
@@ -137,7 +141,7 @@ namespace bugs {
 
                 this->setUIControl_basic();
 
-                ContentLoadingwaitingMsgShow(tr("Content is being loaded. Please wait."));
+                print_debug();ContentLoadingwaitingMsgShow(tr("Content is being loaded. Please wait."));
 
                 // request HTTP API
                 if(this->data_album.title.isEmpty()){
@@ -147,6 +151,12 @@ namespace bugs {
                     proc->request_bugs_get_album(this->data_album.album_id);
                 }
             }
+        }
+        else if(this->is_bugs_logined() == false){
+            this->m_flagCurrLogined = false;
+
+            GSCommon::clearLayout(this->box_contents);      // Layout 초기화
+            this->setUIControl_notLogin();
         }
         else{
             if(this->m_flagCurrLogined){
@@ -229,12 +239,10 @@ namespace bugs {
         this->box_main_contents->addLayout(this->vbox_trackList);
 
         this->vBox_artistAlbum = new QVBoxLayout();
-
         this->hBox_artistAlbum = new QHBoxLayout();
 
         // clear UI
         GSCommon::clearLayout(this->vBox_artistAlbum);
-
         GSCommon::clearLayout(this->hBox_artistAlbum);
 
         for(int i = 0; i < 10; i++){
@@ -333,7 +341,7 @@ namespace bugs {
         tmp_scrollArea->setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
         tmp_scrollArea->setStyleSheet("background-color:transparent; border:0px;");
         tmp_scrollArea->setContentsMargins(0,0,0,0);
-        tmp_scrollArea->setFixedHeight(275);
+        tmp_scrollArea->setFixedHeight(285);
 
         QScroller::grabGesture(tmp_scrollArea, QScroller::LeftMouseButtonGesture);
         //----------------------------------------------------------------------------------------------------  BODY : END
@@ -352,7 +360,6 @@ namespace bugs {
     //
     //-----------------------------------------------------------------------------------------------------------------------
 
-
     /**
      * @brief [slot] override - 사이드 버튼 클릭에 대한 Slot 재정의
      * @param btnId
@@ -363,15 +370,30 @@ namespace bugs {
 
         if(btnId == BTN_IDX_SUBTITLE_aritstAlbum){
             if(this->list_aritst_album->size() > 0){
-                // Album All View (of Artist) 상세 페이지 이동
-                PageInfo_AlbumAllView_ofArtist data_page;
-                data_page.artist_id = this->data_album.list_artist_id.at(0);
-                data_page.filterOpt = QVariant::fromValue(ProcBugsAPI::BugsArtist_Albumfilter::Release).toString();
-                data_page.mainTitle = "앨범";
+                if(global.user_forBugs.flag_rosehome == true){
+                    global.user_forBugs.rosehome_obj = QJsonObject();
+                    global.user_forBugs.rosehome_obj.insert(KEY_PAGE_CODE, PAGECODE_BUGS___ALBUM_ALL_VIEW___OF_ARTIST);
+                    PageInfo_AlbumAllView_ofArtist data_page;
+                    data_page.artist_id = this->data_album.list_artist_id.at(0);
+                    data_page.filterOpt = QVariant::fromValue(ProcBugsAPI::BugsArtist_Albumfilter::Release).toString();
+                    data_page.mainTitle = "앨범";
 
-                QJsonObject jsonObj_move = ConvertData_forBugs::getObjectJson_pageInfo_albumAllView_ofArtist(data_page);
-                jsonObj_move.insert(KEY_PAGE_CODE, PAGECODE_BUGS___ALBUM_ALL_VIEW___OF_ARTIST);
-                emit this->signal_clickedMovePage(jsonObj_move);            // 페이지 이동 signal
+                    QJsonObject tmp_data = ConvertData_forBugs::getObjectJson_pageInfo_albumAllView_ofArtist(data_page);
+                    global.user_forBugs.rosehome_obj.insert(KEY_DATA, tmp_data);
+
+                    emit linker->signal_RoseHome_movePage(QString(GSCommon::MainMenuCode::Bugs));
+                }
+                else{
+                    // Album All View (of Artist) 상세 페이지 이동
+                    PageInfo_AlbumAllView_ofArtist data_page;
+                    data_page.artist_id = this->data_album.list_artist_id.at(0);
+                    data_page.filterOpt = QVariant::fromValue(ProcBugsAPI::BugsArtist_Albumfilter::Release).toString();
+                    data_page.mainTitle = "앨범";
+
+                    QJsonObject jsonObj_move = ConvertData_forBugs::getObjectJson_pageInfo_albumAllView_ofArtist(data_page);
+                    jsonObj_move.insert(KEY_PAGE_CODE, PAGECODE_BUGS___ALBUM_ALL_VIEW___OF_ARTIST);
+                    emit this->signal_clickedMovePage(jsonObj_move);            // 페이지 이동 signal
+                }
             }
         }
     }
@@ -420,7 +442,50 @@ namespace bugs {
         connect(proc_track, &ProcBugsAPI::completeReq_list_items_of_album, this, &BugsAlbumDetail::slot_applyResult_tracks);
         proc_track->request_bugs_getList_items_of_album(this->data_album.album_id);
 
+        // share link  //c221209  start
+        QString param = "BUGS/ALBUM/" + QString("%1").arg(this->data_album.album_id);
+        QString desc = this->data_album.list_artist_nm.join(",");
+
+        roseHome::ProcCommon *proc_link = new roseHome::ProcCommon(this);
+        connect(proc_link, &roseHome::ProcCommon::completeReq_share_link, this, &BugsAlbumDetail::slot_applyResult_getShareLink);
+        proc_link->request_rose_get_shareLink(this->data_album.album_image, desc, this->data_album.title, param);
+        //c221209  end
+
         this->track_favoriteOffset = 0;
+    }
+
+
+    void BugsAlbumDetail::slot_add_rosePlaylist_withBugs(const int &idx, const QJsonObject &dataObj){
+
+        QString view_type = "";
+        if(idx < 0){
+            view_type = "create";
+        }
+        else{
+            view_type = "add";
+        }
+
+        if(global.user_forBugs.flag_rosehome == false){
+
+            QJsonObject jsonObj_move = dataObj;
+            jsonObj_move.insert("view_type", view_type);
+            jsonObj_move.insert(KEY_PAGE_CODE, PAGECODE_BUGS__MY_PLAYLIST_ADD);
+
+            emit this->signal_clickedMovePage(jsonObj_move);
+        }
+        else{
+
+            QJsonObject data = dataObj;
+            data.insert("view_type", view_type);
+            data.insert("type", "BUGS");
+
+            QJsonObject jsonObj_move;
+            jsonObj_move.insert("data", data);
+
+            jsonObj_move.insert(KEY_PAGE_CODE, PAGECODE_RH_ADD_PLAYLIST);
+
+            emit this->linker->signal_clicked_movePage(jsonObj_move);
+        }
     }
 
 
@@ -684,6 +749,18 @@ namespace bugs {
         }
     }
 
+    void BugsAlbumDetail::slot_bugs_completeReq_listAll_myFavoritesIds(const QJsonObject& p_jsonObj){
+        // Favorite 정보를 전달해줌.
+        int idx = ProcJsonEasy::getInt(p_jsonObj, "index");
+        int track_id = ProcJsonEasy::getString(p_jsonObj, "data_id").toInt();
+
+        if(track_id == this->list_track->at(idx).track_id){
+            qDebug() << "likes_yn : " << ProcJsonEasy::getBool(p_jsonObj, "likes_yn");
+        }
+
+        this->flag_send_track = false;
+    }
+
 
     void BugsAlbumDetail::slot_applyResult_checkRating_track(const QJsonObject &jsonObj){
 
@@ -893,6 +970,17 @@ namespace bugs {
         else{
             if(clickMode == AbstractImageDetailContents_RHV::BtnClickMode::AddCollection){
 
+                QJsonObject json = QJsonObject();
+                json.insert("tracks", this->jsonArr_tracks_toPlay);
+
+                Dialog::Dialog_Playlist_onRose *dialog_playlist = new Dialog::Dialog_Playlist_onRose(Dialog::Dialog_Playlist_onRose::BUGS, json, this);
+                dialog_playlist->request_playlist_fetch();
+                connect(dialog_playlist, &Dialog::Dialog_Playlist_onRose::signal_clicked_playlist, this, &BugsAlbumDetail::slot_add_rosePlaylist_withBugs);
+                int result = dialog_playlist->exec();
+
+                if(result == QDialog::Accepted){
+                    delete dialog_playlist;
+                }
             }
             else if(clickMode == AbstractImageDetailContents_RHV::BtnClickMode::More){
 
@@ -932,37 +1020,52 @@ namespace bugs {
         if(clickMode == AlbumTrackDetailInfo_RHV::ClickMode::FavBtn){
 
             if(this->flag_check_track == false){
-                int star_cnt = this->album_tracks[idx]->getFavoritesStars();
+                this->track_star_fav = this->album_tracks[idx]->getFavoritesStars();
                 this->flag_track_fav = false;
-
-                this->track_star_fav = star_cnt;
 
                 if(this->track_star_fav == 3){
                     this->track_star_fav = 0;
+
+                    this->track_idx_fav = idx;
                     this->flag_track_fav = false;
                 }
                 else if(this->track_star_fav >= 0 && this->track_star_fav < 3){
                     this->track_star_fav++;
+
+                    this->track_idx_fav = idx;
                     this->flag_track_fav = true;
                 }
 
-                /*if(this->track_star_fav == 0 || this->track_star_fav == 1){
-                    // Apple Favorite toggle
-                    this->track_id_fav = this->list_track->at(idx).id;
+                if(this->track_star_fav == 0 || this->track_star_fav == 1){
+                    // Bugs Favorite
+                    ItemPositionData itemPosData;
+                    itemPosData.section = SECTION_FOR_MORE_POPUP___track;
+                    itemPosData.index = idx;
+                    itemPosData.data_id = QString("%1").arg(this->list_track->at(idx).track_id);
 
-                    ProcCommon *proc = new ProcCommon(this);
-                    connect(proc, &qobuz::ProcCommon::completeReq_listAll_myFavoritesIds, this, &QobuzAlbumDetail::slot_qobuz_completeReq_listAll_myFavoritesIds);
-                    proc->request_qobuz_set_favorite("track", QString("%1").arg(this->track_id_fav), this->flag_track_fav);
+                    ProcBugsAPI *proc = new ProcBugsAPI(this);
+                    connect(proc, &bugs::ProcBugsAPI::completeReq_favarite_track, this, &BugsAlbumDetail::slot_bugs_completeReq_listAll_myFavoritesIds);
+
+                    if(this->track_star_fav == 0){
+                        itemPosData.likes_yn = false;
+
+                        proc->request_bugs_deleteFavorite_track(this->list_track->at(idx).track_id, ConvertData_forBugs::getObjectJson_itemPositionData(itemPosData));
+                    }
+                    else if(this->track_star_fav == 1){
+                        itemPosData.likes_yn = true;
+
+                        proc->request_bugs_addFavorite_track(this->list_track->at(idx).track_id, ConvertData_forBugs::getObjectJson_itemPositionData(itemPosData));
+                    }
+
                     this->flag_send_track = true;
-                }*/
+                }
 
                 this->track_idx_fav = idx;
-                QJsonObject jsonObj = this->jsonArr_tracks_toPlay.at(idx).toObject();
 
                 // request HTTP API - get favorite for Rose Server
                 roseHome::ProcCommon *proc_favCheck_track = new roseHome::ProcCommon(this);
                 connect(proc_favCheck_track, &roseHome::ProcCommon::completeCheck_rating_track, this, &BugsAlbumDetail::slot_applyResult_checkRating_track);
-                proc_favCheck_track->request_rose_checkRating_Track("BUGS", QString("%1").arg(ProcJsonEasy::getInt(jsonObj, "track_id")));
+                proc_favCheck_track->request_rose_checkRating_Track("BUGS", QString("%1").arg(this->list_track->at(idx).track_id));
 
                 this->flag_check_track = true;
             }
@@ -1000,6 +1103,9 @@ namespace bugs {
             bugs::ProcRoseAPI_withBugs *procRosePlay = new bugs::ProcRoseAPI_withBugs(this);
             procRosePlay->requestPlayRose_byTracks(this->jsonArr_tracks_toPlay, idx, curr_clickMode);
         }
+        else if(clickMode == AlbumTrackDetailInfo_RHV::ClickMode::MusicVideoBtn){
+            this->proc_clicked_itemTrack_inList(this->list_track, this->jsonArr_tracks_toPlay, PlaylistTrackDetailInfo_RHV::ClickMode::MusicVideoBtn, idx, SECTION_FOR_MORE_POPUP___track);
+        }
         else{
             // OptMorePopup 띄우기 - 즐겨찾기 관련 메뉴를 가림. DetailView에 하트가 있음
             this->makeObj_optMorePopup(OptMorePopup::Bugs_Track, bugs::ConvertData_forBugs::getConvertOptHeaderData(this->list_track->at(idx)), idx, SECTION_FOR_MORE_POPUP___track, true);
@@ -1036,10 +1142,13 @@ namespace bugs {
     void BugsAlbumDetail::slot_optMorePopup_menuClicked(const OptMorePopup::ClickMode clickMode, const int index, const int section){
 
         if(section == SECTION_FOR_MORE_POPUP___albums){
-            this->proc_clicked_optMorePopup_fromAlbum(data_album, clickMode);
+            this->proc_clicked_optMorePopup_fromAlbum(this->data_album, clickMode);
         }
         else if(section == SECTION_FOR_MORE_POPUP___track){
             this->proc_clicked_optMorePopup_fromTrack(this->list_track, this->jsonArr_tracks_toPlay, index, clickMode);
+        }
+        else if(section == SECTION_FOR_MORE_POPUP___aritstAlbum){
+            this->proc_clicked_optMorePopup_fromAlbum(this->list_aritst_album, index, clickMode);
         }
     }
 

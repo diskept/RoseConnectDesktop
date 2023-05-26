@@ -34,6 +34,7 @@ signals:
     void clickedRemote(bool);
 
 private slots:
+    void slot_searchBar_clearfocus();//c230220
     void slot_dragDrop_search_singleshot();//c220726
     void slot_dragDrop_clear_singleshot();//c220726
     void slot_get_dragDropText();//c220726
@@ -58,7 +59,7 @@ private:
     bool flagSelectedRemote = false;
     CustomLineEdit *le_search;
     QPushButton *btn_remote;
-    ClickableLabel *btn_del;//c220715
+    ClickableLabel *btn_del = nullptr;//c230322
 
     QJsonObject make_requestPlayYouTubeJson(const QJsonObject &jsonTrackData);
     void requestPlayAll(bool p_flagShuffle);//c220726

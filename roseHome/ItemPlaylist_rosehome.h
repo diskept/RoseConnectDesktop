@@ -19,9 +19,12 @@ namespace roseHome {
 
     public:
         explicit ItemPlaylist_rosehome(int index, int section, ImageSizeMode imageSizeMode, int type, bool flagPlay, QWidget *parent = nullptr);
+        ~ItemPlaylist_rosehome();
 
         void setData(const roseHome::PlaylistItemData &p_data);
         int get_fixedHeight() override;
+        int get_fixedWidth();
+        int get_rightMargin();
 
     private:
         void setUIControl();

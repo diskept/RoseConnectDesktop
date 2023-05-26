@@ -134,6 +134,10 @@ namespace tidal {
 
         QList<int> list_artist_id;              // Artist 연결을 위해
         QList<QString> list_artist_name;        // Artist 연결을 위해
+
+        bool adult_certification = false;
+        bool allowStreaming = false;
+
     };
 
 

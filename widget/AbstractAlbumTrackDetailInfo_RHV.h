@@ -45,7 +45,7 @@ public:
     int getFavoritesStars();
 
 signals:
-    void clicked(const int index, const ClickMode clickMode);
+    void clicked(const int index, const AlbumTrackDetailInfo_RHV::ClickMode clickMode);
 
 private slots:
     void slot_clickBtn_signal();
@@ -58,6 +58,7 @@ private:
 
     QWidget *widget_info_main;
 
+    QLabel *label_track_hires;
     QLabel *label_list_play;
     QLabel *label_track_number;
     QLabel *label_title;
@@ -66,7 +67,9 @@ private:
     QLabel *label_artist;
     QLabel *label_resolution;
     QLabel *label_duration;
+    QLabel *label_adult_certification;
 
+    QPushButton *btn_music_video;
     QPushButton *btn_play_list_add;
     QPushButton *btn_list_fav;
     QPushButton *btn_menu;

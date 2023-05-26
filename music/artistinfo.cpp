@@ -460,13 +460,13 @@ void ArtistInfo::setDataTrackFromDB(){
 //        strQuery += " WHERE A.artist_id=(SELECT artist_id from artists where artist='%1') ORDER BY A.track ";
 
         QString strQuery = "";
-        strQuery = " SELECT count(A.album) AS track_count ";
+        strQuery = " SELECT count(A.album) AS track_count, A.bookmark, A.track, A._display_name AS orderName ";
         strQuery += " FROM audio AS A LEFT JOIN album_art AS ART ON A.album_id=ART.album_id ";
         if(this->artist.front() == "'" || this->artist.back() == "'"){
-            strQuery += " WHERE A.artist_id=(SELECT artist_id from artists where artist='\"%1\"') ORDER BY A.track ";
+            strQuery += " WHERE A.artist_id=(SELECT artist_id from artists where artist='\"%1\"') ORDER BY A.bookmark ASC, A.track ASC, orderName ASC ";
         }
         else{
-            strQuery += " WHERE A.artist_id=(SELECT artist_id from artists where artist='%1') ORDER BY A.track ";
+            strQuery += " WHERE A.artist_id=(SELECT artist_id from artists where artist='%1') ORDER BY A.bookmark ASC, A.track ASC, orderName ASC ";
         }
 
         QVariantList data_cnt;
@@ -480,14 +480,13 @@ void ArtistInfo::setDataTrackFromDB(){
         this->lb_tracks->setText(tr("Song") + QString(" (%1)").arg(track_cnt));
 
         strQuery = "";
-        //strQuery = " SELECT A.album, A.album_key, A.artist_key, A.artist_id, A.album_id, A._id AS id, A._data AS data, A.title, A.artist, A.duration, ART._data AS album_art ";
-        strQuery = " SELECT A.album, A.album_key, A.artist_key, A.artist_id, A.album_id, A._id AS id, A._data AS data, A.title, A.artist, A.duration, ART._data AS album_art , A.mime_type, A.samplerate, A.bitdepth ";
+        strQuery = " SELECT A.album, A.album_key, A.artist_key, A.artist_id, A.album_id, A._id AS id, A._display_name AS orderName, A._data AS data, A.bookmark, A.track, A.title, A.artist, A.duration, ART._data AS album_art , A.mime_type, A.samplerate, A.bitdepth ";
         strQuery += " FROM audio AS A LEFT JOIN album_art AS ART ON A.album_id=ART.album_id";
         if(this->artist.front() == "'" || this->artist.back() == "'"){
-            strQuery += " WHERE A.artist_id=(SELECT artist_id from artists where artist= '\"%1\"') ORDER BY A.track LIMIT 5 ";
+            strQuery += " WHERE A.artist_id=(SELECT artist_id from artists where artist= '\"%1\"') ORDER BY A.bookmark ASC, A.track ASC, orderName ASC LIMIT 5 ";
         }
         else{
-            strQuery += " WHERE A.artist_id=(SELECT artist_id from artists where artist='%1') ORDER BY A.track LIMIT 5 ";
+            strQuery += " WHERE A.artist_id=(SELECT artist_id from artists where artist='%1') ORDER BY A.bookmark ASC, A.track ASC, orderName ASC LIMIT 5 ";
         }
 
         QVariantList data;

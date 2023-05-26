@@ -77,7 +77,7 @@ namespace apple {
 
             this->flag_playlist_draw = false;
 
-            ContentLoadingwaitingMsgShow(tr("Content is being loaded. Please wait."));
+            print_debug();ContentLoadingwaitingMsgShow(tr("Content is being loaded. Please wait."));
 
             this->request_more_playlistData();
         }
@@ -114,7 +114,7 @@ namespace apple {
         this->label_mainTitle = this->get_addUIControl_mainTitle("Playlists");
 
         // filtering
-        //this->setUiControl_filter();
+        //this->setUIControl_filter();
 
         // layout for items
         this->flowLayout_playlists = this->get_addUIControl_flowLayout(0, 20);
@@ -128,9 +128,9 @@ namespace apple {
 
 
     /**
-     * @brief QobuzMyPlaylistAll::setUiControl_filter
+     * @brief QobuzMyPlaylistAll::setUIControl_filter
      */
-    void AppleUserPlaylistListAll_Rose::setUiControl_filter(){
+    void AppleUserPlaylistListAll_Rose::setUIControl_filter(){
 
         // 필터링 부분
         this->filterWidget = new FilterWidget();
@@ -169,7 +169,7 @@ namespace apple {
 
             this->flag_playlist_draw = true;
 
-            ContentLoadingwaitingMsgShow(tr("Content is being loaded. Please wait."));
+            print_debug();ContentLoadingwaitingMsgShow(tr("Content is being loaded. Please wait."));
 
             this->request_more_playlistDraw();
         }

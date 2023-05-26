@@ -4,6 +4,10 @@
 #include <QJsonObject>
 #include <QVBoxLayout>
 #include <QDebug>
+#include "common/gscommon.h"
+#include "widget/pushBottonWidget.h"//c230328
+#include "widget/toastmsg.h"
+
 #define print_debug() qDebug() << "\n" << "file_name: " << FILE << "function_name: " << FUNCTION << "line: " << LINE << "\n";
 
 // 2020-06-18 [C-01]화면에 메뉴바길이 수정요청 들어와서 스타일 변경 적용함
@@ -31,10 +35,14 @@ TopMenuSubItem::TopMenuSubItem(QJsonObject p_data, UIMode p_uiMode, QWidget *par
         //print_debug();
         tmp_style = style_subitem_friendSubmenubar;
     }
-    this->btn_icon = new QPushButton();
+    this->btn_icon = new QPushButton();//c230328
     this->btn_icon->setObjectName("btn_sub");
     this->btn_icon->setStyleSheet(QString("#btn_sub { %1 border-bottom:4px solid transparent; } #btn_sub:hover { border-bottom:4px solid #B18658;  }").arg(tmp_style));
-    this->btn_icon->setText(p_data["name"].toString());
+
+    this->btn_icon->setText(p_data["name"].toString());//
+    this->subMenuName = p_data["name"].toString();//c230321
+
+
     this->btn_icon->setCursor(Qt::PointingHandCursor);
 
     QVBoxLayout *vlayout_total = new QVBoxLayout();
@@ -44,7 +52,7 @@ TopMenuSubItem::TopMenuSubItem(QJsonObject p_data, UIMode p_uiMode, QWidget *par
     this->setLayout(vlayout_total);
 
     // 커넥션
-    connect(this->btn_icon, SIGNAL(clicked()), this, SLOT(clickedSubMenu()));
+    connect(this->btn_icon, SIGNAL(clicked()), this, SLOT(clickedSubMenu()));//c230328
 }
 /**
  * @brief TopMenuSubItem::setSelectedStyle 현재 선택된 스타일로 세팅
@@ -88,6 +96,6 @@ void TopMenuSubItem::setSelectedStyle(bool p_flagSelected){
  * @brief TopMenuSubItem::clickedSubMenu [SLOT] 서브메뉴를 클릭했다는 시그널 발생
  */
 void TopMenuSubItem::clickedSubMenu(){
-
+    ToastMsg::delay(this,"", tr("delay"), 1000);//c230316
     emit clickedBtn(this->subMenuCode);
 }

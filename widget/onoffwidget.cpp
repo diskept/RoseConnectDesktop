@@ -1,4 +1,8 @@
-#include "onoffwidget.h"
+#include "widget/onoffwidget.h"
+
+#include "widget/toastmsg.h"
+
+
 #include <QPainter>
 #include <QThread>
 
@@ -50,7 +54,7 @@ void OnOffWidget::setUIControl(){
     lb_offText->setText("OFF");
     lb_offText->setStyleSheet("font-size:14px; color:#FFFFFF; background-color:transparent;");
     //lb_offText->move(32, 8);  // 음악 홈 기준
-    lb_offText->move(37, 10);   // 설정 VU옵션 기준
+    lb_offText->move(37, 7);   // 설정 VU옵션 기준
 
     wg_bg = new OnOffBackground(this);
     wg_bg->resize(CIRCLE_SIZE, CIRCLE_SIZE);
@@ -59,7 +63,7 @@ void OnOffWidget::setUIControl(){
     lb_onText->setText("ON");
     lb_onText->setStyleSheet("font-size:14px; color:#FFFFFF; background-color:transparent;");
     //lb_onText->move(10, 8);   // 음악 홈 기준
-    lb_onText->move(12, 10);    // 설정 VU옵션 기준
+    lb_onText->move(12, 7);    // 설정 VU옵션 기준
 
     circle = new OnOffCircle(this);
 
@@ -128,7 +132,9 @@ void OnOffWidget::mousePressEvent(QMouseEvent*)
     anim_bg->start();
 
     flagOn = !flagOn;
-    QThread::msleep(500);
+    //
+    //QThread::msleep(500);
+    ToastMsg::delay(this,"", tr("delay"), 500);//c230316
     emit signal_changed(flagOn);
 }
 

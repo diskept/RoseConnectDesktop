@@ -77,7 +77,7 @@ void FileDelegate::paint(QPainter *painter, const QStyleOptionViewItem &option, 
     QString tmp_mime = map["album_mime"].toString();
     bool tmp_flagIsFile = map["isFile"].toBool();
     bool tmp_favorites = map["favorites"].toBool();
-
+    bool tmp_cloud = map["isCloud"].toBool();
 
     // Set Hover Background color
     if(option.state & QStyle::State_MouseOver){
@@ -128,7 +128,8 @@ void FileDelegate::paint(QPainter *painter, const QStyleOptionViewItem &option, 
         rect = option.rect.adjusted(width-60,0,0,0);
         painter->drawPixmap(rect.left(), rect.top(),60,70 , pixmapAddFolder );
 
-    }else{
+    }
+    else{
 
         if(tmp_author==""){
             // -----------------------------------------------------------------------
@@ -139,7 +140,8 @@ void FileDelegate::paint(QPainter *painter, const QStyleOptionViewItem &option, 
             painter->setPen(titlePen);
             painter->drawText(rect.left(), rect.top(), tmp_titleWidth, rect.height()
                               , Qt::AlignTop|Qt::AlignLeft, ellipseString(tmp_fileName, tmp_titleWidth, font_16), &rect);
-        }else if(tmp_author!=""){
+        }
+        else if(tmp_author!=""){
 
             if(tmp_mime!=""){
                 // 파일명
@@ -218,12 +220,21 @@ void FileDelegate::paint(QPainter *painter, const QStyleOptionViewItem &option, 
             rect = option.rect.adjusted(width-100,0,0,0);
             painter->drawText(rect.left(), rect.top(), tmp_durationWidth, rect.height(), Qt::AlignVCenter|Qt::AlignLeft, tmp_duration, &rect);
 
-        }else{
+        }
+        else{
 
             // Duration
+            /*if(tmp_cloud == true){
+                tmp_durationWidth = tmp_durationWidth * 2 + 100;
+
+                rect = option.rect.adjusted(thumbnail_width+space+tmp_titleWidth+space+tmp_albumWidth+space,0,0,0);
+            }
+            else{
+                rect = option.rect.adjusted(thumbnail_width+space+tmp_titleWidth+space+tmp_albumWidth+space,0,0,0);
+            }*/
+
             rect = option.rect.adjusted(thumbnail_width+space+tmp_titleWidth+space+tmp_albumWidth+space,0,0,0);
             painter->drawText(rect.left(), rect.top(), tmp_durationWidth, rect.height(), Qt::AlignVCenter|Qt::AlignLeft, tmp_duration, &rect);
-
 
             // 플레이리스트 담기
             //rect = option.rect.adjusted(width-180,5,-120,-5);

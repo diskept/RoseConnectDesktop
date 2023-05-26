@@ -45,7 +45,7 @@ namespace video {
 
         this->label_title = new QLabel(label_base);
         this->label_title->setWordWrap(true);
-        this->label_title->setStyleSheet("font-size:16px; color:#FFFFFF;");
+        this->label_title->setStyleSheet("font-size:16px;  font-weight: normal;font-style: normal;line-height: 1.25;text-align: left; color:#FFFFFF;");
         this->label_title->setGeometry(0, 0, img_width, (this->LABEL_HEIGHT * 2));
 
         QVBoxLayout *boxLayout = new QVBoxLayout;
@@ -147,6 +147,19 @@ namespace video {
         return height;
     }
 
+    int ItemWidget_video::get_fixedWidth(){
+
+        int width = this->get_imageWidth(this->m_imageSizeMode);
+
+        return width;
+    }
+
+
+    int ItemWidget_video::get_rightMargin(){
+
+        return ITEM_BETWEEN_MARGIN_RIGHT;
+    }
+
 
     /**
      * @brief 페인트 이벤트 처리
@@ -161,6 +174,7 @@ namespace video {
 
             int all_width = 0;
             int title_width = 0;
+            int title_width_change = 0;
 
             QString title = ProcJsonEasy::getString(this->data_video, "album");
 
@@ -205,15 +219,29 @@ namespace video {
                 tmp_wordwrap->setText("");
                 tmp_wordwrap->setText(tmp_title_line1);
 
-                title_width = tmp_wordwrap->sizeHint().width() + all_width;
+                title_width_change = tmp_wordwrap->sizeHint().width() + all_width;
 
                 this->label_title->setGeometry(0, 0, all_width, this->LABEL_HEIGHT * 2);
 
-                if(title_width < 300){
-                    this->label_title->setText(title);
+                if(title_width_change < 300){
+                    if(title_width <= all_width){
+                        this->label_title->setText(title);
+                    }
+                    else{
+                        this->label_title->setText(GSCommon::getTextCutFromLabelWidth(title, title_width_change, this->label_title->font()));
+                        if(this->label_title->text().contains("…")){
+                            this->label_title->setToolTip(title);//c230321
+                            this->label_title->setToolTipDuration(2000);//c230321
+                        }
+                    }
+
                 }
                 else{
-                    this->label_title->setText(GSCommon::getTextCutFromLabelWidth(title, title_width, this->label_title->font()));
+                    this->label_title->setText(GSCommon::getTextCutFromLabelWidth(title, title_width_change, this->label_title->font()));
+                    if(this->label_title->text().contains("…")){
+                        this->label_title->setToolTip(title);//c230321
+                        this->label_title->setToolTipDuration(2000);//c230321
+                    }
                 }
             }
             else{

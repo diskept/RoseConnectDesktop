@@ -29,6 +29,10 @@ public:
     int getType() const;
     QString getTypeReadable() const;
 
+    QString getPath() const;
+    bool getisisInstall() const;
+    QString getMimeType() const;
+
 private:
     QJsonObject json;
     bool isAlias;
@@ -39,6 +43,10 @@ private:
     QString name;
     int type;
     QString typeReadable;
+
+    QString path;
+    bool isInstall;
+    QString mimeType;
 };
 
 #endif // DATACLOUD_H

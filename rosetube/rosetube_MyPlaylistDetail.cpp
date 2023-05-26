@@ -85,7 +85,7 @@ namespace rosetube {
 
             this->flag_draw = false;
 
-            ContentLoadingwaitingMsgShow(tr("Content is being loaded. Please wait."));
+            print_debug();ContentLoadingwaitingMsgShow(tr("Content is being loaded. Please wait."));
 
             roseHome::ProcCommon *proc_playlist = new roseHome::ProcCommon(this);
             connect(proc_playlist, &roseHome::ProcCommon::completeReq_playlist, this, &RosetubeMyPlaylistDetail::slot_applyResult_playlist);
@@ -98,6 +98,9 @@ namespace rosetube {
                 connect(proc_thumb_playlist, &roseHome::ProcCommon::completeReq_rating_thumbup, this, &RosetubeMyPlaylistDetail::slot_applyResult_getRating_thumbup);
                 proc_thumb_playlist->request_rose_getRating_Thumbup("PLAY_LIST", QString("%1").arg(tmp_data_playlist.id));
             }
+        }
+        else{
+            print_debug();ContentLoadingwaitingMsgHide();   //j230328
         }
     }
 
@@ -160,7 +163,7 @@ namespace rosetube {
 
             this->flag_draw = true;
 
-            ContentLoadingwaitingMsgShow(tr("Content is being loaded. Please wait."));
+            print_debug();ContentLoadingwaitingMsgShow(tr("Content is being loaded. Please wait."));
             this->request_more_trackDraw();
         }
     }
@@ -628,7 +631,7 @@ namespace rosetube {
                 qDebug() << "this->shareLink="<<this->shareLink;
 
             }
-            if(clickMode == OptMorePopup::ClickMode::Play_RightNow
+            else if(clickMode == OptMorePopup::ClickMode::Play_RightNow
                     || clickMode == OptMorePopup::ClickMode::SubMenu_QueueAdd_Last
                     || clickMode == OptMorePopup::ClickMode::SubMenu_QueueAdd_Empty
                     || clickMode == OptMorePopup::ClickMode::SubMenu_QueueAdd_CurrNext
@@ -637,6 +640,21 @@ namespace rosetube {
                 // Rose Play 요청
                 roseHome::ProcRosePlay_withRosehome *procRosePlay = new roseHome::ProcRosePlay_withRosehome(this);
                 procRosePlay->requestPlayRose_byPlaylist(this->data_playlist, this->jsonArr_tracks_toPlay, 0, clickMode, roseHome::ProcRosePlay_withRosehome::PlayShuffleMode::JustPlay);
+            }
+            else if(clickMode == OptMorePopup::ClickMode::Edit){
+                QString view_type = "edit";
+
+                QJsonObject data;
+                data.insert("view_type", view_type);
+                data.insert("playlist_id", this->data_playlist.id);
+                data.insert("type", "ROSE");
+
+                QJsonObject jsonObj_move;
+                jsonObj_move.insert("data", data);
+
+                jsonObj_move.insert(KEY_PAGE_CODE, PAGECODE_RT_ADDPLAYLIST);
+
+                emit linker->signal_clickedMovePage(jsonObj_move);
             }
         }
         else if(section == SECTION_FOR_MORE_POPUP___tracks){

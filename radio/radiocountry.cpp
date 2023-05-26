@@ -32,7 +32,7 @@ namespace radio {
      * @note 사용자채널에만 존재하던 새로고침, 방송채널 추가 전 메뉴 추가요청<br>
      * 공통 Widget화 하지 않고 Copy하여 처리단만 다르게 함.
      */
-    RadioCountry::RadioCountry(QWidget *parent) : roseHome::AbstractRoseHomeSubWidget(VerticalScroll_rosetube, parent)
+    RadioCountry::RadioCountry(QWidget *parent) : roseHome::AbstractRoseHomeSubWidget(VerticalScroll_roseviewAll, parent)
     {
 
         this->setInit();
@@ -144,19 +144,11 @@ namespace radio {
         this->box_contents->setAlignment(Qt::AlignTop);
         this->scrollArea_main->setVerticalScrollBarPolicy(Qt::ScrollBarAsNeeded);
 
-        // layout for items
-        this->flowLayout_radio = new FlowLayout(0, 20, 20);
-        this->flowLayout_radio->setSizeConstraint(QLayout::SetMinimumSize);
-        this->flowLayout_radio->setContentsMargins(70, 50, 70, 30);
+        this->radio_widget_width = 200;
+        this->radio_widget_margin = 20;
 
-        GSCommon::clearLayout(this->flowLayout_radio);
+        this->flowLayout_radio = this->get_addUIControl_flowLayout(0, 20);
 
-        this->widget_radio = new QWidget();
-        this->widget_radio->setLayout(this->flowLayout_radio);
-        this->widget_radio->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
-        this->widget_radio->setStyleSheet("background-color:transparent;");
-
-        this->box_contents->addWidget(this->widget_radio);
     }
 
 
@@ -217,6 +209,10 @@ namespace radio {
      * @brief RadioCountry::requestData : 채널 목록 데이터 요청
      */
     void RadioCountry::requestData(){
+
+        if(this->width()-(this->radio_widget_width + this->radio_widget_margin) >= 0){
+            this->setFlowLayoutResize(this, this->flowLayout_radio, this->radio_widget_width, this->radio_widget_margin);
+        }
 
         this->requestCountryList();
         this->requestFavoriteList();
@@ -352,7 +348,14 @@ namespace radio {
         tmp_widget->setFavorStatus(flagIsFavor);
         tmp_widget->setProperty("index", this->flowLayout_radio->count());
 
-        this->flowLayout_radio->addWidget(tmp_widget);
+        QVBoxLayout *box_wrap = new QVBoxLayout;
+        box_wrap->setContentsMargins(10, 10, 10, 10);
+        box_wrap->addWidget(tmp_widget);
+
+        QWidget *wg_wrap = new QWidget;
+        wg_wrap->setLayout(box_wrap);
+
+        this->flowLayout_radio->addWidget(wg_wrap);
 
         // Connect
         connect(tmp_widget, SIGNAL(clickedHoverItem(QString)), SLOT(slot_clickedHoverItem(QString)));
@@ -666,6 +669,8 @@ namespace radio {
         if(tmp_comoboxHeigth > this->height()){
             tmp_comoboxHeigth = height();
         }
+
+        this->setFlowLayoutResize(this, this->flowLayout_radio, this->radio_widget_width, this->radio_widget_margin);
 
         this->widget_combobox->setGeometry(250, 128, widget_country->sizeHint().width(), tmp_comoboxHeigth);
 

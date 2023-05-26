@@ -57,7 +57,8 @@ public:
     QString getThumbnailUrl() const { return this->thumbnailUrl; };
     void setThumbnailUrl(const QString &value){ this->thumbnailUrl = value; };
 
-
+    QString getstrDuration() const { return this->strDuration; };
+    void setstrDuration(const QString &value){ this->strDuration = value; };
 
     void setJsonData(const QJsonObject &p_data);
     QJsonObject getJsonData() const;
@@ -104,6 +105,7 @@ private:
     int samplerate = 0;
     int bitdepth = 0;
     int track = 0;
+    int bookmark = 0;
 
 
     // VIDEO 전용
@@ -120,7 +122,7 @@ private:
     QString channelId = "";
     QString channelName = "";
     QString thumbnailUrl = "";
-
+    QString strDuration = "";
 
     // MUSIC NETWORK PLAY 전용(ex.친구 플레이리스트 재생)  => 사용안하는멤버변수 삭제하고 강제세팅해둠.
     QString ext="";

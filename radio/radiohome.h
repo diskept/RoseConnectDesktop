@@ -45,10 +45,7 @@ namespace radio {
         void setTopUIControl(QWidget *parent);
         void setResultOfChannelList(const QJsonObject &p_jsonObject);
         void appendRadioChannel(const QJsonObject &p_jsonObject);
-        void resizeEvent(QResizeEvent *event) override{
-            Q_UNUSED(event);
-            widget_topContrl->setGeometry((this->width()-this->widget_topContrl->sizeHint().width()), 0,  this->widget_topContrl->sizeHint().width(), this->widget_topContrl->sizeHint().height());
-        };
+        void resizeEvent(QResizeEvent *event) override;
 
     private:
         Linker *linker;
@@ -56,10 +53,12 @@ namespace radio {
         QWidget *widget_topContrl;
 
         // 관리 필요한 Layout UI
-        QWidget *widget_radio;
         FlowLayout *flowLayout_radio;
 
         QList<DataRadio*> dataList;
+
+        int radio_widget_width = 0;
+        int radio_widget_margin = 0;
     };
 };
 

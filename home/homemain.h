@@ -4,6 +4,7 @@
 #include "home/abstractmaincontent.h"
 #include "home/remotewidget.h"
 #include "home/sectionbottom.h"
+//#include "home/sectionbottom_small.h"//c230226
 #include "home/sectionleft.h"
 #include "home/suggestionsbar.h"
 
@@ -84,6 +85,7 @@ private slots:
     void downloadedDB();
     void slot_completedViewToTable();
     void clickedBottomQueueIcon(bool p_flagShow);
+    void clickedBottomQueueIconHide(bool p_flagShow);//c230428
     void slot_clickedBottomVolumn(bool p_flagShow);
 
     void showRemote(bool p_flagShow);
@@ -107,6 +109,7 @@ private slots:
     void slot_clickedDBRefreshBtn();
     void slot_showPlayFullScreen(const QJsonObject &p_jsonData);
     void slot_changedCurrPlayTrack(const QJsonObject &p_jsonData);
+    void slot_changedCurrHDMI(const bool flag);
     void slot_showDlgOfDisconnect();
 
     void slot_searchBarFocusChanged(bool);
@@ -126,6 +129,7 @@ private slots:
     void slot_incompleteReq_get_qsession_info();
     void slot_completeReq_get_qsession_info(const qobuz::RoseSessionInfo_forQobuz& sessionInfo);
     void slot_completeReq_getqLoginInfo();
+    void slot_completeReq_getqLoginInfoQobuz();//c230422
     void slot_completeReq_getQobuzGenre();
 
     void slot_completeReq_get_asession_info(const apple::RoseSessionInfo_forApple& sessionInfo);
@@ -162,6 +166,9 @@ private slots:
     void slot_rebooting();//c220624
     void slot_searchBarClear();//c220628
     void slot_responseHttp_deviceIOState(const int &p_id, const QJsonObject &p_jsonObject);//c220708
+    void slot_process_notice();
+    void slot_musicDbdownloadingValue();
+    void slot_connect_reset_notice();//c230326
 
 protected:
     void mousePressEvent(QMouseEvent *event) override;
@@ -215,8 +222,14 @@ private:
     void read_noticeDBTable();
     void dialog_comfirmCD();//cheon210817-iso
     void changedLeftMainMenu_search(QString p_menuCode);
+    void delay_ani_init();//c230302_1
+    void ContentLoadingwaitingMsgShow(QString msg);//c230409
+    void ContentLoadingwaitingMsgHide();//c230409
 
 private:
+    DialogConfirm *dlgConfirmConnect_resetNotice = nullptr;//c230326
+    DialogConfirm *dlgConfirmMusicDbDownloadingNotice = nullptr;
+    FileDownloader *fileDownLoader = nullptr;//c230409
     int p_preByte = 0;//c220801
     bool db_downloadCompleting_flag = false;//c220801
     //DesktopMediaPlayerThread *Dt_thread;//c220705
@@ -230,6 +243,7 @@ private:
     SectionLeft *sectionLeft;
     SectionBottom *sectionBottom;
     QHBoxLayout *hlayout_content;
+    QWidget *home_contents;
     DownloadProgress *progress;
     RemoteWidget *remoteWidget=nullptr;
     SuggestionsBar *suggestionBar=nullptr;
@@ -238,7 +252,7 @@ private:
     VolumnControl *volumnControl=nullptr;
     AbstractMainContent *curr_absMainContent = nullptr;
 
-    bool db_downloadComplete_flag = true;//c220826_2
+    //bool global.db_downloadComplete_flag = true;//c220826_2
     bool flag_tget_session = false;
     bool flag_bget_session = false;
     bool flag_qget_session = false;
@@ -253,6 +267,7 @@ private:
     DialogConfirm *dlgConfirmReadmeNotice;
     QMutex mutex;
     bool showDlgOfDisconnect_flag = false;
+
 
     bool isToken = false;
 

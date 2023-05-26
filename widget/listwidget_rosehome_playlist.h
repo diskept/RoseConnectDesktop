@@ -14,21 +14,22 @@
 class ListWidget_Rosehome_Playlist : public QListWidget {
 
    Q_OBJECT
-public:
 
+public:
    ListWidget_Rosehome_Playlist(QWidget *parent = nullptr);
    virtual QRectF boundingRectFor( const QRectF& sourceRect ) const;
-   int moveCnt = 0;
-protected:
 
+   int moveCnt = 0;
+
+protected:
     void dragMoveEvent(QDragMoveEvent* e) override;
     void dropEvent(QDropEvent* event) override;
     void startDrag(Qt::DropActions supportedActions) override;
     void dragEnterEvent(QDragEnterEvent* event) override;
     //void dragLeaveEvent(QDragLeaveEvent* event) override;
     //Qt::DropAction supportedDropActions() ;
-signals:
 
+signals:
    void itemDroped();
 
 private:

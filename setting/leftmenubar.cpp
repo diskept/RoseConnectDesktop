@@ -1,6 +1,7 @@
 #include "leftmenubar.h"
 #include "common/gscommon.h"
-
+#include "common/global.h"//c230518
+#include <common/sqlitehelper.h>//c230518
 #include <QJsonObject>
 #include <QVBoxLayout>
 #include <QVariant>
@@ -35,6 +36,7 @@ void LeftMenuBar::setUIControl(){
 
     //QPushButton *btn_roseMenu = this->createMenuBtn(tr("Edit device menu"), PAGECODE_S_ROSEMENUEDIT);
     //QPushButton *btn_appMenu = this->createMenuBtn(tr("Edit App Menu"), PAGECODE_S_APPMENUEDIT);
+    QPushButton *btn_menu = this->createMenuBtn(tr("Services"), PAGECODE_S_MENU);//c230329
     QPushButton *btn_appInfo = this->createMenuBtn(tr("App Info"), PAGECODE_S_APPINFO);
 /*
  *     QPushButton *btn_myPage = this->createMenuBtn(tr("마이페이지"), PAGECODE_S_MYPAGE);
@@ -66,6 +68,7 @@ void LeftMenuBar::setUIControl(){
     this->list_subMenuItem.append(btn_inputOutput);
     //this->list_subMenuItem.append(btn_roseMenu);
     //this->list_subMenuItem.append(btn_appMenu);
+    this->list_subMenuItem.append(btn_menu);
     this->list_subMenuItem.append(btn_appInfo);
 
     QVBoxLayout *vl_total = new QVBoxLayout();
@@ -87,7 +90,9 @@ void LeftMenuBar::setUIControl(){
     vl_total->addWidget(btn_inputOutput);
     //vl_total->addWidget(btn_roseMenu);
     //vl_total->addWidget(btn_appMenu);
+    vl_total->addWidget(btn_menu);//c230329
     vl_total->addWidget(btn_appInfo);
+
     vl_total->addSpacing(50);
 
     this->setLayout(vl_total);
@@ -105,7 +110,7 @@ QPushButton* LeftMenuBar::createMenuBtn(const QString &text, const QString &code
     p_btn->setCursor(Qt::PointingHandCursor);
     p_btn->setFixedSize(BTN_WIDTH, BTN_HEIGHT);
     p_btn->setText(text);
-    p_btn->setStyleSheet("QPushButton { color:#919191;background-color:transparent;font-size:18px;font:bold;border:0px;text-align:left;padding-left:34px; } QPushButton:hover { color:#FFFFFF;background-color:#CCCCCC; }");//cheon211114-01
+    p_btn->setStyleSheet("QPushButton { color:#919191;background-color:transparent; font-size:18px; font:bold; border:0px; text-align:left; padding-left:24px; } QPushButton:hover { color:#FFFFFF;background-color:#CCCCCC; } QPushButton:focus {outline: none;}");//cheon211114-01
 
     // 커넥션
     connect(p_btn, SIGNAL(clicked()), this, SLOT(slot_clickedMenu()));
@@ -138,6 +143,29 @@ void LeftMenuBar::slot_clickedMenu(){
     QString tmp_subMenuCode = sender()->property(KEY_PAGE_CODE.toStdString().c_str()).toString();
     print_debug();
     qDebug() << "tmp_subMenuCode=" << tmp_subMenuCode;
+    if(tmp_subMenuCode == PAGECODE_S_MENU){//c230518
+        SqliteHelper *query = new SqliteHelper(this);
+        QSqlError err = query->addConnectionLocal();
+
+        QString queryStr = QString("UPDATE LeftmenuSetting SET is_active = %1 WHERE id = %2").arg(1).arg(0);
+        query->exec(queryStr);
+
+        const QString QUERY_SEL = "SELECT * FROM LeftmenuSetting";
+        QVariantList *list = new QVariantList();
+        query->exec(QUERY_SEL, *list);
+
+        if(err.type() == QSqlError::NoError){
+            print_debug();
+            foreach(QVariant val, *list){
+                QMap<QString, QVariant> map = val.toMap();
+                int id = map["id"].toInt();
+                global.menuUse_is_active = map["is_active"].toInt();
+                qDebug() << "id = " << id << " ,is_active=" << global.menuUse_is_active;
+            }
+        }
+        query->close();
+    }
+
     if(this->curr_subMenuCode != tmp_subMenuCode){
 
         this->setSelectedSubMenu(tmp_subMenuCode);

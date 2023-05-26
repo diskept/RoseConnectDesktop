@@ -7,6 +7,7 @@
 #include "widget/dialogconfirm.h"
 #include "widget/NoData_Widget.h"
 #include "widget/VerticalScrollArea.h"
+#include "widget/toastmsg.h"
 
 #include <QDebug>
 #include <QScroller>
@@ -29,14 +30,12 @@ namespace CDplay {
 
     CDplayHome::CDplayHome(QWidget *parent) : CDplay::AbstractCDPlaySubWidget(VerticalScroll_filter, parent) {
 
+        global.isDrawingMainContent = false;
+
         this->linker = Linker::getInstance();
 
         this->setUIControl_topButton(parent);
         this->flagNeedReload = false;
-
-        if(global.enable_section_left == true){
-            global.enable_section_left = false;
-        }
     }
 
 
@@ -71,9 +70,9 @@ namespace CDplay {
 
         this->widget_topContrl = new QWidget(parent);
         this->widget_topContrl->setFixedSize(460, 70);
-        this->widget_topContrl->setGeometry(1190, 0, 0, 0);
+        this->widget_topContrl->setGeometry(this->width() - 490, 0, 0, 0);
         this->widget_topContrl->setObjectName("widget_topContrl");
-        this->widget_topContrl->setStyleSheet("#widget_topContrl { background-color:#171717; } ");
+        this->widget_topContrl->setStyleSheet("#widget_topContrl { background-color: transparent; } ");
 
         /*QPushButton *btn_stop = new QPushButton(this->widget_topContrl);
         btn_stop->setObjectName("btn_stop");
@@ -102,7 +101,8 @@ namespace CDplay {
         btn_refresh->setCursor(Qt::PointingHandCursor);
         btn_refresh->setFixedSize(140, 40);
         btn_refresh->setGeometry(160, 15, 0, 0);
-        btn_refresh->setStyleSheet("#btn_refresh{background-color:#333333; border-radius:20px;} #btn_refresh:hover{background-color:#B18658; border-radius:20px;}");
+        //btn_refresh->setStyleSheet("#btn_refresh{background-color:#333333; border-radius:20px;} #btn_refresh:hover{background-color:#B18658; border-radius:20px;}");
+        btn_refresh->setStyleSheet("#btn_refresh{background-color:transparent} #btn_refresh:hover{background-color:transparent}");
 
         QLabel *lb_refresh_img = GSCommon::getUILabelImg(":/images/cd/icon_refresh.png", btn_refresh);
         lb_refresh_img->setFixedSize(50, 50);
@@ -151,6 +151,7 @@ namespace CDplay {
         if(this->flagNeedReload == false){
 
             if(global.user.isValid() == true){
+                print_debug();ContentLoadingwaitingMsgShow(tr("Content is being loaded. Please wait."));
 
                 // 항상 부모클래스의 함수 먼저 호출
                 AbstractCDPlaySubWidget::setActivePage();
@@ -217,6 +218,8 @@ namespace CDplay {
                 this->vbox_trackList->addWidget(this->menubar);
                 this->vbox_trackList->addWidget(this->stackedwidget);
 
+                print_debug();ContentLoadingwaitingMsgHide();//c230322_3
+
                 this->setUIControl_requestCD();
             }
         }
@@ -224,8 +227,6 @@ namespace CDplay {
 
 
     void CDplayHome::setUIControl_requestCD(){//c220721
-
-        ContentLoadingwaitingMsgShow("");
 
         NetworkHttp *network = new NetworkHttp;
         connect(network, SIGNAL(response(int,QJsonObject)), SLOT(slot_responseHttp(int,QJsonObject)));
@@ -246,6 +247,8 @@ qDebug() << "p_jsonObj=" << p_jsonObj;
            }
         }
         else if(p_id == HTTP_CD_LIST_GET){
+
+            print_debug();ContentLoadingwaitingMsgShow(tr("Content is being loaded. Please wait."));
 
             if(p_jsonObj.contains("data")){
 
@@ -274,7 +277,7 @@ qDebug() << "p_jsonObj=" << p_jsonObj;
                 }
                 else{
                     NoData_Widget *noData_widget = new NoData_Widget(NoData_Widget::NoData_Message::CDplay_NoData);
-                    noData_widget->setFixedSize(1500, 300);
+                    noData_widget->setFixedSize(1500, 500);
 
                     this->vbox_cd_contents->addWidget(noData_widget);
                     this->vbox_cd_contents->addSpacing(30);
@@ -297,7 +300,8 @@ qDebug() << "p_jsonObj=" << p_jsonObj;
 
             this->flag_draw = true;
 
-            this->slot_hide_msg();
+            global.isDrawingMainContent = true;
+            print_debug();ContentLoadingwaitingMsgHide();//c230322_3
         }
         else if(p_id == HTTP_CD_PLAY){
 print_debug();
@@ -338,6 +342,8 @@ print_debug();
         }
         else if(p_id == HTTP_CD_EJECT){
 
+            //ToastMsg::delay(this,"", tr("delay"), 5000);
+            //ContentLoadingwaitingMsgShow("");
             QThread::msleep(5000);
 
             this->flagNeedReload = false;
@@ -514,5 +520,13 @@ print_debug();
 
             //QJsonDocument doc(tmp_json);  QString strJson(doc.toJson(QJsonDocument::Compact));  qDebug() <<"CDplayHome::playMusic---" << strJson;
         }
+    }
+
+
+    void CDplayHome::resizeEvent(QResizeEvent* event){
+
+        Q_UNUSED(event);
+
+        this->widget_topContrl->setGeometry(this->width() - 490, 0, 0, 0);
     }
 }

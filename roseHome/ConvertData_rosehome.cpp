@@ -44,6 +44,7 @@ namespace roseHome {
         return jsonObj;
     }
 
+
     /**
      * @brief JsonObject을 AlbumItemData struct 타입으로 반환
      * @param jsonObj
@@ -72,6 +73,53 @@ namespace roseHome {
         else{
             data_output.trackId = ProcJsonEasy::getInt(jsonObj, "trackId");
             data_output.macAddress = ProcJsonEasy::getString(jsonObj, "macAddress");
+        }
+
+        data_output.favorite = ProcJsonEasy::getBool(jsonObj, "favorite");
+
+        return data_output;
+    }
+
+
+    QJsonObject  ConvertData::getObjectJson_artistData(const roseHome::ArtistItemData &data){
+
+        QJsonObject jsonObj;
+        jsonObj.insert("id", data.id);
+        jsonObj.insert("star", data.star);
+        jsonObj.insert("totalCount", data.totalCount);
+
+        jsonObj.insert("type", data.type);
+        jsonObj.insert("name", data.name);
+        jsonObj.insert("thumbnail", data.thumbnail);
+        jsonObj.insert("clientKey", data.clientKey);
+
+        jsonObj.insert("favorite", data.favorite);
+
+        return jsonObj;
+    }
+
+
+    /**
+     * @brief JsonObject을 ArtistItemData struct 타입으로 반환
+     * @param jsonObj
+     * @return
+     */
+    roseHome::ArtistItemData ConvertData::convertData_artistData(const QJsonObject &jsonObj){
+
+        roseHome::ArtistItemData data_output;
+        data_output.id = ProcJsonEasy::getInt(jsonObj, "id");
+        data_output.star = ProcJsonEasy::getInt(jsonObj, "star");
+
+        data_output.clientKey = ProcJsonEasy::getString(jsonObj, "clientKey");
+        data_output.name = ProcJsonEasy::getString(jsonObj, "name");
+        data_output.type = ProcJsonEasy::getString(jsonObj, "type");
+
+        QJsonArray tmpThumb = ProcJsonEasy::getJsonArray(jsonObj, "thumbnail");
+        if(tmpThumb.count() > 0){
+            data_output.thumbnail = tmpThumb.at(0).toString();
+        }
+        else{
+            data_output.thumbnail = ProcJsonEasy::getString(jsonObj, "thumbnail");
         }
 
         data_output.favorite = ProcJsonEasy::getBool(jsonObj, "favorite");
@@ -371,6 +419,13 @@ namespace roseHome {
                 if(audioQuality == "HI_RES"){
                     data_output.hires = true;
                 }
+                if(data_obj.contains("explicit")){
+                    data_output.adult_certification = ProcJsonEasy::getBool(data_obj, "explicit");
+                }
+                if(data_obj.contains("allowStreaming")){
+                    data_output.streamable = ProcJsonEasy::getBool(data_obj, "allowStreaming");
+                }
+
             }
             else if(data_output.type == "BUGS"){
 
@@ -438,6 +493,13 @@ namespace roseHome {
                     data_output.hires = true;
                 }
 
+                if(data_obj.contains("adult_yn")){
+                    data_output.adult_certification = ProcJsonEasy::getBool(data_obj,"adult_yn");
+                }
+                QJsonObject jsonObj_rights = ProcJsonEasy::getJsonObject(data_obj, "rights");
+                QJsonObject jsonObj_streaming = ProcJsonEasy::getJsonObject(jsonObj_rights, "streaming");
+                data_output.streamable = ProcJsonEasy::getBool(jsonObj_streaming, "service_yn");
+
             }
             else if(data_output.type == "QOBUZ"){
 
@@ -457,6 +519,14 @@ namespace roseHome {
                     data_output.version = ProcJsonEasy::getString(data_obj, "version");
                 }
 
+                if(data_obj.contains("parental_warning")){
+                    data_output.adult_certification = ProcJsonEasy::getBool(data_obj, "parental_warning");
+                }
+
+                if(data_obj.contains("streamable")){
+                    data_output.streamable = ProcJsonEasy::getBool(data_obj, "streamable");
+                }
+
                 QList<QString> tmp_list_name;
                 if(data_output.list_artist_name.size() > 0){
                     foreach(QString tmp_name, data_output.list_artist_name){
@@ -466,13 +536,19 @@ namespace roseHome {
 
                 if(data_output.list_artist_name.size() == 0 || tmp_list_name.contains("null")){
                     data_output.list_artist_name.clear();
-                    if(album_obj.contains("artist")){
-                        QJsonObject artist_obj = ProcJsonEasy::getJsonObject(album_obj, "artist");
+                    if(data_obj.contains("artist")){
+                        QJsonObject artist_obj = ProcJsonEasy::getJsonObject(data_obj, "artist");
                         data_output.list_artist_name.append(ProcJsonEasy::getString(artist_obj, "name"));
                     }
-                    else if(data_obj.contains("composer")){
-                        QJsonObject artist_obj = ProcJsonEasy::getJsonObject(data_obj, "composer");
-                        data_output.list_artist_name.append(ProcJsonEasy::getString(artist_obj, "name"));
+                    else{
+                        if(album_obj.contains("artist")){
+                            QJsonObject artist_obj = ProcJsonEasy::getJsonObject(album_obj, "artist");
+                            data_output.list_artist_name.append(ProcJsonEasy::getString(artist_obj, "name"));
+                        }
+                        else if(data_obj.contains("composer")){
+                            QJsonObject artist_obj = ProcJsonEasy::getJsonObject(data_obj, "composer");
+                            data_output.list_artist_name.append(ProcJsonEasy::getString(artist_obj, "name"));
+                        }
                     }
                 }
 
@@ -511,6 +587,28 @@ namespace roseHome {
     }
 
 
+    QJsonObject ConvertData::getObjectJson_historyData(const roseHome::HistoryItemData &data){
+
+        QJsonObject jsonObj;
+        jsonObj.insert("yearMonth", data.yearMonth);
+        jsonObj.insert("filter_type", data.filter_type);
+        jsonObj.insert("visible", data.visible);
+
+        return jsonObj;
+    }
+
+
+    roseHome::HistoryItemData ConvertData::converData_historyItemData(const QJsonObject &jsonObj){
+
+        roseHome::HistoryItemData data_output;
+        data_output.yearMonth = ProcJsonEasy::getString(jsonObj, "yearMonth");
+        data_output.filter_type = ProcJsonEasy::getString(jsonObj, "filter_type");
+        data_output.visible = ProcJsonEasy::getBool(jsonObj, "visible");
+
+        return data_output;
+    }
+
+
     //-----------------------------------------------------------------------------------------------------------------------
     //
     // MARK : convert ItemData to OptMorePopup::HeaderData
@@ -523,6 +621,7 @@ namespace roseHome {
      * @return
      */
     OptMorePopup::HeaderData ConvertData::getConvertOptHeaderData(const roseHome::AlbumItemData &data){//c220903_2
+
         OptMorePopup::HeaderData data_header;
         data_header.main_title = data.title;
         data_header.sub_title = data.artist;
@@ -544,6 +643,7 @@ namespace roseHome {
      * @return
      */
     OptMorePopup::HeaderData ConvertData::getConvertOptHeaderData(const roseHome::PlaylistItemData &data){
+
         OptMorePopup::HeaderData data_header;
         data_header.main_title = data.title;
         data_header.sub_title = data.ownerName;
@@ -573,6 +673,7 @@ namespace roseHome {
      * @return
      */
     OptMorePopup::HeaderData ConvertData::getConvertOptHeaderData(const roseHome::TrackItemData &data){
+
         OptMorePopup::HeaderData data_header;
         data_header.main_title = data.title;
         data_header.sub_title = data.list_artist_name.join(",");
@@ -581,6 +682,27 @@ namespace roseHome {
         data_header.type = data.type;      //j220906 share link
         data_header.flagProcStar = false;
         data_header.isRose = data.isRose;
+        data_header.isShare = true;      //j220906 share link
+
+        return data_header;
+    }
+
+
+    /**
+     * @brief qobuz::TrackItemData 정보를 OptMorePopup::HeaderData 로 변환하여 반환
+     * @param data
+     * @return
+     */
+    OptMorePopup::HeaderData ConvertData::getConvertOptHeaderData(const roseHome::ArtistItemData &data){
+
+        OptMorePopup::HeaderData data_header;
+        data_header.main_title = data.name;
+        data_header.sub_title = "";
+        data_header.imageUrl = data.thumbnail;
+        data_header.clientKey = data.clientKey;
+        data_header.data_pk = QString("%1").arg(data.id);
+        data_header.type = data.type;      //j220906 share link
+        data_header.flagProcStar = false;
         data_header.isShare = true;      //j220906 share link
 
         return data_header;
@@ -599,6 +721,7 @@ namespace roseHome {
      * @return
      */
     QJsonObject ConvertData::getObjectJson_pageInfo_albumAllView(const roseHome::PageInfo_AlbumAllView &data){
+
         QJsonObject jsonObj;
         jsonObj.insert("pathTitle", data.pathTitle);
         jsonObj.insert("api_subPath", data.api_subPath);
@@ -618,6 +741,7 @@ namespace roseHome {
      * @return
      */
     roseHome::PageInfo_AlbumAllView ConvertData::convertData_pageInfo_albumAllView(const QJsonObject &jsonObj){
+
         roseHome::PageInfo_AlbumAllView data_output;
         data_output.pathTitle = ProcJsonEasy::getString(jsonObj, "pathTitle");
         data_output.api_subPath = ProcJsonEasy::getString(jsonObj, "api_subPath");
@@ -644,6 +768,7 @@ namespace roseHome {
      * @return
      */
     QJsonObject ConvertData::getObjectJson_pageInfo_playlistAllView(const roseHome::PageInfo_PlaylistAllView &data){
+
         QJsonObject jsonObj;
         jsonObj.insert("pathTitle", data.pathTitle);
         jsonObj.insert("api_subPath", data.api_subPath);
@@ -651,38 +776,10 @@ namespace roseHome {
         jsonObj.insert("genre_id", data.genre_id);
         jsonObj.insert("genre_ids", data.genre_ids);
         jsonObj.insert("type_id", data.type_id);
+        jsonObj.insert("page", data.page);
         jsonObj.insert("filter_type", data.filter_type);
 
         return jsonObj;
-    }
-
-    QJsonObject ConvertData::getObjectJson_pageInfo_UserPage(const roseHome::PageInfo_UserPage &data){
-        QJsonObject jsonObj;
-        jsonObj.insert("pathTitle", data.pathTitle);
-        jsonObj.insert("api_subPath", data.api_subPath);
-        jsonObj.insert("type", data.type);
-        jsonObj.insert("member_id", data.member_id);
-
-        jsonObj.insert("type_id", data.type_id);
-
-        return jsonObj;
-    }
-
-
-
-    roseHome::PageInfo_UserPage ConvertData::getObjectJson_pageInfo_UserPage(const QJsonObject &jsonObj){
-
-        roseHome::PageInfo_UserPage data_output;
-        data_output.pathTitle = ProcJsonEasy::getString(jsonObj, "pathTitle");
-        data_output.api_subPath = ProcJsonEasy::getString(jsonObj, "api_subPath");
-        data_output.type = ProcJsonEasy::getString(jsonObj, "type");
-        data_output.member_id = ProcJsonEasy::getInt(jsonObj, "member_id");
-
-        data_output.type_id = ProcJsonEasy::getInt(jsonObj, "type_id");
-
-        return data_output;
-
-
     }
 
     /**
@@ -691,6 +788,7 @@ namespace roseHome {
      * @return
      */
     roseHome::PageInfo_PlaylistAllView ConvertData::convertData_pageInfo_playlistAllView(const QJsonObject &jsonObj){
+
         roseHome::PageInfo_PlaylistAllView data_output;
         data_output.pathTitle = ProcJsonEasy::getString(jsonObj, "pathTitle");
         data_output.api_subPath = ProcJsonEasy::getString(jsonObj, "api_subPath");
@@ -698,6 +796,7 @@ namespace roseHome {
         data_output.genre_id = ProcJsonEasy::getInt(jsonObj, "genre_id");
         data_output.genre_ids = ProcJsonEasy::getString(jsonObj, "genre_ids");
         data_output.type_id = ProcJsonEasy::getInt(jsonObj, "type_id");
+        data_output.page = ProcJsonEasy::getString(jsonObj, "page");
         data_output.filter_type = ProcJsonEasy::getString(jsonObj, "filter_type");
 
         return data_output;
@@ -716,6 +815,7 @@ namespace roseHome {
      * @return
      */
     QJsonObject ConvertData::getObjectJson_pageInfo_trackAllView(const roseHome::PageInfo_TrackAllView &data){
+
         QJsonObject jsonObj;
         jsonObj.insert("pathTitle", data.pathTitle);
         jsonObj.insert("api_subPath", data.api_subPath);
@@ -723,10 +823,12 @@ namespace roseHome {
         jsonObj.insert("genre_id", data.genre_id);
         jsonObj.insert("genre_ids", data.genre_ids);
         jsonObj.insert("type_id", data.type_id);
+        jsonObj.insert("page", data.page);
         jsonObj.insert("filter_type", data.filter_type);
 
         return jsonObj;
     }
+
 
     /**
      * @brief JsonObject을 PageInfo_trackAllView struct 타입으로 반환
@@ -734,6 +836,7 @@ namespace roseHome {
      * @return
      */
     roseHome::PageInfo_TrackAllView ConvertData::convertData_pageInfo_trackAllView(const QJsonObject &jsonObj){
+
         roseHome::PageInfo_TrackAllView data_output;
         data_output.pathTitle = ProcJsonEasy::getString(jsonObj, "pathTitle");
         data_output.api_subPath = ProcJsonEasy::getString(jsonObj, "api_subPath");
@@ -741,9 +844,148 @@ namespace roseHome {
         data_output.genre_id = ProcJsonEasy::getInt(jsonObj, "genre_id");
         data_output.genre_ids = ProcJsonEasy::getString(jsonObj, "genre_ids");
         data_output.type_id = ProcJsonEasy::getInt(jsonObj, "type_id");
+        data_output.page = ProcJsonEasy::getString(jsonObj, "page");
         data_output.filter_type = ProcJsonEasy::getString(jsonObj, "filter_type");
 
         return data_output;
+    }
+
+
+    //-----------------------------------------------------------------------------------------------------------------------
+    //
+    // MARK : about PageInfo_ArtistAllView
+    //
+    //-----------------------------------------------------------------------------------------------------------------------
+
+    /**
+     * @brief PageInfo_ArtistAllView struct 타입을 JsonObject로 반환
+     * @param data
+     * @return
+     */
+    QJsonObject ConvertData::getObjectJson_pageInfo_artistAllView(const roseHome::PageInfo_ArtistAllView &data){
+
+        QJsonObject jsonObj;
+        jsonObj.insert("pathTitle", data.pathTitle);
+        jsonObj.insert("api_subPath", data.api_subPath);
+        jsonObj.insert("type", data.type);
+        jsonObj.insert("genre_id", data.genre_id);
+        jsonObj.insert("genre_ids", data.genre_ids);
+        jsonObj.insert("type_id", data.type_id);
+        jsonObj.insert("page", data.page);
+        jsonObj.insert("filter_type", data.filter_type);
+
+        return jsonObj;
+    }
+
+
+    /**
+     * @brief JsonObject을 PageInfo_ArtistAllView struct 타입으로 반환
+     * @param jsonObj
+     * @return
+     */
+    roseHome::PageInfo_ArtistAllView ConvertData::convertData_pageInfo_artistAllView(const QJsonObject &jsonObj){
+
+        roseHome::PageInfo_ArtistAllView data_output;
+        data_output.pathTitle = ProcJsonEasy::getString(jsonObj, "pathTitle");
+        data_output.api_subPath = ProcJsonEasy::getString(jsonObj, "api_subPath");
+        data_output.type = ProcJsonEasy::getString(jsonObj, "type");
+        data_output.genre_id = ProcJsonEasy::getInt(jsonObj, "genre_id");
+        data_output.genre_ids = ProcJsonEasy::getString(jsonObj, "genre_ids");
+        data_output.type_id = ProcJsonEasy::getInt(jsonObj, "type_id");
+        data_output.page = ProcJsonEasy::getString(jsonObj, "page");
+        data_output.filter_type = ProcJsonEasy::getString(jsonObj, "filter_type");
+
+        return data_output;
+    }
+
+
+    //-----------------------------------------------------------------------------------------------------------------------
+    //
+    // MARK : about PageInfo_historyAllView
+    //
+    //-----------------------------------------------------------------------------------------------------------------------
+
+    QJsonObject ConvertData::getObjectJson_pageInfo_historyAllView(const roseHome::PageInfo_HistoryAllView &data){
+
+        QJsonArray histories;
+        for(int i = 0; i < data.list_history.count(); i++){
+            QJsonObject tmphistory;
+            tmphistory.insert("yearMonth", data.list_history.at(i).yearMonth);
+            tmphistory.insert("visible", data.list_history.at(i).visible);
+
+            histories.append(tmphistory);
+        }
+
+        QJsonObject jsonObj;
+        jsonObj.insert("pathTitle", data.pathTitle);
+        jsonObj.insert("api_subPath", data.api_subPath);
+        jsonObj.insert("type", data.type);
+        jsonObj.insert("type_id", data.type_id);
+        jsonObj.insert("filter_type", data.filter_type);
+        jsonObj.insert("histories", histories);
+
+        return jsonObj;
+    }
+
+
+    roseHome::PageInfo_HistoryAllView ConvertData::convertData_pageInfo_historyAllView(const QJsonObject &jsonObj){
+
+        roseHome::PageInfo_HistoryAllView data_output;
+        data_output.pathTitle = ProcJsonEasy::getString(jsonObj, "pathTitle");
+        data_output.api_subPath = ProcJsonEasy::getString(jsonObj, "api_subPath");
+        data_output.type = ProcJsonEasy::getString(jsonObj, "type");
+        data_output.type_id = ProcJsonEasy::getInt(jsonObj, "type_id");
+        data_output.filter_type = ProcJsonEasy::getString(jsonObj, "filter_type");
+
+        QJsonArray tmpHistories = ProcJsonEasy::getJsonArray(jsonObj, "histories");
+
+        for(int i = 0; i < tmpHistories.count(); i++){
+            QJsonObject tmpData = tmpHistories.at(i).toObject();
+
+            roseHome::HistoryItemData tmpList;
+            tmpList.yearMonth = ProcJsonEasy::getString(tmpData, "yearMonth");
+            tmpList.visible = ProcJsonEasy::getBool(tmpData, "visible");
+
+            data_output.list_history.append(tmpList);
+        }
+
+        return data_output;
+    }
+
+
+    //-----------------------------------------------------------------------------------------------------------------------
+    //
+    // MARK : about PageInfo_userpageAllView
+    //
+    //-----------------------------------------------------------------------------------------------------------------------
+
+    QJsonObject ConvertData::getObjectJson_pageInfo_UserPage(const roseHome::PageInfo_UserPage &data){
+
+        QJsonObject jsonObj;
+        jsonObj.insert("pathTitle", data.pathTitle);
+        jsonObj.insert("api_subPath", data.api_subPath);
+        jsonObj.insert("type", data.type);
+        jsonObj.insert("member_id", data.member_id);
+
+        jsonObj.insert("type_id", data.type_id);
+
+        return jsonObj;
+    }
+
+
+    roseHome::PageInfo_UserPage ConvertData::getObjectJson_pageInfo_UserPage(const QJsonObject &jsonObj){
+
+        roseHome::PageInfo_UserPage data_output;
+        data_output.pathTitle = ProcJsonEasy::getString(jsonObj, "pathTitle");
+        data_output.api_subPath = ProcJsonEasy::getString(jsonObj, "api_subPath");
+        data_output.type = ProcJsonEasy::getString(jsonObj, "type");
+        data_output.member_id = ProcJsonEasy::getInt(jsonObj, "member_id");
+
+        data_output.type_id = ProcJsonEasy::getInt(jsonObj, "type_id");
+
+        return data_output;
+
+
     }
 
 
@@ -757,6 +999,7 @@ namespace roseHome {
 
         return jsonObj;
     }
+
 
     /**
      * @brief JsonObject을 PageInfo_AlbumAllView struct 타입으로 반환

@@ -85,7 +85,7 @@ namespace apple {
 
             this->flag_draw = false;
 
-            ContentLoadingwaitingMsgShow(tr("Content is being loaded. Please wait."));
+            print_debug();ContentLoadingwaitingMsgShow(tr("Content is being loaded. Please wait."));
 
             roseHome::ProcCommon *proc_playlist = new roseHome::ProcCommon(this);
             connect(proc_playlist, &roseHome::ProcCommon::completeReq_playlist, this, &ApplePlaylistDetail_Rose::slot_applyResult_playlist);
@@ -160,7 +160,7 @@ namespace apple {
 
             this->flag_draw = true;
 
-            ContentLoadingwaitingMsgShow(tr("Content is being loaded. Please wait."));
+            print_debug();ContentLoadingwaitingMsgShow(tr("Content is being loaded. Please wait."));
             this->request_more_trackDraw();
         }
     }

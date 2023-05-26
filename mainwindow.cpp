@@ -1,9 +1,12 @@
 #include "mainwindow.h"
 
 #include "common/filedownloader.h"
-#include "common/sqlitehelper.h"
 #include "common/global.h"
 #include "common/rosesettings.h"
+#include "common/sqlitehelper.h"
+
+#include "widget/framerecentalbum.h"
+
 #include <QSettings>
 #include <QApplication>
 #include <QStackedWidget>
@@ -12,11 +15,12 @@
 #include <QDebug>
 #include <QMouseEvent>
 #include <QStandardPaths>
+#include <QScreen>
 
-#include "widget/framerecentalbum.h"
 
 const int MINSIZE_W = 1024;
 const int MINSIZE_H = 800;
+
 
 /**
  * @brief MainWindow::MainWindow : 메인윈도우
@@ -26,26 +30,31 @@ MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)
 {
 
-    setInit();
-    setUIControl();
-    QGuiApplication::focusWindow();//c220724
+    this->setInit();
+    this->setUIControl();
+    //QGuiApplication::focusWindow();//c220724
 }
+
 
 /**
  * @brief MainWindow::~MainWindow : 소멸자
  */
-MainWindow::~MainWindow()
+MainWindow::~MainWindow()//c230302_1
 {
-    linker->deleteLater();
+    print_debug();
+    this->linker->deleteLater();
     delete settings;
+    qApp->exit();
+    print_debug();
 }
+
 
 /**
  * @brief MainWindow::setInit : 초기 세팅
  */
 void MainWindow::setInit(){
 
-    linker = Linker::getInstance();
+    this->linker = Linker::getInstance();
 
     this->setMinimumSize(MINSIZE_W, MINSIZE_H);
     //this->setWindowTitle("ROSE");
@@ -60,39 +69,63 @@ void MainWindow::setInit(){
     checkDataDir();
 }
 
+
 /**
  * @brief MainWindow::setFont : Font 세팅
  * @note 나눔스퀘어
  */
 void MainWindow::setFont(){//c220430
-    QString fontFilePath = qApp->applicationDirPath()+"/font/NanumSquareR.ttf";
-    //QString fontFilePath = qApp->applicationDirPath()+"/font/nanumsquare_ac_r.ttf";
+
+    // NotoSansCJKkr-Medium.ttf 폰트 등록
+    int fontId = QFontDatabase::addApplicationFont(":/font/NotoSansCJKkr-Regular.ttf");
+    //int fontId = QFontDatabase::addApplicationFont(":/font/NotoSansCJKkr-Medium.ttf");
+    //int fontId = QFontDatabase::addApplicationFont(":/font/NotoSans-Medium.ttf");
+
+    if (fontId != -1) { // 폰트 등록에 성공한 경우
+        QStringList fontFamilies = QFontDatabase::applicationFontFamilies(fontId);
+        if (!fontFamilies.empty()) { // 등록한 폰트가 하나 이상인 경우
+            // QFont 객체 생성 후 등록한 폰트를 설정
+            QFont font(fontFamilies.at(0));
+
+            // QApplication의 기본 폰트로 설정
+            QApplication::setFont(font);
+        }
+    }
+
+    //qDebug() << QApplication::font();
+
+    /*QString fontFilePath = qApp->applicationDirPath()+"/font/NanumSquareR.ttf";
+
     if(GSCommon::checkFileExists(fontFilePath)){
         //int id = QFontDatabase::addApplicationFont(qApp->applicationDirPath()+"/font/nanumsquare_ac_r.ttf");
         int id = QFontDatabase::addApplicationFont(qApp->applicationDirPath()+"/font/NanumSquareR.ttf");
         QString family = QFontDatabase::applicationFontFamilies(id).at(0);
         //QFont font(family, 16, QFont::Bold, false);
-        QFont font("Arial", 16, QFont::Bold, false);
+        QFont font("Arial", 16, QFont::Light, false);
         QApplication::setFont(font);
-    }else{
-        QFont font("Arial", 16, QFont::Bold, false);
+    }
+    else{
+        QFont font("Arial", 16, QFont::Light, false);
         QApplication::setFont(font);
         // 배포파일 누락 :: 임시
         //QFont font("나눔스퀘어");
         //QApplication::setFont(font);
-    }
+    }*/
 }
+
 
 /**
  * @brief MainWindow::checkDataDir : 디렉토리 확인 및 생성
  */
 void MainWindow::checkDataDir(){
+
     QString tmp_dirPath = QStandardPaths::writableLocation(QStandardPaths::AppConfigLocation);
     QDir dir(tmp_dirPath);
     if(!dir.exists()){
         dir.mkpath(tmp_dirPath);
     }
 }
+
 
 /**
  * @brief MainWindow::setInitWindowSize : 메인윈도우 사이즈 조절
@@ -104,15 +137,23 @@ void MainWindow::setInitWindowSize(){//c220408
     int latestWidth = settings->value(rosesettings.SETTINGS_W, 0).toInt();
     int latestHeight = settings->value(rosesettings.SETTINGS_H, MINSIZE_H).toInt();
 
+    global.width_mainwindow = latestWidth;
+    global.height_mainwindow = latestHeight;
+
     if(latestWidth > 0){
         this->resize(latestWidth, latestHeight);
-    }else{
+    }
+    else{
         this->setWindowState(Qt::WindowMaximized);
     }
 
-    // TODO :: init position test... jeon 11/12/2020
-    //this->setGeometry(20, 70, latestWidth, latestHeight);
+    // TODO :: init position test... diskept 11/12/2020
+//    int latestLeft = settings->value(rosesettings.SETTINGS_L, 0).toInt();
+//    int latestTop = settings->value(rosesettings.SETTINGS_T, 0).toInt();
+
+//    this->setGeometry(latestLeft, latestTop, latestWidth, latestHeight);
 }
+
 
 /**
  * @brief MainWindow::setUIControl : UI 세팅
@@ -135,12 +176,26 @@ void MainWindow::setUIControl(){
         connect(introWelcome, SIGNAL(clickedNext()), this, SLOT(changedIntroPage()));
         connect(introWifi, SIGNAL(clickedNext()), this, SLOT(changedIntroPage()));
         connect(introRegister, SIGNAL(clickedNext()), this, SLOT(changedIntroPage()));
-    }else{
+    }
+    else{
 
         // deviceIP 세팅
         setDeviceInfo();
 
+        int latestWidth = settings->value(rosesettings.SETTINGS_W, 0).toInt();
+        int latestHeight = settings->value(rosesettings.SETTINGS_H, MINSIZE_H).toInt();
 
+        global.width_mainwindow = latestWidth;
+        global.height_mainwindow = latestHeight;
+
+        // added by diskept
+        int latestLeft = settings->value(rosesettings.SETTINGS_L).toInt();
+        int latestTop = settings->value(rosesettings.SETTINGS_T).toInt();
+//settings->ser
+        global.left_mainwindow = latestLeft;
+        global.top_mainwindow = latestTop;
+     //   this->m
+        this->move(global.left_mainwindow, global.top_mainwindow);//c230326
         this->homeMain = new HomeMain;
         this->setCentralWidget(homeMain);
 
@@ -161,10 +216,12 @@ void MainWindow::setUIControl(){
     }
 }
 
+
 /**
  * @brief MainWindow::setDeviceIP : 연결된 장치의 deviceIP값 세팅
  */
 void MainWindow::setDeviceInfo(){
+
     if(global.device.getDeviceIP().isEmpty() || global.device.getDeviceRoseToken().isEmpty()){
         SqliteHelper *sqlite = new SqliteHelper(this);
         QSqlError err = sqlite->addConnectionLocal();
@@ -179,9 +236,8 @@ void MainWindow::setDeviceInfo(){
         QSqlDatabase::removeDatabase(sqlite->getActiveDb());
         delete sqlite;
     }
-
-
 }
+
 
 /**
  * @brief MainWindow::resizeEvent 윈도우 리사이즈 이벤트 함수
@@ -198,12 +254,24 @@ print_debug();
        // emit linker->signal_window_resize();//c220401
         homeMain->reSize(this->size().width());
     }
+
+    QScreen *screen = QGuiApplication::primaryScreen();
+    QRect  screenGeometry = screen->geometry();
+    //int height = screenGeometry.height();
+    int width = screenGeometry.width();
+
+    if(this->width() >= width){
+        this->setMaximumSize(screen->availableSize());
+    }
+
     global.width_mainwindow = this->width();
     global.height_mainwindow = this->height();
 
     // added by sunnyfish
     global.left_mainwindow = this->pos().x();
     global.top_mainwindow = this->pos().y();
+
+    QCoreApplication::processEvents(QEventLoop::ExcludeUserInputEvents);
 }
 
 /**
@@ -211,6 +279,7 @@ print_debug();
  * @param event
  */
 void MainWindow::moveEvent(QMoveEvent *event){
+
     QMainWindow::moveEvent(event);
     // added by sunnyfish
     global.left_mainwindow = this->pos().x();
@@ -218,28 +287,37 @@ void MainWindow::moveEvent(QMoveEvent *event){
 }
 
 
-
 void MainWindow::closeEvent(QCloseEvent *event){
+
     Q_UNUSED(event);
+
     // QSettings save
-    print_debug();
     settings->setValue(rosesettings.SETTINGS_W, this->size().width());
     settings->setValue(rosesettings.SETTINGS_H, this->size().height());
-    qApp->quit();//c220521
+    settings->setValue(rosesettings.SETTINGS_L, this->pos().x());
+    settings->setValue(rosesettings.SETTINGS_T, this->pos().y());
+    qApp->exit();//  quit();//c220521
 }
 
+
 void MainWindow::hideEvent(QHideEvent *event){
+
     QMainWindow::hideEvent(event);
     print_debug();
     global.powerDialogShowFlag = true;
     emit linker->signal_window_hide();//c220401
 }
+
+
 void MainWindow::showEvent(QShowEvent *event){
+
     QMainWindow::showEvent(event);
     print_debug();
     global.powerDialogShowFlag = false;
     //emit linker->signal_window_show();//c220401
 }
+
+
 /**
  * @brief MainWindow::changedIntroPage [SLOT] 인트로 페이지 전환
  */
@@ -285,35 +363,37 @@ void MainWindow::changedIntroPage(){
             this->homeMain->connectDevice(tmp_ip2);
         }
 
-
         // 튜토리얼 widget hide
         this->stack->hide();
         delete stack;
-    }else{
+    }
+    else{
         this->stack->setCurrentIndex(this->stack->currentIndex()+1);
         if(stack->currentIndex()==2){
             IntroRegister *introReg = qobject_cast<IntroRegister *>(stack->currentWidget());
+            print_debug();
             introReg->searchAllDevice();
         }
     }
 }
 
 
-void MainWindow::changeEvent(QEvent * e) {//c220724
+void MainWindow::changeEvent(QEvent * e) {//c230323
+
     if(e->type() == QEvent::ActivationChange){
         if(this->isActiveWindow()) {
-            print_debug();
-            global.window_activate_flag = true;
+            //print_debug();
+            //global.window_activate_flag = true;
         }else{
-            print_debug();
-            global.window_activate_flag = false;
+           // print_debug();
+            //global.window_activate_flag = false;
         }
         // .. this is now the active window
-        print_debug();
+       //print_debug();
 
     }
     else{
-        print_debug();
+       // print_debug();
 
     }
 }

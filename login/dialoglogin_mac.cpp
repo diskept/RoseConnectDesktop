@@ -183,8 +183,16 @@ void DialogLogin_mac::slot_ok(){
         QString std_out = process->readAllStandardOutput();
         if(std_out.isEmpty()){
             qDebug() << "The password input is incorrect.";
-            global.window_activate_flag = true;//
-            ToastMsg::show(this,"",tr("The password input is incorrect."), 4000);
+            if(!global.window_activate_flag){//c230127
+                global.window_activate_flag = true;
+                ToastMsg::show(this,"",tr("The password input is incorrect."), 4000);
+
+                global.window_activate_flag = false;
+            }else{
+                ToastMsg::show(this,"",tr("The password input is incorrect."), 4000);
+
+            }
+
             return;
         }
 

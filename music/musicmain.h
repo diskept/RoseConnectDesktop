@@ -2,8 +2,9 @@
 #define MUSICMAIN_H
 
 #include "music/musichome.h"
-#include "music/musiccategory.h"
-#include "music/musicalbum.h"
+#include "music/MusicRecommendation.h"
+#include "music/MusicCategory.h"
+#include "music/MusicAlbum.h"
 #include "music/musicfolder.h"
 #include "music/musiccollection.h"
 #include "music/musicsearch.h"
@@ -16,7 +17,7 @@
 
 #include "music/musice_playlist.h"
 #include "music/musicfolder_editfavor.h"
-#include "music/musiclist_group.h"
+#include "music/Musiclist_group.h"
 #include "music/musiclist_collectiontrack.h"
 
 #include "music/musiclist_artistTrack.h"
@@ -32,9 +33,13 @@
 #include "music/MusicTrackListAll_rose.h"
 #include "music/MusicArtistDetail.h"
 #include "music/MusicArtistAll.h"
+#include "music/MusicHistoryDetail.h"
+#include "music/MusicHistoryListAll.h"
 #include "music/MusicMyCollection.h"
 #include "music/MusicMyFavorite.h"
 #include "music/MusicSearchMain.h"
+#include "music/MusicAddPlaylist.h"
+#include "music/MusicRecentlyListDelete.h"
 
 #include "home/abstractmaincontent.h"
 #include "home/topmenubar.h"
@@ -94,36 +99,44 @@ namespace music {
 
         QWidget *curr_widget;//c220730
         // 메뉴 관련 페이지  ----------------------
-        MusicHome *musicHome=nullptr;                        ///< 메뉴 : 음악 > 홈
-        MusicCategory *musicCategory=nullptr;                       ///< 메뉴 : 음악 > 분류
+        MusicHome *musicHome=nullptr;                               ///< 메뉴 : 음악 > 홈
+        MusicRecommend *musicRecommend=nullptr;                     ///< 메뉴 : 음악 > 추천
         MusicAlbum *musicAlbum=nullptr;                             ///< 메뉴 : 음악 > 앨범
+        MusicCategory *musicCategory=nullptr;                       ///< 메뉴 : 음악 > 분류
         MusicFolder *musicFolder=nullptr;                           ///< 메뉴 : 음악 > 폴더
-        MusicMyCollection *musicMyCollection = nullptr;      ///< 메뉴 : 음악 > My Collection
-        MusicSearch *musicSearch=nullptr;                    ///< 음악 > 검색
-        MusicFavorite *musicFavorite=nullptr;                ///< 메뉴 : 음악 > My Collection > Favorites
+        MusicMyCollection *musicMyCollection = nullptr;             ///< 메뉴 : 음악 > My Collection
+        MusicSearch *musicSearch=nullptr;                           ///< 음악 : 검색
+        MusicFavorite *musicFavorite=nullptr;                       ///< 메뉴 : 음악 > My Collection > Favorites
         Musice_playlist *musice_playlist=nullptr;                   ///< 플레이리스트 상세
+        MusicAddPlaylist *musicAddPlaylsit = nullptr;               ///< 플레이리스트 추가/삭제/변경
+        MusicRecentlyListDelete *musicRecenltyDelete = nullptr;     ///< Recently list Delete
         //MusicCollection *musicCollection=nullptr;                 ///< 메뉴 : 음악 > My Collection
         //MusicSearch *musicSearch=nullptr;                         ///< 음악 > 검색
 
         // 옵션팝업 관련 페이지 ----------------------
         //AlbumDetail *albumDetail = nullptr;                       ///< 옵션팝업 : 앨범상세
-        AlbumDetail *albumDetail = nullptr;                  ///< 옵션팝업 : 앨범상세
-        AlbumDetail_Rose *albumDetail_rose = nullptr;        ///< 옵션팝업 : 앨범상세 for Rose
-        AlbumListAll *albumListAll = nullptr;                ///< 옵션팝업 : 앨범리스트
-        PlaylistDetail_Rose *playlistDetail_rose = nullptr;  ///< 옵션팝업 : 플레이리스트상세 for Rose
-        PlaylistAll *playlistListAll = nullptr;              ///< 옵션팝업 : 플레이리스트 리스트
-        MyPlaylistAll *myplaylistListAll = nullptr;          ///< 옵션팝업 : 마이플레이리스트 리스트
-        UserPlaylistAll *userplaylistListAll = nullptr;      ///< 옵션팝업 : 유저플레이리스트 리스트
-        TrackListAll *trackListAll_rose = nullptr;           ///< 옵션팝업 : 트랙리스트
-        ArtistDetail *artistDetail = nullptr;                ///< 옵션팝업 : 아티스트상세
-        ArtistListAll *artistListAll = nullptr;              ///< 옵션팝업 : 아티스트리스트
-        ArtistAlbumListAll *artistAlbumListAll = nullptr;    ///< 옵션팝업 : 아티스트 앨범리스트
-        ArtistTrackListAll *artistTrackListAll = nullptr;    ///< 옵션팝업 : 아티스트 트랙리스트
-        SearchAlbumListAll *searchAlbumListAll = nullptr;    ///< 옵션팝업 : 앨범리스트
-        SearchTrackListAll *searchTrackListAll = nullptr;    ///< 옵션팝업 : 트랙리스트
+        AlbumDetail *albumDetail = nullptr;                         ///< 옵션팝업 : 앨범상세
+        AlbumDetail_Rose *albumDetail_rose = nullptr;               ///< 옵션팝업 : 앨범상세 for Rose
+        AlbumListAll *albumListAll = nullptr;                       ///< 옵션팝업 : 앨범리스트
+        PlaylistDetail_Rose *playlistDetail_rose = nullptr;         ///< 옵션팝업 : 플레이리스트상세 for Rose
+        PlaylistAll *playlistListAll = nullptr;                     ///< 옵션팝업 : 플레이리스트 리스트
+        MyPlaylistAll *myplaylistListAll = nullptr;                 ///< 옵션팝업 : 마이플레이리스트 리스트
+        UserPlaylistAll *userplaylistListAll = nullptr;             ///< 옵션팝업 : 유저플레이리스트 리스트
+        TrackListAll *trackListAll_rose = nullptr;                  ///< 옵션팝업 : 트랙리스트
+        ArtistDetail *artistDetail = nullptr;                       ///< 옵션팝업 : 아티스트상세
+        ArtistListAll *artistListAll = nullptr;                     ///< 옵션팝업 : 아티스트리스트
+        HistoryDetail *historyDetail = nullptr;                     ///< 옵션팝업 : 히스토리상세
+        HistoryListAll *historyListAll = nullptr;                   ///< 옵션팝업 : 히스토리리스트
+        AlbumHistoryAll *histroyAlbumListAll = nullptr;
+        PlaylistHistoryAll *histroyPlaylistListAll = nullptr;
+        TrackHistoryAll *histroyTrackListAll = nullptr;
+        ArtistAlbumListAll *artistAlbumListAll = nullptr;           ///< 옵션팝업 : 아티스트 앨범리스트
+        ArtistTrackListAll *artistTrackListAll = nullptr;           ///< 옵션팝업 : 아티스트 트랙리스트
+        SearchAlbumListAll *searchAlbumListAll = nullptr;           ///< 옵션팝업 : 앨범리스트
+        SearchTrackListAll *searchTrackListAll = nullptr;           ///< 옵션팝업 : 트랙리스트
+
         MetaInfo *metaInfo=nullptr;                                 ///< 옵션팝업 : 메타정보
         ArtistInfo *artistInfo=nullptr;                             ///< 옵션팝업 : 아티스트상세
-
         GenreInfo *genreInfo=nullptr;                               ///< 메뉴 : 음악-분류-장르상세
         ComposerInfo *composerInfo=nullptr;                         ///< 메뉴 : 음악-분류-작곡가상세
 

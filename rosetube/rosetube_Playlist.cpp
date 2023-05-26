@@ -44,7 +44,14 @@ namespace rosetube {
     void RoseTube_PlayList::setJsonObject_forData(const QJsonObject& jsonObj){
 
         QString title = ProcJsonEasy::getString(jsonObj, "title");
-        int id = ProcJsonEasy::getInt(jsonObj, "id");
+        int id = 0;
+        if(jsonObj.contains("id")){
+            id = ProcJsonEasy::getInt(jsonObj, "id");
+        }
+        else if(jsonObj.contains("no")){
+            id = ProcJsonEasy::getInt(jsonObj, "no");
+        }
+
         this->flagNeedReload = false;
 
 
@@ -81,12 +88,15 @@ namespace rosetube {
 
             this->flag_draw = false;
 
-            ContentLoadingwaitingMsgShow(tr("Content is being loaded. Please wait."));
+            print_debug();ContentLoadingwaitingMsgShow(tr("Content is being loaded. Please wait."));
 
             roseHome::ProcCommon *proc_playlist = new roseHome::ProcCommon(this);
             connect(proc_playlist, &roseHome::ProcCommon::completeReq_playlist, this, &RoseTube_PlayList::slot_applyResult_playlist);
             connect(proc_playlist, &roseHome::ProcCommon::completeReq_list_tracks, this, &RoseTube_PlayList::slot_applyResult_playlist_tracks);
             proc_playlist->request_rose_get_playlist(this->playlistId, this->track_currentOffset, GET_MAX_ITEM_SIZE___ONCE);
+        }
+        else{
+            print_debug();ContentLoadingwaitingMsgHide();   //j230328
         }
     }
 
@@ -138,7 +148,7 @@ namespace rosetube {
 
             this->flag_draw = true;
 
-            ContentLoadingwaitingMsgShow(tr("Content is being loaded. Please wait."));
+            print_debug();ContentLoadingwaitingMsgShow(tr("Content is being loaded. Please wait."));
             this->request_more_trackDraw();
         }
     }

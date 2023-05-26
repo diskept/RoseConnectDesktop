@@ -50,7 +50,13 @@ namespace music {
      */
     void PlaylistDetail_Rose::setJsonObject_forData(const QJsonObject &jsonObj){
 
-        roseHome::PlaylistItemData tmp_data_playlist = roseHome::ConvertData::convertData_playlistData(jsonObj);
+        roseHome::PlaylistItemData tmp_data_playlist;
+        if(jsonObj.contains("playListNo")){
+            tmp_data_playlist.id = ProcJsonEasy::getInt(jsonObj, "playListNo");
+        }
+        else{
+            tmp_data_playlist = roseHome::ConvertData::convertData_playlistData(jsonObj);
+        }
         this->flagNeedReload = false;
 
         if(tmp_data_playlist.id != this->data_playlist.id){
@@ -85,7 +91,7 @@ namespace music {
 
             this->flag_draw = false;
 
-            ContentLoadingwaitingMsgShow(tr("Content is being loaded. Please wait."));
+            print_debug();ContentLoadingwaitingMsgShow(tr("Content is being loaded. Please wait."));
 
             roseHome::ProcCommon *proc_playlist = new roseHome::ProcCommon(this);
             connect(proc_playlist, &roseHome::ProcCommon::completeReq_playlist, this, &PlaylistDetail_Rose::slot_applyResult_playlist);
@@ -98,6 +104,9 @@ namespace music {
                 connect(proc_thumb_playlist, &roseHome::ProcCommon::completeReq_rating_thumbup, this, &PlaylistDetail_Rose::slot_applyResult_getRating_thumbup);
                 proc_thumb_playlist->request_rose_getRating_Thumbup("PLAY_LIST", QString("%1").arg(tmp_data_playlist.id));
             }
+        }
+        else{
+            print_debug();ContentLoadingwaitingMsgHide();   //j230328
         }
     }
 
@@ -159,7 +168,7 @@ namespace music {
 
             this->flag_draw = true;
 
-            ContentLoadingwaitingMsgShow(tr("Content is being loaded. Please wait."));
+            print_debug();ContentLoadingwaitingMsgShow(tr("Content is being loaded. Please wait."));
             this->request_more_trackDraw();
         }
     }
@@ -627,6 +636,21 @@ namespace music {
                 // Rose Play 요청
                 roseHome::ProcRosePlay_withRosehome *procRosePlay = new roseHome::ProcRosePlay_withRosehome(this);
                 procRosePlay->requestPlayRose_byPlaylist(this->data_playlist, this->jsonArr_tracks_toPlay, 0, clickMode, roseHome::ProcRosePlay_withRosehome::PlayShuffleMode::JustPlay);
+            }
+            else if(clickMode == OptMorePopup::ClickMode::Edit){
+                QString view_type = "edit";
+
+                QJsonObject data;
+                data.insert("view_type", view_type);
+                data.insert("playlist_id", this->data_playlist.id);
+                data.insert("type", "ROSE");
+
+                QJsonObject jsonObj_move;
+                jsonObj_move.insert("data", data);
+
+                jsonObj_move.insert(KEY_PAGE_CODE, PAGECODE_M_ADDPLAYLIST);
+
+                emit linker->signal_clickedMovePage(jsonObj_move);
             }
             else if(this->data_playlist.ownerName != global.user.getUsername()){//j220906 share link
                 setUIShare();

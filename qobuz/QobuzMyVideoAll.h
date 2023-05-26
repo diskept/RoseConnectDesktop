@@ -42,7 +42,7 @@ namespace qobuz {
 
         void setUIControl_video();
 
-        void setUiControl_filter();
+        void setUIControl_filter();
 
         void initAll();
 

@@ -167,6 +167,7 @@ void IntroRegister::resizeEvent(QResizeEvent *event){
  */
 void IntroRegister::searchAllDevice(){
     if(wg_search != nullptr){
+        print_debug();
         wg_search->searchDevice("");
     }
 }

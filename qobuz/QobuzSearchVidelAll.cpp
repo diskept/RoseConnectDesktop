@@ -61,7 +61,9 @@ namespace qobuz {
             this->flag_lastPage_video = false;
             this->request_more_videoData();
         }
-
+        else{
+            print_debug();ContentLoadingwaitingMsgHide();   //j230328
+        }
     }
 
 

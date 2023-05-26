@@ -70,9 +70,9 @@ namespace qobuz {
 
         // AbstractImageDetailInfo 관련 - 타이달 전용 (Album 상세, Playlist 상세)
         virtual void slot_detailInfo_btnClicked(const AbstractImageDetailInfo::BtnClickMode){ }
-        virtual void slot_detailInfo_btnClicked(const AbstractImageDetailInfo_forQobuz::BtnClickMode){ }            //Added Jeon 07/01/2021
-        virtual void slot_detailInfo_btnClicked(const AbstractImageDetailInfo_RHV::BtnClickMode){ }                 //Added Jeon 09/02/2021
-        virtual void slot_detailInfo_btnClicked(const AbstractImageDetailContents_RHV::BtnClickMode){ }             //Added Jeon 01/07/2022
+        virtual void slot_detailInfo_btnClicked(const AbstractImageDetailInfo_forQobuz::BtnClickMode){ }            //Added diskept 07/01/2021
+        virtual void slot_detailInfo_btnClicked(const AbstractImageDetailInfo_RHV::BtnClickMode){ }                 //Added diskept 09/02/2021
+        virtual void slot_detailInfo_btnClicked(const AbstractImageDetailContents_RHV::BtnClickMode){ }             //Added diskept 01/07/2022
 
         // ListWidget 관련 - Qobuz 전용
         virtual void slot_clickedItemTrack_inList(const int, const tidal::AbstractTidalTrackDelegate::ClickMode){ }
@@ -136,6 +136,8 @@ namespace qobuz {
         void proc_clicked_itemAlbum_inList(qobuz::AlbumItemData& data_album, const QJsonArray& jsonArray_toPlayAll, const PlaylistTrackDetailInfo_RHV::ClickMode clickMode, const int index, const int section);
         void proc_clicked_itemAlbum_inList(QList<qobuz::AlbumItemData>* data_album, const QJsonArray& jsonArray_toPlayAll, const PlaylistTrackDetailInfo_RHV::ClickMode clickMode, const int index, const int section);
 
+        void proc_clicked_itemHistory(roseHome::HistoryItemData& data_history, const tidal::AbstractItem::ClickMode clickMode, const int index, const int section);
+        void proc_clicked_itemHistory(QList<roseHome::HistoryItemData>* list_history, const tidal::AbstractItem::ClickMode clickMode, const int index, const int section);
 
 
         // My created playlist 처리에 대해서 UI갱신 처리

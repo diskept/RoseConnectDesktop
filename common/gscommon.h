@@ -42,6 +42,7 @@ const QString KEY_OP_TRACK_INDEX = "op_track_index";
 const QString KEY_OP_PLAYLISTNO = "playListNo";     ///< 옵션팝업 선택 KEY : 플레이리스트앨범의 No (PK)
 const QString KEY_OP_GENRENO = "genreNo";           ///< 옵션팝업 선택 KEY : 장르의 No (PK)
 const QString KEY_OP_ROSETUBE_PLAYURL = "playurl";  ///< for 로즈튜브 옵션팝업 별정보 GET 할때 필요한 값
+//const QString KEY_OP_ROSETUBE_DURATION = "duration";
 const QString KEY_OP_MUSIC_PLAYLIST_ADD_DATA = "music_plylist_add"; ///< for 음악 옵션팝업 플레이리스트 담기에 필요한 값
 
 
@@ -60,11 +61,20 @@ const QString PAGECODE_RH_ALBUM_LIST_ALL_VIEW = "RH_ALBUM_LIST_LIST_ALL_VIEW";
 const QString PAGECODE_RH_PLAYLIST_LIST_ALL_VIEW = "RH_PLAYLIST_LIST_ALL_VIEW";
 const QString PAGECODE_RH_ROSETUBE_LIST_ALL_VIEW = "RH_ROSETUBE_LIST_ALL_VIEW";
 const QString PAGECODE_RH_TRACK_LIST_ALL_VIEW = "RH_TRACK_LIST_ALL_VIEW";
+const QString PAGECODE_RH_ARTIIST_LIST_ALL_VIEW = "RH_ARTIIST_LIST_ALL_VIEW";
 const QString PAGECODE_RH_TRACK_SHARE_LIST_ALL_VIEW = "RH_SHARE_TRACK_LIST_ALL_VIEW";
+const QString PAGECODE_RH_RECENTLY_LIST_DELETE = "RH_RECENTLY_LIST_DELETE";
+const QString PAGECODE_RH_HISTORY_LIST_VIEW = "RH_HISTORY_LIST_VIEW";
+const QString PAGECODE_RH_DUDUO_LIST_ALL_VIEW = "RH_DUDUO_LIST_ALL_VIEW";
+const QString PAGECODE_RH_ALBUM_HISTORY_ALL_VIEW = "RH_ALBUM_HISTORY_ALL_VIEW";
+const QString PAGECODE_RH_PLAYLIST_HISTORY_ALL_VIEW = "RH_PLAYLIST_HISTORY_ALL_VIEW";
+const QString PAGECODE_RH_TRACK_HISTORY_ALL_VIEW = "RH_TRACK_HISTORY_ALL_VIEW";
+const QString PAGECODE_RH_ARTIST_HISTORY_ALL_VIEW = "RH_ARTIST_HISTORY_ALL_VIEW";
 const QString PAGECODE_RH_ALBUM_DETAIL = "RH_ALBUM_DETAIL";
 const QString PAGECODE_RH_PLAYLIST_DETAIL = "RH_PLAYLIST_DETAIL";
 const QString PAGECODE_RH_PLAYLIST_ROSE_DETAIL = "RH_PLAYLIST_ROSE_DETAIL";
 const QString PAGECODE_RH_ARTIST_DETAIL = "RH_ARTIST_DETAIL";
+const QString PAGECODE_RH_HISTORY_DETAIL = "RH_HISTORY_DETAIL";
 const QString PAGECODE_RH_ADD_PLAYLIST = "RH_ADD_PLAYLIST";
 
 
@@ -80,36 +90,44 @@ const QString PAGECODE_M2_ALBUM_ALL_LIST = "M2_ALBUM_ALL_LIST";     ///< 음악 
 //------------------------------------------------------------------------------------------
 // MARK : 음악
 //------------------------------------------------------------------------------------------
-const QString PAGECODE_M_HOME = "home";                                 ///< 음악 > 홈
-const QString PAGECODE_M_CATEGORY = "sort";                             ///< 음악 > 분류
-const QString PAGECODE_M_ALBUM = "album";                               ///< 음악 > 앨범
-const QString PAGECODE_M_FOLDER = "folder";                             ///< 음악 > 폴더
-const QString PAGECODE_M_COLLECTION = "my";                             ///< 음악 > My Collection
-const QString PAGECODE_M_SEARCH = "music_search";                       ///< 음악 > 검색
-const QString PAGECODE_M_FAVORITE = "favorite";                         ///< 음악 > My Collection > Favorite
+const QString PAGECODE_M_HOME = "home";                                                 ///< 음악 > 홈
+const QString PAGECODE_M_RECOMMEND = "recommand";                                       ///< 음악 > 추천
+const QString PAGECODE_M_ALBUM = "album";                                               ///< 음악 > 앨범
+const QString PAGECODE_M_CATEGORY = "sort";                                             ///< 음악 > 분류
+const QString PAGECODE_M_FOLDER = "folder";                                             ///< 음악 > 폴더
+const QString PAGECODE_M_COLLECTION = "my";                                             ///< 음악 > My Collection
+const QString PAGECODE_M_SEARCH = "music_search";                                       ///< 음악 > 검색
+const QString PAGECODE_M_FAVORITE = "favorite";                                         ///< 음악 > My Collection > Favorite
+const QString PAGECODE_M_ADDPLAYLIST = "add_playlist";                                  ///< 음악 > Add Playlist
 
-const QString PAGECODE_VA_PLAYALBUM = "viewAll_playAlbum";              ///< 음악 > 홈 > View All > 최근 재생 앨범
-const QString PAGECODE_VA_PLAYALBUMALL = "viewAll_playAlbumAll";        ///< 음악 > 홈 > View All > 최근 재생 앨범
-const QString PAGECODE_VA_PLAYPLAYLIST = "viewAll_playPlaylist";        ///< 음악 > 홈 > View All > 최근 재생 플레이리스트
-const QString PAGECODE_VA_PLAYPLAYLISTALL = "viewAll_playPlaylistAll";  ///< 음악 > 홈 > View All > 최근 재생 플레이리스트
-const QString PAGECODE_VA_PLAYTRACKALL = "viewAll_playTrackAll";        ///< 음악 > 홈 > View All > 최근 재생 트랙
-const QString PAGECODE_VA_ADDEDALBUM = "viewAll_addedAlbum";            ///< 음악 > 홈 > View All > 최근 추가 된 앨범
-const QString PAGECODE_VA_RECOMMANDARTIST = "viewAll_recommandArtist";  ///< 음악 > 홈 > View All > 추천 아티스트
-const QString PAGECODE_VA_MYPLAYLIST = "viewAll_myPlayList";            ///< 음악 > 홈 > View All > My 플레이리스트
-const QString PAGECODE_VA_USERPLAYLIST = "viewAll_userPlayList";        ///< 음악 > 홈 > View All > My 플레이리스트
-const QString PAGECODE_VA_FRIENDPLAYLIST = "viewAll_friendPlayList";    ///< 음악 > 홈 > View All > 친구 플레이리스트
-const QString PAGECODE_VA_RECOMMENDARTIST = "viewAll_recommendArtist";  ///< 음악 > 홈 > View All > 추천 아티스트
-const QString PAGECODE_VA_COLLECTION_TRACK = "viewAll_collectionTrack"; ///< 음악 > 홈 > View All > 마이컬렉션 트랙
-const QString PAGECODE_VA_SEARCH_TRACK = "viewAll_searchTrack";         ///< 음악 > 검색 > View All > 트랙
-const QString PAGECODE_VA_SEARCH_ALBUM = "viewAll_searchAlbum";         ///< 음악 > 검색 > View All > 앨범
-const QString PAGECODE_VA_SEARCH_ARTIST = "viewAll_searchArtist";       ///< 음악 > 검색 > View All > 아티스트
-const QString PAGECODE_VA_ARTIST_TRACKLIST = "viewAll_artistTrackList"; ///< 음악 > 아티스트 > view All > 트랙
-const QString PAGECODE_VA_ARTIST_ALBUMLIST = "viewAll_artsitAlbumList"; ///< 음악 > 아티스트 > view All > 앨범
-const QString PAGECODE_VA_GENRE_ALBUMLIST = "viewAll_genreAlbumList";   ///< 음악 > 장르 > view All > 앨범
+const QString PAGECODE_VA_PLAYALBUM = "viewAll_playAlbum";                              ///< 음악 > 홈 > View All > 최근 재생 앨범
+const QString PAGECODE_VA_PLAYALBUMALL = "viewAll_playAlbumAll";                        ///< 음악 > 홈 > View All > 최근 재생 앨범
+const QString PAGECODE_VA_PLAYPLAYLIST = "viewAll_playPlaylist";                        ///< 음악 > 홈 > View All > 최근 재생 플레이리스트
+const QString PAGECODE_VA_PLAYPLAYLISTALL = "viewAll_playPlaylistAll";                  ///< 음악 > 홈 > View All > 최근 재생 플레이리스트
+const QString PAGECODE_VA_PLAYTRACKALL = "viewAll_playTrackAll";                        ///< 음악 > 홈 > View All > 최근 재생 트랙
+const QString PAGECODE_VA_RECENTLY_LIST_DELETE = "viewAll_recentlylistDelete";          ///< 음악 > 홈 > View All > 최근 재생 삭제
+const QString PAGECODE_VA_ADDEDALBUM = "viewAll_addedAlbum";                            ///< 음악 > 홈 > View All > 최근 추가 된 앨범
+const QString PAGECODE_VA_RECOMMANDARTIST = "viewAll_recommandArtist";                  ///< 음악 > 홈 > View All > 추천 아티스트
+const QString PAGECODE_VA_MYPLAYLIST = "viewAll_myPlayList";                            ///< 음악 > 홈 > View All > My 플레이리스트
+const QString PAGECODE_VA_USERPLAYLIST = "viewAll_userPlayList";                        ///< 음악 > 홈 > View All > My 플레이리스트
+const QString PAGECODE_VA_FRIENDPLAYLIST = "viewAll_friendPlayList";                    ///< 음악 > 홈 > View All > 친구 플레이리스트
+const QString PAGECODE_VA_RECOMMENDARTIST = "viewAll_recommendArtist";                  ///< 음악 > 홈 > View All > 추천 아티스트
+const QString PAGECODE_VA_COLLECTION_TRACK = "viewAll_collectionTrack";                 ///< 음악 > 홈 > View All > 마이컬렉션 트랙
+const QString PAGECODE_VA_HISTORY_LIST_VIEW = "viewAll_historyListView";                ///< 음악 > 홈 > view All > History
+const QString PAGECODE_VA_HISTORY_DETAIL = "viewAll_historyDetail";                     ///< 음악 > 홈 > view All > History > Detail View
+const QString PAGECODE_VA_ALBUM_HISTORY_ALL_VIEW = "viewAll_historyAlbumAll";           ///< 음악 > HISTORY > Detail View > ALBUM > view All
+const QString PAGECODE_VA_PLAYLIST_HISTORY_ALL_VIEW = "viewAll_historyPlaylistAll";     ///< 음악 > HISTORY > Detail View > PLAYLIST > view All
+const QString PAGECODE_VA_TRACK_HISTORY_ALL_VIEW = "viewAll_historyTrackAll";           ///< 음악 > HISTORY > Detail View > TRACK > view All
+const QString PAGECODE_VA_ARTIST_HISTORY_ALL_VIEW = "viewAll_historyArtistAll";         ///< 음악 > HISTORY > Detail View > ARTIST > view All
+const QString PAGECODE_VA_SEARCH_TRACK = "viewAll_searchTrack";                         ///< 음악 > 검색 > View All > 트랙
+const QString PAGECODE_VA_SEARCH_ALBUM = "viewAll_searchAlbum";                         ///< 음악 > 검색 > View All > 앨범
+const QString PAGECODE_VA_SEARCH_ARTIST = "viewAll_searchArtist";                       ///< 음악 > 검색 > View All > 아티스트
+const QString PAGECODE_VA_ARTIST_TRACKLIST = "viewAll_artistTrackList";                 ///< 음악 > 아티스트 > view All > 트랙
+const QString PAGECODE_VA_ARTIST_ALBUMLIST = "viewAll_artsitAlbumList";                 ///< 음악 > 아티스트 > view All > 앨범
+const QString PAGECODE_VA_GENRE_ALBUMLIST = "viewAll_genreAlbumList";                   ///< 음악 > 장르 > view All > 앨범
 
-
-const QString PAGECODE_ETC_EDIT_FAVORITE = "edit_favorite";             ///< 음악 > 폴더 > 즐겨찾기 편집
-const QString PAGECODE_ETC_PLAYFULLSCREEN = "playfullscreen";           ///< 음악 > 폴더 > 재생화면
+const QString PAGECODE_ETC_EDIT_FAVORITE = "edit_favorite";                             ///< 음악 > 폴더 > 즐겨찾기 편집
+const QString PAGECODE_ETC_PLAYFULLSCREEN = "playfullscreen";                           ///< 음악 > 폴더 > 재생화면
 
 
 
@@ -164,17 +182,24 @@ const QString PAGECODE_RF_HOME = "home";             ///< RoseFM > 홈
 //------------------------------------------------------------------------------------------
 // MARK : 로즈튜브
 //------------------------------------------------------------------------------------------
-const QString PAGECODE_RT_HOME = "home";                                            ///< 로즈튜브 > 홈
-const QString PAGECODE_RT_EXPLORE = "explore";                                      ///< 로즈튜브 > 탐색
-const QString PAGECODE_RT_SUB = "sub";                                              ///< 로즈튜브 > 구독
-const QString PAGECODE_RT_COLLECTION = "myCollection";                              ///< 로즈튜브 > 마이컬렉션
-const QString PAGECODE_RT_SEARCH = "search";                                        ///< 로즈튜브 > 검색
+const QString PAGECODE_RT_HOME = "RT_HOME";                                             ///< 로즈튜브 > 홈
+const QString PAGECODE_RT_EXPLORE = "explore";                                          ///< 로즈튜브 > 탐색
+const QString PAGECODE_RT_SUB = "sub";                                                  ///< 로즈튜브 > 구독
+const QString PAGECODE_RT_COLLECTION = "myCollection";                                  ///< 로즈튜브 > 마이컬렉션
+const QString PAGECODE_RT_SEARCH = "search";                                            ///< 로즈튜브 > 검색
+const QString PAGECODE_RT_ADDPLAYLIST = "addPlaylist";                                  ///< 로즈튜브 > 플레이리스트 추가/삭제/변경
 
-const QString PAGECODE_VA_HOME = "viewAll_home_playList";                           ///< 로즈튜브 > 홈 > View All 공용
-const QString PAGECODE_VA_HOME_ROSE = "viewAll_home_rosePlayiist";                  ///< 로즈튜브 > 홈 > Rose SVR View All
-const QString PAGECODE_VA_HOME_MYROSE = "viewAll_home_myrosePlaylist";              ///< 로즈튜브 > 홈 > Rose SVR View All
-const QString PAGECODE_VA_HOME_USERROSE = "viewAll_home_userrosePlaylist";          ///< 로즈튜브 > 홈 > Rose SVR View All
-const QString PAGECODE_VA_HOME_MYDETAIL = "viewAll_home_rosePlaylistDetail";        ///< 로즈튜브 > 홈 > Rose SVR View All
+const QString PAGECODE_VA_HOME = "viewAll_home_playList";                               ///< 로즈튜브 > 홈 > View All 공용
+const QString PAGECODE_VA_HOME_PLAYLIST = "viewAll_home_recentlyPlayiist";              ///< 로즈튜브 > 홈 > Rose Playlist View All
+const QString PAGECODE_VA_HOME_ROSE = "viewAll_home_recentlyPalyed";                    ///< 로즈튜브 > 홈 > Rose Playlist View All
+const QString PAGECODE_VA_HOME_RECENTLY_DELETE = "viewAll_home_recenltyDelete";         ///< 로즈튜브 > 홈 > Rose Recently Delete
+const QString PAGECODE_VA_HOME_MYROSE = "viewAll_home_myrosePlaylist";                  ///< 로즈튜브 > 홈 > Rose My Playlist Detail
+const QString PAGECODE_VA_HOME_USERROSE = "viewAll_home_userrosePlaylist";              ///< 로즈튜브 > 홈 > Rose User Playlist Detail
+const QString PAGECODE_VA_HOME_MYDETAIL = "viewAll_home_rosePlaylistDetail";            ///< 로즈튜브 > 홈 > Rose Playlist Detail
+const QString PAGECODE_VA_HOME_HISTORY_LIST_VIEW = "viewAll_home_historyListView";      ///< 로즈튜브 > 홈 > History View All
+const QString PAGECODE_VA_HOME_HISTORY_DETAIL = "viewAll_home_historyDetail";           ///< 로즈튜브 > 홈 > History Detail View
+const QString PAGECODE_VA_HOME_HISTORY_PLAYLIST_VIEW = "viewAll_home_historyPlaylist";  ///< 로즈튜브 > 홈 > History Playlist View All
+const QString PAGECODE_VA_HOME_HISTORY_TRACK_VIEW = "viewAll_home_historyTrack";        ///< 로즈튜브 > 홈 > History Track View All
 
 const QString PAGECODE_VA_EXPLORE_CATEGORY = "viewAll_explore_category";            ///< 로즈튜브 > 탐색 > View All > 장르별
 const QString PAGECODE_VA_EXPLORE_PLAYLIST = "viewAll_explore_playList";            ///< 로즈튜브 > 탐색 > View All > 상황별
@@ -217,7 +242,7 @@ const QString PAGECODE_T_HOME = "T_HOME";                                       
 const QString PAGECODE_T_EXPLORE = "T_EXPLORE";                                                     ///< TIDAL > 탐색
 const QString PAGECODE_T_VIDEO = "T_VIDEO";
 const QString PAGECODE_T_MASTER = "T_MASTER";
-const QString PAGECODE_T_SETTINGS = "T_SETTINGS";
+const QString PAGECODE_T_SETTINGS  = "T_SETTINGS";
 
 const QString PAGECODE_T_EXPLORE_GENRES_CHOOSE_ALL = "T_EXPLORE_GENRES_ALL";                        ///< TIDAL > 탐색 > Genre View as List
 const QString PAGECODE_T_EXPLORE_GENRES_PLAYLIST_VIEWALL = "T_EXPLORE_GENRES_PLAYLIST_VIEWALL";     ///< TIDAL > 탐색 > Genre 선택한 메인 > Playlist 전체
@@ -239,6 +264,12 @@ const QString PAGECODE_T_ARTIST_ALL_LIST_VIEW = "T_ARTIST_ALL_LIST_VIEW";
 const QString PAGECODE_T_ARTIST_DETAIL = "T_ARTIST_DETAIL";
 const QString PAGECODE_T_VIDEO_ALL_LIST_VIEW = "T_VIDEO_ALL_LIST_VIEW";
 const QString PAGECODE_T_ADD_PLAYLIST = "T_ADD_PLAYLIST";
+const QString PAGECODE_T_HISTORY_LIST_VIEW = "T_HISTORY_LIST_VIEW";
+const QString PAGECODE_T_HISTORY_DETAIL = "T_HISTORY_DETAIL";
+const QString PAGECODE_T_HISTORY_PLAYLIST_VIEW = "T_HISTORY_PLAYLIST_VIEW";
+const QString PAGECODE_T_HISTORY_ALBUM_VIEW = "T_HISTORY_ALBUM_VIEW";
+const QString PAGECODE_T_HISTORY_TRACK_VIEW = "T_HISTORY_TRACK_VIEW";
+const QString PAGECODE_T_HISTORY_ARTIST_VIEW = "T_HISTORY_ARTIST_VIEW";
 
 // TIDAL MyCollection Part
 const QString PAGECODE_T_MY_COLLECTION = "T_MY_COLLECTION";
@@ -254,6 +285,8 @@ const QString PAGECODE_T_MY_COLLECTION_VIDEO_ALL_LIST = "T_MY_COLLECTION_VIDEO_A
 const QString PAGECODE_T_MY_RECENTLY_ALBUM_ALL_LIST = "T_MY_RECENTLY_ALBUM_ALL_LIST";
 const QString PAGECODE_T_MY_RECENTLY_PLAYLIST_ALL_LIST = "T_MY_RECENTLY_PLAYLIST_ALL_LIST";
 const QString PAGECODE_T_MY_RECENTLY_TRACK_ALL_LIST = "T_MY_RECENTLY_TRACK_ALL_LIST";
+const QString PAGECODE_T_MY_RECENTLY_ARTIST_ALL_LIST = "T_MY_RECENTLY_ARTIST_ALL_LIST";
+const QString PAGECODE_T_MY_RECENTLY_LIST_DELETE = "T_MY_RECENTLY_LIST_DELETE";
 const QString PAGECODE_T_MY_ROSE_PLAYLIST_DETAIL = "T_MY_ROSE_PLAYLIST_DETAIL";
 const QString PAGECODE_T_MY_ROSE_PLAYLIST_ALL_LIST = "T_MY_ROSE_PLAYLIST_ALL_LIST";
 const QString PAGECODE_T_USER_ROSE_PLAYLIST_ALL_LIST = "T_USER_ROSE_PLAYLIST_ALL_LIST";
@@ -275,9 +308,10 @@ const QString PAGECODE_T_SEARCH_VIDEO_ALL_VIEW = "T_SEARCH_VIDEO_ALL_VIEW";
 const QString PAGECODE_BUGS___HOME = "BUGS___HOME";                                                 ///< 벅스 > 홈
 const QString PAGECODE_BUGS___EXPLORE = "BUGS___EXPLORE";                                           ///< 벅스 > 탐색
 const QString PAGECODE_BUGS___EXPLORE___CHOOSE_THEME = "BUGS___EXPLORE___CHOOSE_THEME";             ///< 벅스 > 탐색 > 장르/테마 선택
-const QString PAGECODE_BUGS___MY_COLLECTION = "BUGS___MY_COLLECTION";   ///< 벅스 > My Collection
+const QString PAGECODE_BUGS___MY_COLLECTION = "BUGS___MY_COLLECTION";                               ///< 벅스 > My Collection
 const QString PAGECODE_BUGS___MY_COLLECTION___LIKE_MUSIC = "BUGS___MY_COLLECTION___LIKE_MUSIC";     ///< 벅스 > My Collection > 좋아한 음악
-const QString PAGECODE_BUGS___SETTING = "BUGS___SETTING";                ///< 벅스 > 설정
+const QString PAGECODE_BUGS___MY_COLLECTION___MYALBUM = "BUGS___MY_COLLECTION___MYALBUM";           ///< 벅스 > My Collection > 내 앨범
+const QString PAGECODE_BUGS___SETTING = "BUGS___SETTING";                                           ///< 벅스 > 설정
 
 const QString PAGECODE_BUGS___HOME_MUSIC_RECENTLY = "BUGS___HOME_MUSIC_RECENTLY";                   ///< 벅스 > 홈 > 최신음악
 const QString PAGECODE_BUGS___HOME_MUSIC_CHART = "BUGS___HOME_MUSIC_CHART";                         ///< 벅스 > 홈 > 벅스차트
@@ -293,13 +327,20 @@ const QString PAGECODE_BUGS___ALBUM_DETAIL = "BUGS___ALBUM_DETAIL";
 const QString PAGECODE_BUGS___ARTIST_DETAIL = "BUGS___ARTIST_DETAIL";
 const QString PAGECODE_BUGS___PD_ALBUM_DETAIL = "BUGS___PD_ALBUM_DETAIL";
 const QString PAGECODE_BUGS___MY_ALBUM_DETAIL = "BUGS___MY_ALBUM_DETAIL";
+const QString PAGECODE_BUGS___HISTORY_DETAIL = "BUGS___HISTORY_DETAIL";
 
 const QString PAGECODE_BUGS___TRACK_ALL_VIEW = "BUGS___TRACK_ALL_VIEW";
+const QString PAGECODE_BUGS___MOST_TRACK_ALL_VIEW = "BUGS___MOST_TRACK_ALL_VIEW";
 const QString PAGECODE_BUGS___TRACK_SHARE_ALL_VIEW = "BUGS___TRACK_SHARE_ALL_VIEW";
 const QString PAGECODE_BUGS___ALBUM_ALL_VIEW___OF_ARTIST = "BUGS___ALBUM_ALL_VIEW___OF_ARTIST";
 const QString PAGECODE_BUGS___TRACK_ALL_VIEW___OF_ARTIST = "BUGS___TRACK_ALL_VIEW___OF_ARTIST";
 const QString PAGECODE_BUGS___PD_ALBUM_ALL_VIEW = "BUGS___PD_ALBUM_ALL_VIEW";
 const QString PAGECODE_BUGS___VIDEO_ALL_VIEW___OF_TRACK = "BUGS___VIDEO_ALL_VIEW___OF_TRACK";
+const QString PAGECODE_BUGS___HISTORY_LIST_VIEW = "BUGS___HISTORY_LIST_VIEW";
+const QString PAGECODE_BUGS___HISTORY_PLAYLIST_VIEW = "BUGS___HISTORY_PLAYLIST_VIEW";
+const QString PAGECODE_BUGS___HISTORY_ALBUM_VIEW = "BUGS___HISTORY_ALBUM_VIEW";
+const QString PAGECODE_BUGS___HISTORY_TRACK_VIEW = "BUGS___HISTORY_TRACK_VIEW";
+const QString PAGECODE_BUGS___HISTORY_ARTIST_VIEW = "BUGS___HISTORY_ARTIST_VIEW";
 
 const QString PAGECODE_BUGS___SEARCH_MAIN = "BUGS___SEARCH_MAIN";
 const QString PAGECODE_BUGS___SEARCH_TRACK_ALL_VIEW = "BUGS___SEARCH_TRACK_ALL_VIEW";
@@ -311,9 +352,13 @@ const QString PAGECODE_BUGS___SEARCH_VIDEO_ALL_VIEW = "BUGS___SEARCH_VIDEO_ALL_V
 const QString PAGECODE_BUGS__MY_RECENTLY_ALBUM_ALL_LIST = "BUGS__MY_RECENTLY_ALBUM_ALL_LIST";
 const QString PAGECODE_BUGS__MY_RECENTLY_PLAYLIST_ALL_LIST = "BUGS__MY_RECENTLY_PLAYLIST_ALL_LIST";
 const QString PAGECODE_BUGS__MY_RECENTLY_TRACK_ALL_LIST = "BUGS__MY_RECENTLY_TRACK_ALL_LIST";
+const QString PAGECODE_BUGS__MY_RECENTLY_ARTIST_ALL_LIST = "BUGS__MY_RECENTLY_ARTIST_ALL_LIST";
+const QString PAGECODE_BUGS__MY_RECENTLY_LIST_DELETE = "BUGS__MY_RECENTLY_LIST_DELETE";
 const QString PAGECODE_BUGS__MY_ROSE_PLAYLIST_DETAIL = "BUGS__MY_ROSE_PLAYLIST_DETAIL";
 const QString PAGECODE_BUGS__MY_ROSE_PLAYLIST_ALL_LIST = "BUGS__MY_ROSE_PLAYLIST_ALL_LIST";
 const QString PAGECODE_BUGS__USER_ROSE_PLAYLIST_ALL_LIST = "BUGS__USER_ROSE_PLAYLIST_ALL_LIST";
+
+const QString PAGECODE_BUGS__MY_PLAYLIST_ADD = "BUGS__ADD_PLAYLIST";
 
 
 
@@ -353,12 +398,18 @@ const QString PAGECODE_Q_EXPLORE_RISING_MAIN = "Q_EXPLORE_RISING_MAIN";         
 const QString PAGECODE_Q_ALBUM_DETAIL = "Q_ALBUM_DETAIL";
 const QString PAGECODE_Q_PLAYLIST_DETAIL = "Q_PLAYLIST_DETAIL";
 const QString PAGECODE_Q_ARTIST_DETAIL = "Q_ARTIST_DETAIL";
+const QString PAGECODE_Q_HISTORY_DETAIL = "Q_HISTORY_DETAIL";
 
 const QString PAGECODE_Q_ALBUM_ALL_LIST_VIEW = "Q_ALBUM_ALL_LIST_VIEW";
 const QString PAGECODE_Q_PLAYLIST_ALL_LIST_VIEW = "Q_PLAYLIST_ALL_LIST_VIEW";
 const QString PAGECODE_Q_ARTIST_ALL_LIST_VIEW = "Q_ARTIST_ALL_LIST_VIEW";
 const QString PAGECODE_Q_TRACK_ALL_LIST_VIEW = "Q_TRACK_ALL_LIST_VIEW";
 const QString PAGECODE_Q_TRACK_SHARE_ALL_LIST_VIEW = "Q_TRACK_SHARE_ALL_LIST_VIEW";
+const QString PAGECODE_Q_HISTORY_LIST_VIEW = "Q_HISTORY_LISTVIEW";
+const QString PAGECODE_Q_HISTORY_PLAYLIST_VIEW = "Q_HISTORY_PLAYLISTVIEW";
+const QString PAGECODE_Q_HISTORY_ALBUM_VIEW = "Q_HISTORY_ALBUMVIEW";
+const QString PAGECODE_Q_HISTORY_TRACK_VIEW = "Q_HISTORY_TRACKVIEW";
+const QString PAGECODE_Q_HISTORY_ARTIST_VIEW = "Q_HISTORY_ARTISTVIEW";
 
 const QString PAGECODE_Q_SIMILAR_PLAYLIST_VIEW = "Q_SIMILAR_PLAYLIST_VIEW";
 const QString PAGECODE_Q_CLASSIC_ALL_LIST_VIEW = "Q_CLASSIC_ALL_LIST_VIEW";
@@ -393,6 +444,8 @@ const QString PAGECODE_Q_MY_COLLECTION_PURCHASES_TRACK_LIST = "Q_MY_COLLECTION_P
 const QString PAGECODE_Q_MY_RECENTLY_ALBUM_ALL_LIST = "Q_MY_RECENTLY_ALBUM_ALL_LIST";
 const QString PAGECODE_Q_MY_RECENTLY_PLAYLIST_ALL_LIST = "Q_MY_RECENTLY_PLAYLIST_ALL_LIST";
 const QString PAGECODE_Q_MY_RECENTLY_TRACK_ALL_LIST = "Q_MY_RECENTLY_TRACK_ALL_LIST";
+const QString PAGECODE_Q_MY_RECENTLY_ARTIST_ALL_LIST = "Q_MY_RECENTLY_ARTIST_ALL_LIST";
+const QString PAGECODE_Q_MY_RECENTLY_LIST_DELETE = "Q_MY_RECENTLY_LIST_DELETE";
 const QString PAGECODE_Q_MY_ROSE_PLAYLIST_DETAIL = "Q_MY_ROSE_PLAYLIST_DETAIL";
 const QString PAGECODE_Q_MY_ROSE_PLAYLIST_ALL_LIST = "Q_MY_ROSE_PLAYLIST_ALL_LIST";
 const QString PAGECODE_Q_USER_ROSE_PLAYLIST_ALL_LIST = "Q_USER_ROSE_PLAYLIST_ALL_LIST";
@@ -429,12 +482,27 @@ const QString PAGECODE_APPLE_ALBUM_DETAIL = "APPLE_ALBUM_DETAIL";
 const QString PAGECODE_APPLE_PLAYLIST_DETAIL = "APPLE_PLAYLIST_DETAIL";
 const QString PAGECODE_APPLE_PLAYLIST_ROSE_DETAIL = "APPLE_PLAYLIST_ROSE_DETAIL";
 const QString PAGECODE_APPLE_ARTIST_DETAIL = "APPLE_ARTIST_DETAIL";
+const QString PAGECODE_APPLE_HISTORY_DETAIL = "APPLE_HISTORY_DETAIL";
 
 const QString PAGECODE_APPLE_ALBUM_ALL_LIST_VIEW = "APPLE_ALBUM_ALL_LIST_VIEW";
 const QString PAGECODE_APPLE_PLAYLIST_ALL_LIST_VIEW = "APPLE_PLAYLIST_ALL_LIST_VIEW";
 const QString PAGECODE_APPLE_ARTIST_ALL_LIST_VIEW = "APPLE_ARTIST_ALL_LIST_VIEW";
 const QString PAGECODE_APPLE_TRACK_ALL_LIST_VIEW = "APPLE_TRACK_ALL_LIST_VIEW";
 const QString PAGECODE_APPLE_TRACK_SHARE_ALL_LIST_VIEW = "APPLE_TRACK_SHARE_ALL_LIST_VIEW";
+const QString PAGECODE_APPLE_HISTORY_LIST_VIEW = "APPLE_HISTORY_LIST_VIEW";
+const QString PAGECODE_APPLE_HISTORY_PLAYLIST_VIEW = "APPLE_HISTORY_PLAYLIST_VIEW";
+const QString PAGECODE_APPLE_HISTORY_ALBUM_VIEW = "APPLE_HISTORY_ALBUM_VIEW";
+const QString PAGECODE_APPLE_HISTORY_TRACK_VIEW = "APPLE_HISTORY_TRACK_VIEW";
+const QString PAGECODE_APPLE_HISTORY_ARTIST_VIEW = "APPLE_HISTORY_ARTIST_VIEW";
+
+const QString PAGECODE_APPLE_MY_RECENTLY_ALBUM_ALL_LIST = "APPLE_MY_RECENTLY_ALBUM_ALL_LIST";
+const QString PAGECODE_APPLE_MY_RECENTLY_PLAYLIST_ALL_LIST = "APPLE_MY_RECENTLY_PLAYLIST_ALL_LIST";
+const QString PAGECODE_APPLE_MY_RECENTLY_TRACK_ALL_LIST = "APPLE_MY_RECENTLY_TRACK_ALL_LIST";
+const QString PAGECODE_APPLE_MY_RECENTLY_ARTIST_ALL_LIST = "APPLE_MY_RECENTLY_ARTIST_ALL_LIST";
+const QString PAGECODE_APPLE_MY_RECENTLY_LIST_DELETE = "APPLE_MY_RECENTLY_LIST_DELETE";
+const QString PAGECODE_APPLE_MY_ROSE_PLAYLIST_DETAIL = "APPLE_MY_ROSE_PLAYLIST_DETAIL";
+const QString PAGECODE_APPLE_MY_ROSE_PLAYLIST_ALL_LIST = "APPLE_MY_ROSE_PLAYLIST_ALL_LIST";
+const QString PAGECODE_APPLE_USER_ROSE_PLAYLIST_ALL_LIST = "APPLE_USER_ROSE_PLAYLIST_ALL_LIST";
 
 
 
@@ -462,12 +530,14 @@ const QString PAGECODE_S_ROSETUBE = "rosetubeOption";           ///< 설정 > �
 const QString PAGECODE_S_VIDEO = "videoOption";                 ///< 설정 > 비디오 옵션
 const QString PAGECODE_S_VU = "vuOption";                       ///< 설정 > VU 옵션
 const QString PAGECODE_S_INPUTOUTPUT = "inputOutput";           ///< 설정 > 입출력 설정
+const QString PAGECODE_S_EDITMENU = "editMenu";           ///< 설정 > 기기 메뉴 편집
 const QString PAGECODE_S_HDMI = "hdmiOption";                 ///< 설정 > HDMI 옵션 //cheon29_src
 const QString PAGECODE_S_TIMER = "timerOption";                 ///< 설정 > TIMER 옵션 //cheon29_src
 const QString PAGECODE_S_LANGUAGE = "languageOption";//cheon07_language
 const QString PAGECODE_S_ROSEMENUEDIT = "roseMenuEdit";         ///< 설정 > 기기 메뉴 편집
 const QString PAGECODE_S_APPMENUEDIT = "appMenuEdit";           ///< 설정 > 앱 메뉴 편집
 const QString PAGECODE_S_APPINFO = "appInfo";                   ///< 설정 > 앱 정보
+const QString PAGECODE_S_MENU = "menuOption";                 ///< 설정 > 메뉴 옵션//c230329
 
 
 

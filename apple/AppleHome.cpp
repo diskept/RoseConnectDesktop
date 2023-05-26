@@ -370,7 +370,7 @@ namespace apple {
 
             if(global.updateCheckFlag){
 
-                //ContentLoadingwaitingMsgShow(tr("Content is being loaded. Please wait."));              //cheon211114-01//c1223
+                //print_debug();ContentLoadingwaitingMsgShow(tr("Content is being loaded. Please wait."));              //cheon211114-01//c1223
                 //QTimer::singleShot(10000, this, SLOT(slot_hide_msg()));
 
                 if(global.enable_section_left == true){
@@ -381,12 +381,43 @@ namespace apple {
 
                 global.enable_message_count = 0;
                 global.enable_message_flag = true;
-                ContentLoadingwaitingMsgShow(tr("Content is being loaded. Please wait."));              //cheon211114-01//c1223
+                print_debug();ContentLoadingwaitingMsgShow(tr("Content is being loaded. Please wait."));              //cheon211114-01//c1223
 
-                this->setUIControl_requestRose();
-                //this->setUIControl_requestTidal();
+                print_debug();
+                //c230322_3  start
+                if(!global.user.isValid()){
+                    print_debug();
+                    global.enable_message_flag = false;
+                    global.enable_message_count = 0;
+                    QTimer::singleShot(3000, this, SLOT(slot_gotoRoseHome()));
+
+                }
+                else if(global.user.isValid() && !global.user_forApple.isLogined()){
+                    global.enable_message_flag = false;
+                    global.enable_message_count = 0;
+                    QJsonObject tmp_data;
+                    tmp_data.insert(KEY_PAGE_CODE, PAGECODE_APPLE_SETTINGS);
+                    print_debug();
+                    emit this->signal_clickedMovePage(tmp_data);
+                }
+                if(global.user.isValid() && global.user_forApple.isLogined()){
+                    print_debug();
+                    this->setUIControl_requestRose();
+                    this->setUIControl_requestApple();
+                }
+
+                //this->setUIControl_requestRose();
+                //this->setUIControl_requestApple();
+                //c230322_3  end
             }
         }
+    }
+
+
+    void AppleHome::slot_gotoRoseHome(){//c230322_3
+        //global.enable_message_flag = false;
+        print_debug();ContentLoadingwaitingMsgHide();//c230322_3
+        emit linker->signal_RoseHome_movePage(QString(GSCommon::MainMenuCode::RoseHome));
     }
 
 
@@ -401,7 +432,7 @@ namespace apple {
     }
 
 
-    void AppleHome::slot_time_out(){
+    void AppleHome::slot_time_out(){//c230322_2
 
         ContentLoadingwaitingMsgHide();
 
@@ -412,16 +443,18 @@ namespace apple {
             // page move
             if(global.user_forTidal.isLogined() == true){
                 //AbstractTidalSubWidget::slot_acceptedDialogLogin();
+                emit linker->signal_RoseHome_movePage(QString(GSCommon::MainMenuCode::RoseHome));
             }
             else if(global.user_forTidal.isLogined() == false){
                 //AbstractTidalSubWidget::slot_acceptedDialogLogout();
+                QJsonObject tmp_data;
+                tmp_data.insert(KEY_PAGE_CODE, PAGECODE_APPLE_SETTINGS);
+
+                // 부모에게 페이지 변경하라고 시그널 보냄
+                emit this->signal_clickedMovePage(tmp_data);
             }
 
-            QJsonObject tmp_data;
-            tmp_data.insert(KEY_PAGE_CODE, PAGECODE_APPLE_SETTINGS);
 
-            // 부모에게 페이지 변경하라고 시그널 보냄
-            emit this->signal_clickedMovePage(tmp_data);
         }
     }
 
@@ -453,6 +486,14 @@ namespace apple {
     // MARK : Create UI and Set
     //
     //-----------------------------------------------------------------------------------------------------------------------
+
+
+    void AppleHome::setUIControl_requestApple(){
+
+        apple::ProcCommon *proc_recomm = new apple::ProcCommon(this);
+        //connect(proc_recomm, &apple::ProcCommon::completeReq_album, this, &AppleHome::slot_applyResult_albums);
+        proc_recomm->request_apple_get_recommendations();
+    }
 
 
     void AppleHome::setUIControl_requestRose(){
@@ -897,7 +938,7 @@ namespace apple {
         tmp_scrollArea->setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
         tmp_scrollArea->setStyleSheet("background-color:transparent; border:0px;");
         tmp_scrollArea->setContentsMargins(0, 0, 0, 0);
-        tmp_scrollArea->setFixedHeight(275);
+        tmp_scrollArea->setFixedHeight(285);
 
         QScroller::grabGesture(tmp_scrollArea, QScroller::LeftMouseButtonGesture);
         //----------------------------------------------------------------------------------------------------  BODY : END

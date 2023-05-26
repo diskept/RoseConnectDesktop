@@ -15,7 +15,7 @@
 
 namespace bugs {
 
-    const QString tmp_btnStyle      = "padding:10px;border:1px solid #707070;color:#CCCCCC;font-size:18px;";//cheon211008
+    const QString tmp_btnStyle      = "padding:8px;border:1px solid #707070;color:#CCCCCC;font-size:16px;";//cheon211008
     //const QString tmp_btnStyleHover = "background-color:#B18658;color:#FFFFFF;";//cheon211115-01
     const QString tmp_btnStyleHover = "background-color:#CCCCCC;color:#FFFFFF;";//cheon211115-01
     const QString tmp_btnStyleHover_selected = "background-color:#B18658;color:#FFFFFF;";//cheon211115-01
@@ -106,7 +106,7 @@ namespace bugs {
             this->flag_pdAlbum[1] = false;
             this->flag_video[1] = false;
 
-            ContentLoadingwaitingMsgShow(tr("Content is being loaded. Please wait."));
+            print_debug();ContentLoadingwaitingMsgShow(tr("Content is being loaded. Please wait."));
 
             // request HTTP API
             ProcBugsAPI *proc = new ProcBugsAPI(this);
@@ -125,6 +125,9 @@ namespace bugs {
             connect(proc, &ProcBugsAPI::completeReq_list_videos, this, &BugsSearchMain::slot_applyResult_videos);
             proc->request_bugs_search_video(this->data_search.search_word, 1, 15, ProcBugsAPI::BugsSearch_Sort::exact);
         }
+        else{
+            print_debug();ContentLoadingwaitingMsgHide();   //j230328
+        }
     }
 
 
@@ -138,7 +141,15 @@ namespace bugs {
             // 항상 부모클래스의 함수 먼저 호출
             AbstractBugsSubWidget::setActivePage();
 
-            this->box_contents->removeWidget(this->widget_main_contents);
+            // j230407 Removing ghosting effect start
+            if(this->widget_main_contents != nullptr){
+                this->widget_main_contents->hide();
+                this->box_contents->removeWidget(this->widget_main_contents);
+
+                delete this->widget_main_contents;
+            }
+            // j230407 Removing ghosting effect finish
+
             GSCommon::clearLayout(this->box_contents);
             this->box_contents->setAlignment(Qt::AlignTop);
 
@@ -335,9 +346,9 @@ namespace bugs {
                 this->box_main_contents->addSpacing(30);
 
                 // request HTTP API - get favorite for Rose Server
-                /*roseHome::ProcCommon *proc_fav_track = new roseHome::ProcCommon(this);
-                connect(proc_fav_track, &roseHome::ProcCommon::completeReq_rating_track, this, &QobuzSearchMain::slot_applyResult_getRating_track);
-                proc_fav_track->request_rose_getRating_Track("QOBUZ", tmp_clientkey);*/
+                roseHome::ProcCommon *proc_fav_track = new roseHome::ProcCommon(this);
+                connect(proc_fav_track, &roseHome::ProcCommon::completeReq_rating_track, this, &BugsSearchMain::slot_applyResult_getRating_track);
+                proc_fav_track->request_rose_getRating_Track("BUGS", tmp_clientkey);
             }
 
             if(flag_artist[1] == true){
@@ -483,7 +494,7 @@ namespace bugs {
         tmp_scrollArea->setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
         tmp_scrollArea->setStyleSheet("background-color:transparent; border:0px;");
         tmp_scrollArea->setContentsMargins(0,0,0,0);
-        tmp_scrollArea->setFixedHeight(275);
+        tmp_scrollArea->setFixedHeight(285);
 
         QScroller::grabGesture(tmp_scrollArea, QScroller::LeftMouseButtonGesture);
         //----------------------------------------------------------------------------------------------------  BODY : END
@@ -516,7 +527,7 @@ namespace bugs {
         tmp_scrollArea->setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
         tmp_scrollArea->setStyleSheet("background-color:transparent; border:0px;");
         tmp_scrollArea->setContentsMargins(0,0,0,0);
-        tmp_scrollArea->setFixedHeight(250);
+        tmp_scrollArea->setFixedHeight(260);
 
         QScroller::grabGesture(tmp_scrollArea, QScroller::LeftMouseButtonGesture);
         //----------------------------------------------------------------------------------------------------  BODY : END
@@ -556,7 +567,7 @@ namespace bugs {
         tmp_scrollArea->setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
         tmp_scrollArea->setStyleSheet("background-color:transparent; border:0px;");
         tmp_scrollArea->setContentsMargins(0,0,0,0);
-        tmp_scrollArea->setFixedHeight(295);
+        tmp_scrollArea->setFixedHeight(305);
 
         QScroller::grabGesture(tmp_scrollArea, QScroller::LeftMouseButtonGesture);
         //----------------------------------------------------------------------------------------------------
@@ -597,7 +608,7 @@ namespace bugs {
         tmp_scrollArea->setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
         tmp_scrollArea->setStyleSheet("background-color:transparent; border:0px;");
         tmp_scrollArea->setContentsMargins(0,0,0,0);
-        tmp_scrollArea->setFixedHeight(275);
+        tmp_scrollArea->setFixedHeight(285);
 
         QScroller::grabGesture(tmp_scrollArea, QScroller::LeftMouseButtonGesture);
         //----------------------------------------------------------------------------------------------------
@@ -815,169 +826,67 @@ namespace bugs {
 
 
     void BugsSearchMain::slot_applyResult_checkRating_track(const QJsonObject &jsonObj){
-        int id = ProcJsonEasy::getInt(jsonObj, "id");
+        if(jsonObj.contains("id")){
 
-        QJsonObject jsonObj_track = QJsonObject();
-        jsonObj_track = this->jsonArr_tracks_toPlay.at(this->track_idx_fav).toObject();
+            int id = ProcJsonEasy::getInt(jsonObj, "id");
 
-        if(id <= 0){
+            if(id > 0){
+                QJsonObject ratingInfo;
+                ratingInfo.insert("favorite", this->flag_track_fav);
+                ratingInfo.insert("star", this->track_star_fav);
+                ratingInfo.insert("thumbup", false);
+                ratingInfo.insert("type", "BUGS");
 
-            QJsonObject tmp_album = ProcJsonEasy::getJsonObject(jsonObj_track, "album");
+                QJsonObject track;
+                track.insert("duration", 0);
+                track.insert("favorite", false);
+                track.insert("id", id);
+                track.insert("ownerId", 0);
+                track.insert("sort", 0);
+                track.insert("star", 0);
+                track.insert("type", "BUGS");
 
-            QJsonObject tmp_artist = ProcJsonEasy::getJsonObject(tmp_album, "artist");
-            QJsonObject artist;
-            artist.insert("albums_count", ProcJsonEasy::getInt(tmp_artist, "albums_count"));
-            artist.insert("id", ProcJsonEasy::getInt(tmp_artist, "id"));
-            artist.insert("name", ProcJsonEasy::getString(tmp_artist, "name"));
+                QJsonObject json;
+                json.insert("ratingInfo", ratingInfo);
+                json.insert("track", track);
 
-            QJsonObject tmp_label = ProcJsonEasy::getJsonObject(tmp_album, "label");
-            QJsonObject label;
-            label.insert("albums_count", ProcJsonEasy::getInt(tmp_label, "albums_count"));
-            label.insert("id", ProcJsonEasy::getInt(tmp_label, "id"));
-            label.insert("name", ProcJsonEasy::getString(tmp_label, "name"));
+                // request HTTP API - get favorite for Rose Server
+                roseHome::ProcCommon *proc_fav_track = new roseHome::ProcCommon(this);
+                connect(proc_fav_track, &roseHome::ProcCommon::completeReq_rating_track, this, &BugsSearchMain::slot_applyResult_getRating_track);
+                proc_fav_track->request_rose_setRating_Track(json, this->flag_track_fav, this->track_star_fav);
+            }
+            else{
+                QJsonObject data = this->jsonArr_tracks_toPlay[this->track_idx_fav].toObject();
 
-            QJsonObject album;
-            album.insert("artist", artist);
-            album.insert("duration", ProcJsonEasy::getInt(tmp_album, "duration"));
-            album.insert("favCnt", 0);
-            album.insert("hires", false);
-            album.insert("hires_streamable", false);
-            album.insert("id", ProcJsonEasy::getString(tmp_album, "id"));
-            album.insert("image", ProcJsonEasy::getJsonObject(tmp_album, "image"));
-            album.insert("label", label);
-            album.insert("streamable", false);
-            album.insert("title", ProcJsonEasy::getString(tmp_album, "title"));
-            album.insert("tracks_count", 0);
+                QJsonObject track;
+                track.insert("clientKey", ProcJsonEasy::getInt(data, "track_id"));
+                track.insert("data", data);
+                track.insert("duration", 0);
+                track.insert("favorite", true);
+                track.insert("ownerId", 0);
+                track.insert("sort", 0);
+                track.insert("star", 1);
+                track.insert("thumbnailUrl", this->list_track->at(this->track_idx_fav).album_image);
+                track.insert("title", ProcJsonEasy::getString(data, "track_title"));
+                track.insert("type", "BUGS");
 
-            QJsonObject data;
-            data.insert("album", album);
-            data.insert("composer", ProcJsonEasy::getJsonObject(jsonObj_track, "composer"));
-            data.insert("copyright", ProcJsonEasy::getString(jsonObj_track, "copyright"));
-            data.insert("duration", ProcJsonEasy::getInt(jsonObj_track, "duration"));
-            data.insert("favCnt", ProcJsonEasy::getInt(jsonObj_track, "favCnt"));
-            data.insert("hires", ProcJsonEasy::getBool(jsonObj_track, "hires"));
-            data.insert("hires_streamable", ProcJsonEasy::getBool(jsonObj_track, "hires_streamable"));
-            data.insert("id", QString("%1").arg(ProcJsonEasy::getInt(jsonObj_track, "id")));
-            data.insert("maximum_bit_depth",  ProcJsonEasy::getInt(jsonObj_track, "maximum_bit_depth"));
-            data.insert("maximum_sampling_rate",  ProcJsonEasy::getInt(jsonObj_track, "maximum_sampling_rate"));
-            data.insert("media_number", ProcJsonEasy::getInt(jsonObj_track, "media_number"));
-            data.insert("performer", ProcJsonEasy::getJsonObject(jsonObj_track, "performer"));
-            data.insert("performers", ProcJsonEasy::getString(jsonObj_track, "performers"));
-            data.insert("previewable", ProcJsonEasy::getBool(jsonObj_track, "previewable"));
-            data.insert("purchasable", ProcJsonEasy::getBool(jsonObj_track, "purchasable"));
-            data.insert("qobuz_id", ProcJsonEasy::getInt(jsonObj_track, "qobuz_id"));
-            data.insert("sampleable", ProcJsonEasy::getBool(jsonObj_track, "sampleable"));
-            data.insert("streamable", ProcJsonEasy::getBool(jsonObj_track, "streamable"));
-            data.insert("title", ProcJsonEasy::getString(jsonObj_track, "title"));
-            data.insert("track_number", ProcJsonEasy::getInt(jsonObj_track, "track_number"));
-            data.insert("work", ProcJsonEasy::getString(jsonObj_track, "work"));
+                QJsonArray tracks;
+                tracks.append(track);
 
-            QJsonObject tmp_thumbnail = ProcJsonEasy::getJsonObject(tmp_album, "image");
-            QString thumbnail = ProcJsonEasy::getString(tmp_thumbnail, "large");
+                QJsonObject json;
+                json.insert("tracks", tracks);
 
-            QJsonObject track;
-            track.insert("clientKey", QString("%1").arg(ProcJsonEasy::getInt(jsonObj_track, "id")));
-            track.insert("data", data);
-            track.insert("duration", 0);
-            track.insert("favorite", this->flag_track_fav);
-            track.insert("ownerId", 0);
-            track.insert("sort", 0);
-            track.insert("star", 1);
-            track.insert("thumbnailUrl", thumbnail);
-            track.insert("title", ProcJsonEasy::getString(jsonObj_track, "title"));
-            track.insert("type", "QOBUZ");
-
-            QJsonArray tracks;
-            tracks.append(track);
-
-            QJsonObject json;
-            json.insert("tracks", tracks);
-
-            // request HTTP API - get favorite for Rose Server
-            roseHome::ProcCommon *proc_fav_track = new roseHome::ProcCommon(this);
-            connect(proc_fav_track, &roseHome::ProcCommon::completeCheck_rating_track, this, &BugsSearchMain::slot_applyResult_addRating_track);
-            proc_fav_track->request_rose_addRating_Track(json);
+                // request HTTP API - get favorite for Rose Server
+                roseHome::ProcCommon *proc_fav_track = new roseHome::ProcCommon(this);
+                connect(proc_fav_track, &roseHome::ProcCommon::completeCheck_rating_track, this, &BugsSearchMain::slot_applyResult_addRating_track);
+                proc_fav_track->request_rose_addRating_Track(json);
+            }
         }
         else{
 
-            QJsonObject tmp_album = ProcJsonEasy::getJsonObject(jsonObj_track, "album");
-
-            QJsonObject tmp_artist = ProcJsonEasy::getJsonObject(tmp_album, "artist");
-            QJsonObject artist;
-            artist.insert("albums_count", ProcJsonEasy::getInt(tmp_artist, "albums_count"));
-            artist.insert("id", ProcJsonEasy::getInt(tmp_artist, "id"));
-            artist.insert("name", ProcJsonEasy::getString(tmp_artist, "name"));
-
-            QJsonObject tmp_label = ProcJsonEasy::getJsonObject(tmp_album, "label");
-            QJsonObject label;
-            label.insert("albums_count", ProcJsonEasy::getInt(tmp_label, "albums_count"));
-            label.insert("id", ProcJsonEasy::getInt(tmp_label, "id"));
-            label.insert("name", ProcJsonEasy::getString(tmp_label, "name"));
-
-            QJsonObject album;
-            album.insert("duration", 0);
-            album.insert("favCnt", 0);
-            album.insert("hires", false);
-            album.insert("hires_streamable", false);
-            album.insert("id", ProcJsonEasy::getString(tmp_album, "id"));
-            album.insert("image", ProcJsonEasy::getJsonObject(tmp_album, "image"));
-            album.insert("streamable", false);
-            album.insert("title", ProcJsonEasy::getString(tmp_album, "title"));
-            album.insert("tracks_count", 0);
-
-            QJsonObject data;
-            data.insert("album", album);
-            data.insert("artist", artist);
-            data.insert("composer", ProcJsonEasy::getJsonObject(jsonObj_track, "composer"));
-            data.insert("copyright", ProcJsonEasy::getString(jsonObj_track, "copyright"));
-            data.insert("duration", ProcJsonEasy::getInt(jsonObj_track, "duration"));
-            data.insert("favCnt", ProcJsonEasy::getInt(jsonObj_track, "favCnt"));
-            data.insert("hires", ProcJsonEasy::getBool(jsonObj_track, "hires"));
-            data.insert("hires_streamable", ProcJsonEasy::getBool(jsonObj_track, "hires_streamable"));
-            data.insert("id", QString("%1").arg(ProcJsonEasy::getInt(jsonObj_track, "id")));
-            data.insert("maximum_bit_depth",  ProcJsonEasy::getInt(jsonObj_track, "maximum_bit_depth"));
-            data.insert("maximum_sampling_rate",  ProcJsonEasy::getInt(jsonObj_track, "maximum_sampling_rate"));
-            data.insert("media_number", ProcJsonEasy::getInt(jsonObj_track, "media_number"));
-            data.insert("performer", ProcJsonEasy::getJsonObject(jsonObj_track, "performer"));
-            data.insert("performers", ProcJsonEasy::getString(jsonObj_track, "performers"));
-            data.insert("previewable", ProcJsonEasy::getBool(jsonObj_track, "previewable"));
-            data.insert("purchasable", ProcJsonEasy::getBool(jsonObj_track, "purchasable"));
-            data.insert("qobuz_id", ProcJsonEasy::getInt(jsonObj_track, "qobuz_id"));
-            data.insert("sampleable", ProcJsonEasy::getBool(jsonObj_track, "sampleable"));
-            data.insert("streamable", ProcJsonEasy::getBool(jsonObj_track, "streamable"));
-            data.insert("title", ProcJsonEasy::getString(jsonObj_track, "title"));
-            data.insert("track_number", ProcJsonEasy::getInt(jsonObj_track, "track_number"));
-
-            QJsonObject tmp_thumbnail = ProcJsonEasy::getJsonObject(tmp_album, "image");
-            QString thumbnail = ProcJsonEasy::getString(tmp_thumbnail, "large");
-
-            QJsonObject track;
-            track.insert("clientKey", QString("%1").arg(ProcJsonEasy::getInt(jsonObj_track, "id")));
-            track.insert("data", data);
-            track.insert("duration", 0);
-            track.insert("favorite", this->flag_track_fav);
-            track.insert("ownerId", 0);
-            track.insert("sort", 0);
-            track.insert("star", 0);
-            track.insert("thumbnailUrl", thumbnail);
-            track.insert("title", ProcJsonEasy::getString(jsonObj_track, "title"));
-            track.insert("type", "QOBUZ");
-
-            QJsonObject ratingInfo;
-            ratingInfo.insert("favorite", this->flag_track_fav);
-            ratingInfo.insert("star", this->track_star_fav);
-            ratingInfo.insert("thumbup", false);
-            ratingInfo.insert("type", "QOBUZ");
-
-            QJsonObject json;
-            json.insert("ratingInfo", ratingInfo);
-            json.insert("track", track);
-
-            // request HTTP API - get favorite for Rose Server
-            roseHome::ProcCommon *proc_fav_track = new roseHome::ProcCommon(this);
-            connect(proc_fav_track, &roseHome::ProcCommon::completeReq_rating_track, this, &BugsSearchMain::slot_applyResult_getRating_track);
-            proc_fav_track->request_rose_setRating_Track(json, this->flag_track_fav, this->track_star_fav);
-
+            if(this->flag_check_track == true){
+                this->flag_check_track = false;
+            }
         }
     }
 
@@ -985,6 +894,11 @@ namespace bugs {
     void BugsSearchMain::slot_applyResult_addRating_track(const QJsonObject &jsonObj){
 
         if(jsonObj.contains("flagOk")){
+
+            if(jsonObj.contains("message") && (jsonObj["message"].toString() == "정상")){
+                this->search_track[this->track_idx_fav]->setFavoritesIds(this->flag_track_fav, this->track_star_fav);
+
+            }
             if(this->flag_check_track == true){
                 this->flag_check_track = false;
             }
@@ -1009,6 +923,10 @@ namespace bugs {
 
                     this->search_track[i]->setFavoritesIds(flag, star);
                 }
+
+            }
+            else if(track_info.contains("message") && (track_info["message"].toString() == "정상")){
+                this->search_track[this->track_idx_fav]->setFavoritesIds(this->flag_track_fav, this->track_star_fav);
             }
 
             if(this->flag_check_track == true){
@@ -1034,39 +952,55 @@ namespace bugs {
         if(clickMode == PlaylistTrackDetailInfo_RHV::ClickMode::FavBtn){
 
             if(this->flag_check_track == false){
+
                 this->track_star_fav = this->search_track[idx]->getFavoritesStars();
                 this->flag_track_fav = false;
 
                 if(this->track_star_fav == 3){
                     this->track_star_fav = 0;
-                    this->flag_track_fav = false;
 
+                    this->track_idx_fav = idx;
+                    this->flag_track_fav = false;
                 }
                 else if(this->track_star_fav >= 0 && this->track_star_fav < 3){
                     this->track_star_fav++;
+
+                    this->track_idx_fav = idx;
                     this->flag_track_fav = true;
                 }
 
                 if(this->track_star_fav == 0 || this->track_star_fav == 1){
-                    // Bugs Favorite toggle
-                    this->track_id_fav = this->list_track->at(idx).track_id;
+                    // Bugs Favorite
+                    ItemPositionData itemPosData;
+                    itemPosData.section = section;
+                    itemPosData.index = idx;
+                    itemPosData.data_id = QString("%1").arg(this->list_track->at(idx).track_id);
 
-                    /*ProcCommon *proc = new ProcCommon(this);
-                    connect(proc, &qobuz::ProcCommon::completeReq_listAll_myFavoritesIds, this, &QobuzSearchMain::slot_qobuz_completeReq_listAll_myFavoritesIds);
-                    proc->request_qobuz_set_favorite("track", QString("%1").arg(this->track_id_fav), this->flag_track_fav);
-                    this->flag_send_track = true;*/
+                    ProcBugsAPI *proc = new ProcBugsAPI(this);
+                    connect(proc, &bugs::ProcBugsAPI::completeReq_favarite_track, this, &BugsSearchMain::slot_bugs_completeReq_listAll_myFavoritesIds);
+
+                    if(this->track_star_fav == 0){
+                        itemPosData.likes_yn = false;
+
+                        proc->request_bugs_deleteFavorite_track(this->list_track->at(idx).track_id, ConvertData_forBugs::getObjectJson_itemPositionData(itemPosData));
+                    }
+                    else if(this->track_star_fav == 1){
+                        itemPosData.likes_yn = true;
+
+                        proc->request_bugs_addFavorite_track(this->list_track->at(idx).track_id, ConvertData_forBugs::getObjectJson_itemPositionData(itemPosData));
+                    }
+
+                    this->flag_send_track = true;
                 }
 
                 this->track_idx_fav = idx;
-                QJsonObject jsonObj = this->jsonArr_tracks_toPlay.at(idx).toObject();
 
                 // request HTTP API - get favorite for Rose Server
-                /*roseHome::ProcCommon *proc_favCheck_track = new roseHome::ProcCommon(this);
-                connect(proc_favCheck_track, &roseHome::ProcCommon::completeCheck_rating_track, this, &QobuzSearchMain::slot_applyResult_checkRating_track);
-                proc_favCheck_track->request_rose_checkRating_Track("QOBUZ", QString("%1").arg(ProcJsonEasy::getInt(jsonObj, "id")));
-                this->flag_check_track = true;*/
+                roseHome::ProcCommon *proc_favCheck_track = new roseHome::ProcCommon(this);
+                connect(proc_favCheck_track, &roseHome::ProcCommon::completeCheck_rating_track, this, &BugsSearchMain::slot_applyResult_checkRating_track);
+                proc_favCheck_track->request_rose_checkRating_Track("BUGS", QString("%1").arg(this->list_track->at(idx).track_id));
 
-                this->search_track[idx]->setFavoritesIds(this->flag_track_fav, this->track_star_fav);
+                this->flag_check_track = true;
             }
         }
         else{

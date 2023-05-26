@@ -1,6 +1,7 @@
 #include "dialogjoin.h"
 #include "dialogjoinagree.h"
 #include "widget/toastmsg.h"
+#include "common/global.h"
 
 #include <QCheckBox>
 #include <QDebug>
@@ -62,11 +63,36 @@ void DialogJoinAgree::setUIControl(){
 
     QLabel *lb_agree_title = new QLabel(tr("[Consent to collection of Personal Information]"));
     lb_agree_title->setContentsMargins(50,37,50,0);
-    lb_agree_content = new QLabel();
-    lb_agree_content->setContentsMargins(50,23,50,15);
     lb_agree_title->setStyleSheet("font-size:18px;color:#CCCCCC;");
-    lb_agree_content->setStyleSheet("font-size:18px;color:#777777;");
 
+
+    lb_agree_content = new QTextEdit();
+    lb_agree_content->setContentsMargins(50,23,50,15);
+    lb_agree_content->setReadOnly(true);
+    lb_agree_content->setStyleSheet("font-size:18px;color:#777777;border:none;");
+
+    // 스크롤 가능한 부모 위젯인 QScrollArea를 생성합니다.
+    QScrollArea *scrollArea = new QScrollArea();
+
+    // QLabel을 스크롤 가능한 콘텐츠 위젯 안에 배치합니다.
+    QWidget *contentWidget = new QWidget();
+    QVBoxLayout *contentLayout = new QVBoxLayout(contentWidget);
+    contentLayout->addWidget(lb_agree_content);
+
+    // QScrollArea에 스크롤 가능한 콘텐츠 위젯을 설정합니다.
+    scrollArea->setWidget(contentWidget);
+
+    // 스크롤 영역의 크기 조정을 자동으로 처리합니다.
+    scrollArea->setWidgetResizable(true);
+
+    // 스크롤 영역의 스타일을 설정합니다.
+
+    scrollArea->setStyleSheet("QScrollArea {background-color:#333333;border:none;}"
+                              "QScrollBar:vertical {border: none; background-color: transparent; width: 6px; margin: 12px 0px 12px 0px; }"
+                              "QScrollBar::handle:vertical {background-color: #b18658; min-height: 60px; border-radius: 3px; }"
+                              "QScrollBar::add-line:vertical {height: 0px; subcontrol-position: bottom; subcontrol-origin: margin; }"
+                              "QScrollBar::sub-line:vertical {height: 0 px; subcontrol-position: top; subcontrol-origin: margin; }"
+                              "QScrollBar::add-page:vertical, QScrollBar::sub-page:vertical {background: none; }");
 
     QWidget *wg_line = new QWidget;
     wg_line->setFixedHeight(1);
@@ -99,7 +125,7 @@ void DialogJoinAgree::setUIControl(){
     vl_total->setAlignment(Qt::AlignTop);
     vl_total->addWidget(wg_top);
     vl_total->addWidget(lb_agree_title);
-    vl_total->addWidget(lb_agree_content);
+    vl_total->addWidget(scrollArea);
     vl_total->addWidget(wg_line);
     vl_total->addLayout(vl_join);
 
@@ -126,7 +152,13 @@ void DialogJoinAgree::setUIControl(){
 void DialogJoinAgree::showEvent(QShowEvent *){
 
     //QString filename = QApplication::applicationDirPath() + "/data/agree.txt";
-    QString filename = ":/join_agree.txt";
+
+    QString filename;
+    if(global.lang== 0){
+        filename = ":/join_agree_en.txt";
+    }else{
+        filename = ":/join_agree_kr.txt";
+    }
     QFile file(filename);
     if(!file.open(QFile::ReadOnly | QFile::Text)){
         return;

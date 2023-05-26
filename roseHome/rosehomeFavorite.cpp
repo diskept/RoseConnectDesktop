@@ -4,10 +4,19 @@
 #include "roseHome/ProcCommon_forRosehome.h"
 #include "roseHome/ProcRosePlay_withRosehome.h"
 
+#include "bugs/ConvertData_forBugs.h"
+#include "bugs/ProcBugsAPI.h"
+#include "bugs/bugs_struct.h"
+
+#include "qobuz/ProcCommon_forQobuz.h"
+
+#include "tidal/ProcCommon.h"
+
 #include "common/gscommon.h"
 #include "common/global.h"
 #include "common/ProcJsonEasy.h"
 
+#include "widget/dialogconfirm.h"
 #include "widget/NoData_Widget.h"
 #include "widget/toastmsg.h"
 #include "widget/VerticalScrollArea.h"
@@ -20,20 +29,23 @@ namespace roseHome {
 
     const int SECTION_FOR_MORE_POPUP___FavoriteTrack = 0;
     const int SECTION_FOR_MORE_POPUP___FavoriteALBUM = 1;
-    const int SECTION_FOR_MORE_POPUP___FavoritePLAYLIST = 2;
+    const int SECTION_FOR_MORE_POPUP___FavoriteARTIST = 2;
+    const int SECTION_FOR_MORE_POPUP___FavoritePLAYLIST = 3;
 
     const QString STEP_TRACK = "track";
     const QString STEP_ALBUM = "album";
+    const QString STEP_ARTIST = "artist";
     const QString STEP_PLAYLIST = "playlist";
 
-    const QString tmp_btnStyle      = "padding:10px;border:1px solid #707070;color:#CCCCCC;font-size:18px;";
+    const QString tmp_btnStyle      = "padding:10px;border:1px solid #707070;color:#CCCCCC;font-size:16px;";
     const QString tmp_btnStyleHover = "background-color:#B18658;color:#FFFFFF;";
+
 
     /**
      * @brief "ROSEHOME > Favorite" 화면을 위한 생성자. @see PAGECODE_RH_FAVORITE
      * @param parent
      */
-    RoseFavorite::RoseFavorite(QWidget *parent) : AbstractRoseHomeSubWidget(VerticalScroll_rosefilter, parent) {
+    RoseFavorite::RoseFavorite(QWidget *parent) : AbstractRoseHomeSubWidget(VerticalScroll_roseviewAll, parent) {
 
         // 기본 UI 세팅
         this->btnStyle_normal = "QPushButton{ ";
@@ -54,6 +66,7 @@ namespace roseHome {
         this->list_favoriteTrack = new QList<roseHome::TrackItemData>();
         this->list_favoriteAlbum = new QList<roseHome::AlbumItemData>();
         this->list_favoritePlaylist = new QList<roseHome::PlaylistItemData>();
+        this->list_favoriteArtist = new QList<roseHome::ArtistItemData>();
     }
 
 
@@ -76,6 +89,9 @@ namespace roseHome {
 
             this->page = pageCode;
         }
+        else{
+            print_debug();ContentLoadingwaitingMsgHide();   //j230328
+        }
     }
 
     /**
@@ -93,11 +109,11 @@ namespace roseHome {
                 if(global.user.flag_favMusic_order == false){
                     global.user.flag_favorite_filter = true;
                     for(int i = 0; i < 30; i++){
-                        global.user.enable_favorite_filter[i] = 0;
+                        //global.user.enable_favorite_filter[i] = 0;
                         this->flag_filter[i] = false;
                     }
                     for(int j = 0; j < 10; j++){
-                        global.user.enable_favorite_order[j] = 0;
+                        //global.user.enable_favorite_order[j] = 0;
                         this->flag_order[j] = false;
                     }
                 }
@@ -106,6 +122,7 @@ namespace roseHome {
 
             GSCommon::clearLayout(this->box_favorite_track);
             GSCommon::clearLayout(this->flowLayout_favorite_album);
+            GSCommon::clearLayout(this->flowLayout_favorite_artist);
             GSCommon::clearLayout(this->flowLayout_favorite_playlist);
 
             this->contentStep = "";
@@ -140,27 +157,34 @@ namespace roseHome {
         QWidget *widget_btnStep = new QWidget();
         widget_btnStep->setObjectName("widget_btnStep");
         widget_btnStep->setStyleSheet("#widget_btnStep { background-color:#212121; }");
-        widget_btnStep->setFixedSize(405, 70);
+        widget_btnStep->setFixedSize(500, 70);
         widget_btnStep->setContentsMargins(0, 0, 0, 5);
 
         this->btn_step_track = new QPushButton(tr("Track"), widget_btnStep);
         this->btn_step_track->setObjectName("btn_step_track");
-        this->btn_step_track->setFixedSize(135, 40);
-        this->btn_step_track->setGeometry(1, 15, 0, 0);
+        this->btn_step_track->setFixedSize(125, 40);
+        this->btn_step_track->setGeometry(0, 15, 0, 0);
         this->btn_step_track->setProperty(KEY_CONTENT_STEP.toStdString().c_str(), STEP_TRACK);
         this->btn_step_track->setCursor(Qt::PointingHandCursor);
 
         this->btn_step_album = new QPushButton(tr("Album"), widget_btnStep);
         this->btn_step_album->setObjectName("btn_step_album");
-        this->btn_step_album->setFixedSize(135, 40);
-        this->btn_step_album->setGeometry(135, 15, 0, 0);
+        this->btn_step_album->setFixedSize(125, 40);
+        this->btn_step_album->setGeometry(124, 15, 0, 0);
         this->btn_step_album->setProperty(KEY_CONTENT_STEP.toStdString().c_str(), STEP_ALBUM);
         this->btn_step_album->setCursor(Qt::PointingHandCursor);
 
+        this->btn_step_artist = new QPushButton(tr("Artist"), widget_btnStep);
+        this->btn_step_artist->setObjectName("btn_step_artist");
+        this->btn_step_artist->setFixedSize(125, 40);
+        this->btn_step_artist->setGeometry(248, 15, 0, 0);
+        this->btn_step_artist->setProperty(KEY_CONTENT_STEP.toStdString().c_str(), STEP_ARTIST);
+        this->btn_step_artist->setCursor(Qt::PointingHandCursor);
+
         this->btn_step_playlist = new QPushButton(tr("Playlist"), widget_btnStep);
         this->btn_step_playlist->setObjectName("btn_step_playlist");
-        this->btn_step_playlist->setFixedSize(135, 40);
-        this->btn_step_playlist->setGeometry(269, 15, 0, 0);
+        this->btn_step_playlist->setFixedSize(125, 40);
+        this->btn_step_playlist->setGeometry(372, 15, 0, 0);
         this->btn_step_playlist->setProperty(KEY_CONTENT_STEP.toStdString().c_str(), STEP_PLAYLIST);
         this->btn_step_playlist->setCursor(Qt::PointingHandCursor);
 
@@ -192,6 +216,9 @@ namespace roseHome {
         this->flowLayout_favorite_album = new FlowLayout(0, 0, 20);
         this->flowLayout_favorite_album->setSizeConstraint(QLayout::SetMinimumSize);
 
+        this->flowLayout_favorite_artist = new FlowLayout(0, 0, 20);
+        this->flowLayout_favorite_artist->setSizeConstraint(QLayout::SetMinimumSize);
+
         this->flowLayout_favorite_playlist = new FlowLayout(0, 0, 20);
         this->flowLayout_favorite_playlist->setSizeConstraint(QLayout::SetMinimumSize);
 
@@ -204,6 +231,12 @@ namespace roseHome {
         this->widget_tab_album->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
         this->widget_tab_album->setStyleSheet("background-color:transparent;");
 
+        this->widget_tab_artist = new QWidget();
+        this->widget_tab_artist->setLayout(this->flowLayout_favorite_artist);
+        this->widget_tab_artist->setContentsMargins(0, 20, 0, 0);
+        this->widget_tab_artist->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
+        this->widget_tab_artist->setStyleSheet("background-color:transparent;");
+
         this->widget_tab_playlist = new QWidget();
         this->widget_tab_playlist->setLayout(this->flowLayout_favorite_playlist);
         this->widget_tab_playlist->setContentsMargins(0, 20, 0, 0);
@@ -213,6 +246,7 @@ namespace roseHome {
         this->stackedWidget_body = new QStackedWidget();
         this->stackedWidget_body->addWidget(this->widget_tab_track);
         this->stackedWidget_body->addWidget(this->widget_tab_album);
+        this->stackedWidget_body->addWidget(this->widget_tab_artist);
         this->stackedWidget_body->addWidget(this->widget_tab_playlist);
         this->stackedWidget_body->hide();
 
@@ -229,6 +263,7 @@ namespace roseHome {
         // 커넥션
         connect(this->btn_step_track, SIGNAL(clicked()), this, SLOT(slot_changedSubTabUI()));
         connect(this->btn_step_album, SIGNAL(clicked()), this, SLOT(slot_changedSubTabUI()));
+        connect(this->btn_step_artist, SIGNAL(clicked()), this, SLOT(slot_changedSubTabUI()));
         connect(this->btn_step_playlist, SIGNAL(clicked()), this, SLOT(slot_changedSubTabUI()));
         connect(this->btn_filter_ico, SIGNAL(clicked()), SLOT(slot_clickBtn_Filter()));
     }
@@ -413,12 +448,22 @@ namespace roseHome {
             // 버튼 스타일 초기화
             this->btn_step_track->setStyleSheet(QString("#%1 { %2%3 } #%1:hover { %2%3%4 }").arg("btn_step_track").arg(tmp_btnStyle).arg("border-top-left-radius:20px;border-bottom-left-radius:20px;").arg(tmp_btnStyleHover));
             this->btn_step_album->setStyleSheet(QString("#%1 { %2 } #%1:hover { %2%3 }").arg("btn_step_album").arg(tmp_btnStyle).arg(tmp_btnStyleHover));
+            this->btn_step_artist->setStyleSheet(QString("#%1 { %2 } #%1:hover { %2%3 }").arg("btn_step_artist").arg(tmp_btnStyle).arg(tmp_btnStyleHover));
             this->btn_step_playlist->setStyleSheet(QString("#%1 { %2%3 } #%1:hover { %2%3%4 }").arg("btn_step_playlist").arg(tmp_btnStyle).arg("border-top-right-radius:20px;border-bottom-right-radius:20px;").arg(tmp_btnStyleHover));
 
             for(int sel_idx = 0; sel_idx < this->btn_filter_cnt; sel_idx++){
                 this->btn_filter[sel_idx]->setStyleSheet(this->btnStyle_normal);
                 this->flag_filter[sel_idx] = false;
                 global.user.enable_favorite_filter[sel_idx] = 0;
+                if(!menuTableCheck_ForFilter(this->str_media_name[sel_idx])){//c230516
+                    //print_debug();qDebug() << "idx=" << idx; qDebug() << this->str_media_name[idx];
+                    this->btn_filter[sel_idx]->hide();
+                    this->flowLayout_media->removeWidget(this->btn_filter[sel_idx]);
+                }else{
+                    //print_debug();qDebug() << "idx=" << idx; qDebug() << this->str_media_name[idx];
+                    this->flowLayout_media->addWidget(this->btn_filter[sel_idx]);
+                    this->btn_filter[sel_idx]->show();
+                }
             }
 
             for(int sel_idx = 0; sel_idx < this->btn_order_cnt; sel_idx++){
@@ -488,6 +533,25 @@ namespace roseHome {
                 this->box_media_filter->addWidget(this->lb_order);
                 this->flag_order[global.user.enable_favRAlbum_order] = true;
             }
+            else if(this->contentStep == STEP_ARTIST){
+                this->btn_order[5]->hide();
+
+                this->btn_filter[global.user.enable_favRArtist_filter]->setStyleSheet(this->btnStyle_selected);
+                this->flag_filter[global.user.enable_favRArtist_filter] = true;
+                global.user.enable_favorite_filter[global.user.enable_favRArtist_filter] = 1;
+
+                this->btn_order[global.user.enable_favRArtist_order]->setStyleSheet(this->btnStyle_selected);
+                this->flag_order[global.user.enable_favRArtist_order] = true;
+                global.user.enable_favorite_order[global.user.enable_favRArtist_order] = 1;
+
+                this->lb_media->setText(this->str_media_name[global.user.enable_favRArtist_filter]);
+                this->box_media_filter->addWidget(this->lb_media);
+                this->flag_filter[global.user.enable_favRArtist_filter] = true;
+
+                this->lb_order->setText(this->str_order_name[global.user.enable_favRArtist_order]);
+                this->box_media_filter->addWidget(this->lb_order);
+                this->flag_order[global.user.enable_favRArtist_order] = true;
+            }
             else if(this->contentStep == STEP_PLAYLIST){
                 this->btn_order[5]->show();
 
@@ -515,7 +579,6 @@ namespace roseHome {
             this->btn_step_track->setStyleSheet(QString("#%1 { %2%3 } #%1:hover { %2%3%4 }").arg("btn_step_track").arg(tmp_btnStyle + tmp_btnStyleHover).arg("border-top-left-radius:20px;border-bottom-left-radius:20px;").arg(tmp_btnStyleHover));
 
             if(this->step_change == true){
-
                 if(this->filter_change == true){
                     this->filter_change = false;
 
@@ -544,7 +607,6 @@ namespace roseHome {
                     this->request_more_Data(type);
                 }
                 else{
-
                     if(this->stackedWidget_body->isVisible() == false){
                         if(this->list_favoriteTrack->count() > 0){
                             int height = this->list_favoriteTrack->count() * 70;
@@ -560,7 +622,6 @@ namespace roseHome {
                 }
             }
             else{
-
                 if(this->filter_change == true){
                     this->filter_change = false;
 
@@ -589,7 +650,6 @@ namespace roseHome {
                     this->request_more_Data(type);
                 }
                 else{
-
                     if(this->stackedWidget_body->isVisible() == false){
                         if(this->list_favoriteTrack->count() > 0){
                             int height = this->list_favoriteTrack->count() * 70;
@@ -606,10 +666,19 @@ namespace roseHome {
             }
         }
         else if(type == STEP_ALBUM){
+            roseHome::ItemAlbum_rosehome *listAlbum = new roseHome::ItemAlbum_rosehome(0, 0, tidal::AbstractItem::ImageSizeMode::Square_200x200, true);
+
+            this->item_widget_width = listAlbum->get_fixedWidth();
+            this->item_widget_margin = listAlbum->get_rightMargin();
+            this->item_widget_height = listAlbum->get_fixedHeight();
+
+            delete listAlbum;
+
+            this->setFlowLayoutResize(this, this->flowLayout_favorite_album, this->item_widget_width, this->item_widget_margin);
+
             this->btn_step_album->setStyleSheet(QString("#%1 { %2 } #%1:hover { %2%3 }").arg("btn_step_album").arg(tmp_btnStyle + tmp_btnStyleHover).arg(tmp_btnStyleHover));
 
             if(this->step_change == true){
-
                 if(this->filter_change == true){
                     this->filter_change = false;
 
@@ -637,21 +706,25 @@ namespace roseHome {
                     this->request_more_Data(type);
                 }
                 else{
-
                     if(this->stackedWidget_body->isVisible() == false){
-                        if(this->album_totalCount > 0){
-                            int height = 0;
-                            if((this->album_totalCount % 7) == 0){
-                                height = (this->album_totalCount / 7) * 289 + 20;
-                            }
-                            else{
-                                height = ((this->album_totalCount / 7) + 1) * 289 + 20;
-                            }
-                            this->stackedWidget_body->setFixedHeight(height);
+                        // flowlayout spacing change - by diskept j230317 start
+                        this->setFlowLayoutResize(this, this->flowLayout_favorite_album, this->item_widget_width, this->item_widget_margin);
+                        // flowlayout spacing change - by diskept j230317 finish
+
+                        int f_width = this->flowLayout_favorite_album->geometry().width();
+
+                        if(this->flowLayout_favorite_album->geometry().width() <= 0){
+                            f_width = this->width() - (80 + 63) - 10;
                         }
-                        else{
-                            this->stackedWidget_body->setFixedHeight(500);
+
+                        int f_wg_cnt = f_width / (this->item_widget_width + this->item_widget_margin);
+                        int f_mod = (this->album_draw_cnt % f_wg_cnt) > 0 ? 1 : 0;
+
+                        int height = ((this->album_draw_cnt / f_wg_cnt) + f_mod) * (this->item_widget_height + this->flowLayout_favorite_album->verticalSpacing());
+                        if(height <= 0){
+                            height = 500;
                         }
+                        this->stackedWidget_body->setFixedHeight(height);
 
                         this->stackedWidget_body->setCurrentIndex(1);
                         this->stackedWidget_body->show();
@@ -659,7 +732,6 @@ namespace roseHome {
                 }
             }
             else{
-
                 if(this->filter_change == true){
                     this->filter_change = false;
 
@@ -687,21 +759,25 @@ namespace roseHome {
                     this->request_more_Data(type);
                 }
                 else{
-
                     if(this->stackedWidget_body->isVisible() == false){
-                        if(this->album_totalCount > 0){
-                            int height = 0;
-                            if((this->album_totalCount % 7) == 0){
-                                height = (this->album_totalCount / 7) * 289 + 20;
-                            }
-                            else{
-                                height = ((this->album_totalCount / 7) + 1) * 289 + 20;
-                            }
-                            this->stackedWidget_body->setFixedHeight(height);
+                        // flowlayout spacing change - by diskept j230317 start
+                        this->setFlowLayoutResize(this, this->flowLayout_favorite_album, this->item_widget_width, this->item_widget_margin);
+                        // flowlayout spacing change - by diskept j230317 finish
+
+                        int f_width = this->flowLayout_favorite_album->geometry().width();
+
+                        if(this->flowLayout_favorite_album->geometry().width() <= 0){
+                            f_width = this->width() - (80 + 63) - 10;
                         }
-                        else{
-                            this->stackedWidget_body->setFixedHeight(500);
+
+                        int f_wg_cnt = f_width / (this->item_widget_width + this->item_widget_margin);
+                        int f_mod = (this->album_draw_cnt % f_wg_cnt) > 0 ? 1 : 0;
+
+                        int height = ((this->album_draw_cnt / f_wg_cnt) + f_mod) * (this->item_widget_height + this->flowLayout_favorite_album->verticalSpacing());
+                        if(height <= 0){
+                            height = 500;
                         }
+                        this->stackedWidget_body->setFixedHeight(height);
 
                         this->stackedWidget_body->setCurrentIndex(1);
                         this->stackedWidget_body->show();
@@ -709,54 +785,66 @@ namespace roseHome {
                 }
             }
         }
-        else if(type == STEP_PLAYLIST){
-            this->btn_step_playlist->setStyleSheet(QString("#%1 { %2%3 } #%1:hover { %2%3%4 }").arg("btn_step_playlist").arg(tmp_btnStyle + tmp_btnStyleHover).arg("border-top-right-radius:20px;border-bottom-right-radius:20px;").arg(tmp_btnStyleHover));
+        else if(type == STEP_ARTIST){
+            roseHome::ItemArtist_rosehome *listArtist = new roseHome::ItemArtist_rosehome(0, 0, tidal::AbstractItem::ImageSizeMode::Square_200x200);
+
+            this->item_widget_width = listArtist->get_fixedWidth();
+            this->item_widget_margin = listArtist->get_rightMargin();
+            this->item_widget_height = listArtist->get_fixedHeight();
+
+            delete listArtist;
+
+            this->setFlowLayoutResize(this, this->flowLayout_favorite_artist, this->item_widget_width, this->item_widget_margin);
+
+            this->btn_step_artist->setStyleSheet(QString("#%1 { %2 } #%1:hover { %2%3 }").arg("btn_step_artist").arg(tmp_btnStyle + tmp_btnStyleHover).arg(tmp_btnStyleHover));
 
             if(this->step_change == true){
-
                 if(this->filter_change == true){
                     this->filter_change = false;
 
-                    GSCommon::clearLayout(this->flowLayout_favorite_playlist);
+                    GSCommon::clearLayout(this->flowLayout_favorite_artist);
 
-                    this->list_favoritePlaylist->clear();
+                    this->list_favoriteArtist->clear();
 
-                    this->flagReqMore_playlist = false;
-                    this->flag_lastPage_playlist = false;
-                    this->flag_draw_playlist = false;
+                    this->flag_lastPage_artist = false;
+                    this->flagReqMore_artist = false;
+                    this->flag_draw_artist = false;
 
                     this->request_more_Data(type);
                 }
-                else if(this->list_favoritePlaylist->size() == 0){
+                else if(this->list_favoriteArtist->size() == 0){
                     this->filter_change = false;
 
-                    GSCommon::clearLayout(this->flowLayout_favorite_playlist);
+                    GSCommon::clearLayout(this->flowLayout_favorite_artist);
 
-                    this->list_favoritePlaylist->clear();
+                    this->list_favoriteArtist->clear();
 
-                    this->flagReqMore_playlist = false;
-                    this->flag_lastPage_playlist = false;
-                    this->flag_draw_playlist = false;
+                    this->flag_lastPage_artist = false;
+                    this->flagReqMore_artist = false;
+                    this->flag_draw_artist = false;
 
                     this->request_more_Data(type);
                 }
                 else{
-
                     if(this->stackedWidget_body->isVisible() == false){
+                        // flowlayout spacing change - by diskept j230317 start
+                        this->setFlowLayoutResize(this, this->flowLayout_favorite_artist, this->item_widget_width, this->item_widget_margin);
+                        // flowlayout spacing change - by diskept j230317 finish
 
-                        if(this->playlist_totalCount > 0){
-                            int height = 0;
-                            if((this->playlist_totalCount % 7) == 0){
-                                height = (this->playlist_totalCount / 7) * 321 + 20;
-                            }
-                            else{
-                                height = ((this->playlist_totalCount / 7) + 1) * 321 + 20;
-                            }
-                            this->stackedWidget_body->setFixedHeight(height);
+                        int f_width = this->flowLayout_favorite_artist->geometry().width();
+
+                        if(this->flowLayout_favorite_artist->geometry().width() <= 0){
+                            f_width = this->width() - (80 + 63) - 10;
                         }
-                        else{
-                            this->stackedWidget_body->setFixedHeight(500);
+
+                        int f_wg_cnt = f_width / (this->item_widget_width + this->item_widget_margin);
+                        int f_mod = (this->artist_draw_cnt % f_wg_cnt) > 0 ? 1 : 0;
+
+                        int height = ((this->artist_draw_cnt / f_wg_cnt) + f_mod) * (this->item_widget_height + this->flowLayout_favorite_artist->verticalSpacing());
+                        if(height <= 0){
+                            height = 500;
                         }
+                        this->stackedWidget_body->setFixedHeight(height);
 
                         this->stackedWidget_body->setCurrentIndex(2);
                         this->stackedWidget_body->show();
@@ -764,7 +852,73 @@ namespace roseHome {
                 }
             }
             else{
+                if(this->filter_change == true){
+                    this->filter_change = false;
 
+                    GSCommon::clearLayout(this->flowLayout_favorite_artist);
+
+                    this->list_favoriteArtist->clear();
+
+                    this->flag_lastPage_artist = false;
+                    this->flagReqMore_artist = false;
+                    this->flag_draw_artist = false;
+
+                    this->request_more_Data(type);
+                }
+                else if(this->list_favoriteArtist->size() == 0){
+                    this->filter_change = false;
+
+                    GSCommon::clearLayout(this->flowLayout_favorite_artist);
+
+                    this->list_favoriteArtist->clear();
+
+                    this->flag_lastPage_artist = false;
+                    this->flagReqMore_artist = false;
+                    this->flag_draw_artist = false;
+
+                    this->request_more_Data(type);
+                }
+                else{
+                    if(this->stackedWidget_body->isVisible() == false){
+                        // flowlayout spacing change - by diskept j230317 start
+                        this->setFlowLayoutResize(this, this->flowLayout_favorite_artist, this->item_widget_width, this->item_widget_margin);
+                        // flowlayout spacing change - by diskept j230317 finish
+
+                        int f_width = this->flowLayout_favorite_artist->geometry().width();
+
+                        if(this->flowLayout_favorite_artist->geometry().width() <= 0){
+                            f_width = this->width() - (80 + 63) - 10;
+                        }
+
+                        int f_wg_cnt = f_width / (this->item_widget_width + this->item_widget_margin);
+                        int f_mod = (this->artist_draw_cnt % f_wg_cnt) > 0 ? 1 : 0;
+
+                        int height = ((this->artist_draw_cnt / f_wg_cnt) + f_mod) * (this->item_widget_height + this->flowLayout_favorite_artist->verticalSpacing());
+                        if(height <= 0){
+                            height = 500;
+                        }
+                        this->stackedWidget_body->setFixedHeight(height);
+
+                        this->stackedWidget_body->setCurrentIndex(2);
+                        this->stackedWidget_body->show();
+                    }
+                }
+            }
+        }
+        else if(type == STEP_PLAYLIST){
+            roseHome::ItemPlaylist_rosehome *listPlaylist = new roseHome::ItemPlaylist_rosehome(0, 0, tidal::AbstractItem::ImageSizeMode::Square_200x200, 1, true);
+
+            this->item_widget_width = listPlaylist->get_fixedWidth();
+            this->item_widget_margin = listPlaylist->get_rightMargin();
+            this->item_widget_height = listPlaylist->get_fixedHeight();
+
+            delete listPlaylist;
+
+            this->setFlowLayoutResize(this, this->flowLayout_favorite_playlist, this->item_widget_width, this->item_widget_margin);
+
+            this->btn_step_playlist->setStyleSheet(QString("#%1 { %2%3 } #%1:hover { %2%3%4 }").arg("btn_step_playlist").arg(tmp_btnStyle + tmp_btnStyleHover).arg("border-top-right-radius:20px;border-bottom-right-radius:20px;").arg(tmp_btnStyleHover));
+
+            if(this->step_change == true){
                 if(this->filter_change == true){
                     this->filter_change = false;
 
@@ -792,24 +946,80 @@ namespace roseHome {
                     this->request_more_Data(type);
                 }
                 else{
-
                     if(this->stackedWidget_body->isVisible() == false){
+                        // flowlayout spacing change - by diskept j230317 start
+                        this->setFlowLayoutResize(this, this->flowLayout_favorite_playlist, this->item_widget_width, this->item_widget_margin);
+                        // flowlayout spacing change - by diskept j230317 finish
 
-                        if(this->playlist_totalCount > 0){
-                            int height = 0;
-                            if((this->playlist_totalCount % 7) == 0){
-                                height = (this->playlist_totalCount / 7) * 321 + 20;
-                            }
-                            else{
-                                height = ((this->playlist_totalCount / 7) + 1) * 321 + 20;
-                            }
-                            this->stackedWidget_body->setFixedHeight(height);
-                        }
-                        else{
-                            this->stackedWidget_body->setFixedHeight(500);
+                        int f_width = this->flowLayout_favorite_playlist->geometry().width();
+
+                        if(this->flowLayout_favorite_playlist->geometry().width() <= 0){
+                            f_width = this->width() - (80 + 63) - 10;
                         }
 
-                        this->stackedWidget_body->setCurrentIndex(2);
+                        int f_wg_cnt = f_width / (this->item_widget_width + this->item_widget_margin);
+                        int f_mod = (this->playlist_draw_cnt % f_wg_cnt) > 0 ? 1 : 0;
+
+                        int height = ((this->playlist_draw_cnt / f_wg_cnt) + f_mod) * (this->item_widget_height + this->flowLayout_favorite_playlist->verticalSpacing());
+                        if(height <= 0){
+                            height = 500;
+                        }
+                        this->stackedWidget_body->setFixedHeight(height);
+
+                        this->stackedWidget_body->setCurrentIndex(3);
+                        this->stackedWidget_body->show();
+                    }
+                }
+            }
+            else{
+                if(this->filter_change == true){
+                    this->filter_change = false;
+
+                    GSCommon::clearLayout(this->flowLayout_favorite_playlist);
+
+                    this->list_favoritePlaylist->clear();
+
+                    this->flagReqMore_playlist = false;
+                    this->flag_lastPage_playlist = false;
+                    this->flag_draw_playlist = false;
+
+                    this->request_more_Data(type);
+                }
+                else if(this->list_favoritePlaylist->size() == 0){
+                    this->filter_change = false;
+
+                    GSCommon::clearLayout(this->flowLayout_favorite_playlist);
+
+                    this->list_favoritePlaylist->clear();
+
+                    this->flagReqMore_playlist = false;
+                    this->flag_lastPage_playlist = false;
+                    this->flag_draw_playlist = false;
+
+                    this->request_more_Data(type);
+                }
+                else{
+                    if(this->stackedWidget_body->isVisible() == false){
+                        // flowlayout spacing change - by diskept j230317 start
+                        this->setFlowLayoutResize(this, this->flowLayout_favorite_playlist, this->item_widget_width, this->item_widget_margin);
+                        // flowlayout spacing change - by diskept j230317 finish
+
+                        int f_width = this->flowLayout_favorite_playlist->geometry().width();
+
+                        if(this->flowLayout_favorite_playlist->geometry().width() <= 0){
+                            f_width = this->width() - (80 + 63) - 10;
+                        }
+
+                        int f_wg_cnt = f_width / (this->item_widget_width + this->item_widget_margin);
+                        int f_mod = (this->playlist_draw_cnt % f_wg_cnt) > 0 ? 1 : 0;
+
+                        int height = ((this->playlist_draw_cnt / f_wg_cnt) + f_mod) * (this->item_widget_height + this->flowLayout_favorite_playlist->verticalSpacing());
+                        if(height <= 0){
+                            height = 500;
+                        }
+                        this->stackedWidget_body->setFixedHeight(height);
+
+                        this->stackedWidget_body->setCurrentIndex(3);
                         this->stackedWidget_body->show();
                     }
                 }
@@ -871,9 +1081,9 @@ namespace roseHome {
                 // request HTTP API
                 roseHome::ProcCommon *proc = new roseHome::ProcCommon(this);
                 connect(proc, &roseHome::ProcCommon::completeReq_list_tracks, this, &RoseFavorite::slot_applyResult_favoriteTracks);
-                proc->request_rose_getList_favoriteTracks(orderType, mediaType, this->track_next_offset, 20);
+                proc->request_rose_getList_favoriteTracks(orderType, mediaType, this->track_next_offset, 100);
 
-                ContentLoadingwaitingMsgShow(tr("Content is being loaded. Please wait."));
+                print_debug();ContentLoadingwaitingMsgShow(tr("Content is being loaded. Please wait."));
             }
         }
         else if(type == STEP_ALBUM){
@@ -896,6 +1106,18 @@ namespace roseHome {
             if(!this->flagReqMore_album && !this->flag_lastPage_album){
                 this->flagReqMore_album = true;
 
+                //  get widget width, right margin - by diskept j230317 start
+                roseHome::ItemAlbum_rosehome *listAlbum = new roseHome::ItemAlbum_rosehome(0, 0, tidal::AbstractItem::ImageSizeMode::Square_200x200, true);
+
+                this->item_widget_width = listAlbum->get_fixedWidth();
+                this->item_widget_margin = listAlbum->get_rightMargin();
+                this->item_widget_height = listAlbum->get_fixedHeight();
+
+                //qDebug() << "[Debug] RoseFavorite::request_more_Data " << type << " : " << listAlbum->get_fixedWidth() << listAlbum->get_rightMargin();
+
+                delete listAlbum;
+                //  get widget width, right margin - by diskept j230317 finish
+
                 // next_offset
                 if(this->list_favoriteAlbum->size() == 0){
                     this->album_next_offset = 0;
@@ -907,9 +1129,57 @@ namespace roseHome {
                 // request HTTP API
                 roseHome::ProcCommon *proc = new roseHome::ProcCommon(this);
                 connect(proc, &roseHome::ProcCommon::completeReq_list_albums, this, &RoseFavorite::slot_applyResult_favoriteAlbums);
-                proc->request_rose_getList_favoriteAlbums(orderType, mediaType, this->album_next_offset, 20);
+                proc->request_rose_getList_favoriteAlbums(orderType, mediaType, this->album_next_offset, 200);
 
-                ContentLoadingwaitingMsgShow(tr("Content is being loaded. Please wait."));
+                print_debug();ContentLoadingwaitingMsgShow(tr("Content is being loaded. Please wait."));
+            }
+        }
+        else if(type == STEP_ARTIST){
+
+            for(int i = 0; i < this->btn_order_cnt; i++){
+                if(global.user.enable_favorite_order[i] == 1){
+
+                    switch (i) {
+                        case 0:     orderType = "ARTIST_RECENT";         break;
+                        case 1:     orderType = "ARTIST_PREFERENCE";     break;
+                        case 2:     orderType = "ARTIST_PLAY_FREQUENCY"; break;
+                        case 3:     orderType = "ARTIST_NAME_ASC";       break;
+                        case 4:     orderType = "ARTIST_NAME_DESC";      break;
+                        case 5:     orderType = "ARTIST_PLAY_FREQUENCY"; break;
+                    }
+                    break;
+                }
+            }
+
+            if(!this->flagReqMore_artist && !this->flag_lastPage_artist){
+                this->flagReqMore_artist = true;
+
+                //  get widget width, right margin - by diskept j230317 start
+                roseHome::ItemArtist_rosehome *listArtist = new roseHome::ItemArtist_rosehome(0, 0, tidal::AbstractItem::ImageSizeMode::Square_200x200);
+
+                this->item_widget_width = listArtist->get_fixedWidth();
+                this->item_widget_margin = listArtist->get_rightMargin();
+                this->item_widget_height = listArtist->get_fixedHeight();
+
+                //qDebug() << "[Debug] RoseFavorite::request_more_Data " << type << " : " << listArtist->get_fixedWidth() << listArtist->get_rightMargin();
+
+                delete listArtist;
+                //  get widget width, right margin - by diskept j230317 finish
+
+                // next_offset
+                if(this->list_favoriteArtist->size() == 0){
+                    this->artist_next_offset = 0;
+                }
+                else{
+                    this->artist_next_offset++;
+                }
+
+                // request HTTP API
+                roseHome::ProcCommon *proc = new roseHome::ProcCommon(this);
+                connect(proc, &roseHome::ProcCommon::completeReq_list_artists, this, &RoseFavorite::slot_applyResult_favoriteArtists);
+                proc->request_rose_getList_favoriteArtists(orderType, mediaType, this->artist_next_offset, 200);
+
+                print_debug();ContentLoadingwaitingMsgShow(tr("Content is being loaded. Please wait."));
             }
         }
         else if(type == STEP_PLAYLIST){
@@ -932,6 +1202,18 @@ namespace roseHome {
             if(!this->flagReqMore_playlist && !this->flag_lastPage_playlist){
                 this->flagReqMore_playlist = true;
 
+                //  get widget width, right margin - by diskept j230317 start
+                roseHome::ItemPlaylist_rosehome *listPlaylist = new roseHome::ItemPlaylist_rosehome(0, 0, tidal::AbstractItem::ImageSizeMode::Square_200x200, 1, true);
+
+                this->item_widget_width = listPlaylist->get_fixedWidth();
+                this->item_widget_margin = listPlaylist->get_rightMargin();
+                this->item_widget_height = listPlaylist->get_fixedHeight();
+
+                //qDebug() << "[Debug] RoseFavorite::request_more_Data " << type << " : " << listPlaylist->get_fixedWidth() << listPlaylist->get_rightMargin();
+
+                delete listPlaylist;
+                //  get widget width, right margin - by diskept j230317 finish
+
                 // next_offset
                 if(this->list_favoritePlaylist->size() == 0){
                     this->playlist_next_offset = 0;
@@ -943,10 +1225,195 @@ namespace roseHome {
                 // request HTTP API
                 roseHome::ProcCommon *proc = new roseHome::ProcCommon(this);
                 connect(proc, &roseHome::ProcCommon::completeReq_list_playlists, this, &RoseFavorite::slot_applyResult_favoritePlaylists);
-                proc->request_rose_getList_favoritePlaylists(orderType, mediaType, this->playlist_next_offset, 20);
+                proc->request_rose_getList_favoritePlaylists(orderType, mediaType, this->playlist_next_offset, 200);
 
-                ContentLoadingwaitingMsgShow(tr("Content is being loaded. Please wait."));
+                print_debug();ContentLoadingwaitingMsgShow(tr("Content is being loaded. Please wait."));
             }
+        }
+    }
+
+
+    void RoseFavorite::request_more_Draw(QString type){
+
+        if(type == STEP_TRACK){
+
+        }
+        else if(type == STEP_ALBUM){
+            this->flag_draw_album = true;
+
+            // widget draw change - by diskept j230317 start
+            int f_width = this->flowLayout_favorite_album->geometry().width();
+
+            if((this->width() - (80 + 63) - 10) > this->flowLayout_favorite_album->geometry().width()){
+                f_width = this->width() - (80 + 63) - 10;
+            }
+            else if(this->flowLayout_favorite_album->geometry().width() <= 0){
+                f_width = this->width() - (80 + 63) - 10;
+            }
+
+            int f_wg_cnt = f_width / (this->item_widget_width + this->item_widget_margin);
+            int f_mod = this->album_draw_cnt % f_wg_cnt;
+
+            if(f_mod == 0){
+                this->album_widget_cnt = f_wg_cnt * 10;
+            }
+            else{
+                this->album_widget_cnt = f_wg_cnt * 10 + (f_wg_cnt - f_mod);
+            }
+
+            //qDebug() << "[Debug] RoseFavorite::request_more_Draw " << f_width << f_wg_cnt << f_mod << this->album_widget_cnt;
+
+            int start_index = this->album_draw_cnt;
+            int max_cnt = ((this->album_totalCount - this->album_draw_cnt) > this->album_widget_cnt ) ? this->album_widget_cnt : (this->album_totalCount - this->album_draw_cnt);
+            this->album_draw_cnt += max_cnt;
+
+            //qDebug() << "[Debug] RoseFavorite::request_more_Draw " << start_index << this->album_draw_cnt;
+
+            for(int i = start_index; i < this->album_draw_cnt; i++){
+                this->favorite_album[i] = new roseHome::ItemAlbum_rosehome(i, SECTION_FOR_MORE_POPUP___FavoriteALBUM, tidal::AbstractItem::ImageSizeMode::Square_200x200, true);
+                QCoreApplication::processEvents();
+            }
+
+            for(int i = start_index; i < this->album_draw_cnt; i++){
+                this->favorite_album[i]->setData(this->list_favoriteAlbum->at(i));
+                QCoreApplication::processEvents();
+            }
+
+            for(int i = start_index; i < this->album_draw_cnt; i++){
+                this->flowLayout_favorite_album->addWidget(this->favorite_album[i]);
+                connect(this->favorite_album[i], &roseHome::ItemAlbum_rosehome::signal_clicked, this, &RoseFavorite::slot_clickedItemAlbum);
+            }
+
+            int height = (this->album_draw_cnt / f_wg_cnt) * (this->item_widget_height + this->flowLayout_favorite_album->verticalSpacing());
+            if(height <= 0){
+                height = 500;
+            }
+            this->stackedWidget_body->setFixedHeight(height);
+
+            //qDebug() << "[Debug] RoseFavorite::request_more_Draw " << height << (this->album_draw_cnt / f_wg_cnt) << (this->item_widget_height + this->flowLayout_favorite_album->verticalSpacing());
+
+            ContentLoadingwaitingMsgHide();
+
+            this->flag_draw_album = false;
+            // widget draw change - by diskept j230317 finish
+        }
+        else if(type == STEP_ARTIST){
+            this->flag_draw_artist = true;
+
+            // widget draw change - by diskept j230317 start
+            int f_width = this->flowLayout_favorite_artist->geometry().width();
+
+            if((this->width() - (80 + 63) - 10) > this->flowLayout_favorite_artist->geometry().width()){
+                f_width = this->width() - (80 + 63) - 10;
+            }
+            else if(this->flowLayout_favorite_artist->geometry().width() <= 0){
+                f_width = this->width() - (80 + 63) - 10;
+            }
+
+            int f_wg_cnt = f_width / (this->item_widget_width + this->item_widget_margin);
+            int f_mod = this->artist_draw_cnt % f_wg_cnt;
+
+            if(f_mod == 0){
+                this->artist_widget_cnt = f_wg_cnt * 10;
+            }
+            else{
+                this->artist_widget_cnt = f_wg_cnt * 10 + (f_wg_cnt - f_mod);
+            }
+
+            //qDebug() << "[Debug] RoseFavorite::request_more_Draw " << f_width << f_wg_cnt << f_mod << this->artist_widget_cnt;
+
+            int start_index = this->artist_draw_cnt;
+            int max_cnt = ((this->artist_totalCount - this->artist_draw_cnt) > this->artist_widget_cnt ) ? this->artist_widget_cnt : (this->artist_totalCount - this->artist_draw_cnt);
+            this->artist_draw_cnt += max_cnt;
+
+            //qDebug() << "[Debug] RoseFavorite::request_more_Draw " << start_index << this->artist_draw_cnt;
+
+            for(int i = start_index; i < this->artist_draw_cnt; i++){
+                this->favorite_artist[i] = new roseHome::ItemArtist_rosehome(i, SECTION_FOR_MORE_POPUP___FavoriteARTIST, tidal::AbstractItem::ImageSizeMode::Square_200x200);
+                QCoreApplication::processEvents();
+            }
+
+            for(int i = start_index; i < this->artist_draw_cnt; i++){
+                this->favorite_artist[i]->setData(this->list_favoriteArtist->at(i));
+                QCoreApplication::processEvents();
+            }
+
+            for(int i = start_index; i < this->artist_draw_cnt; i++){
+                this->flowLayout_favorite_artist->addWidget(this->favorite_artist[i]);
+                connect(this->favorite_artist[i], &roseHome::ItemArtist_rosehome::signal_clicked, this, &RoseFavorite::slot_clickedItemArtist);
+            }
+
+            int height = (this->artist_draw_cnt / f_wg_cnt) * (this->item_widget_height + this->flowLayout_favorite_artist->verticalSpacing());
+            if(height <= 0){
+                height = 500;
+            }
+            this->stackedWidget_body->setFixedHeight(height);
+
+            //qDebug() << "[Debug] RoseFavorite::request_more_Draw " << height << (this->artist_draw_cnt / f_wg_cnt) << (this->item_widget_height + this->flowLayout_favorite_artist->verticalSpacing());
+
+            ContentLoadingwaitingMsgHide();
+
+            this->flag_draw_artist = false;
+            // widget draw change - by diskept j230317 finish
+        }
+        else if(type == STEP_PLAYLIST){
+            this->flag_draw_playlist = true;
+
+            // widget draw change - by diskept j230317 start
+            int f_width = this->flowLayout_favorite_playlist->geometry().width();
+
+            if((this->width() - (80 + 63) - 10) > this->flowLayout_favorite_playlist->geometry().width()){
+                f_width = this->width() - (80 + 63) - 10;
+            }
+            else if(this->flowLayout_favorite_playlist->geometry().width() <= 0){
+                f_width = this->width() - (80 + 63) - 10;
+            }
+
+            int f_wg_cnt = f_width / (this->item_widget_width + this->item_widget_margin);
+            int f_mod = this->playlist_draw_cnt % f_wg_cnt;
+
+            if(f_mod == 0){
+                this->playlist_widget_cnt = f_wg_cnt * 10;
+            }
+            else{
+                this->playlist_widget_cnt = f_wg_cnt * 10 + (f_wg_cnt - f_mod);
+            }
+
+            //qDebug() << "[Debug] RoseFavorite::request_more_Draw " << f_width << f_wg_cnt << f_mod << this->playlist_widget_cnt;
+
+            int start_index = this->playlist_draw_cnt;
+            int max_cnt = ((this->playlist_totalCount - this->playlist_draw_cnt) > this->playlist_widget_cnt ) ? this->playlist_widget_cnt : (this->playlist_totalCount - this->playlist_draw_cnt);
+            this->playlist_draw_cnt += max_cnt;
+
+            //qDebug() << "[Debug] RoseFavorite::request_more_Draw " << start_index << this->playlist_draw_cnt;
+
+            for(int i = start_index; i < this->playlist_draw_cnt; i++){
+                this->favorite_playlist[i] = new roseHome::ItemPlaylist_rosehome(i, SECTION_FOR_MORE_POPUP___FavoritePLAYLIST, tidal::AbstractItem::ImageSizeMode::Square_200x200, 1, true);
+                QCoreApplication::processEvents();
+            }
+
+            for(int i = start_index; i < this->playlist_draw_cnt; i++){
+                this->favorite_playlist[i]->setData(this->list_favoritePlaylist->at(i));
+                QCoreApplication::processEvents();
+            }
+
+            for(int i = start_index; i < this->playlist_draw_cnt; i++){
+                this->flowLayout_favorite_playlist->addWidget(this->favorite_playlist[i]);
+                connect(this->favorite_playlist[i], &roseHome::ItemPlaylist_rosehome::signal_clicked, this, &RoseFavorite::slot_clickedItemPlaylist);
+            }
+
+            int height = (this->playlist_draw_cnt / f_wg_cnt) * (this->item_widget_height + this->flowLayout_favorite_playlist->verticalSpacing());
+            if(height <= 0){
+                height = 500;
+            }
+            this->stackedWidget_body->setFixedHeight(height);
+
+            //qDebug() << "[Debug] RoseFavorite::request_more_Draw " << height << (this->playlist_draw_cnt / f_wg_cnt) << (this->item_widget_height + this->flowLayout_favorite_playlist->verticalSpacing());
+
+            ContentLoadingwaitingMsgHide();
+
+            this->flag_draw_playlist = false;
+            // widget draw change - by diskept j230317 finish
         }
     }
 
@@ -956,26 +1423,58 @@ namespace roseHome {
      */
     void RoseFavorite::proc_wheelEvent_to_getMoreData(){
 
-        if(this->contentStep == STEP_TRACK && (!this->flag_lastPage_track && !this->flagReqMore_track) && (this->flag_draw_track == false)
-                && (this->scrollArea_main->verticalScrollBar()->value() == this->scrollArea_main->verticalScrollBar()->maximum())){
+        if(this->contentStep == STEP_TRACK){
+            if(this->contentStep == STEP_TRACK && (!this->flag_lastPage_track && !this->flagReqMore_track) && (this->flag_draw_track == false)
+                    && (this->scrollArea_main->verticalScrollBar()->value() == this->scrollArea_main->verticalScrollBar()->maximum())){
 
-            this->flag_draw_track = true;
+                this->flag_draw_track = true;
 
-            this->request_more_Data(STEP_TRACK);
+                print_debug();ContentLoadingwaitingMsgShow(tr("Content is being loaded. Please wait."));
+
+                this->request_more_Data(STEP_TRACK);
+            }
         }
-        else if(this->contentStep == STEP_ALBUM && (!this->flag_lastPage_album && !this->flagReqMore_album) && (this->flag_draw_album == false)
-                && (this->scrollArea_main->verticalScrollBar()->value() == this->scrollArea_main->verticalScrollBar()->maximum())){
+        else if(this->contentStep == STEP_ALBUM){
+            if((this->album_totalCount > this->list_favoriteAlbum->count()) && (this->scrollArea_main->verticalScrollBar()->value() == this->scrollArea_main->verticalScrollBar()->maximum())){
 
-            this->flag_draw_album = true;
+                print_debug();ContentLoadingwaitingMsgShow(tr("Content is being loaded. Please wait."));
 
-            this->request_more_Data(STEP_ALBUM);
+                this->request_more_Data(STEP_ALBUM);
+            }
+            else if((this->album_totalCount > this->album_draw_cnt) && this->flag_draw_album == false && (this->scrollArea_main->verticalScrollBar()->value() == this->scrollArea_main->verticalScrollBar()->maximum())){
+
+                print_debug();ContentLoadingwaitingMsgShow(tr("Content is being loaded. Please wait."));
+
+                this->request_more_Draw(STEP_ALBUM);
+            }
         }
-        else if(this->contentStep == STEP_PLAYLIST && (!this->flag_lastPage_playlist && !this->flagReqMore_playlist) && (this->flag_draw_playlist == false)
-                && (this->scrollArea_main->verticalScrollBar()->value() == this->scrollArea_main->verticalScrollBar()->maximum())){
+        else if(this->contentStep == STEP_ARTIST){
+            if((this->artist_totalCount > this->list_favoriteArtist->count()) && (this->scrollArea_main->verticalScrollBar()->value() == this->scrollArea_main->verticalScrollBar()->maximum())){
 
-            this->flag_draw_playlist = true;
+                print_debug();ContentLoadingwaitingMsgShow(tr("Content is being loaded. Please wait."));
 
-            this->request_more_Data(STEP_PLAYLIST);
+                this->request_more_Data(STEP_ARTIST);
+            }
+            else if((this->artist_totalCount > this->artist_draw_cnt) && this->flag_draw_artist == false && (this->scrollArea_main->verticalScrollBar()->value() == this->scrollArea_main->verticalScrollBar()->maximum())){
+
+                print_debug();ContentLoadingwaitingMsgShow(tr("Content is being loaded. Please wait."));
+
+                this->request_more_Draw(STEP_ARTIST);
+            }
+        }
+        else if(this->contentStep == STEP_PLAYLIST){
+            if((this->playlist_totalCount > this->list_favoritePlaylist->count()) && (this->scrollArea_main->verticalScrollBar()->value() == this->scrollArea_main->verticalScrollBar()->maximum())){
+
+                print_debug();ContentLoadingwaitingMsgShow(tr("Content is being loaded. Please wait."));
+
+                this->request_more_Data(STEP_PLAYLIST);
+            }
+            else if((this->playlist_totalCount > this->playlist_draw_cnt) && this->flag_draw_playlist == false && (this->scrollArea_main->verticalScrollBar()->value() == this->scrollArea_main->verticalScrollBar()->maximum())){
+
+                print_debug();ContentLoadingwaitingMsgShow(tr("Content is being loaded. Please wait."));
+
+                this->request_more_Draw(STEP_PLAYLIST);
+            }
         }
     }
 
@@ -1002,7 +1501,7 @@ namespace roseHome {
 
     void RoseFavorite::slot_clickBtn_Filter(){
 
-        if(this->contentStep == STEP_TRACK || this->contentStep == STEP_ALBUM){
+        if(this->contentStep == STEP_TRACK || this->contentStep == STEP_ALBUM || this->contentStep == STEP_ARTIST){
             this->btn_order[5]->hide();
         }
         else if(this->contentStep == STEP_PLAYLIST){
@@ -1100,6 +1599,10 @@ namespace roseHome {
         else if(this->contentStep == STEP_ALBUM){
             global.user.enable_favRAlbum_filter = media_idx;
             global.user.enable_favRAlbum_order = order_idx;
+        }
+        else if(this->contentStep == STEP_ARTIST){
+            global.user.enable_favRArtist_filter = media_idx;
+            global.user.enable_favRArtist_order = order_idx;
         }
         else if(this->contentStep == STEP_PLAYLIST){
             global.user.enable_favRPlaylist_filter = media_idx;
@@ -1202,7 +1705,7 @@ namespace roseHome {
 
             this->box_favorite_track->addWidget(noData_widget, 0, Qt::AlignTop);
 
-            this->stackedWidget_body->setFixedHeight(500);
+            //this->stackedWidget_body->setFixedHeight(500);
 
             this->stackedWidget_body->setCurrentIndex(0);
             this->stackedWidget_body->show();
@@ -1219,58 +1722,81 @@ namespace roseHome {
             this->flagReqMore_album = false;
 
             if(this->list_favoriteAlbum->count() == 0){
+                this->album_draw_cnt = 0;
                 this->album_totalCount = list_data.at(0).totalCount;
             }
 
-            int start_index = this->list_favoriteAlbum->count();
-
+            int start_index = this->album_draw_cnt;
             this->list_favoriteAlbum->append(list_data);
 
-            int max_cnt = this->list_favoriteAlbum->size();
+            //qDebug() << "[Debug] RoseFavorite::slot_applyResult_favoriteAlbums " << list_data.count();
 
-            for(int i = start_index; i < max_cnt; i++){
-                this->favorite_album[i] = new roseHome::ItemAlbum_rosehome(i, SECTION_FOR_MORE_POPUP___FavoriteALBUM, tidal::AbstractItem::ImageSizeMode::Square_200x200, true);
-                connect(this->favorite_album[i], &roseHome::ItemAlbum_rosehome::signal_clicked, this, &RoseFavorite::slot_clickedItemAlbum);
-            }
+            if(start_index == 0){
+                // widget draw change - by diskept j230317 start
+                int f_width = this->flowLayout_favorite_album->geometry().width();
 
-            for(int i = start_index; i < max_cnt; i++){
-                this->favorite_album[i]->setData(this->list_favoriteAlbum->at(i));
-                this->flowLayout_favorite_album->addWidget(this->favorite_album[i]);
+                if((this->width() - (80 + 63) - 10) > this->flowLayout_favorite_album->geometry().width()){
+                    f_width = this->width() - (80 + 63) - 10;
+                }
+                else if(this->flowLayout_favorite_album->geometry().width() <= 0){
+                    f_width = this->width() - (80 + 63) - 10;
+                }
 
-                QCoreApplication::processEvents();
-            }
+                int f_wg_cnt = f_width / (this->item_widget_width + this->item_widget_margin);
+                int f_mod = this->album_draw_cnt % f_wg_cnt;
 
-            if(this->stackedWidget_body->isVisible() == false){
-
-                int height = 0;
-                if((max_cnt % 7) == 0){
-                    height = (max_cnt / 7) * 289 + 20;
+                if(f_mod == 0){
+                    this->album_widget_cnt = f_wg_cnt * 10;
                 }
                 else{
-                    height = ((max_cnt / 7) + 1) * 289 + 20;
+                    this->album_widget_cnt = f_wg_cnt * 10 + (f_wg_cnt - f_mod);
                 }
+
+                //qDebug() << "[Debug] RoseFavorite::slot_applyResult_favoriteAlbums " << f_width << f_wg_cnt << f_mod << this->album_widget_cnt;
+
+                int max_cnt = ((this->album_totalCount - this->album_widget_cnt) > this->album_widget_cnt ) ? this->album_widget_cnt : (this->album_totalCount - this->album_draw_cnt);
+
+                if(max_cnt > list_data.count()){
+                    max_cnt = list_data.count();
+                }
+                this->album_draw_cnt += max_cnt;
+
+                //qDebug() << "[Debug] RoseFavorite::slot_applyResult_favoriteAlbums " << start_index << this->album_draw_cnt;
+
+                for(int i = start_index; i < this->album_draw_cnt; i++){
+                    this->favorite_album[i] = new roseHome::ItemAlbum_rosehome(i, SECTION_FOR_MORE_POPUP___FavoriteALBUM, tidal::AbstractItem::ImageSizeMode::Square_200x200, true);
+                    QCoreApplication::processEvents();
+                }
+
+                for(int i = start_index; i < this->album_draw_cnt; i++){
+                    this->favorite_album[i]->setData(this->list_favoriteAlbum->at(i));
+                    QCoreApplication::processEvents();
+                }
+
+                for(int i = start_index; i < this->album_draw_cnt; i++){
+                    this->flowLayout_favorite_album->addWidget(this->favorite_album[i]);
+                    connect(this->favorite_album[i], &roseHome::ItemAlbum_rosehome::signal_clicked, this, &RoseFavorite::slot_clickedItemAlbum);
+                }
+
+                // flowlayout spacing change - by diskept j230317 start
+                this->setFlowLayoutResize(this, this->flowLayout_favorite_album, this->item_widget_width, this->item_widget_margin);
+                // flowlayout spacing change - by diskept j230317 finish
+
+                f_mod = (this->album_draw_cnt % f_wg_cnt) > 0 ? 1 : 0;
+
+                int height = ((this->album_draw_cnt / f_wg_cnt) + f_mod) * (this->item_widget_height + this->flowLayout_favorite_album->verticalSpacing());
                 this->stackedWidget_body->setFixedHeight(height);
 
                 this->stackedWidget_body->setCurrentIndex(1);
                 this->stackedWidget_body->show();
-            }
-            else{
 
-                int height = 0;
-                if((max_cnt % 7) == 0){
-                    height = (max_cnt / 7) * 289 + 20;
-                }
-                else{
-                    height = ((max_cnt / 7) + 1) * 289 + 20;
-                }
-                this->stackedWidget_body->setFixedHeight(height);
-            }
+                ContentLoadingwaitingMsgHide();
 
-            if(this->flag_lastPage_album == false && this->album_totalCount > this->list_favoriteAlbum->size()){
                 this->flag_draw_album = false;
             }
-
-            ContentLoadingwaitingMsgHide();
+            else{
+                this->request_more_Draw(this->contentStep);
+            }
         }
         else{
             ContentLoadingwaitingMsgHide();
@@ -1288,6 +1814,107 @@ namespace roseHome {
     }
 
 
+    void RoseFavorite::slot_applyResult_favoriteArtists(const QList<roseHome::ArtistItemData> &list_data, const QJsonArray &jsonArr_dataToPlay, const bool flag_lastPage){
+
+        Q_UNUSED(jsonArr_dataToPlay);
+
+        if(list_data.size() > 0){
+            this->flag_lastPage_artist = flag_lastPage;
+            this->flagReqMore_artist = false;
+
+            if(this->list_favoriteArtist->count() == 0){
+                this->artist_draw_cnt = 0;
+                this->artist_totalCount = list_data.at(0).totalCount;
+            }
+
+            int start_index = this->artist_draw_cnt;
+            this->list_favoriteArtist->append(list_data);
+
+            //qDebug() << "[Debug] RoseFavorite::slot_applyResult_favoriteArtists " << list_data.count();
+
+            if(start_index == 0){
+                // widget draw change - by diskept j230317 start
+                int f_width = this->flowLayout_favorite_artist->geometry().width();
+
+                if((this->width() - (80 + 63) - 10) > this->flowLayout_favorite_artist->geometry().width()){
+                    f_width = this->width() - (80 + 63) - 10;
+                }
+                else if(this->flowLayout_favorite_artist->geometry().width() <= 0){
+                    f_width = this->width() - (80 + 63) - 10;
+                }
+
+                int f_wg_cnt = f_width / (this->item_widget_width + this->item_widget_margin);
+                int f_mod = this->artist_draw_cnt % f_wg_cnt;
+
+                if(f_mod == 0){
+                    this->artist_widget_cnt = f_wg_cnt * 10;
+                }
+                else{
+                    this->artist_widget_cnt = f_wg_cnt * 10 + (f_wg_cnt - f_mod);
+                }
+
+                //qDebug() << "[Debug] RoseFavorite::slot_applyResult_favoriteArtists " << f_width << f_wg_cnt << f_mod << this->artist_widget_cnt;
+
+                int max_cnt = ((this->artist_totalCount - this->artist_widget_cnt) > this->artist_widget_cnt ) ? this->artist_widget_cnt : (this->artist_totalCount - this->artist_draw_cnt);
+
+                if(max_cnt > list_data.count()){
+                    max_cnt = list_data.count();
+                }
+                this->artist_draw_cnt += max_cnt;
+
+                //qDebug() << "[Debug] RoseFavorite::slot_applyResult_favoriteArtists " << start_index << this->artist_draw_cnt;
+
+                for(int i = start_index; i < this->artist_draw_cnt; i++){
+                    this->favorite_artist[i] = new roseHome::ItemArtist_rosehome(i, SECTION_FOR_MORE_POPUP___FavoriteARTIST, tidal::AbstractItem::ImageSizeMode::Square_200x200);
+                    QCoreApplication::processEvents();
+                }
+
+                for(int i = start_index; i < this->artist_draw_cnt; i++){
+                    this->favorite_artist[i]->setData(this->list_favoriteArtist->at(i));
+                    QCoreApplication::processEvents();
+                }
+
+                for(int i = start_index; i < this->artist_draw_cnt; i++){
+                    this->flowLayout_favorite_artist->addWidget(this->favorite_artist[i]);
+                    connect(this->favorite_artist[i], &roseHome::ItemArtist_rosehome::signal_clicked, this, &RoseFavorite::slot_clickedItemArtist);
+                }
+
+                // flowlayout spacing change - by diskept j230317 start
+                this->setFlowLayoutResize(this, this->flowLayout_favorite_artist, this->item_widget_width, this->item_widget_margin);
+                // flowlayout spacing change - by diskept j230317 finish
+
+                f_mod = (this->artist_draw_cnt % f_wg_cnt) > 0 ? 1 : 0;
+
+                int height = ((this->artist_draw_cnt / f_wg_cnt) + f_mod) * (this->item_widget_height + this->flowLayout_favorite_artist->verticalSpacing());
+                this->stackedWidget_body->setFixedHeight(height);
+
+                this->stackedWidget_body->setCurrentIndex(2);
+                this->stackedWidget_body->show();
+
+                ContentLoadingwaitingMsgHide();
+
+                this->flag_draw_artist = false;
+            }
+            else{
+                this->request_more_Draw(this->contentStep);
+            }
+        }
+        else{
+            ContentLoadingwaitingMsgHide();
+
+            NoData_Widget *noData_widget = new NoData_Widget(NoData_Widget::NoData_Message::Artist_NoData);
+            noData_widget->setFixedSize(1500, 500);
+
+            this->flowLayout_favorite_artist->addWidget(noData_widget);
+
+            this->stackedWidget_body->setFixedHeight(500);
+
+            this->stackedWidget_body->setCurrentIndex(2);
+            this->stackedWidget_body->show();
+        }
+    }
+
+
     void RoseFavorite::slot_applyResult_favoritePlaylists(const QList<roseHome::PlaylistItemData> &list_data, const QJsonArray &jsonArr_dataToPlay, const bool flag_lastPage){
 
         Q_UNUSED(jsonArr_dataToPlay);
@@ -1297,58 +1924,81 @@ namespace roseHome {
             this->flagReqMore_playlist = false;
 
             if(this->list_favoritePlaylist->count() == 0){
+                this->playlist_draw_cnt = 0;
                 this->playlist_totalCount = list_data.at(0).totalCount;
             }
 
-            int start_index = this->list_favoritePlaylist->count();
-
+            int start_index = this->playlist_draw_cnt;
             this->list_favoritePlaylist->append(list_data);
 
-            int max_cnt = this->list_favoritePlaylist->size();
+            //qDebug() << "[Debug] RoseFavorite::slot_applyResult_favoritePlaylists " << list_data.count();
 
-            for(int i = start_index; i < max_cnt; i++){
-                this->favorite_playlist[i] = new roseHome::ItemPlaylist_rosehome(i, SECTION_FOR_MORE_POPUP___FavoritePLAYLIST, tidal::AbstractItem::ImageSizeMode::Square_200x200, 1, true);
-                connect(this->favorite_playlist[i], &roseHome::ItemPlaylist_rosehome::signal_clicked, this, &RoseFavorite::slot_clickedItemPlaylist);
-            }
+            if(start_index == 0){
+                // widget draw change - by diskept j230317 start
+                int f_width = this->flowLayout_favorite_playlist->geometry().width();
 
-            for(int i = start_index; i < max_cnt; i++){
-                this->favorite_playlist[i]->setData(this->list_favoritePlaylist->at(i));
-                this->flowLayout_favorite_playlist->addWidget(this->favorite_playlist[i]);
+                if((this->width() - (80 + 63) - 10) > this->flowLayout_favorite_playlist->geometry().width()){
+                    f_width = this->width() - (80 + 63) - 10;
+                }
+                else if(this->flowLayout_favorite_playlist->geometry().width() <= 0){
+                    f_width = this->width() - (80 + 63) - 10;
+                }
 
-                QCoreApplication::processEvents();
-            }
+                int f_wg_cnt = f_width / (this->item_widget_width + this->item_widget_margin);
+                int f_mod = this->playlist_draw_cnt % f_wg_cnt;
 
-            if(this->stackedWidget_body->isVisible() == false){
-
-                int height = 0;
-                if((max_cnt % 7) == 0){
-                    height = (max_cnt / 7) * 321 + 20;
+                if(f_mod == 0){
+                    this->playlist_widget_cnt = f_wg_cnt * 10;
                 }
                 else{
-                    height = ((max_cnt / 7) + 1) * 321 + 20;
+                    this->playlist_widget_cnt = f_wg_cnt * 10 + (f_wg_cnt - f_mod);
                 }
+
+                //qDebug() << "[Debug] RoseFavorite::slot_applyResult_favoritePlaylists " << f_width << f_wg_cnt << f_mod << this->playlist_widget_cnt;
+
+                int max_cnt = ((this->playlist_totalCount - this->playlist_widget_cnt) > this->playlist_widget_cnt ) ? this->playlist_widget_cnt : (this->playlist_totalCount - this->playlist_draw_cnt);
+
+                if(max_cnt > list_data.count()){
+                    max_cnt = list_data.count();
+                }
+                this->playlist_draw_cnt += max_cnt;
+
+                //qDebug() << "[Debug] RoseFavorite::slot_applyResult_favoritePlaylists " << start_index << this->playlist_draw_cnt;
+
+                for(int i = start_index; i < this->playlist_draw_cnt; i++){
+                    this->favorite_playlist[i] = new roseHome::ItemPlaylist_rosehome(i, SECTION_FOR_MORE_POPUP___FavoritePLAYLIST, tidal::AbstractItem::ImageSizeMode::Square_200x200, 1, true);
+                    QCoreApplication::processEvents();
+                }
+
+                for(int i = start_index; i < this->playlist_draw_cnt; i++){
+                    this->favorite_playlist[i]->setData(this->list_favoritePlaylist->at(i));
+                    QCoreApplication::processEvents();
+                }
+
+                for(int i = start_index; i < this->playlist_draw_cnt; i++){
+                    this->flowLayout_favorite_playlist->addWidget(this->favorite_playlist[i]);
+                    connect(this->favorite_playlist[i], &roseHome::ItemPlaylist_rosehome::signal_clicked, this, &RoseFavorite::slot_clickedItemPlaylist);
+                }
+
+                // flowlayout spacing change - by diskept j230317 start
+                this->setFlowLayoutResize(this, this->flowLayout_favorite_playlist, this->item_widget_width, this->item_widget_margin);
+                // flowlayout spacing change - by diskept j230317 finish
+
+                f_mod = (this->playlist_draw_cnt % f_wg_cnt) > 0 ? 1 : 0;
+
+                int height = ((this->playlist_draw_cnt / f_wg_cnt) + f_mod) * (this->item_widget_height + this->flowLayout_favorite_playlist->verticalSpacing());
                 this->stackedWidget_body->setFixedHeight(height);
 
-                this->stackedWidget_body->setCurrentIndex(2);
+                this->stackedWidget_body->setCurrentIndex(3);
                 this->stackedWidget_body->show();
-            }
-            else{
 
-                int height = 0;
-                if((max_cnt % 7) == 0){
-                    height = (max_cnt / 7) * 321 + 20;
-                }
-                else{
-                    height = ((max_cnt / 7) + 1) * 321 + 20;
-                }
-                this->stackedWidget_body->setFixedHeight(height);
-            }
+                ContentLoadingwaitingMsgHide();
 
-            if(this->flag_lastPage_playlist == false && this->playlist_totalCount > this->list_favoritePlaylist->size()){
                 this->flag_draw_playlist = false;
             }
-
-            ContentLoadingwaitingMsgHide();
+            else{
+                this->request_more_Draw(this->contentStep);
+            }
         }
         else{
             ContentLoadingwaitingMsgHide();
@@ -1360,8 +2010,58 @@ namespace roseHome {
 
             this->stackedWidget_body->setFixedHeight(500);
 
-            this->stackedWidget_body->setCurrentIndex(2);
+            this->stackedWidget_body->setCurrentIndex(3);
             this->stackedWidget_body->show();
+        }
+    }
+
+    void RoseFavorite::slot_bugs_completeReq_listAll_myFavoritesIds(const QJsonObject& p_jsonObj){
+
+        // Favorite 정보를 전달해줌. 알아서 처리하라고. => OptMorePopup 에서 하라고, 가려줌
+        if(p_jsonObj.contains("flagOk") && ProcJsonEasy::get_flagOk(p_jsonObj)){
+            bool status  = ProcJsonEasy::getBool(p_jsonObj, "status");
+
+            // Qobuz favorite toggle check
+            if(this->flag_send_track == true){
+                if((status == true && this->flag_track_fav == false) || (status == false && this->flag_track_fav == true)){
+                    // Tidal Favorite toggle
+                    //ProcCommon *proc = new ProcCommon(this);
+                    //connect(proc, &tidal::ProcCommon::completeReq_listAll_myFavoritesIds, this, &BugsRecentlyTrackAll::slot_bugs_completeReq_listAll_myFavoritesIds);
+                    //proc->request_tidal_set_favorite("track", QString("%1").arg(this->track_id_fav), this->flag_track_fav);
+                }
+                this->flag_send_track = false;
+            }
+        }
+    }
+
+
+    void RoseFavorite::slot_tidal_completeReq_listAll_myFavoritesIds(const QJsonObject& p_jsonObj){
+
+        // Favorite 정보를 전달해줌. 알아서 처리하라고.
+        if(p_jsonObj.contains("flagOk") && ProcJsonEasy::get_flagOk(p_jsonObj)){
+
+            // Tidal favorite check
+            if(this->flag_send_track == true){
+                QVariantList arr_myFavoriteIds = ProcJsonEasy::getJsonArray(p_jsonObj, "TRACK").toVariantList();
+                bool status = arr_myFavoriteIds.contains(this->track_id_fav);
+
+                if(status == true && this->flag_track_fav == false){
+                    // Tidal track Favorite del
+                    tidal::ProcCommon *proc = new tidal::ProcCommon(this);
+                    connect(proc, &tidal::ProcCommon::completeReq_listAll_myFavoritesIds, this, &RoseFavorite::slot_tidal_completeReq_listAll_myFavoritesIds);
+                    proc->request_tidal_del_favorite("tracks", QString("%1").arg(this->track_id_fav));
+                }
+                else if(status == false && this->flag_track_fav == true){
+                    // Tidal track Favorite add
+                    tidal::ProcCommon *proc = new tidal::ProcCommon(this);
+                    connect(proc, &tidal::ProcCommon::completeReq_listAll_myFavoritesIds, this, &RoseFavorite::slot_tidal_completeReq_listAll_myFavoritesIds);
+                    proc->request_tidal_set_favorite("tracks", QString("%1").arg(this->track_id_fav));
+                }
+                this->flag_send_track = false;
+            }
+            else{
+
+            }
         }
     }
 
@@ -1400,6 +2100,8 @@ namespace roseHome {
 
                 this->flag_track_fav = false;
 
+                QString type = this->list_favoriteTrack->at(idx).type;
+
                 if(this->track_star_fav == 3){
                     this->track_star_fav = 0;
                     this->flag_track_fav = false;
@@ -1410,6 +2112,59 @@ namespace roseHome {
                     this->flag_track_fav = true;
 
                 }
+                if(this->track_star_fav == 0 || this->track_star_fav == 1){
+                    if(type == "BUGS"){
+                        // Bugs Favorite toggle
+                        bugs::ItemPositionData itemPosData;
+                        itemPosData.section = SECTION_FOR_MORE_POPUP___FavoriteTrack;
+                        itemPosData.index = idx;
+                        itemPosData.data_id = QString("%1").arg(this->list_favoriteTrack->at(idx).id);
+
+                        bugs::ProcBugsAPI *proc = new bugs::ProcBugsAPI(this);
+                        connect(proc, &bugs::ProcBugsAPI::completeReq_favarite_track, this, &RoseFavorite::slot_bugs_completeReq_listAll_myFavoritesIds);
+
+                        if(this->track_star_fav == 0){
+                            itemPosData.likes_yn = false;
+
+                            proc->request_bugs_deleteFavorite_track(this->list_favoriteTrack->at(idx).clientKey.toInt(), bugs::ConvertData_forBugs::getObjectJson_itemPositionData(itemPosData));
+                        }
+                        else if(this->track_star_fav == 1){
+                            itemPosData.likes_yn = true;
+
+                            proc->request_bugs_addFavorite_track(this->list_favoriteTrack->at(idx).clientKey.toInt(), bugs::ConvertData_forBugs::getObjectJson_itemPositionData(itemPosData));
+                        }
+
+                        this->flag_send_track = true;
+                    }
+                    else if(type == "QOBUZ"){
+                        this->track_id_fav = this->list_favoriteTrack->at(idx).clientKey.toInt();
+
+                        qobuz::ProcCommon *proc = new qobuz::ProcCommon(this);
+                        connect(proc, &qobuz::ProcCommon::completeReq_listAll_myFavoritesIds, this, &RoseFavorite::slot_bugs_completeReq_listAll_myFavoritesIds);
+                        proc->request_qobuz_set_favorite("track", QString("%1").arg(this->track_id_fav), this->flag_track_fav);
+                        this->flag_send_track = true;
+                    }
+                    else if(type == "TIDAL"){
+                        this->track_id_fav = this->list_favoriteTrack->at(idx).clientKey.toInt();
+
+                        if(this->track_star_fav == 1){
+                            // Tidal Track Favorite add
+                            tidal::ProcCommon *proc = new tidal::ProcCommon(this);
+                            proc->request_tidal_set_favorite("tracks", QString("%1").arg(this->track_id_fav));
+                        }
+                        else if(this->track_star_fav == 0){
+                            // Tidal Track Favorite del
+                            tidal::ProcCommon *proc = new tidal::ProcCommon(this);
+                            proc->request_tidal_del_favorite("tracks", QString("%1").arg(this->track_id_fav));
+                        }
+
+                        // favorite 정보 가져오기
+                        tidal::ProcCommon *proc_fav = new tidal::ProcCommon(this);
+                        connect(proc_fav, &tidal::ProcCommon::completeReq_listAll_myFavoritesIds, this, &RoseFavorite::slot_tidal_completeReq_listAll_myFavoritesIds);
+                        proc_fav->request_tidal_getAll_favorites();
+                        this->flag_send_track = true;
+                    }
+                }
 
                 this->track_idx_fav = idx;
 
@@ -1417,7 +2172,7 @@ namespace roseHome {
                 ratingInfo.insert("favorite", this->flag_track_fav);
                 ratingInfo.insert("star", this->track_star_fav);
                 ratingInfo.insert("thumbup", false);
-                ratingInfo.insert("type", this->list_favoriteTrack->at(idx).type);
+                ratingInfo.insert("type", type);
 
                 QJsonObject track = this->jsonArr_tracks_toPlay.at(idx).toObject();
 
@@ -1455,6 +2210,38 @@ namespace roseHome {
 
 
     /**
+     * @brief [slot] override - ItemArtist 위짓의 clicked 이벤트를 처리하는 슬롯함수 재정의
+     * @param clickMode
+     */
+    void RoseFavorite::slot_clickedItemArtist(const tidal::AbstractItem::ClickMode clickMode){
+
+        int index = ((tidal::AbstractItem*)sender())->index();
+        int section = ((tidal::AbstractItem*)sender())->section();
+
+        // ClickMode 별로 처리
+        if(section == SECTION_FOR_MORE_POPUP___FavoriteARTIST){
+
+            if(this->list_favoriteArtist->at(index).type == "APPLE_MUSIC"){
+                DialogConfirm *dlgConfirmMSG = new DialogConfirm(this);
+                dlgConfirmMSG->setTitle(tr("Notice"));
+                dlgConfirmMSG->setFixedSize(350, 400);
+                dlgConfirmMSG->setAlignment(Qt::AlignCenter);
+                dlgConfirmMSG->setTextHeight(150);
+
+                dlgConfirmMSG->setText(tr("Service is being prepared."));
+
+                dlgConfirmMSG->exec();
+
+                delete dlgConfirmMSG;
+            }
+            else{
+                this->proc_clicked_itemArtist(this->list_favoriteArtist, clickMode, index, section);
+            }
+        }
+    }
+
+
+    /**
      * @brief [slot] override - ItemAlbum 위짓의 clicked 이벤트를 처리하는 슬롯함수 재정의
      * @param clickMode
      */
@@ -1487,4 +2274,145 @@ namespace roseHome {
         }
     }
 
+
+    void RoseFavorite::resizeEvent(QResizeEvent* event){
+
+        Q_UNUSED(event);
+
+//        QWidget *topLevelWidget = this->window();       // 최상위 부모 윈도우를 가져옴
+//        QSize size = topLevelWidget->size();            // 윈도우의 크기를 가져옴
+//        int window_width = size.width();                // 윈도우의 가로 크기를 가져옴
+
+        int window_width = this->width();
+
+        if(window_width < 1200){
+
+            double k =10.0*((1200.0-window_width)/176.0);
+
+//            qDebug() << "k = "<<k;
+//            qDebug() << "window_width = "<<window_width;
+
+            double k2 = -10.0*((1200.0-window_width)/176.0);
+
+            this->btn_step_track->setFixedSize(125 -k, 40);
+            this->btn_step_track->setGeometry(k2 + (3*k), 15, 0, 0);
+
+            this->btn_step_album->setFixedSize(125 -k, 40);
+            this->btn_step_album->setGeometry(124+k2 +(2*k), 15, 0, 0);
+
+            this->btn_step_artist->setFixedSize(125 -k, 40);
+            this->btn_step_artist->setGeometry(248+k2 + k, 15, 0, 0);
+
+            this->btn_step_playlist->setFixedSize(125 -k, 40);
+            this->btn_step_playlist->setGeometry(372+k2, 15, 0, 0);
+        }
+        else{
+            this->btn_step_track->setFixedSize(125, 40);
+            this->btn_step_track->setGeometry(0, 15, 0, 0);
+
+            this->btn_step_album->setFixedSize(125, 40);
+            this->btn_step_album->setGeometry(124, 15, 0, 0);
+
+            this->btn_step_artist->setFixedSize(125, 40);
+            this->btn_step_artist->setGeometry(248, 15, 0, 0);
+
+            this->btn_step_playlist->setFixedSize(125, 40);
+            this->btn_step_playlist->setGeometry(372, 15, 0, 0);
+
+        }
+
+        // flowlayout spacing change - by diskept j230317 start
+        if(this->contentStep == STEP_TRACK){
+            if(this->list_favoriteTrack->count() > 0){
+                int height = this->list_favoriteTrack->count() * 70;
+                this->stackedWidget_body->setFixedHeight(height);
+            }
+            else{
+                this->stackedWidget_body->setFixedHeight(500);
+            }
+        }
+        else if(this->contentStep == STEP_ALBUM){
+            roseHome::ItemAlbum_rosehome *listAlbum = new roseHome::ItemAlbum_rosehome(0, 0, tidal::AbstractItem::ImageSizeMode::Square_200x200, true);
+
+            this->item_widget_width = listAlbum->get_fixedWidth();
+            this->item_widget_margin = listAlbum->get_rightMargin();
+            this->item_widget_height = listAlbum->get_fixedHeight();
+
+            delete listAlbum;
+
+            this->setFlowLayoutResize(this, this->flowLayout_favorite_album, this->item_widget_width, this->item_widget_margin);
+
+            int f_width = this->flowLayout_favorite_album->geometry().width();
+
+            if(this->flowLayout_favorite_album->geometry().width() <= 0){
+                f_width = this->width() - (80 + 63) - 10;
+            }
+
+            int f_wg_cnt = f_width / (this->item_widget_width + this->item_widget_margin);
+            int f_mod = (this->album_draw_cnt % f_wg_cnt) > 0 ? 1 : 0;
+
+            int height = ((this->album_draw_cnt / f_wg_cnt) + f_mod) * (this->item_widget_height + this->flowLayout_favorite_album->verticalSpacing());
+            if(height <= 0){
+                height = 500;
+            }
+            //qDebug() << "[Debug]" << __FUNCTION__ << "line::" << __LINE__ << "[MSG] " << this->width() << f_width << f_wg_cnt << this->album_draw_cnt << height;
+            this->stackedWidget_body->setFixedHeight(height);
+        }
+        else if(this->contentStep == STEP_ARTIST){
+            roseHome::ItemArtist_rosehome *listArtist = new roseHome::ItemArtist_rosehome(0, 0, tidal::AbstractItem::ImageSizeMode::Square_200x200);
+
+            this->item_widget_width = listArtist->get_fixedWidth();
+            this->item_widget_margin = listArtist->get_rightMargin();
+            this->item_widget_height = listArtist->get_fixedHeight();
+
+            delete listArtist;
+
+            this->setFlowLayoutResize(this, this->flowLayout_favorite_artist, this->item_widget_width, this->item_widget_margin);
+
+            int f_width = this->flowLayout_favorite_artist->geometry().width();
+
+            if(this->flowLayout_favorite_artist->geometry().width() <= 0){
+                f_width = this->width() - (80 + 63) - 10;
+            }
+
+            int f_wg_cnt = f_width / (this->item_widget_width + this->item_widget_margin);
+            int f_mod = (this->artist_draw_cnt % f_wg_cnt) > 0 ? 1 : 0;
+
+            int height = ((this->artist_draw_cnt / f_wg_cnt) + f_mod) * (this->item_widget_height + this->flowLayout_favorite_artist->verticalSpacing());
+            if(height <= 0){
+                height = 500;
+            }
+            //qDebug() << "[Debug]" << __FUNCTION__ << "line::" << __LINE__ << "[MSG] " << this->width() << f_width << f_wg_cnt << this->album_draw_cnt << height;
+            this->stackedWidget_body->setFixedHeight(height);
+        }
+        else if(this->contentStep == STEP_PLAYLIST){
+            roseHome::ItemPlaylist_rosehome *listPlaylist = new roseHome::ItemPlaylist_rosehome(0, 0, tidal::AbstractItem::ImageSizeMode::Square_200x200, 1, true);
+
+            this->item_widget_width = listPlaylist->get_fixedWidth();
+            this->item_widget_margin = listPlaylist->get_rightMargin();
+            this->item_widget_height = listPlaylist->get_fixedHeight();
+
+            delete listPlaylist;
+
+            this->setFlowLayoutResize(this, this->flowLayout_favorite_playlist, this->item_widget_width, this->item_widget_margin);
+
+            int f_width = this->flowLayout_favorite_playlist->geometry().width();
+
+            if(this->flowLayout_favorite_playlist->geometry().width() <= 0){
+                f_width = this->width() - (80 + 63) - 10;
+            }
+
+            int f_wg_cnt = f_width / (this->item_widget_width + this->item_widget_margin);
+            int f_mod = (this->playlist_draw_cnt % f_wg_cnt) > 0 ? 1 : 0;
+
+            int height = ((this->playlist_draw_cnt / f_wg_cnt) + f_mod) * (this->item_widget_height + this->flowLayout_favorite_playlist->verticalSpacing());
+            if(height <= 0){
+                height = 500;
+            }
+            //qDebug() << "[Debug]" << __FUNCTION__ << "line::" << __LINE__ << "[MSG] " << this->width() << f_width << f_wg_cnt << this->album_draw_cnt << height;
+            this->stackedWidget_body->setFixedHeight(height);
+        }
+        // flowlayout spacing change - by diskept j230317 finish
+    }
 }
+

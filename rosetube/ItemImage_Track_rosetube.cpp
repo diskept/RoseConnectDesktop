@@ -16,11 +16,11 @@ namespace rosetube {
 
         if(flagPlay){
             this->setUseHover(flagPlay);
-            this->setUseBtn_favorite(false);
+            this->setUseBtn_favoriteRose(true, 0);
         }
         else{
             this->setUseHoverRose(true);
-            this->setUseBtn_favoriteRose(true, 0);
+            this->setUseBtn_favorite(flagPlay);
         }
     }
 

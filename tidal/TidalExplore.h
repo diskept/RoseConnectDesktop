@@ -53,6 +53,7 @@ namespace tidal {
         void slot_applyResult_addRating_track(const QJsonObject&);
         void slot_applyResult_getRating_track(const QJsonArray&);
 
+        void slot_tidal_completeReq_listAll_myFavoritesIds(const QJsonObject&);
     private:
         // 초기 UI화면 구성
         void setUIControl_chooseGenres();

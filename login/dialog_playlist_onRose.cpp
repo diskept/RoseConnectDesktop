@@ -73,7 +73,6 @@ namespace Dialog {
         this->btn_close->setCursor(Qt::PointingHandCursor);
         this->btn_close->setFixedSize(QSize(70,70));
         this->btn_close->setGeometry(530, 0, 70, 70);
-        this->btn_close->show();
 
 
         this->dialog_creat = new QVBoxLayout();
@@ -135,8 +134,6 @@ namespace Dialog {
 
     void Dialog_Playlist_onRose::appendPlayListUI(int p_playlistNo, QString p_name, QString p_thumbPath, int p_numContents){
 
-
-
         QPushButton *btn_playlist = new QPushButton();
         btn_playlist->setCursor(Qt::PointingHandCursor);
         btn_playlist->setObjectName("wg_item");
@@ -169,6 +166,10 @@ namespace Dialog {
 
         QLabel *label_name = new QLabel(btn_playlist);
         label_name->setText(GSCommon::getTextCutFromLabelWidth(p_name, 440, label_name->font()));
+        if(label_name->text().contains("…")){
+            label_name->setToolTip(p_name);
+            label_name->setToolTipDuration(2000);
+        }
         label_name->setStyleSheet("color:#FFFFFF;font-size:16px;");
 
         QLabel *label_count = new QLabel(btn_playlist);
@@ -253,16 +254,16 @@ QWidget* RoseHomeFriend::getUIScrollViewWidget(QWidget *p_widget){
         QSettings *settings = new QSettings(rosesettings.ORGANIZATION_NAME, rosesettings.APPLICATION_NAME);
         int latestWidth = settings->value(rosesettings.SETTINGS_W, 0).toInt();
         int latestHeight = settings->value(rosesettings.SETTINGS_H, 800).toInt();
-        int left = 0;
-        int top = 0;
+        int left = global.left_mainwindow + ((latestWidth - dlg->sizeHint().width()) / 2);
+        int top = global.top_mainwindow + ((latestHeight - dlg->sizeHint().height()) / 2);
 
 
-        left = latestWidth - (dlg->width());
+        /*left = latestWidth - (dlg->width());
         top = (latestHeight/ 2) - (dlg->sizeHint().height() / 3);
         print_debug();
         qDebug() << "dlg->width() = " << dlg->width();
-        qDebug() << "left = " << left;
-        dlg->setGeometry(left-50, top, 0, 0);
+        qDebug() << "left = " << left;*/
+        dlg->setGeometry(left, top, 0, 0);
 
         dlg->setFixedHeight(560);//c220521
         dlg->setTitle(tr("PlayList track Delete Notice"));

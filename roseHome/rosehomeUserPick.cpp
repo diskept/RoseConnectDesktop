@@ -131,11 +131,11 @@ const int HTTP_USERPICK_PLAYLIST_FRIEND2 = 28;
 
 //start----------------------------User-------------------------------------------------
         this->vbox1_main2_contents = new QVBoxLayout();
-        this->vbox1_main2_contents->setSpacing(0);
+        this->vbox1_main2_contents->setSpacing(20);
         this->vbox1_main2_contents->setContentsMargins(0, 0, 0, 0);
 
         this->vbox2_main2_contents = new QVBoxLayout();
-        this->vbox2_main2_contents->setSpacing(0);
+        this->vbox2_main2_contents->setSpacing(20);
         this->vbox2_main2_contents->setContentsMargins(0, 0, 0, 0);
 
 
@@ -203,6 +203,7 @@ const int HTTP_USERPICK_PLAYLIST_FRIEND2 = 28;
         //this->box_contents->addWidget(widget_background);//cheon211115-01
         //this->box_contents->setContentsMargins(0, 0, 20, 0);
         this->box_contents->addLayout(vbox_last_contents);//cheon211115-01
+        this->scrollArea_main->setVerticalScrollBarPolicy(Qt::ScrollBarAsNeeded);
 
         this->tmp_label_subTitle_friend_cnt = new QLabel();
         this->tmp_label_subTitle_friend_cnt->setText(QString(tr("Downloading...")));//cheon211115-01
@@ -242,7 +243,7 @@ const int HTTP_USERPICK_PLAYLIST_FRIEND2 = 28;
         //print_debug();
         //this->list_UserPickPlaylist_All->clear();
         //print_debug();
-
+        this->deleteLater();
     }
 
     /**
@@ -265,7 +266,7 @@ const int HTTP_USERPICK_PLAYLIST_FRIEND2 = 28;
             connect(net_new_playlist, SIGNAL(response(int,QJsonObject)), SLOT(slot_responseHttp(int,QJsonObject)));
             net_new_playlist->request(HTTP_USERPICK_PLAYLIST_FRIEND, QString("%1/member/playlist/userpick/friend?page=0&size=20&sortType=PLAYLIST_RECENT").arg(global.legacy_v1), json, false, true);
 
-            //ContentLoadingwaitingMsgShow(tr("Content is being loaded. Please wait."));//cheon21119-02
+            //print_debug();ContentLoadingwaitingMsgShow(tr("Content is being loaded. Please wait."));//cheon21119-02
 
             QJsonObject json2;
             QUrlQuery params2;
@@ -273,7 +274,7 @@ const int HTTP_USERPICK_PLAYLIST_FRIEND2 = 28;
             connect(net_new_playlist2, SIGNAL(response(int,QJsonObject)), SLOT(slot_responseHttp(int,QJsonObject)));
             net_new_playlist2->request(HTTP_USERPICK_PLAYLIST_ALL_INIT, QString("%1/member/playlist/userpick/all?page=%2&size=20&sortType=PLAYLIST_RECENT").arg(global.legacy_v1).arg(page2), json2, false, true);
 
-            //ContentLoadingwaitingMsgShow(tr("Content is being loaded. Please wait."));//cheon21119-02
+            //print_debug();ContentLoadingwaitingMsgShow(tr("Content is being loaded. Please wait."));//cheon21119-02
 
 
 
@@ -737,14 +738,14 @@ qDebug() << "memberIdIndex = " << memberIdIndex;
                 //print_debug();
 
                 this->setUIControl_subTitle_withSideBtn(userpickName, i, item_cnt);
-                this->hbox_UserPickPlaylist.append(this->setUIControl_hBoxLayout_forAlbum(296, HTTP_USERPICK_PLAYLIST_FRIEND, i, item_cnt));
+                this->hbox_UserPickPlaylist.append(this->setUIControl_hBoxLayout_forAlbum(311, HTTP_USERPICK_PLAYLIST_FRIEND, i, item_cnt));
                 this->createList_itemPlaylsit_applyingWithData(*this->list_UserPickPlaylist[i], tidal::AbstractItem::ImageSizeMode::Square_200x200, this->hbox_UserPickPlaylist.at(i), 0, 1000+i);
 
                 if(totalCount_friend % 2 != 0 && totalCount_friend == (i+1)){
                     //print_debug();
                     this->setUIControl_subTitle_withSideBtn("", i+1, item_cnt);
                     //print_debug();
-                    this->hbox_UserPickPlaylist.append(this->setUIControl_hBoxLayout_forAlbum(296, HTTP_USERPICK_PLAYLIST_FRIEND, i+1, item_cnt));
+                    this->hbox_UserPickPlaylist.append(this->setUIControl_hBoxLayout_forAlbum(311, HTTP_USERPICK_PLAYLIST_FRIEND, i+1, item_cnt));
                     //print_debug();
                     //this->createList_itemPlaylsit_applyingWithData(*this->list_UserPickPlaylist[i], tidal::AbstractItem::ImageSizeMode::Square_200x200, this->hbox_UserPickPlaylist.at(i), 0, 1000+totalCount_friend);
                     //print_debug();
@@ -785,7 +786,7 @@ qDebug() << "memberIdIndex = " << memberIdIndex;
 
                     this->setUIControl_subTitle_withSideBtn_All(userpickName, i, item_cnt);
                     //print_debug();
-                    this->hbox_UserPickPlaylist_All.append(this->setUIControl_hBoxLayout_forAlbum_All(296, HTTP_USERPICK_PLAYLIST_ALL, i, item_cnt));
+                    this->hbox_UserPickPlaylist_All.append(this->setUIControl_hBoxLayout_forAlbum_All(311, HTTP_USERPICK_PLAYLIST_ALL, i, item_cnt));
                     //print_debug();
                     this->createList_itemPlaylsit_applyingWithData(*this->list_UserPickPlaylist_All[i], tidal::AbstractItem::ImageSizeMode::Square_200x200, this->hbox_UserPickPlaylist_All.at(i), 0, 2000+i);
                     //print_debug();
@@ -793,7 +794,7 @@ qDebug() << "memberIdIndex = " << memberIdIndex;
                     if(totalCount_all % 2 != 0 && totalCount_all == (i+1)){
                         //print_debug();
                         this->setUIControl_subTitle_withSideBtn_All("", i+1, item_cnt);
-                        this->hbox_UserPickPlaylist_All.append(this->setUIControl_hBoxLayout_forAlbum_All(296, HTTP_USERPICK_PLAYLIST_ALL, i+1, item_cnt));
+                        this->hbox_UserPickPlaylist_All.append(this->setUIControl_hBoxLayout_forAlbum_All(311, HTTP_USERPICK_PLAYLIST_ALL, i+1, item_cnt));
                         //this->createList_itemPlaylsit_applyingWithData(*this->list_UserPickPlaylist_All[i], tidal::AbstractItem::ImageSizeMode::Square_200x200, this->hbox_UserPickPlaylist_All.at(i), 0, 2000+totalCount_all);
 
                     }

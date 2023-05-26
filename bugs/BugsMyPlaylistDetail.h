@@ -47,6 +47,8 @@ namespace bugs {
         void slot_applyResult_getRating_track(const QJsonArray&);
         void slot_applyResult_getRating_thumbup(const QJsonObject&);
 
+        void slot_bugs_completeReq_listAll_myFavoritesIds(const QJsonObject&);
+
     private:
         void request_more_trackData();
         void request_more_trackDraw();

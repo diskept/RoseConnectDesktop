@@ -52,6 +52,11 @@ private slots:
 
 private:
 
+    QDialog *loding_ani_dialog = nullptr;
+    void loding_ani_init();
+    void loding_ani_show();
+    void loding_ani_hide();
+
     QComboBox *comboBoxHdmiMQA;
     QComboBox *comboBoxHdmiPCM, *comboBoxHdmiPCM_Max;
     QComboBox *comboBoxHdmiDSD;

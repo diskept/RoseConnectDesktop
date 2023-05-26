@@ -79,7 +79,7 @@ void DialogAdd_Network_local::setUIControl(){
     lineEdit_http->setMaxLength(200);
     lineEdit_http->setPlaceholderText(tr("Network share location"));
     lineEdit_http->setFixedHeight(50);
-    lineEdit_http->setTextMargins(23,14,23,14);
+    lineEdit_http->setTextMargins(23,10,23,10);
     lineEdit_http->setStyleSheet("font-size:20px;color:#777777;background-color:#212121;border-radius:2px;border:1px solid #4d4d4d;");
 
     QLabel *lb_commentHttp = new QLabel();

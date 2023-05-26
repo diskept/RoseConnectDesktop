@@ -86,12 +86,15 @@ namespace music {
 
             this->flag_draw = false;
 
-            ContentLoadingwaitingMsgShow(tr("Content is being loaded. Please wait."));
+            print_debug();ContentLoadingwaitingMsgShow(tr("Content is being loaded. Please wait."));
 
             roseHome::ProcCommon *proc_album = new roseHome::ProcCommon(this);
             connect(proc_album, &roseHome::ProcCommon::completeReq_albumlist, this, &AlbumDetail_Rose::slot_applyResult_album);
             connect(proc_album, &roseHome::ProcCommon::completeReq_list_tracks, this, &AlbumDetail_Rose::slot_applyResult_album_tracks);
             proc_album->request_rose_get_album(tmp_data_album.id, this->track_currentOffset, GET_MAX_ITEM_SIZE___ONCE);
+        }
+        else{
+            print_debug();ContentLoadingwaitingMsgHide();   //j230328
         }
     }
 
@@ -149,7 +152,7 @@ namespace music {
 
             this->flag_draw = true;
 
-            ContentLoadingwaitingMsgShow(tr("Content is being loaded. Please wait."));
+            print_debug();ContentLoadingwaitingMsgShow(tr("Content is being loaded. Please wait."));
             this->request_more_trackDraw();
         }
     }

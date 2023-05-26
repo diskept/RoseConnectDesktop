@@ -154,6 +154,7 @@ QPixmap* GSCommon::getUIPixmapImg(QString p_url){
         if(!p_url.isEmpty()){//c220804
             QMessageBox::about(0, "Image load Error", p_url+":Image load Error[Common]...Retry.. (p_url :"  + p_url);
         }else{
+            print_debug();
             qDebug() << "GSCommon::getUIPixmapImg===============================================================================p_url: is null";
         }
 
@@ -173,6 +174,7 @@ QPixmap* GSCommon::getUIPixmapImg_WH(QString p_url,int w,int h){//c220816
         if(!p_url.isEmpty()){//c220804
             QMessageBox::about(0, "Image load Error", p_url+":Image load Error[Common]...Retry.. (p_url :"  + p_url);
         }else{
+            print_debug();
             qDebug() << "GSCommon::getUIPixmapImg===============================================================================p_url: is null";
         }
 
@@ -205,6 +207,7 @@ QLabel* GSCommon::getUILabelImg_search(QString p_url, QWidget *parent){
         if(!p_url.isEmpty()){//c220804
             QMessageBox::about(0, "Image load Error", p_url+":Image load Error[Common]...Retry.. (p_url :"  + p_url);
         }else{
+            print_debug();
             qDebug() << "GSCommon::getUIPixmapImg===============================================================================p_url: is null";
         }
     }
